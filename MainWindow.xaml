@@ -5,19 +5,35 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Draft"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="1080" Width="1920">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="auto" MinHeight="10px"/>
+            <RowDefinition Height="auto" MinHeight="30px"/>
         </Grid.RowDefinitions>
 
-        <!-- Workspace -->
-        <Grid Grid.Row="0" Background="Red">
-            
-        </Grid>
+        <!-- AppSurface -->
+        <Border Padding="32px">
+            <Grid Grid.Row="0" Background="Red">
 
-        <!-- Status -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" MinHeight="50px"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Controls -->
+                <Grid Grid.Row="0" Background="Orange" Margin="0,0,0,32">
+
+                </Grid>
+
+                <!-- Workspace -->
+                <Grid Grid.Row="1" Background="Yellow">
+
+                </Grid>
+            </Grid>
+        </Border>
+        
+        <!-- StatusBar -->
         <Grid Grid.Row="1" Background="Blue">
 
         </Grid>
