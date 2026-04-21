@@ -10,9 +10,9 @@
     <SolidColorBrush x:Key="Brush.EditorHighlight" Color="#1B1B1B"/>
     
     <!-- Text Colors -->
-    <SolidColorBrush x:Key="Brush.PrimaryText" Color="#ACABAA"/>
+    <SolidColorBrush x:Key="Brush.PrimaryText" Color="#ABABAB"/>
     <SolidColorBrush x:Key="Brush.MutedText" Color="#504F4F"/>
-    <SolidColorBrush x:Key="Brush.EditorText" Color="#F3FAFF"/>
+    <SolidColorBrush x:Key="Brush.EditorText" Color="#D9D9D9"/>
 
     <!-- Functional Colors -->
     <SolidColorBrush x:Key="Brush.Success" Color="#22C55E"/>
