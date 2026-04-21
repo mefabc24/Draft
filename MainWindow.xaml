@@ -10,7 +10,7 @@
     Width="1920"
     Height="1080"
     mc:Ignorable="d">
-    <Border Background="#0D0D0D">
+    <Border Background="{StaticResource Brush.WindowBG}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -34,8 +34,10 @@
                     <!--  Workspace  -->
                     <Border
                         Grid.Row="1"
-                        Background="#131313"
-                        CornerRadius="16">
+                        Background="{StaticResource Brush.Island}"
+                        CornerRadius="16"
+                        BorderBrush="{StaticResource Brush.Outline}"
+                        BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
