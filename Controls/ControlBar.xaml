@@ -11,9 +11,9 @@
     <Border
         Padding="8"
         HorizontalAlignment="Center"
+        Background="{StaticResource Brush.Island}"
         BorderBrush="{StaticResource Brush.Outline}"
         BorderThickness="1"
-        Background="{StaticResource Brush.Island}"
         CornerRadius="8">
         <Grid>
             <Grid.ColumnDefinitions>
