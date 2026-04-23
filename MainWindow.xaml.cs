@@ -1,8 +1,7 @@
 ﻿using Draft.ViewModels;
-using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interop;
 
 namespace Draft;
@@ -16,6 +15,16 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = new MainWindowViewModel();
+        Loaded += MainWindow_Loaded;
+    }
+
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        string editorPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Web", "Editor.html"));
+        string previewPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Web", "Preview.html"));
+
+        EditorWebView.Source = new Uri(editorPath);
+        PreviewWebView.Source = new Uri(previewPath);
     }
 
     protected override void OnSourceInitialized(EventArgs e)

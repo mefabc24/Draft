@@ -40,16 +40,18 @@
                 <RadioButton
                     Content="Editor"
                     GroupName="WorkspaceMode"
-                    IsChecked="True"
+                    IsChecked="{Binding IsEditorState, Mode=TwoWay}"
                     Style="{StaticResource ControlRadioButton}" />
                 <RadioButton
                     Margin="8,0"
                     Content="Split"
                     GroupName="WorkspaceMode"
+                    IsChecked="{Binding IsSplitState, Mode=TwoWay}"
                     Style="{StaticResource ControlRadioButton}" />
                 <RadioButton
                     Content="Preview"
                     GroupName="WorkspaceMode"
+                    IsChecked="{Binding IsPreviewState, Mode=TwoWay}"
                     Style="{StaticResource ControlRadioButton}" />
             </StackPanel>
 
