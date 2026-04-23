@@ -12,6 +12,7 @@
                 <ResourceDictionary Source="/Styles/Geometry.xaml"/>
                 
                 <ResourceDictionary Source="/Styles/ControlButtonStyles.xaml"/>
+                <ResourceDictionary Source="/Styles/WindowControlButtonStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

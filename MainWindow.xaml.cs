@@ -1,24 +1,108 @@
-﻿using System.Text;
+﻿using Draft.ViewModels;
+using System;
+using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Interop;
 
-namespace Draft
+namespace Draft;
+
+public partial class MainWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    private const int WmGetMinMaxInfo = 0x0024;
+    private const uint MonitorDefaultToNearest = 0x00000002;
+
+    public MainWindow()
     {
-        public MainWindow()
+        InitializeComponent();
+        DataContext = new MainWindowViewModel();
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+
+        HwndSource? source = PresentationSource.FromVisual(this) as HwndSource;
+        source?.AddHook(WndProc);
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WmGetMinMaxInfo)
         {
-            InitializeComponent();
+            UpdateMinMaxInfo(hwnd, lParam);
+            handled = true;
         }
+
+        return IntPtr.Zero;
+    }
+
+    private static void UpdateMinMaxInfo(IntPtr hwnd, IntPtr lParam)
+    {
+        MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+
+        IntPtr monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
+        if (monitor != IntPtr.Zero)
+        {
+            MONITORINFO monitorInfo = new();
+            if (GetMonitorInfo(monitor, ref monitorInfo))
+            {
+                RECT workArea = monitorInfo.rcWork;
+                RECT monitorArea = monitorInfo.rcMonitor;
+
+                mmi.ptMaxPosition.x = Math.Abs(workArea.left - monitorArea.left);
+                mmi.ptMaxPosition.y = Math.Abs(workArea.top - monitorArea.top);
+                mmi.ptMaxSize.x = Math.Abs(workArea.right - workArea.left);
+                mmi.ptMaxSize.y = Math.Abs(workArea.bottom - workArea.top);
+            }
+        }
+
+        Marshal.StructureToPtr(mmi, lParam, true);
+    }
+
+    [DllImport("user32.dll")]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int x;
+        public int y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MINMAXINFO
+    {
+        public POINT ptReserved;
+        public POINT ptMaxSize;
+        public POINT ptMaxPosition;
+        public POINT ptMinTrackSize;
+        public POINT ptMaxTrackSize;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MONITORINFO
+    {
+        public int cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public int dwFlags;
+
+        public MONITORINFO()
+        {
+            cbSize = Marshal.SizeOf<MONITORINFO>();
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT
+    {
+        public int left;
+        public int top;
+        public int right;
+        public int bottom;
     }
 }

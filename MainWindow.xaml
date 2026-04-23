@@ -7,57 +7,105 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="clr-namespace:Draft.Controls"
     xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-    Title="MainWindow"
+    Title="Draft"
     Width="1920"
     Height="1080"
+    Background="Transparent"
+    WindowStyle="None"
     mc:Ignorable="d">
-    <Border Background="{StaticResource Brush.WindowBG}">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="auto" />
-            </Grid.RowDefinitions>
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="40"
+            GlassFrameThickness="1"
+            ResizeBorderThickness="6" />
+    </WindowChrome.WindowChrome>
 
-            <!--  AppSurface  -->
-            <Border Padding="24">
-                <Grid>
+    <Grid>
+        <Border Background="{StaticResource Brush.WindowBG}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" MinHeight="50px" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                <!--  AppSurface  -->
+                <Border Padding="24">
+                    <Grid>
 
-                    <!--  Controls  -->
-                    <Grid Grid.Row="0" Margin="0,0,0,24">
-                        <uc:ControlBar x:Name="ControlBar"/>
-                    </Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" MinHeight="50px" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                    <!--  Workspace  -->
-                    <Border
-                        Grid.Row="1"
-                        Background="{StaticResource Brush.Island}"
-                        BorderBrush="{StaticResource Brush.Outline}"
-                        BorderThickness="1"
-                        CornerRadius="16">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="EditorColumn" Width="*" />
-                                <ColumnDefinition x:Name="PreviewColumn" Width="*" />
-                            </Grid.ColumnDefinitions>
+                        <!--  Controls  -->
+                        <Grid Grid.Row="0" Margin="0,0,0,24">
+                            <uc:ControlBar x:Name="ControlBar" WindowChrome.IsHitTestVisibleInChrome="True" />
                         </Grid>
-                    </Border>
-                </Grid>
-            </Border>
 
-            <!--  StatusBar  -->
-            <Border
-                Grid.Row="1"
-                Padding="24,8"
-                Background="#131313"
-                BorderBrush="#1A1A1A"
-                BorderThickness="0,1,0,0">
-                <uc:StatusBar />
-            </Border>
+                        <!--  Workspace  -->
+                        <Border
+                            Grid.Row="1"
+                            Background="{StaticResource Brush.Island}"
+                            BorderBrush="{StaticResource Brush.Outline}"
+                            BorderThickness="1"
+                            CornerRadius="16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition x:Name="EditorColumn" Width="*" />
+                                    <ColumnDefinition Width="1" />
+                                    <ColumnDefinition x:Name="PreviewColumn" Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Editor  -->
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Border Padding="32,16">
+                                        <uc:EditorHeader />
+                                    </Border>
+                                </Grid>
+
+                                <!--  Divider  -->
+                                <Border Grid.Column="1" Background="{StaticResource Brush.Outline}" />
+
+                                <!--  Preview  -->
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Border Padding="32,16">
+                                        <uc:PreviewHeader />
+                                    </Border>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!--  StatusBar  -->
+                <Border
+                    Grid.Row="1"
+                    Padding="24,8"
+                    Background="#131313"
+                    BorderBrush="#1A1A1A"
+                    BorderThickness="0,1,0,0">
+                    <uc:StatusBar />
+                </Border>
+            </Grid>
+        </Border>
+
+        
+       <!-- Window Controls -->
+        <Grid
+            Height="40"
+            VerticalAlignment="Top"
+            WindowChrome.IsHitTestVisibleInChrome="True">
+            <uc:WindowControls HorizontalAlignment="Right" />
         </Grid>
-    </Border>
+    </Grid>
 </Window>

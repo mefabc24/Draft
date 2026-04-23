@@ -8,6 +8,8 @@
     <SolidColorBrush x:Key="Brush.Island" Color="#131313" />
     <SolidColorBrush x:Key="Brush.EditorHighlight" Color="#1A1A1A" />
     <SolidColorBrush x:Key="Brush.Outline" Color="#1A1A1A" />
+    <SolidColorBrush x:Key="Brush.ButtonHover" Color="#1F2020" />
+    <SolidColorBrush x:Key="Brush.ButtonActive" Color="#1F2020" />
 
     <!--  Text Colors  -->
     <SolidColorBrush x:Key="Brush.PrimaryText" Color="#ABABAB" />
@@ -19,4 +21,8 @@
     <SolidColorBrush x:Key="Brush.Warning" Color="#F59E0B" />
     <SolidColorBrush x:Key="Brush.Critical" Color="#EF4444" />
     <SolidColorBrush x:Key="Brush.Info" Color="#60A5FA" />
+    
+    <!-- Window Controls -->
+    <SolidColorBrush x:Key="Brush.WindowControlIcon" Color="#F1F1F1" />
+    <SolidColorBrush x:Key="Brush.CloseButtonBackground" Color="#C42B1C" />
 </ResourceDictionary>
