@@ -99,12 +99,9 @@
             </Grid>
         </Border>
 
-        
-       <!-- Window Controls -->
-        <Grid
-            Height="40"
-            VerticalAlignment="Top"
-            WindowChrome.IsHitTestVisibleInChrome="True">
+
+        <!--  Window Controls  -->
+        <Grid VerticalAlignment="Top" WindowChrome.IsHitTestVisibleInChrome="True">
             <uc:WindowControls HorizontalAlignment="Right" />
         </Grid>
     </Grid>
