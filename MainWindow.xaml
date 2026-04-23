@@ -8,6 +8,7 @@
     xmlns:uc="clr-namespace:Draft.Controls"
     xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     Title="Draft"
+    AllowsTransparency="True"
     Width="1920"
     Height="1080"
     Background="Transparent"
@@ -16,12 +17,12 @@
     <WindowChrome.WindowChrome>
         <WindowChrome
             CaptionHeight="40"
-            GlassFrameThickness="1"
+            GlassFrameThickness="0"
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
 
     <Grid>
-        <Border Background="{StaticResource Brush.WindowBG}">
+        <Border Background="{StaticResource Brush.WindowBG}" BorderBrush="{StaticResource Brush.PrimaryAccent}" BorderThickness="1" CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -66,6 +67,8 @@
                                     <Border Padding="32,16">
                                         <uc:EditorHeader />
                                     </Border>
+
+                                    <wv2:WebView2 Grid.Row="1" x:Name="EditorWebView" />
                                 </Grid>
 
                                 <!--  Divider  -->
@@ -81,6 +84,8 @@
                                     <Border Padding="32,16">
                                         <uc:PreviewHeader />
                                     </Border>
+
+                                    <wv2:WebView2 Grid.Row="1" x:Name="PreviewWebView" />
                                 </Grid>
                             </Grid>
                         </Border>
@@ -93,7 +98,8 @@
                     Padding="24,8"
                     Background="#131313"
                     BorderBrush="#1A1A1A"
-                    BorderThickness="0,1,0,0">
+                    BorderThickness="0,1,0,0"
+                    CornerRadius="0,0,8,8">
                     <uc:StatusBar />
                 </Border>
             </Grid>
@@ -101,7 +107,7 @@
 
 
         <!--  Window Controls  -->
-        <Grid VerticalAlignment="Top" WindowChrome.IsHitTestVisibleInChrome="True">
+        <Grid VerticalAlignment="Top" WindowChrome.IsHitTestVisibleInChrome="True" Margin="1">
             <uc:WindowControls HorizontalAlignment="Right" />
         </Grid>
     </Grid>

@@ -19,7 +19,7 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="Tag" Value="Close" />
                             </MultiTrigger.Conditions>
-                            <Setter Property="Cursor" Value="Hand" />
+                            <Setter TargetName="border" Property="CornerRadius" Value="0,8,0,0" />
                             <Setter Property="Background" Value="{StaticResource Brush.CloseButtonBackground}" />
                         </MultiTrigger>
 
@@ -29,7 +29,6 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="Tag" Value="Default" />
                             </MultiTrigger.Conditions>
-                            <Setter Property="Cursor" Value="Hand" />
                             <Setter Property="Background" Value="{StaticResource Brush.ButtonHover}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
