@@ -42,7 +42,7 @@
                     Width="16"
                     Height="16"
                     Margin="0,0,8,0"
-                    Data="{StaticResource Icon.Lines}"
+                    Data="{StaticResource Icon.File}"
                     Fill="{StaticResource Brush.PrimaryText}"
                     Stretch="Uniform" />
                 <TextBlock
@@ -54,8 +54,6 @@
                     Text="1240 WORDS" />
             </StackPanel>
         </StackPanel>
-
-        <!--  Spacer  -->
 
         <!--  Right  -->
         <StackPanel Grid.Column="2" Orientation="Horizontal">
