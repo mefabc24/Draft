@@ -21,8 +21,8 @@
     <SolidColorBrush x:Key="Brush.Warning" Color="#F59E0B" />
     <SolidColorBrush x:Key="Brush.Critical" Color="#EF4444" />
     <SolidColorBrush x:Key="Brush.Info" Color="#60A5FA" />
-    
-    <!-- Window Controls -->
+
+    <!--  Window Controls  -->
     <SolidColorBrush x:Key="Brush.WindowControlIcon" Color="#F1F1F1" />
     <SolidColorBrush x:Key="Brush.CloseButtonBackground" Color="#C42B1C" />
 </ResourceDictionary>
