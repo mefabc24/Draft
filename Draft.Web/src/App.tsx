@@ -12,6 +12,8 @@ const EDITOR_FONT_LOAD_TARGET = `${EDITOR_FONT_SIZE}px 'JetBrains Mono'`
 const EDITOR_FILE_LABEL = 'drafts/lorem_ipsum.md'
 const EDITOR_SCROLL_SENSITIVITY = 1.5
 const MIN_EDITOR_THUMB_HEIGHT = 56
+const EDITOR_CURRENT_LINE_BACKGROUND = '#1B1B1B'
+const EDITOR_CURRENT_LINE_DECORATION_CLASS = 'editor-current-line'
 
 const INITIAL_MARKDOWN = `# Lorem Ipsum
 
@@ -107,6 +109,45 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
   top: 16,
   bottom: 16,
+}
+
+function getCurrentLineDecorations(
+  editor: monaco.editor.IStandaloneCodeEditor,
+): monaco.editor.IModelDeltaDecoration[] {
+  const selections = editor.getSelections()
+
+  if (!selections || selections.length === 0) {
+    return []
+  }
+
+  const lineNumbers = new Set<number>()
+  const decorations: monaco.editor.IModelDeltaDecoration[] = []
+
+  for (const selection of selections) {
+    const lineNumber = selection.positionLineNumber
+
+    if (lineNumbers.has(lineNumber)) {
+      continue
+    }
+
+    lineNumbers.add(lineNumber)
+    decorations.push({
+      range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+      options: {
+        className: EDITOR_CURRENT_LINE_DECORATION_CLASS,
+        isWholeLine: true,
+      },
+    })
+  }
+
+  return decorations
+}
+
+function syncCurrentLineDecorations(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  decorations: monaco.editor.IEditorDecorationsCollection,
+) {
+  decorations.set(getCurrentLineDecorations(editor))
 }
 
 type EditorScrollbarElements = {
@@ -250,6 +291,7 @@ function App() {
         padding: EDITOR_PADDING,
         lineHeight: 30,
         fontSize: EDITOR_FONT_SIZE,
+        renderLineHighlight: 'gutter',
         quickSuggestions: false,
         suggestOnTriggerCharacters: false,
         parameterHints: { enabled: false },
@@ -281,7 +323,7 @@ function App() {
       rules: [],
       colors: {
         'editor.background': '#131313',
-        'editor.lineHighlightBackground': '#1B1B1B',
+        'editor.lineHighlightBackground': EDITOR_CURRENT_LINE_BACKGROUND,
         'editor.lineHighlightBorder': '#00000000',
         'editor.wordHighlightBackground': '#3f3f4655',
         'editor.wordHighlightStrongBackground': '#3f3f4670',
@@ -304,7 +346,7 @@ function App() {
       lineHeight: 28,
       padding: EDITOR_PADDING,
       fontFamily: EDITOR_FONT_FAMILY,
-      renderLineHighlight: 'all',
+      renderLineHighlight: 'gutter',
       quickSuggestions: false,
       suggestOnTriggerCharacters: false,
       parameterHints: { enabled: false },
@@ -325,8 +367,18 @@ function App() {
       theme: 'markdown-editor-dark',
     })
 
+    const currentLineDecorations = editor.createDecorationsCollection()
+    const syncPersistentCurrentLine = () => {
+      syncCurrentLineDecorations(editor, currentLineDecorations)
+    }
+
+    syncPersistentCurrentLine()
+
     const sub = editor.onDidChangeModelContent(() => {
       setMarkdown(editor.getValue())
+    })
+    const selectionSub = editor.onDidChangeCursorSelection(() => {
+      syncPersistentCurrentLine()
     })
     const scrollSub = editor.onDidScrollChange((event) => {
       setIsEditorScrolled(event.scrollTop > 0)
@@ -371,6 +423,7 @@ function App() {
       contentSizeSub.dispose()
       layoutSub.dispose()
       scrollSub.dispose()
+      selectionSub.dispose()
       sub.dispose()
       editor.dispose()
       editorInstanceRef.current = null

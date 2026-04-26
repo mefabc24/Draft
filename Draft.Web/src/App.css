@@ -142,6 +142,10 @@
   background: #1b1b1b;
 }
 
+.editor-host .monaco-editor .editor-current-line {
+  background: #1b1b1b;
+}
+
 .editor-host .monaco-editor .scrollbar {
   opacity: 0 !important;
   pointer-events: none !important;
