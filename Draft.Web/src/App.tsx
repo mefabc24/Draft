@@ -3,6 +3,11 @@ import * as monaco from 'monaco-editor'
 import './App.css'
 import PaneHeader from './PaneHeader'
 import PreviewPane from './PreviewPane'
+import {
+  DRAFT_CURRENT_LINE_DECORATION_CLASS,
+  DRAFT_THEME_NAME,
+  registerDraftTheme,
+} from './theme'
 
 type ViewMode = 'editor' | 'split' | 'preview'
 
@@ -12,9 +17,6 @@ const EDITOR_FONT_LOAD_TARGET = `${EDITOR_FONT_SIZE}px 'JetBrains Mono'`
 const EDITOR_FILE_LABEL = 'drafts/lorem_ipsum.md'
 const EDITOR_SCROLL_SENSITIVITY = 1.5
 const MIN_EDITOR_THUMB_HEIGHT = 56
-const EDITOR_CURRENT_LINE_BACKGROUND = '#1B1B1B'
-const EDITOR_CURRENT_LINE_DECORATION_CLASS = 'editor-current-line'
-
 const INITIAL_MARKDOWN = `# Lorem Ipsum
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -134,7 +136,7 @@ function getCurrentLineDecorations(
     decorations.push({
       range: new monaco.Range(lineNumber, 1, lineNumber, 1),
       options: {
-        className: EDITOR_CURRENT_LINE_DECORATION_CLASS,
+        className: DRAFT_CURRENT_LINE_DECORATION_CLASS,
         isWholeLine: true,
       },
     })
@@ -286,6 +288,9 @@ function App() {
       return
     }
 
+    registerDraftTheme()
+    monaco.editor.setTheme(DRAFT_THEME_NAME)
+
     if (editorInstanceRef.current) {
       editorInstanceRef.current.updateOptions({
         padding: EDITOR_PADDING,
@@ -317,24 +322,6 @@ function App() {
       return
     }
 
-    monaco.editor.defineTheme('markdown-editor-dark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [],
-      colors: {
-        'editor.background': '#131313',
-        'editor.lineHighlightBackground': EDITOR_CURRENT_LINE_BACKGROUND,
-        'editor.lineHighlightBorder': '#00000000',
-        'editor.wordHighlightBackground': '#3f3f4655',
-        'editor.wordHighlightStrongBackground': '#3f3f4670',
-        'editor.wordHighlightBorder': '#00000000',
-        'editor.wordHighlightStrongBorder': '#00000000',
-        'editor.selectionHighlightBackground': '#3f3f4655',
-        'editor.selectionHighlightBorder': '#00000000',
-        'editorOverviewRuler.border': '#00000000',
-      },
-    })
-
     const editor = monaco.editor.create(editorHostRef.current, {
       value: markdown,
       language: 'markdown',
@@ -364,7 +351,7 @@ function App() {
         verticalScrollbarSize: 0,
         horizontalScrollbarSize: 0,
       },
-      theme: 'markdown-editor-dark',
+      theme: DRAFT_THEME_NAME,
     })
 
     const currentLineDecorations = editor.createDecorationsCollection()
