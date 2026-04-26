@@ -1,4 +1,5 @@
 ﻿using Draft.ViewModels;
+using Microsoft.Web.WebView2.Core;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -18,13 +19,20 @@ public partial class MainWindow : Window
         Loaded += MainWindow_Loaded;
     }
 
-    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        string editorPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Web", "Editor.html"));
-        string previewPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Web", "Preview.html"));
+        string outputWebRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Web"));
+        string sourceWebRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Web"));
+        string webRootPath = Directory.Exists(sourceWebRootPath) ? sourceWebRootPath : outputWebRootPath;
 
-        EditorWebView.Source = new Uri(editorPath);
-        PreviewWebView.Source = new Uri(previewPath);
+        await EditorWebView.EnsureCoreWebView2Async();
+        await PreviewWebView.EnsureCoreWebView2Async();
+
+        EditorWebView.CoreWebView2.SetVirtualHostNameToFolderMapping("app", webRootPath, CoreWebView2HostResourceAccessKind.Allow);
+        PreviewWebView.CoreWebView2.SetVirtualHostNameToFolderMapping("app", webRootPath, CoreWebView2HostResourceAccessKind.Allow);
+
+        EditorWebView.Source = new Uri("https://app/editor/index.html");
+        PreviewWebView.Source = new Uri("https://app/preview/preview.html");
     }
 
     protected override void OnSourceInitialized(EventArgs e)

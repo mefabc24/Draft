@@ -13,17 +13,8 @@
     <None Remove="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <None Remove="Assets\Icons\TestIcon.png" />
     <None Remove="Assets\Icons\TestIconHighRes.png" />
-    <None Remove="Web\Editor.html" />
-    <None Remove="Web\Preview.html" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Web\Editor.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Web\Preview.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Remove="View\Workspace\Editor.html" />
+    <None Remove="View\Workspace\Preview.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +30,10 @@
     <Resource Include="Assets\Icons\TestIconHighRes.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="View\Workspace\" />
   </ItemGroup>
 
 </Project>

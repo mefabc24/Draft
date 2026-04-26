@@ -53,7 +53,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition x:Name="EditorColumn" Width="{Binding EditorColumnWidth}" />
-                                    <ColumnDefinition Width="{Binding DividerColumnWidth}" />
+                                    <ColumnDefinition Width="{Binding DividerColumnWidth}" MaxWidth="1"/>
                                     <ColumnDefinition x:Name="PreviewColumn" Width="{Binding PreviewColumnWidth}" />
                                 </Grid.ColumnDefinitions>
 
