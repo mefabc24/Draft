@@ -8,9 +8,9 @@
     xmlns:uc="clr-namespace:Draft.Controls"
     xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     Title="Draft"
-    AllowsTransparency="True"
     Width="1920"
     Height="1080"
+    AllowsTransparency="True"
     Background="Transparent"
     WindowStyle="None"
     mc:Ignorable="d">
@@ -22,7 +22,11 @@
     </WindowChrome.WindowChrome>
 
     <Grid>
-        <Border Background="{StaticResource Brush.WindowBG}" BorderBrush="{StaticResource Brush.PrimaryAccent}" BorderThickness="1" CornerRadius="8">
+        <Border
+            Background="{StaticResource Brush.WindowBG}"
+            BorderBrush="{StaticResource Brush.PrimaryAccent}"
+            BorderThickness="1"
+            CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -50,44 +54,9 @@
                             BorderBrush="{StaticResource Brush.Outline}"
                             BorderThickness="1"
                             CornerRadius="16">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition x:Name="EditorColumn" Width="{Binding EditorColumnWidth}" />
-                                    <ColumnDefinition Width="{Binding DividerColumnWidth}" MaxWidth="1"/>
-                                    <ColumnDefinition x:Name="PreviewColumn" Width="{Binding PreviewColumnWidth}" />
-                                </Grid.ColumnDefinitions>
 
-                                <!--  Editor  -->
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="auto" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
+                            <wv2:WebView2 x:Name="WorkspaceWebView" />
 
-                                    <Border Padding="32,16">
-                                        <uc:EditorHeader />
-                                    </Border>
-
-                                    <wv2:WebView2 Grid.Row="1" x:Name="EditorWebView" />
-                                </Grid>
-
-                                <!--  Divider  -->
-                                <Border Grid.Column="1" Width="{Binding DividerWidth}" Background="{StaticResource Brush.Outline}" />
-
-                                <!--  Preview  -->
-                                <Grid Grid.Column="2">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="auto" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-
-                                    <Border Padding="32,16">
-                                        <uc:PreviewHeader />
-                                    </Border>
-
-                                    <wv2:WebView2 Grid.Row="1" x:Name="PreviewWebView" />
-                                </Grid>
-                            </Grid>
                         </Border>
                     </Grid>
                 </Border>
@@ -107,7 +76,10 @@
 
 
         <!--  Window Controls  -->
-        <Grid VerticalAlignment="Top" WindowChrome.IsHitTestVisibleInChrome="True" Margin="1">
+        <Grid
+            Margin="1"
+            VerticalAlignment="Top"
+            WindowChrome.IsHitTestVisibleInChrome="True">
             <uc:WindowControls HorizontalAlignment="Right" />
         </Grid>
     </Grid>

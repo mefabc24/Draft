@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include=".github\" />
     <Folder Include="View\Workspace\" />
   </ItemGroup>
 

@@ -11,6 +11,7 @@ public partial class MainWindow : Window
 {
     private const int WmGetMinMaxInfo = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
+    private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     public MainWindow()
     {
@@ -22,17 +23,57 @@ public partial class MainWindow : Window
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         string outputWebRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Web"));
-        string sourceWebRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Web"));
+        string sourceWebRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Draft.Web", "dist"));
         string webRootPath = Directory.Exists(sourceWebRootPath) ? sourceWebRootPath : outputWebRootPath;
 
-        await EditorWebView.EnsureCoreWebView2Async();
-        await PreviewWebView.EnsureCoreWebView2Async();
+        await WorkspaceWebView.EnsureCoreWebView2Async();
 
-        EditorWebView.CoreWebView2.SetVirtualHostNameToFolderMapping("app", webRootPath, CoreWebView2HostResourceAccessKind.Allow);
-        PreviewWebView.CoreWebView2.SetVirtualHostNameToFolderMapping("app", webRootPath, CoreWebView2HostResourceAccessKind.Allow);
+        WorkspaceWebView.CoreWebView2.SetVirtualHostNameToFolderMapping("app", webRootPath, CoreWebView2HostResourceAccessKind.Allow);
 
-        EditorWebView.Source = new Uri("https://app/editor/index.html");
-        PreviewWebView.Source = new Uri("https://app/preview/preview.html");
+        WorkspaceWebView.Source = new Uri("https://app/index.html");
+
+        SyncWebViewWithWorkspaceState();
+        if (ViewModel is not null)
+        {
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        if (ViewModel is not null)
+        {
+            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
+        base.OnClosed(e);
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainWindowViewModel.WorkspaceState))
+        {
+            SyncWebViewWithWorkspaceState();
+        }
+    }
+
+    private void SyncWebViewWithWorkspaceState()
+    {
+        if (ViewModel is null)
+            return;
+
+        switch (ViewModel.WorkspaceState)
+        {
+            case WorkspaceState.Editor:
+                _ = WorkspaceWebView.CoreWebView2?.ExecuteScriptAsync("window.dispatchEvent(new CustomEvent('workspace-mode-changed', { detail: 'editor' }));");
+                break;
+            case WorkspaceState.Split:
+                _ = WorkspaceWebView.CoreWebView2?.ExecuteScriptAsync("window.dispatchEvent(new CustomEvent('workspace-mode-changed', { detail: 'split' }));");
+                break;
+            case WorkspaceState.Preview:
+                _ = WorkspaceWebView.CoreWebView2?.ExecuteScriptAsync("window.dispatchEvent(new CustomEvent('workspace-mode-changed', { detail: 'preview' }));");
+                break;
+        }
     }
 
     protected override void OnSourceInitialized(EventArgs e)

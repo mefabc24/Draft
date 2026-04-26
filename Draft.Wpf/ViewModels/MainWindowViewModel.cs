@@ -1,5 +1,4 @@
 ﻿using Draft.Helpers;
-using System.Windows;
 
 namespace Draft.ViewModels;
 
@@ -27,10 +26,6 @@ public class MainWindowViewModel : BaseViewModel
             OnPropertyChanged(nameof(IsEditorState));
             OnPropertyChanged(nameof(IsSplitState));
             OnPropertyChanged(nameof(IsPreviewState));
-            OnPropertyChanged(nameof(EditorColumnWidth));
-            OnPropertyChanged(nameof(PreviewColumnWidth));
-            OnPropertyChanged(nameof(DividerColumnWidth));
-            OnPropertyChanged(nameof(DividerWidth));
         }
     }
 
@@ -63,14 +58,6 @@ public class MainWindowViewModel : BaseViewModel
                 WorkspaceState = WorkspaceState.Preview;
         }
     }
-
-    public GridLength EditorColumnWidth => WorkspaceState == WorkspaceState.Preview ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
-
-    public GridLength PreviewColumnWidth => WorkspaceState == WorkspaceState.Editor ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
-
-    public GridLength DividerColumnWidth => WorkspaceState == WorkspaceState.Split ? GridLength.Auto : new GridLength(0);
-
-    public double DividerWidth => WorkspaceState == WorkspaceState.Split ? 1 : 0;
 
     public MainWindowViewModel()
     {
