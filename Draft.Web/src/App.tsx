@@ -234,6 +234,7 @@ function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [markdown, setMarkdown] = useState(INITIAL_MARKDOWN)
   const [isEditorScrolled, setIsEditorScrolled] = useState(false)
+  const initialMarkdownRef = useRef(markdown)
   const editorHostRef = useRef<HTMLDivElement | null>(null)
   const editorScrollbarRef = useRef<HTMLDivElement | null>(null)
   const editorThumbRef = useRef<HTMLDivElement | null>(null)
@@ -242,9 +243,6 @@ function App() {
   )
   const editorDragOffsetRef = useRef(0)
   const isEditorDraggingRef = useRef(false)
-
-  const showEditor = viewMode !== 'preview'
-  const showPreview = viewMode !== 'editor'
 
   const syncEditorScrollbarPosition = () => {
     const editor = editorInstanceRef.current
@@ -281,49 +279,15 @@ function App() {
   }
 
   useEffect(() => {
-    if (!showEditor || !editorHostRef.current) {
-      editorInstanceRef.current?.dispose()
-      editorInstanceRef.current = null
-      setIsEditorScrolled(false)
+    if (!editorHostRef.current) {
       return
     }
 
     registerDraftTheme()
     monaco.editor.setTheme(DRAFT_THEME_NAME)
 
-    if (editorInstanceRef.current) {
-      editorInstanceRef.current.updateOptions({
-        padding: EDITOR_PADDING,
-        lineHeight: 30,
-        fontSize: EDITOR_FONT_SIZE,
-        renderLineHighlight: 'gutter',
-        quickSuggestions: false,
-        suggestOnTriggerCharacters: false,
-        parameterHints: { enabled: false },
-        wordBasedSuggestions: 'off',
-        inlineSuggest: { enabled: false },
-        snippetSuggestions: 'none',
-        overviewRulerLanes: 0,
-        overviewRulerBorder: false,
-        cursorWidth: 4,
-        cursorHeight: 20,
-        mouseWheelScrollSensitivity: EDITOR_SCROLL_SENSITIVITY,
-        scrollbar: {
-          vertical: 'hidden',
-          horizontal: 'hidden',
-          verticalScrollbarSize: 0,
-          horizontalScrollbarSize: 0,
-        },
-      })
-      remeasureEditor(editorInstanceRef.current)
-      window.requestAnimationFrame(() => {
-        syncEditorScrollbarPosition()
-      })
-      return
-    }
-
     const editor = monaco.editor.create(editorHostRef.current, {
-      value: markdown,
+      value: initialMarkdownRef.current,
       language: 'markdown',
       automaticLayout: true,
       minimap: { enabled: false },
@@ -416,7 +380,7 @@ function App() {
       editorInstanceRef.current = null
       setIsEditorScrolled(false)
     }
-  }, [showEditor])
+  }, [])
 
   useEffect(() => {
     const editor = editorInstanceRef.current
@@ -427,6 +391,36 @@ function App() {
       editor.setValue(markdown)
     }
   }, [markdown])
+
+  useEffect(() => {
+    const editor = editorInstanceRef.current
+
+    if (!editor) {
+      return
+    }
+
+    window.requestAnimationFrame(() => {
+      if (editorInstanceRef.current !== editor) {
+        return
+      }
+
+      remeasureEditor(editor)
+      syncEditorScrollbarPosition()
+    })
+
+    const timeoutId = window.setTimeout(() => {
+      if (editorInstanceRef.current !== editor) {
+        return
+      }
+
+      remeasureEditor(editor)
+      syncEditorScrollbarPosition()
+    }, 240)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [viewMode])
 
   const modeLabel = useMemo(() => {
     if (viewMode === 'editor') return 'Nur Editor'
@@ -469,103 +463,101 @@ function App() {
       </header>
 
       <section className={`workspace ${viewMode}`}>
-        {showEditor ? (
-          <div
-            className="editor-pane"
-            data-scrolled={isEditorScrolled ? 'true' : 'false'}
-            aria-label="Markdown Editor"
-          >
-            <PaneHeader
-              leftLabel={EDITOR_FILE_LABEL}
-              rightItems={['UTF-8', 'Markdown']}
-            />
-            <div className="pane-body editor-body">
-              <div ref={editorHostRef} className="editor-host" />
+        <div
+          className="editor-pane"
+          data-scrolled={isEditorScrolled ? 'true' : 'false'}
+          aria-label="Markdown Editor"
+          aria-hidden={viewMode === 'preview'}
+        >
+          <PaneHeader
+            leftLabel={EDITOR_FILE_LABEL}
+            rightItems={['UTF-8', 'Markdown']}
+          />
+          <div className="pane-body editor-body">
+            <div ref={editorHostRef} className="editor-host" />
+            <div
+              ref={editorScrollbarRef}
+              className="editor-scrollbar"
+              data-dragging="false"
+              data-scrollable="false"
+              aria-hidden="true"
+              onPointerDown={(event) => {
+                if (event.target !== event.currentTarget) {
+                  return
+                }
+
+                const thumbElement = editorThumbRef.current
+
+                if (!thumbElement) {
+                  return
+                }
+
+                scrollEditorScrollbarFromPointer(
+                  event.clientY,
+                  thumbElement.offsetHeight / 2,
+                )
+                syncEditorScrollbarPosition()
+              }}
+            >
               <div
-                ref={editorScrollbarRef}
-                className="editor-scrollbar"
-                data-dragging="false"
-                data-scrollable="false"
-                aria-hidden="true"
+                ref={editorThumbRef}
+                className="editor-scrollbar-thumb"
                 onPointerDown={(event) => {
-                  if (event.target !== event.currentTarget) {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  editorDragOffsetRef.current =
+                    event.clientY - event.currentTarget.getBoundingClientRect().top
+                  isEditorDraggingRef.current = true
+                  setEditorDraggingState(true)
+                  event.currentTarget.setPointerCapture(event.pointerId)
+                }}
+                onPointerMove={(event) => {
+                  if (!isEditorDraggingRef.current) {
                     return
                   }
 
-                  const thumbElement = editorThumbRef.current
-
-                  if (!thumbElement) {
-                    return
-                  }
-
+                  event.preventDefault()
                   scrollEditorScrollbarFromPointer(
                     event.clientY,
-                    thumbElement.offsetHeight / 2,
+                    editorDragOffsetRef.current,
                   )
                   syncEditorScrollbarPosition()
                 }}
-              >
-                <div
-                  ref={editorThumbRef}
-                  className="editor-scrollbar-thumb"
-                  onPointerDown={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    editorDragOffsetRef.current =
-                      event.clientY - event.currentTarget.getBoundingClientRect().top
-                    isEditorDraggingRef.current = true
-                    setEditorDraggingState(true)
-                    event.currentTarget.setPointerCapture(event.pointerId)
-                  }}
-                  onPointerMove={(event) => {
-                    if (!isEditorDraggingRef.current) {
-                      return
-                    }
+                onPointerUp={(event) => {
+                  if (!isEditorDraggingRef.current) {
+                    return
+                  }
 
-                    event.preventDefault()
-                    scrollEditorScrollbarFromPointer(
-                      event.clientY,
-                      editorDragOffsetRef.current,
-                    )
-                    syncEditorScrollbarPosition()
-                  }}
-                  onPointerUp={(event) => {
-                    if (!isEditorDraggingRef.current) {
-                      return
-                    }
+                  isEditorDraggingRef.current = false
+                  setEditorDraggingState(false)
 
-                    isEditorDraggingRef.current = false
-                    setEditorDraggingState(false)
+                  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                    event.currentTarget.releasePointerCapture(event.pointerId)
+                  }
+                }}
+                onPointerCancel={(event) => {
+                  if (!isEditorDraggingRef.current) {
+                    return
+                  }
 
-                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                      event.currentTarget.releasePointerCapture(event.pointerId)
-                    }
-                  }}
-                  onPointerCancel={(event) => {
-                    if (!isEditorDraggingRef.current) {
-                      return
-                    }
+                  isEditorDraggingRef.current = false
+                  setEditorDraggingState(false)
 
-                    isEditorDraggingRef.current = false
-                    setEditorDraggingState(false)
-
-                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                      event.currentTarget.releasePointerCapture(event.pointerId)
-                    }
-                  }}
-                />
-              </div>
+                  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                    event.currentTarget.releasePointerCapture(event.pointerId)
+                  }
+                }}
+              />
             </div>
           </div>
-        ) : null}
+        </div>
 
-        {showPreview ? (
-          <PreviewPane
-            markdown={markdown}
-            headerLeft="Live Preview"
-            headerRight={[`${previewWordCount} words`]}
-          />
-        ) : null}
+        <PreviewPane
+          markdown={markdown}
+          headerLeft="Live Preview"
+          headerRight={[`${previewWordCount} words`]}
+          ariaHidden={viewMode === 'editor'}
+        />
       </section>
     </main>
   )

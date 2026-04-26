@@ -42,26 +42,29 @@
 }
 
 .workspace {
+  --pane-transition-duration: 240ms;
+  --pane-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --pane-slide-distance: 32px;
+  --editor-pane-width: 50%;
+  --preview-pane-width: 50%;
   flex: 1;
   min-height: 0;
   display: flex;
-}
-
-.workspace.split {
   position: relative;
+  overflow: hidden;
 }
 
-.workspace.editor .editor-pane,
-.workspace.preview .preview-pane {
-  width: 100%;
+.workspace.editor {
+  --editor-pane-width: 100%;
+  --preview-pane-width: 0%;
 }
 
-.workspace.split .editor-pane,
-.workspace.split .preview-pane {
-  width: 50%;
+.workspace.preview {
+  --editor-pane-width: 0%;
+  --preview-pane-width: 100%;
 }
 
-.workspace.split::after {
+.workspace::after {
   content: '';
   position: absolute;
   top: 0;
@@ -72,15 +75,31 @@
   pointer-events: none;
   transform: translateX(-0.5px);
   z-index: 2;
+  opacity: 0;
+  transition: opacity var(--pane-transition-duration) ease;
+}
+
+.workspace.split::after {
+  opacity: 1;
 }
 
 .editor-pane,
 .preview-pane {
   display: flex;
   flex-direction: column;
+  flex: 0 0 50%;
   min-width: 0;
   min-height: 0;
   height: 100%;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    width var(--pane-transition-duration) var(--pane-transition-easing),
+    flex-basis var(--pane-transition-duration) var(--pane-transition-easing),
+    opacity 180ms ease,
+    transform var(--pane-transition-duration) var(--pane-transition-easing);
+  will-change: width, flex-basis, opacity, transform;
 }
 
 .editor-pane {
@@ -88,6 +107,25 @@
   --editor-scrollbar-offset: 4px;
   --editor-scrollbar-track: transparent;
   --editor-scrollbar-thumb: #353535;
+  width: var(--editor-pane-width);
+  flex-basis: var(--editor-pane-width);
+}
+
+.preview-pane {
+  width: var(--preview-pane-width);
+  flex-basis: var(--preview-pane-width);
+}
+
+.workspace.editor .preview-pane {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(var(--pane-slide-distance));
+}
+
+.workspace.preview .editor-pane {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(calc(var(--pane-slide-distance) * -1));
 }
 
 .pane-header {
@@ -209,6 +247,14 @@
   background: #131313;
   font-family: 'Manrope', 'Segoe UI', Arial, sans-serif;
   overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace::after,
+  .editor-pane,
+  .preview-pane {
+    transition: none;
+  }
 }
 
 .preview-body {

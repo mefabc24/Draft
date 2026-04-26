@@ -9,9 +9,15 @@ type PreviewPaneProps = {
   markdown: string
   headerLeft: string
   headerRight: string[]
+  ariaHidden?: boolean
 }
 
-function PreviewPane({ markdown, headerLeft, headerRight }: PreviewPaneProps) {
+function PreviewPane({
+  markdown,
+  headerLeft,
+  headerRight,
+  ariaHidden = false,
+}: PreviewPaneProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const {
     previewScrollRef,
@@ -30,6 +36,7 @@ function PreviewPane({ markdown, headerLeft, headerRight }: PreviewPaneProps) {
       className="preview-pane"
       data-scrolled={isScrolled ? 'true' : 'false'}
       aria-label="Markdown Preview"
+      aria-hidden={ariaHidden}
     >
       <PaneHeader leftLabel={headerLeft} rightItems={headerRight} />
 
