@@ -6,41 +6,6 @@
   color: #e5e7eb;
 }
 
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  border-bottom: 1px solid #2f3545;
-  background: #0f172a;
-}
-
-.mode-buttons {
-  display: inline-flex;
-  gap: 8px;
-}
-
-.mode-buttons button {
-  border: 1px solid #3f4860;
-  background: #1f2937;
-  color: #e5e7eb;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.mode-buttons button.active {
-  border-color: #2563eb;
-  background: #1e3a8a;
-}
-
-.mode-label {
-  font-size: 13px;
-  color: #93c5fd;
-}
-
 .workspace {
   --pane-transition-duration: 240ms;
   --pane-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);

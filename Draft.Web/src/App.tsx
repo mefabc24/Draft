@@ -11,6 +11,12 @@ import {
 
 type ViewMode = 'editor' | 'split' | 'preview'
 
+declare global {
+  interface Window {
+    setDraftViewMode?: (mode: ViewMode) => void
+  }
+}
+
 const EDITOR_FONT_FAMILY = "'JetBrains Mono', Consolas, 'Courier New', monospace"
 const EDITOR_FONT_SIZE = 18
 const EDITOR_FONT_LOAD_TARGET = `${EDITOR_FONT_SIZE}px 'JetBrains Mono'`
@@ -230,6 +236,10 @@ function scrollEditorFromPointer(
   editor.setScrollTop(maxThumbTop === 0 ? 0 : (thumbTop / maxThumbTop) * maxScrollTop)
 }
 
+function isViewMode(value: string): value is ViewMode {
+  return value === 'editor' || value === 'split' || value === 'preview'
+}
+
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [markdown, setMarkdown] = useState(INITIAL_MARKDOWN)
@@ -277,6 +287,18 @@ function App() {
 
     setScrollbarFlag(scrollbarElement, 'dragging', dragging)
   }
+
+  useEffect(() => {
+    window.setDraftViewMode = (mode) => {
+      if (isViewMode(mode)) {
+        setViewMode(mode)
+      }
+    }
+
+    return () => {
+      window.setDraftViewMode = undefined
+    }
+  }, [])
 
   useEffect(() => {
     if (!editorHostRef.current) {
@@ -422,12 +444,6 @@ function App() {
     }
   }, [viewMode])
 
-  const modeLabel = useMemo(() => {
-    if (viewMode === 'editor') return 'Nur Editor'
-    if (viewMode === 'preview') return 'Nur Preview'
-    return 'Split 50/50'
-  }, [viewMode])
-
   const previewWordCount = useMemo(() => {
     const words = markdown.match(/\S+/g)
     return words ? words.length : 0
@@ -435,33 +451,6 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="toolbar">
-        <div className="mode-buttons" role="group" aria-label="Ansichtsmodus">
-          <button
-            type="button"
-            className={viewMode === 'editor' ? 'active' : ''}
-            onClick={() => setViewMode('editor')}
-          >
-            Editor
-          </button>
-          <button
-            type="button"
-            className={viewMode === 'split' ? 'active' : ''}
-            onClick={() => setViewMode('split')}
-          >
-            Split
-          </button>
-          <button
-            type="button"
-            className={viewMode === 'preview' ? 'active' : ''}
-            onClick={() => setViewMode('preview')}
-          >
-            Preview
-          </button>
-        </div>
-        <span className="mode-label">{modeLabel}</span>
-      </header>
-
       <section className={`workspace ${viewMode}`}>
         <div
           className="editor-pane"
