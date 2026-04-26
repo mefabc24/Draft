@@ -285,24 +285,3 @@
   touch-action: none;
 }
 
-.preview-pane h1,
-.preview-pane h2,
-.preview-pane h3 {
-  color: #f9fafb;
-}
-
-.preview-pane pre {
-  background: #111827;
-  border: 1px solid #2f3545;
-  border-radius: 8px;
-  padding: 12px;
-  overflow-x: auto;
-}
-
-.preview-pane code {
-  font-family: Consolas, 'Courier New', monospace;
-}
-
-.preview-pane a {
-  color: #60a5fa;
-}

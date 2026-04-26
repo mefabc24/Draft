@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import './PreviewContent.css'
 import PaneHeader from './PaneHeader'
 import { usePreviewScrollbar } from './usePreviewScrollbar'
 
