@@ -13,8 +13,6 @@
     <None Remove="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <None Remove="Assets\Icons\TestIcon.png" />
     <None Remove="Assets\Icons\TestIconHighRes.png" />
-    <None Remove="View\Workspace\Editor.html" />
-    <None Remove="View\Workspace\Preview.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +40,6 @@
 
   <ItemGroup>
     <Folder Include=".github\" />
-    <Folder Include="View\Workspace\" />
   </ItemGroup>
 
 </Project>
