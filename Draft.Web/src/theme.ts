@@ -1,10 +1,15 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import { language as baseMarkdownLanguage } from 'monaco-editor/esm/vs/basic-languages/markdown/markdown.js'
+import {
+    conf as baseMarkdownConfiguration,
+    language as baseMarkdownLanguage,
+} from 'monaco-editor/esm/vs/basic-languages/markdown/markdown.js'
 
 export const DRAFT_THEME_NAME = 'draft-theme'
 export const DRAFT_CURRENT_LINE_DECORATION_CLASS = 'editor-current-line'
 
 let markdownTokensProvider: monaco.IDisposable | null = null
+let markdownLanguageConfiguration: monaco.IDisposable | null = null
+let markdownLanguageRegistered = false
 
 function ensureDraftThemeStyles(lineHighlightBackground: string) {
     if (typeof document === 'undefined') {
@@ -30,6 +35,18 @@ function ensureDraftThemeStyles(lineHighlightBackground: string) {
 }
 
 function registerDraftMarkdownTokens() {
+    if (!markdownLanguageRegistered) {
+        monaco.languages.register({ id: 'markdown' })
+        markdownLanguageRegistered = true
+    }
+
+    if (!markdownLanguageConfiguration) {
+        markdownLanguageConfiguration = monaco.languages.setLanguageConfiguration(
+            'markdown',
+            baseMarkdownConfiguration,
+        )
+    }
+
     if (markdownTokensProvider) {
         return
     }
