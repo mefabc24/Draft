@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Draft.Helpers;
 
-namespace Draft.ViewModels
+namespace Draft.ViewModels;
+
+public class SettingsViewModel : BaseViewModel
 {
-    internal class SettingsViewModel
-    {
-    }
 }

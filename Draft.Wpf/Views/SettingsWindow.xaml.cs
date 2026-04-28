@@ -1,25 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Draft.ViewModels;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
-namespace Draft.View
+namespace Draft.Views;
+
+public partial class SettingsWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for SettingsWindow.xaml
-    /// </summary>
-    public partial class SettingsWindow : Window
+    public SettingsWindow()
     {
-        public SettingsWindow()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+        DataContext = new SettingsViewModel();
     }
 }

@@ -51,7 +51,7 @@
                     FontSize="10"
                     FontWeight="SemiBold"
                     Foreground="{StaticResource Brush.PrimaryText}"
-                    Text="1240 WORDS" />
+                    Text="{Binding WordCountDisplay}" />
             </StackPanel>
         </StackPanel>
 

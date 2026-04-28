@@ -69,7 +69,10 @@
                 Margin="8,0"
                 Orientation="Horizontal">
                 <!-- Open Button -->
-                <Button Style="{StaticResource ControlButton}">
+                <Button
+                    Command="{Binding OpenFileCommand}"
+                    Style="{StaticResource ControlButton}"
+                    ToolTip="Open">
                     <Path
                         Width="16"
                         Height="16"
@@ -78,7 +81,11 @@
                         Stretch="Uniform" />
                 </Button>
                 <!-- Save Button -->
-                <Button Margin="8,0" Style="{StaticResource ControlButton}">
+                <Button
+                    Margin="8,0"
+                    Command="{Binding SaveFileCommand}"
+                    Style="{StaticResource ControlButton}"
+                    ToolTip="Save">
                     <Path
                         Width="16"
                         Height="16"
@@ -87,7 +94,10 @@
                         Stretch="Uniform" />
                 </Button>
                 <!-- New File Button -->
-                <Button Style="{StaticResource ControlButton}">
+                <Button
+                    Command="{Binding NewFileCommand}"
+                    Style="{StaticResource ControlButton}"
+                    ToolTip="New">
                     <Path
                         Width="16"
                         Height="16"
@@ -104,7 +114,9 @@
             <Button
                 Grid.Column="6"
                 Margin="8,0,0,0"
-                Style="{StaticResource ControlButton}">
+                Command="{Binding OpenSettingsCommand}"
+                Style="{StaticResource ControlButton}"
+                ToolTip="Settings">
                 <Path
                     Width="16"
                     Height="16"
