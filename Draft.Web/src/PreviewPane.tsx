@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import './PreviewContent.css'
@@ -18,7 +17,6 @@ function PreviewPane({
   headerRight,
   ariaHidden = false,
 }: PreviewPaneProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
   const {
     previewScrollRef,
     previewContentRef,
@@ -34,7 +32,6 @@ function PreviewPane({
   return (
     <article
       className="preview-pane"
-      data-scrolled={isScrolled ? 'true' : 'false'}
       aria-label="Markdown Preview"
       aria-hidden={ariaHidden}
     >
@@ -44,9 +41,6 @@ function PreviewPane({
         <div
           ref={previewScrollRef}
           className="preview-scroll"
-          onScroll={(event) => {
-            setIsScrolled(event.currentTarget.scrollTop > 0)
-          }}
         >
           <div ref={previewContentRef} className="preview-content">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>

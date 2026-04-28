@@ -15,6 +15,11 @@ type WorkspaceModeMessage = {
   type: 'workspaceModeChanged'
   mode: ViewMode
 }
+type LoadDocumentMessage = {
+  type: 'loadDocument'
+  content: string
+  fileName: string
+}
 
 declare global {
   interface Window {
@@ -38,100 +43,12 @@ declare global {
 const EDITOR_FONT_FAMILY = "'JetBrains Mono', Consolas, 'Courier New', monospace"
 const EDITOR_FONT_SIZE = 18
 const EDITOR_FONT_LOAD_TARGET = `${EDITOR_FONT_SIZE}px 'JetBrains Mono'`
-const EDITOR_FILE_LABEL = 'drafts/lorem_ipsum.md'
 const EDITOR_SCROLL_SENSITIVITY = 1.5
 const MIN_EDITOR_THUMB_HEIGHT = 56
+const DEFAULT_FILE_NAME = 'untitled.md'
 const WORKSPACE_MODE_MESSAGE_TYPE = 'workspaceModeChanged'
-const INITIAL_MARKDOWN = `# Lorem Ipsum
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-
-## Lorem Ipsum Dolor
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-### Lorem Ipsum Sit
-
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-
-### Lorem Ipsum Amet
-
-1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-2. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-3. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-
-### Lorem Ipsum Elit
-
-- [x] Lorem ipsum dolor sit amet.
-- [ ] Lorem ipsum dolor sit amet.
-- [ ] Lorem ipsum dolor sit amet.
-
-> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
->
-> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
----
-
-### Lorem Ipsum Table
-
-| Lorem | Ipsum | Dolor |
-| --- | --- | --- |
-| Lorem ipsum | Dolor sit amet | Consectetur adipiscing |
-| Sed do eiusmod | Tempor incididunt | Ut labore dolore |
-| Magna aliqua | Lorem ipsum | Dolor sit amet |
-
-### Lorem Ipsum Code
-
-\`\`\`txt
-Lorem ipsum dolor sit amet
-Consectetur adipiscing elit
-Sed do eiusmod tempor incididunt
-Ut labore et dolore magna aliqua
-\`\`\`
-
-### Lorem Ipsum Inline
-
-Lorem ipsum \`dolor sit amet\` consectetur **adipiscing elit** sed do *eiusmod tempor* incididunt ut labore et dolore magna aliqua.
-
-### Lorem Ipsum Longform
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-#### Lorem Ipsum Quattuor
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-
-#### Lorem Ipsum Quinque
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-### Lorem Ipsum Finale
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-`
+const LOAD_DOCUMENT_MESSAGE_TYPE = 'loadDocument'
+const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
 
 const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
   top: 16,
@@ -259,7 +176,7 @@ function isViewMode(value: string): value is ViewMode {
   return value === 'editor' || value === 'split' || value === 'preview'
 }
 
-function parseWorkspaceModeMessage(data: unknown): WorkspaceModeMessage | null {
+function parseWebViewRecord(data: unknown): Record<string, unknown> | null {
   let message = data
 
   if (typeof message === 'string') {
@@ -274,7 +191,12 @@ function parseWorkspaceModeMessage(data: unknown): WorkspaceModeMessage | null {
     return null
   }
 
-  const record = message as Record<string, unknown>
+  return message as Record<string, unknown>
+}
+
+function parseWorkspaceModeMessage(
+  record: Record<string, unknown>,
+): WorkspaceModeMessage | null {
   const type = record.type ?? record.Type
   const mode = record.mode ?? record.Mode
 
@@ -288,6 +210,28 @@ function parseWorkspaceModeMessage(data: unknown): WorkspaceModeMessage | null {
   }
 }
 
+function parseLoadDocumentMessage(
+  record: Record<string, unknown>,
+): LoadDocumentMessage | null {
+  const type = record.type ?? record.Type
+  const content = record.content ?? record.Content
+  const fileName = record.fileName ?? record.FileName
+
+  if (
+    type !== LOAD_DOCUMENT_MESSAGE_TYPE ||
+    typeof content !== 'string' ||
+    typeof fileName !== 'string'
+  ) {
+    return null
+  }
+
+  return {
+    type: LOAD_DOCUMENT_MESSAGE_TYPE,
+    content,
+    fileName: fileName.trim() || DEFAULT_FILE_NAME,
+  }
+}
+
 function postWorkspaceMode(mode: ViewMode) {
   window.chrome?.webview?.postMessage(
     JSON.stringify({
@@ -297,11 +241,22 @@ function postWorkspaceMode(mode: ViewMode) {
   )
 }
 
+function postDocumentChanged(content: string) {
+  window.chrome?.webview?.postMessage(
+    JSON.stringify({
+      type: DOCUMENT_CHANGED_MESSAGE_TYPE,
+      content,
+    }),
+  )
+}
+
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('split')
-  const [markdown, setMarkdown] = useState(INITIAL_MARKDOWN)
-  const [isEditorScrolled, setIsEditorScrolled] = useState(false)
+  const [markdown, setMarkdown] = useState('')
+  const [fileName, setFileName] = useState(DEFAULT_FILE_NAME)
   const initialMarkdownRef = useRef(markdown)
+  const hasReceivedDocumentFromHostRef = useRef(false)
+  const isApplyingDocumentFromHostRef = useRef(false)
   const editorHostRef = useRef<HTMLDivElement | null>(null)
   const editorScrollbarRef = useRef<HTMLDivElement | null>(null)
   const editorThumbRef = useRef<HTMLDivElement | null>(null)
@@ -345,6 +300,28 @@ function App() {
     setScrollbarFlag(scrollbarElement, 'dragging', dragging)
   }
 
+  const applyDocumentFromHost = (message: LoadDocumentMessage) => {
+    const editor = editorInstanceRef.current
+
+    hasReceivedDocumentFromHostRef.current = true
+    isApplyingDocumentFromHostRef.current = true
+    initialMarkdownRef.current = message.content
+    setFileName(message.fileName)
+    setMarkdown(message.content)
+
+    if (editor) {
+      try {
+        if (editor.getValue() !== message.content) {
+          editor.setValue(message.content)
+        }
+      } finally {
+        isApplyingDocumentFromHostRef.current = false
+      }
+    } else {
+      isApplyingDocumentFromHostRef.current = false
+    }
+  }
+
   useEffect(() => {
     window.setDraftViewMode = (mode) => {
       if (isViewMode(mode)) {
@@ -365,10 +342,23 @@ function App() {
     }
 
     const handleWebViewMessage = (event: WebViewMessageEvent) => {
-      const message = parseWorkspaceModeMessage(event.data)
+      const record = parseWebViewRecord(event.data)
 
-      if (message) {
-        setViewMode(message.mode)
+      if (!record) {
+        return
+      }
+
+      const workspaceMessage = parseWorkspaceModeMessage(record)
+
+      if (workspaceMessage) {
+        setViewMode(workspaceMessage.mode)
+        return
+      }
+
+      const loadDocumentMessage = parseLoadDocumentMessage(record)
+
+      if (loadDocumentMessage) {
+        applyDocumentFromHost(loadDocumentMessage)
       }
     }
 
@@ -431,13 +421,20 @@ function App() {
     syncPersistentCurrentLine()
 
     const sub = editor.onDidChangeModelContent(() => {
-      setMarkdown(editor.getValue())
+      const nextMarkdown = editor.getValue()
+
+      setMarkdown(nextMarkdown)
+
+      if (isApplyingDocumentFromHostRef.current || !hasReceivedDocumentFromHostRef.current) {
+        return
+      }
+
+      postDocumentChanged(nextMarkdown)
     })
     const selectionSub = editor.onDidChangeCursorSelection(() => {
       syncPersistentCurrentLine()
     })
-    const scrollSub = editor.onDidScrollChange((event) => {
-      setIsEditorScrolled(event.scrollTop > 0)
+    const scrollSub = editor.onDidScrollChange(() => {
       syncEditorScrollbarPosition()
     })
     const layoutSub = editor.onDidLayoutChange(() => {
@@ -483,7 +480,6 @@ function App() {
       sub.dispose()
       editor.dispose()
       editorInstanceRef.current = null
-      setIsEditorScrolled(false)
     }
   }, [])
 
@@ -493,7 +489,12 @@ function App() {
 
     const currentValue = editor.getValue()
     if (currentValue !== markdown) {
-      editor.setValue(markdown)
+      isApplyingDocumentFromHostRef.current = true
+      try {
+        editor.setValue(markdown)
+      } finally {
+        isApplyingDocumentFromHostRef.current = false
+      }
     }
   }, [markdown])
 
@@ -537,12 +538,11 @@ function App() {
       <section className={`workspace ${viewMode}`}>
         <div
           className="editor-pane"
-          data-scrolled={isEditorScrolled ? 'true' : 'false'}
           aria-label="Markdown Editor"
           aria-hidden={viewMode === 'preview'}
         >
           <PaneHeader
-            leftLabel={EDITOR_FILE_LABEL}
+            leftLabel={fileName}
             rightItems={['UTF-8', 'Markdown']}
           />
           <div className="pane-body editor-body">

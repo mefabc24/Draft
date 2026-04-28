@@ -99,16 +99,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 48px;
+  padding: 8px 20px;
   border-bottom: 0px solid #1f1f1f;
   background: #131313;
   color: #8c8c8c;
   font-size: 12px;
-  line-height: 1;
+  line-height: 1.2;
   position: relative;
   z-index: 1;
-  transition: box-shadow 0.2s ease;
 }
 
 .pane-header-left {
@@ -225,11 +224,6 @@
 
 .preview-body {
   overflow: hidden;
-}
-
-.editor-pane[data-scrolled='true'] .pane-header,
-.preview-pane[data-scrolled='true'] .pane-header {
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.38);
 }
 
 .preview-scroll {
