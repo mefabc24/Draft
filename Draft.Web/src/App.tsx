@@ -10,10 +10,28 @@ import {
 } from './theme'
 
 type ViewMode = 'editor' | 'split' | 'preview'
+type WebViewMessageEvent = Event & { data: unknown }
+type WorkspaceModeMessage = {
+  type: 'workspaceModeChanged'
+  mode: ViewMode
+}
 
 declare global {
   interface Window {
     setDraftViewMode?: (mode: ViewMode) => void
+    chrome?: {
+      webview?: {
+        addEventListener: (
+          type: 'message',
+          listener: (event: WebViewMessageEvent) => void,
+        ) => void
+        removeEventListener: (
+          type: 'message',
+          listener: (event: WebViewMessageEvent) => void,
+        ) => void
+        postMessage: (message: string) => void
+      }
+    }
   }
 }
 
@@ -23,6 +41,7 @@ const EDITOR_FONT_LOAD_TARGET = `${EDITOR_FONT_SIZE}px 'JetBrains Mono'`
 const EDITOR_FILE_LABEL = 'drafts/lorem_ipsum.md'
 const EDITOR_SCROLL_SENSITIVITY = 1.5
 const MIN_EDITOR_THUMB_HEIGHT = 56
+const WORKSPACE_MODE_MESSAGE_TYPE = 'workspaceModeChanged'
 const INITIAL_MARKDOWN = `# Lorem Ipsum
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -240,6 +259,44 @@ function isViewMode(value: string): value is ViewMode {
   return value === 'editor' || value === 'split' || value === 'preview'
 }
 
+function parseWorkspaceModeMessage(data: unknown): WorkspaceModeMessage | null {
+  let message = data
+
+  if (typeof message === 'string') {
+    try {
+      message = JSON.parse(message) as unknown
+    } catch {
+      return null
+    }
+  }
+
+  if (!message || typeof message !== 'object') {
+    return null
+  }
+
+  const record = message as Record<string, unknown>
+  const type = record.type ?? record.Type
+  const mode = record.mode ?? record.Mode
+
+  if (type !== WORKSPACE_MODE_MESSAGE_TYPE || typeof mode !== 'string' || !isViewMode(mode)) {
+    return null
+  }
+
+  return {
+    type: WORKSPACE_MODE_MESSAGE_TYPE,
+    mode,
+  }
+}
+
+function postWorkspaceMode(mode: ViewMode) {
+  window.chrome?.webview?.postMessage(
+    JSON.stringify({
+      type: WORKSPACE_MODE_MESSAGE_TYPE,
+      mode,
+    }),
+  )
+}
+
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [markdown, setMarkdown] = useState(INITIAL_MARKDOWN)
@@ -299,6 +356,32 @@ function App() {
       window.setDraftViewMode = undefined
     }
   }, [])
+
+  useEffect(() => {
+    const webview = window.chrome?.webview
+
+    if (!webview) {
+      return
+    }
+
+    const handleWebViewMessage = (event: WebViewMessageEvent) => {
+      const message = parseWorkspaceModeMessage(event.data)
+
+      if (message) {
+        setViewMode(message.mode)
+      }
+    }
+
+    webview.addEventListener('message', handleWebViewMessage)
+
+    return () => {
+      webview.removeEventListener('message', handleWebViewMessage)
+    }
+  }, [])
+
+  useEffect(() => {
+    postWorkspaceMode(viewMode)
+  }, [viewMode])
 
   useEffect(() => {
     if (!editorHostRef.current) {

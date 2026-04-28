@@ -22,6 +22,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\Draft.Web\dist\**\*">
+      <Link>Web\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Assets\Fonts\JetBrainsMono-VariableFont_wght.ttf" />
     <Resource Include="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <Resource Include="Assets\Icons\TestIcon.png">

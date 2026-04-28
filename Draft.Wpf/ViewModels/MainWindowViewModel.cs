@@ -23,11 +23,20 @@ public class MainWindowViewModel : BaseViewModel
 
             _workspaceState = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(WorkspaceMode));
             OnPropertyChanged(nameof(IsEditorState));
             OnPropertyChanged(nameof(IsSplitState));
             OnPropertyChanged(nameof(IsPreviewState));
         }
     }
+
+    public string WorkspaceMode => WorkspaceState switch
+    {
+        WorkspaceState.Editor => "editor",
+        WorkspaceState.Split => "split",
+        WorkspaceState.Preview => "preview",
+        _ => "split",
+    };
 
     public bool IsEditorState
     {
@@ -62,5 +71,16 @@ public class MainWindowViewModel : BaseViewModel
     public MainWindowViewModel()
     {
         WorkspaceState = WorkspaceState.Split;
+    }
+
+    public void SetWorkspaceMode(string mode)
+    {
+        WorkspaceState = mode switch
+        {
+            "editor" => WorkspaceState.Editor,
+            "split" => WorkspaceState.Split,
+            "preview" => WorkspaceState.Preview,
+            _ => WorkspaceState,
+        };
     }
 }

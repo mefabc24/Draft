@@ -2,6 +2,7 @@
 using Microsoft.Web.WebView2.Core;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -11,6 +12,10 @@ public partial class MainWindow : Window
 {
     private const int WmGetMinMaxInfo = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
+    private const string WebHostName = "draft.local";
+    private const string WorkspaceModeMessageType = "workspaceModeChanged";
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private bool _isWebViewReady;
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     public MainWindow()
@@ -22,17 +27,19 @@ public partial class MainWindow : Window
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        string outputWebRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Web"));
-        string sourceWebRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Draft.Web", "dist"));
-        string webRootPath = Directory.Exists(sourceWebRootPath) ? sourceWebRootPath : outputWebRootPath;
+        string webRootPath = GetWebRootPath();
 
         await WorkspaceWebView.EnsureCoreWebView2Async();
 
-        WorkspaceWebView.CoreWebView2.SetVirtualHostNameToFolderMapping("app", webRootPath, CoreWebView2HostResourceAccessKind.Allow);
+        WorkspaceWebView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+            WebHostName,
+            webRootPath,
+            CoreWebView2HostResourceAccessKind.Allow);
+        WorkspaceWebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+        WorkspaceWebView.NavigationCompleted += WorkspaceWebView_NavigationCompleted;
 
-        WorkspaceWebView.Source = new Uri("https://app/index.html");
+        WorkspaceWebView.Source = new Uri($"https://{WebHostName}/index.html");
 
-        SyncWebViewWithWorkspaceState();
         if (ViewModel is not null)
         {
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -45,6 +52,13 @@ public partial class MainWindow : Window
         {
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
         }
+
+        if (WorkspaceWebView.CoreWebView2 is not null)
+        {
+            WorkspaceWebView.CoreWebView2.WebMessageReceived -= CoreWebView2_WebMessageReceived;
+        }
+
+        WorkspaceWebView.NavigationCompleted -= WorkspaceWebView_NavigationCompleted;
 
         base.OnClosed(e);
     }
@@ -59,21 +73,68 @@ public partial class MainWindow : Window
 
     private void SyncWebViewWithWorkspaceState()
     {
+        if (ViewModel is null || !_isWebViewReady)
+            return;
+
+        PostWorkspaceMode(ViewModel.WorkspaceMode);
+    }
+
+    private static string GetWebRootPath()
+    {
+        string outputWebRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Web"));
+        string sourceWebRootPath = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "..",
+            "..",
+            "..",
+            "..",
+            "Draft.Web",
+            "dist"));
+
+        return Directory.Exists(sourceWebRootPath) ? sourceWebRootPath : outputWebRootPath;
+    }
+
+    private void WorkspaceWebView_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+    {
+        _isWebViewReady = e.IsSuccess;
+        SyncWebViewWithWorkspaceState();
+    }
+
+    private void PostWorkspaceMode(string mode)
+    {
+        string message = JsonSerializer.Serialize(new WorkspaceModeMessage(
+            WorkspaceModeMessageType,
+            mode),
+            JsonOptions);
+
+        WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
+    }
+
+    private void CoreWebView2_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
+    {
         if (ViewModel is null)
             return;
 
-        switch (ViewModel.WorkspaceState)
+        string message = e.TryGetWebMessageAsString();
+
+        if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        WorkspaceModeMessage? parsedMessage;
+
+        try
         {
-            case WorkspaceState.Editor:
-                _ = WorkspaceWebView.CoreWebView2?.ExecuteScriptAsync("window.dispatchEvent(new CustomEvent('workspace-mode-changed', { detail: 'editor' }));");
-                break;
-            case WorkspaceState.Split:
-                _ = WorkspaceWebView.CoreWebView2?.ExecuteScriptAsync("window.dispatchEvent(new CustomEvent('workspace-mode-changed', { detail: 'split' }));");
-                break;
-            case WorkspaceState.Preview:
-                _ = WorkspaceWebView.CoreWebView2?.ExecuteScriptAsync("window.dispatchEvent(new CustomEvent('workspace-mode-changed', { detail: 'preview' }));");
-                break;
+            parsedMessage = JsonSerializer.Deserialize<WorkspaceModeMessage>(message, JsonOptions);
         }
+        catch (JsonException)
+        {
+            return;
+        }
+
+        if (parsedMessage?.Type != WorkspaceModeMessageType)
+            return;
+
+        ViewModel.SetWorkspaceMode(parsedMessage.Mode);
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -163,4 +224,6 @@ public partial class MainWindow : Window
         public int right;
         public int bottom;
     }
+
+    private sealed record WorkspaceModeMessage(string Type, string Mode);
 }
