@@ -2,7 +2,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #111827;
+  background: transparent;
   color: #e5e7eb;
 }
 
@@ -17,6 +17,7 @@
   display: flex;
   position: relative;
   overflow: hidden;
+  border-radius: 16px;
 }
 
 .workspace.editor {
