@@ -250,6 +250,119 @@ function postDocumentChanged(content: string) {
   )
 }
 
+function getWordNavigationCharacterKind(value: string) {
+  if (/\s/u.test(value)) {
+    return 'whitespace'
+  }
+
+  if (/[\p{L}\p{N}_]/u.test(value)) {
+    return 'word'
+  }
+
+  return 'symbol'
+}
+
+function getNextWordOffset(text: string, offset: number) {
+  if (offset >= text.length) {
+    return text.length
+  }
+
+  let nextOffset = offset
+  const currentKind = getWordNavigationCharacterKind(text[nextOffset])
+
+  while (
+    nextOffset < text.length &&
+    getWordNavigationCharacterKind(text[nextOffset]) === currentKind
+  ) {
+    nextOffset += 1
+  }
+
+  while (
+    nextOffset < text.length &&
+    getWordNavigationCharacterKind(text[nextOffset]) === 'whitespace'
+  ) {
+    nextOffset += 1
+  }
+
+  return nextOffset
+}
+
+function getPreviousWordOffset(text: string, offset: number) {
+  if (offset <= 0) {
+    return 0
+  }
+
+  let previousOffset = offset
+
+  while (
+    previousOffset > 0 &&
+    getWordNavigationCharacterKind(text[previousOffset - 1]) === 'whitespace'
+  ) {
+    previousOffset -= 1
+  }
+
+  if (previousOffset <= 0) {
+    return 0
+  }
+
+  const currentKind = getWordNavigationCharacterKind(text[previousOffset - 1])
+
+  while (
+    previousOffset > 0 &&
+    getWordNavigationCharacterKind(text[previousOffset - 1]) === currentKind
+  ) {
+    previousOffset -= 1
+  }
+
+  return previousOffset
+}
+
+function moveSelectionsByWord(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  direction: 'left' | 'right',
+  select: boolean,
+) {
+  const model = editor.getModel()
+  const selections = editor.getSelections()
+
+  if (!model || !selections || selections.length === 0) {
+    return
+  }
+
+  const text = model.getValue()
+  const nextSelections = selections.map((selection) => {
+    const activePosition = {
+      lineNumber: selection.positionLineNumber,
+      column: selection.positionColumn,
+    }
+    const activeOffset = model.getOffsetAt(activePosition)
+    const nextOffset =
+      direction === 'left'
+        ? getPreviousWordOffset(text, activeOffset)
+        : getNextWordOffset(text, activeOffset)
+    const nextPosition = model.getPositionAt(nextOffset)
+
+    if (!select) {
+      return new monaco.Selection(
+        nextPosition.lineNumber,
+        nextPosition.column,
+        nextPosition.lineNumber,
+        nextPosition.column,
+      )
+    }
+
+    return new monaco.Selection(
+      selection.selectionStartLineNumber,
+      selection.selectionStartColumn,
+      nextPosition.lineNumber,
+      nextPosition.column,
+    )
+  })
+
+  editor.setSelections(nextSelections)
+  editor.revealPositionInCenterIfOutsideViewport(nextSelections[0].getPosition())
+}
+
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [markdown, setMarkdown] = useState('')
@@ -420,6 +533,31 @@ function App() {
 
     syncPersistentCurrentLine()
 
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.LeftArrow,
+      () => {
+        moveSelectionsByWord(editor, 'left', false)
+      },
+    )
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.RightArrow,
+      () => {
+        moveSelectionsByWord(editor, 'right', false)
+      },
+    )
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.LeftArrow,
+      () => {
+        moveSelectionsByWord(editor, 'left', true)
+      },
+    )
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.RightArrow,
+      () => {
+        moveSelectionsByWord(editor, 'right', true)
+      },
+    )
+
     const sub = editor.onDidChangeModelContent(() => {
       const nextMarkdown = editor.getValue()
 
@@ -482,21 +620,6 @@ function App() {
       editorInstanceRef.current = null
     }
   }, [])
-
-  useEffect(() => {
-    const editor = editorInstanceRef.current
-    if (!editor) return
-
-    const currentValue = editor.getValue()
-    if (currentValue !== markdown) {
-      isApplyingDocumentFromHostRef.current = true
-      try {
-        editor.setValue(markdown)
-      } finally {
-        isApplyingDocumentFromHostRef.current = false
-      }
-    }
-  }, [markdown])
 
   useEffect(() => {
     const editor = editorInstanceRef.current
