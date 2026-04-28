@@ -8,6 +8,7 @@ export default defineConfig({
     react(),
     {
       name: 'file-protocol-html',
+      apply: 'build',
       transformIndexHtml: {
         order: 'post',
         handler(html) {
