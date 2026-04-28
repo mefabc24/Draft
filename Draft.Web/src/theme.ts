@@ -1,4 +1,4 @@
-import * as monaco from 'monaco-editor'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { language as baseMarkdownLanguage } from 'monaco-editor/esm/vs/basic-languages/markdown/markdown.js'
 
 export const DRAFT_THEME_NAME = 'draft-theme'

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import * as monaco from 'monaco-editor'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import './App.css'
 import PaneHeader from './PaneHeader'
 import PreviewPane from './PreviewPane'
