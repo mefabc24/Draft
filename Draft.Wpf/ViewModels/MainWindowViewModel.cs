@@ -49,6 +49,7 @@ public class MainWindowViewModel : BaseViewModel
 
             _currentContent = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(HasUnsavedWork));
         }
     }
 
@@ -64,6 +65,7 @@ public class MainWindowViewModel : BaseViewModel
             OnPropertyChanged();
             OnPropertyChanged(nameof(DisplayFileName));
             OnPropertyChanged(nameof(HasFilePath));
+            OnPropertyChanged(nameof(HasUnsavedWork));
         }
     }
 
@@ -104,10 +106,14 @@ public class MainWindowViewModel : BaseViewModel
 
             _isDirty = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(HasUnsavedWork));
         }
     }
 
     public bool HasFilePath => !string.IsNullOrWhiteSpace(CurrentFilePath);
+
+    public bool HasUnsavedWork => IsDirty
+        || (!HasFilePath && !string.IsNullOrEmpty(CurrentContent));
 
     public string WorkspaceMode => WorkspaceState switch
     {

@@ -4,18 +4,14 @@ using Microsoft.Win32;
 using Microsoft.Web.WebView2.Core;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Security;
 using System.Text.Json;
 using System.Windows;
-using System.Windows.Interop;
 
 namespace Draft.Views;
 
 public partial class MainWindow : Window
 {
-    private const int WmGetMinMaxInfo = 0x0024;
-    private const uint MonitorDefaultToNearest = 0x00000002;
     private const string WebHostName = "draft.local";
     private const string WorkspaceModeMessageType = "workspaceModeChanged";
     private const string LoadDocumentMessageType = "loadDocument";
@@ -43,6 +39,7 @@ public partial class MainWindow : Window
 
         await WorkspaceWebView.EnsureCoreWebView2Async();
 
+        WorkspaceWebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
         WorkspaceWebView.CoreWebView2.SetVirtualHostNameToFolderMapping(
             WebHostName,
             webRootPath,
@@ -215,7 +212,7 @@ public partial class MainWindow : Window
 
     private bool ConfirmCloseWithUnsavedChanges()
     {
-        if (!HasUnsavedWork())
+        if (ViewModel?.HasUnsavedWork != true)
             return true;
 
         MessageBoxResult result = MessageBox.Show(
@@ -373,57 +370,6 @@ public partial class MainWindow : Window
         ViewModel.UpdateContentFromWeb(content ?? string.Empty);
     }
 
-    protected override void OnSourceInitialized(EventArgs e)
-    {
-        base.OnSourceInitialized(e);
-
-        HwndSource? source = PresentationSource.FromVisual(this) as HwndSource;
-        source?.AddHook(WndProc);
-    }
-
-    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-    {
-        if (msg == WmGetMinMaxInfo)
-        {
-            UpdateMinMaxInfo(hwnd, lParam);
-            handled = true;
-        }
-
-        return IntPtr.Zero;
-    }
-
-    private static void UpdateMinMaxInfo(IntPtr hwnd, IntPtr lParam)
-    {
-        MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-
-        IntPtr monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
-        if (monitor != IntPtr.Zero)
-        {
-            MONITORINFO monitorInfo = new();
-            if (GetMonitorInfo(monitor, ref monitorInfo))
-            {
-                RECT workArea = monitorInfo.rcWork;
-                RECT monitorArea = monitorInfo.rcMonitor;
-
-                mmi.ptMaxPosition.x = Math.Abs(workArea.left - monitorArea.left);
-                mmi.ptMaxPosition.y = Math.Abs(workArea.top - monitorArea.top);
-                mmi.ptMaxSize.x = Math.Abs(workArea.right - workArea.left);
-                mmi.ptMaxSize.y = Math.Abs(workArea.bottom - workArea.top);
-            }
-        }
-
-        Marshal.StructureToPtr(mmi, lParam, true);
-    }
-
-    private bool HasUnsavedWork()
-    {
-        if (ViewModel is null)
-            return false;
-
-        return ViewModel.IsDirty
-            || (!ViewModel.HasFilePath && !string.IsNullOrEmpty(ViewModel.CurrentContent));
-    }
-
     private AppSessionState CaptureSessionState(string workspaceMode)
     {
         Rect bounds = WindowState == WindowState.Normal
@@ -459,52 +405,6 @@ public partial class MainWindow : Window
             or NotSupportedException
             or SecurityException
             or InvalidOperationException;
-    }
-
-    [DllImport("user32.dll")]
-    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct POINT
-    {
-        public int x;
-        public int y;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MINMAXINFO
-    {
-        public POINT ptReserved;
-        public POINT ptMaxSize;
-        public POINT ptMaxPosition;
-        public POINT ptMinTrackSize;
-        public POINT ptMaxTrackSize;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MONITORINFO
-    {
-        public int cbSize;
-        public RECT rcMonitor;
-        public RECT rcWork;
-        public int dwFlags;
-
-        public MONITORINFO()
-        {
-            cbSize = Marshal.SizeOf<MONITORINFO>();
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct RECT
-    {
-        public int left;
-        public int top;
-        public int right;
-        public int bottom;
     }
 
     private sealed record WorkspaceModeMessage(string Type, string Mode);
