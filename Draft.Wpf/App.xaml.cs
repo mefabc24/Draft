@@ -14,6 +14,13 @@ public partial class App : Application
         base.OnStartup(e);
 
         MainWindowViewModel viewModel = new();
+        AppSessionStateStore.TryLoad(out AppSessionState? sessionState);
+
+        if (!string.IsNullOrWhiteSpace(sessionState?.WorkspaceMode))
+        {
+            viewModel.SetWorkspaceMode(sessionState.WorkspaceMode);
+        }
+
         string? startupFilePath = GetStartupFilePath(e.Args);
 
         if (startupFilePath is not null)
@@ -33,6 +40,11 @@ public partial class App : Application
         }
 
         MainWindow window = new(viewModel);
+        if (sessionState is not null)
+        {
+            window.ApplySessionState(sessionState);
+        }
+
         MainWindow = window;
         window.Show();
     }

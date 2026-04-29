@@ -70,6 +70,22 @@ public partial class MainWindow : Window
         base.OnClosed(e);
     }
 
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        if (!ConfirmCloseWithUnsavedChanges())
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        if (ViewModel is not null)
+        {
+            AppSessionStateStore.TrySave(CaptureSessionState(ViewModel.WorkspaceMode));
+        }
+
+        base.OnClosing(e);
+    }
+
     private void SubscribeToViewModel(MainWindowViewModel viewModel)
     {
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -197,6 +213,21 @@ public partial class MainWindow : Window
         return result == MessageBoxResult.Yes;
     }
 
+    private bool ConfirmCloseWithUnsavedChanges()
+    {
+        if (!HasUnsavedWork())
+            return true;
+
+        MessageBoxResult result = MessageBox.Show(
+            this,
+            "This file has unsaved changes or has not been saved yet.\n\nIf you close now, all unsaved work will be lost.\n\nDo you really want to close Draft?",
+            "Unsaved Changes",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        return result == MessageBoxResult.Yes;
+    }
+
     private void ShowFileOperationError(string title, Exception ex)
     {
         MessageBox.Show(
@@ -242,6 +273,24 @@ public partial class MainWindow : Window
             "dist"));
 
         return Directory.Exists(sourceWebRootPath) ? sourceWebRootPath : outputWebRootPath;
+    }
+
+    public void ApplySessionState(AppSessionState sessionState)
+    {
+        Rect bounds = new(
+            sessionState.WindowLeft,
+            sessionState.WindowTop,
+            sessionState.WindowWidth,
+            sessionState.WindowHeight);
+
+        if (!IsValidWindowBounds(bounds))
+            return;
+
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Left = bounds.Left;
+        Top = bounds.Top;
+        Width = bounds.Width;
+        Height = bounds.Height;
     }
 
     private void WorkspaceWebView_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
@@ -364,6 +413,43 @@ public partial class MainWindow : Window
         }
 
         Marshal.StructureToPtr(mmi, lParam, true);
+    }
+
+    private bool HasUnsavedWork()
+    {
+        if (ViewModel is null)
+            return false;
+
+        return ViewModel.IsDirty
+            || (!ViewModel.HasFilePath && !string.IsNullOrEmpty(ViewModel.CurrentContent));
+    }
+
+    private AppSessionState CaptureSessionState(string workspaceMode)
+    {
+        Rect bounds = WindowState == WindowState.Normal
+            ? new Rect(Left, Top, Width, Height)
+            : RestoreBounds;
+
+        return new AppSessionState(
+            bounds.Width,
+            bounds.Height,
+            bounds.Left,
+            bounds.Top,
+            workspaceMode);
+    }
+
+    private static bool IsValidWindowBounds(Rect bounds)
+    {
+        if (bounds.Width < 480 || bounds.Height < 320)
+            return false;
+
+        Rect virtualScreen = new(
+            SystemParameters.VirtualScreenLeft,
+            SystemParameters.VirtualScreenTop,
+            SystemParameters.VirtualScreenWidth,
+            SystemParameters.VirtualScreenHeight);
+
+        return bounds.IntersectsWith(virtualScreen);
     }
 
     private static bool IsFileOperationException(Exception ex)
