@@ -250,7 +250,9 @@ function postDocumentChanged(content: string) {
   )
 }
 
-function getWordNavigationCharacterKind(value: string) {
+type WordNavigationCharacterKind = 'whitespace' | 'word' | 'symbol'
+
+function getWordNavigationCharacterKind(value: string): WordNavigationCharacterKind {
   if (/\s/u.test(value)) {
     return 'whitespace'
   }
@@ -270,16 +272,20 @@ function getNextWordOffset(text: string, offset: number) {
   let nextOffset = offset
   const currentKind = getWordNavigationCharacterKind(text[nextOffset])
 
-  while (
-    nextOffset < text.length &&
-    getWordNavigationCharacterKind(text[nextOffset]) === currentKind
-  ) {
-    nextOffset += 1
+  if (currentKind === 'whitespace') {
+    while (
+      nextOffset < text.length &&
+      getWordNavigationCharacterKind(text[nextOffset]) === 'whitespace'
+    ) {
+      nextOffset += 1
+    }
+
+    return nextOffset
   }
 
   while (
     nextOffset < text.length &&
-    getWordNavigationCharacterKind(text[nextOffset]) === 'whitespace'
+    getWordNavigationCharacterKind(text[nextOffset]) === currentKind
   ) {
     nextOffset += 1
   }
@@ -293,23 +299,22 @@ function getPreviousWordOffset(text: string, offset: number) {
   }
 
   let previousOffset = offset
+  const previousKind = getWordNavigationCharacterKind(text[previousOffset - 1])
+
+  if (previousKind === 'whitespace') {
+    while (
+      previousOffset > 0 &&
+      getWordNavigationCharacterKind(text[previousOffset - 1]) === 'whitespace'
+    ) {
+      previousOffset -= 1
+    }
+
+    return previousOffset
+  }
 
   while (
     previousOffset > 0 &&
-    getWordNavigationCharacterKind(text[previousOffset - 1]) === 'whitespace'
-  ) {
-    previousOffset -= 1
-  }
-
-  if (previousOffset <= 0) {
-    return 0
-  }
-
-  const currentKind = getWordNavigationCharacterKind(text[previousOffset - 1])
-
-  while (
-    previousOffset > 0 &&
-    getWordNavigationCharacterKind(text[previousOffset - 1]) === currentKind
+    getWordNavigationCharacterKind(text[previousOffset - 1]) === previousKind
   ) {
     previousOffset -= 1
   }
@@ -514,6 +519,7 @@ function App() {
       snippetSuggestions: 'none',
       overviewRulerLanes: 0,
       overviewRulerBorder: false,
+      contextmenu: false,
       cursorWidth: 2,
       cursorHeight: 22,
       mouseWheelScrollSensitivity: EDITOR_SCROLL_SENSITIVITY,
@@ -657,7 +663,7 @@ function App() {
   }, [markdown])
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" onContextMenu={(event) => event.preventDefault()}>
       <section className={`workspace ${viewMode}`}>
         <div
           className="editor-pane"
