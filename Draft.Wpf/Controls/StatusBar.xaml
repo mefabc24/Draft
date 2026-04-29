@@ -51,7 +51,7 @@
                     FontSize="10"
                     FontWeight="SemiBold"
                     Foreground="{StaticResource Brush.PrimaryText}"
-                    Text="{Binding WordCountDisplay}" />
+                    Text="{Binding WordCountDisplay, FallbackValue='1240 WORDS'}" />
             </StackPanel>
         </StackPanel>
 
@@ -62,7 +62,7 @@
                     Width="16"
                     Height="16"
                     Margin="0,0,8,0"
-                    Data="{StaticResource Icons.Sync}"
+                    Data="{StaticResource Icon.Sync}"
                     Fill="{StaticResource Brush.PrimaryText}"
                     Stretch="Uniform" />
                 <TextBlock
