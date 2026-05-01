@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Fonts\CascadiaMono-VariableFont_wght.ttf" />
+    <None Remove="Assets\Fonts\consolas.ttf" />
     <None Remove="Assets\Fonts\JetBrainsMono-VariableFont_wght.ttf" />
     <None Remove="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <None Remove="Assets\Fonts\SpaceGrotesk-VariableFont_wght.ttf" />
@@ -30,6 +32,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\Fonts\CascadiaMono-VariableFont_wght.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Fonts\consolas.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\Fonts\JetBrainsMono-VariableFont_wght.ttf" />
     <Resource Include="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <Resource Include="Assets\Fonts\SpaceGrotesk-VariableFont_wght.ttf" />

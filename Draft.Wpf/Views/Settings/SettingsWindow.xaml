@@ -7,7 +7,7 @@
     xmlns:settings="clr-namespace:Draft.Views.Settings"
     xmlns:settingsVm="clr-namespace:Draft.ViewModels"
     Title="Settings"
-    Width="800"
+    Width="900"
     Height="600"
     AllowsTransparency="True"
     Background="Transparent"
@@ -48,7 +48,7 @@
         CornerRadius="8">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="250" />
                 <ColumnDefinition Width="1" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
@@ -190,6 +190,11 @@
                     </Grid>
 
                     <ContentControl Grid.Row="1" Content="{Binding CurrentSettingsPage}" />
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Height="30">
+                        <Button Content="Apply Changes" Style="{StaticResource SettingsResetButton}" VerticalAlignment="Stretch" Padding="24,0" Margin="0,0,16,0"/>
+                        <Button Content="Apply Changes" Style="{StaticResource SettingsApplyButton}" VerticalAlignment="Stretch" Padding="24,0"/>
+                    </StackPanel>
                 </Grid>
             </Border>
 

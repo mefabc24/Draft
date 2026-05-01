@@ -19,12 +19,6 @@
         Background="{StaticResource Brush.Background.Window}">
         <StackPanel VerticalAlignment="Top">
             <TextBlock
-                FontFamily="{StaticResource Font.Manrope}"
-                FontSize="32"
-                FontWeight="Bold"
-                Foreground="{StaticResource Brush.PrimaryAccent}"
-                Text="{Binding Title, FallbackValue=Editor}" />
-            <TextBlock
                 MaxWidth="420"
                 Margin="0,8,0,0"
                 HorizontalAlignment="Left"
