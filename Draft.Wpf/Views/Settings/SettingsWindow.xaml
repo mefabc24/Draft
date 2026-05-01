@@ -14,18 +14,24 @@
     WindowStyle="None"
     mc:Ignorable="d">
     <Window.Resources>
-        <DataTemplate DataType="{x:Type settingsVm:GeneralSettingsPageViewModel}">
-            <settings:GeneralSettingsView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type settingsVm:EditorSettingsPageViewModel}">
-            <settings:EditorSettingsView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type settingsVm:PreviewSettingsPageViewModel}">
-            <settings:PreviewSettingsView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type settingsVm:AppearanceSettingsPageViewModel}">
-            <settings:AppearanceSettingsView />
-        </DataTemplate>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate DataType="{x:Type settingsVm:GeneralSettingsPageViewModel}">
+                <settings:GeneralSettingsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type settingsVm:EditorSettingsPageViewModel}">
+                <settings:EditorSettingsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type settingsVm:PreviewSettingsPageViewModel}">
+                <settings:PreviewSettingsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type settingsVm:AppearanceSettingsPageViewModel}">
+                <settings:AppearanceSettingsView />
+            </DataTemplate>
+        </ResourceDictionary>
     </Window.Resources>
 
     <WindowChrome.WindowChrome>
@@ -67,7 +73,7 @@
                             FontFamily="{StaticResource Font.Inter}"
                             FontSize="11"
                             FontWeight="Regular"
-                            Foreground="#ACABAA"
+                            Foreground="{StaticResource Brush.Text.Secondary}"
                             Text="Configuration" />
                     </StackPanel>
 
@@ -143,7 +149,7 @@
             </Border>
 
             <!-- Divider -->
-            <Border Grid.Column="1" Background="#1C1C1C" />
+            <Border Grid.Column="1" Background="{StaticResource Brush.Border.Default}" />
 
 
             <!-- Content -->
@@ -165,8 +171,8 @@
                             FontFamily="{StaticResource Font.Manrope}"
                             FontSize="32"
                             FontWeight="Bold"
-                            Foreground="#E2E2E6"
-                            Text="General Settings" />
+                            Foreground="{StaticResource Brush.Text.Primary}"
+                            Text="{Binding CurrentSettingsPage.Title}" />
 
                         <!-- Close Button -->
                         <Button

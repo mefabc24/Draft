@@ -2,14 +2,6 @@ using Draft.Helpers;
 
 namespace Draft.ViewModels;
 
-public enum SettingsPage
-{
-    General,
-    Editor,
-    Preview,
-    Appearance
-}
-
 public class SettingsViewModel : BaseViewModel
 {
     private readonly GeneralSettingsPageViewModel _generalSettingsPage = new();
@@ -96,50 +88,5 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsEditorSettingsSelected));
         OnPropertyChanged(nameof(IsPreviewSettingsSelected));
         OnPropertyChanged(nameof(IsAppearanceSettingsSelected));
-    }
-}
-
-public abstract class SettingsPageViewModel
-{
-    protected SettingsPageViewModel(string title, string description)
-    {
-        Title = title;
-        Description = description;
-    }
-
-    public string Title { get; }
-
-    public string Description { get; }
-}
-
-public sealed class GeneralSettingsPageViewModel : SettingsPageViewModel
-{
-    public GeneralSettingsPageViewModel()
-        : base("General", "General application preferences will appear here.")
-    {
-    }
-}
-
-public sealed class EditorSettingsPageViewModel : SettingsPageViewModel
-{
-    public EditorSettingsPageViewModel()
-        : base("Editor", "Editor behavior, writing defaults, and text editing options will appear here.")
-    {
-    }
-}
-
-public sealed class PreviewSettingsPageViewModel : SettingsPageViewModel
-{
-    public PreviewSettingsPageViewModel()
-        : base("Preview", "Preview rendering and document display options will appear here.")
-    {
-    }
-}
-
-public sealed class AppearanceSettingsPageViewModel : SettingsPageViewModel
-{
-    public AppearanceSettingsPageViewModel()
-        : base("Appearance", "Theme, typography, and interface appearance options will appear here.")
-    {
     }
 }

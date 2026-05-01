@@ -12,10 +12,6 @@
 
                 <ResourceDictionary Source="/Styles/Components/ControlBarButton.xaml" />
                 <ResourceDictionary Source="/Styles/Components/WindowControlButton.xaml" />
-                <ResourceDictionary Source="/Styles/Components/SettingsCheckBox.xaml" />
-                <ResourceDictionary Source="/Styles/Components/SettingsComboBox.xaml" />
-                <ResourceDictionary Source="/Styles/Components/SettingsTextBox.xaml" />
-                <ResourceDictionary Source="/Styles/Components/SettingsButtons.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -32,7 +32,7 @@
                 Style="{StaticResource LogoButton}" />
 
             <!-- Divider -->
-            <Border Grid.Column="1" Background="#1F2020" />
+            <Border Grid.Column="1" Background="{StaticResource Brush.Background.Hover}" />
 
             <!-- Workspace Mode Buttons -->
             <StackPanel
@@ -61,7 +61,7 @@
             </StackPanel>
 
             <!-- Divider -->
-            <Border Grid.Column="3" Background="#1F2020" />
+            <Border Grid.Column="3" Background="{StaticResource Brush.Background.Hover}" />
 
             <!-- Action Buttons -->
             <StackPanel
@@ -108,7 +108,7 @@
             </StackPanel>
 
             <!-- Divider -->
-            <Border Grid.Column="5" Background="#1F2020" />
+            <Border Grid.Column="5" Background="{StaticResource Brush.Background.Hover}" />
 
             <!-- Settings Button -->
             <Button

@@ -77,8 +77,8 @@
                 <Border
                     Grid.Row="1"
                     Padding="24,8"
-                    Background="#131313"
-                    BorderBrush="#1A1A1A"
+                    Background="{StaticResource Brush.Background.Surface}"
+                    BorderBrush="{StaticResource Brush.Border.Subtle}"
                     BorderThickness="0,1,0,0"
                     CornerRadius="0,0,8,8">
                     <uc:StatusBar />

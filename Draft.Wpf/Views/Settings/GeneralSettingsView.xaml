@@ -8,7 +8,15 @@
     d:DesignHeight="500"
     d:DesignWidth="540"
     mc:Ignorable="d">
-    <Border Background="Black">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource Brush.Background.Window}">
         <StackPanel VerticalAlignment="Top">
             <TextBlock
                 FontFamily="{StaticResource Font.Manrope}"

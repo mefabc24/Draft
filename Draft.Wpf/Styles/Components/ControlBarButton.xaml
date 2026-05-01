@@ -26,7 +26,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter Property="Background" Value="#1F2020" />
+                            <Setter Property="Background" Value="{StaticResource Brush.Background.Hover}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

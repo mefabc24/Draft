@@ -8,10 +8,18 @@
     d:DesignHeight="500"
     d:DesignWidth="540"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <Border
-        Background="Black">
+        Background="{StaticResource Brush.Background.Window}">
         <StackPanel VerticalAlignment="Top">
-            <uc:SectionHeader />
+            <uc:SectionHeader Title="{Binding Title, FallbackValue=Appearance}" />
         </StackPanel>
     </Border>
 </UserControl>
