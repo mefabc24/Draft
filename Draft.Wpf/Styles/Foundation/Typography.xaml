@@ -2,4 +2,5 @@
     <FontFamily x:Key="Font.Manrope">/Assets/Fonts/#Manrope</FontFamily>
     <FontFamily x:Key="Font.JetbrainsMono">/Assets/Fonts/#JetBrains Mono</FontFamily>
     <FontFamily x:Key="Font.SpaceGrotesk">/Assets/Fonts/#Space Grotesk</FontFamily>
+    <FontFamily x:Key="Font.Inter">/Assets/Fonts/#Inter</FontFamily>
 </ResourceDictionary>

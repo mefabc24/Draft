@@ -8,7 +8,7 @@
         <Setter Property="Padding" Value="12,0" />
         <Setter Property="Height" Value="40" />
         <Setter Property="FontFamily" Value="{StaticResource Font.SpaceGrotesk}" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBoxItem">
@@ -30,11 +30,11 @@
                             <Path
                                 x:Name="SelectedCheckmark"
                                 Grid.Column="1"
-                                Width="16"
-                                Height="16"
+                                Width="12"
+                                Height="12"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center"
-                                Data="{StaticResource Checkmark}"
+                                Data="{StaticResource Icon.Checkmark}"
                                 Fill="#A5C8FF"
                                 Stretch="Uniform"
                                 Visibility="Collapsed" />
@@ -67,7 +67,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{StaticResource Font.SpaceGrotesk}" />
         <Setter Property="FontWeight" Value="Regular"/>
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ItemContainerStyle" Value="{StaticResource SettingsComboBoxItem}" />
@@ -164,7 +164,7 @@
 
                                 <ScrollViewer
                                     MaxHeight="240"
-                                    Padding="0,6"
+                                    Padding="0,4"
                                     CanContentScroll="True">
 
                                     <ItemsPresenter />
