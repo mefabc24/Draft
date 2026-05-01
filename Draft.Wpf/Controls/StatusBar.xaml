@@ -15,7 +15,7 @@
             <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
 
-        <!--  Left  -->
+        <!-- Left -->
         <StackPanel Grid.Column="0" Orientation="Horizontal">
             <StackPanel
                 Height="16"
@@ -55,7 +55,7 @@
             </StackPanel>
         </StackPanel>
 
-        <!--  Right  -->
+        <!-- Right -->
         <StackPanel Grid.Column="2" Orientation="Horizontal">
             <StackPanel Height="16" Orientation="Horizontal">
                 <Path

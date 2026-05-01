@@ -1,0 +1,34 @@
+<UserControl
+    x:Class="Draft.Wpf.Controls.Settings.SettingFieldCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Draft.Wpf.Controls.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Border
+        Padding="0,16"
+        HorizontalAlignment="Stretch"
+        BorderThickness="1">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                FontFamily="{StaticResource Font.SpaceGrotesk}"
+                FontSize="14"
+                FontWeight="SemiBold"
+                Foreground="{StaticResource Brush.EditorText}"
+                Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:SettingFieldCard}}}"
+                TextWrapping="Wrap" />
+
+            <ContentPresenter
+                Grid.Row="1"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Stretch"
+                Content="{Binding CardContent, RelativeSource={RelativeSource AncestorType={x:Type local:SettingFieldCard}}}" />
+        </Grid>
+    </Border>
+</UserControl>

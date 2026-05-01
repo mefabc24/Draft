@@ -4,9 +4,192 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:settings="clr-namespace:Draft.Views.Settings"
+    xmlns:settingsVm="clr-namespace:Draft.ViewModels"
     Title="Settings"
-    Width="560"
-    Height="420"
+    Width="800"
+    Height="600"
+    AllowsTransparency="True"
+    Background="Transparent"
+    WindowStyle="None"
     mc:Ignorable="d">
-    <Grid />
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type settingsVm:GeneralSettingsPageViewModel}">
+            <settings:GeneralSettingsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type settingsVm:EditorSettingsPageViewModel}">
+            <settings:EditorSettingsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type settingsVm:PreviewSettingsPageViewModel}">
+            <settings:PreviewSettingsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type settingsVm:AppearanceSettingsPageViewModel}">
+            <settings:AppearanceSettingsView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="48"
+            GlassFrameThickness="0"
+            ResizeBorderThickness="6" />
+    </WindowChrome.WindowChrome>
+
+    <Border
+        Background="{StaticResource Brush.WindowBG}"
+        BorderBrush="{StaticResource Brush.PrimaryAccent}"
+        BorderThickness="1"
+        CornerRadius="8">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="1" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Side Menu -->
+            <Border Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <TextBlock
+                            FontFamily="{StaticResource Font.Manrope}"
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource Brush.PrimaryAccent}"
+                            Text="Settings" />
+                        <TextBlock
+                            FontFamily="{StaticResource Font.Inter}"
+                            FontSize="11"
+                            FontWeight="Regular"
+                            Foreground="#ACABAA"
+                            Text="Configuration" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Margin="0,32">
+                        <RadioButton
+                            Margin="0,0,0,4"
+                            Height="36"
+                            GroupName="SettingsMenu"
+                            IsChecked="{Binding IsGeneralSettingsSelected, Mode=TwoWay}"
+                            Style="{StaticResource SettingsMenuRadioButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path
+                                    Width="16"
+                                    Height="16"
+                                    Data="{StaticResource Icon.Settings}"
+                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                    Stretch="Uniform" />
+                                <TextBlock Margin="12,0,0,0" Text="General" />
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton
+                            Margin="0,0,0,4"
+                            Height="36"
+                            GroupName="SettingsMenu"
+                            IsChecked="{Binding IsEditorSettingsSelected, Mode=TwoWay}"
+                            Style="{StaticResource SettingsMenuRadioButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path
+                                    Width="16"
+                                    Height="16"
+                                    Data="{StaticResource Icon.Settings}"
+                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                    Stretch="Uniform" />
+                                <TextBlock Margin="12,0,0,0" Text="Editor" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton
+                            Margin="0,0,0,4"
+                            GroupName="SettingsMenu"
+                            Height="36"
+                            IsChecked="{Binding IsPreviewSettingsSelected, Mode=TwoWay}"
+                            Style="{StaticResource SettingsMenuRadioButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path
+                                    Width="16"
+                                    Height="16"
+                                    Data="{StaticResource Icon.Settings}"
+                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                    Stretch="Uniform" />
+                                <TextBlock Margin="12,0,0,0" Text="Preview" />
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+
+                    <RadioButton
+                        Grid.Row="2"
+                        Height="36"
+                        GroupName="SettingsMenu"
+                        IsChecked="{Binding IsAppearanceSettingsSelected, Mode=TwoWay}"
+                        Style="{StaticResource SettingsMenuRadioButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <Path
+                                Width="16"
+                                Height="16"
+                                Data="{StaticResource Icon.Settings}"
+                                Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                Stretch="Uniform" />
+                            <TextBlock Margin="12,0,0,0" Text="Appearance" />
+                        </StackPanel>
+                    </RadioButton>
+                </Grid>
+            </Border>
+
+            <!-- Divider -->
+            <Border Grid.Column="1" Background="#1C1C1C" />
+
+
+            <!-- Content -->
+            <Border Grid.Column="2" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock
+                            FontFamily="{StaticResource Font.Manrope}"
+                            FontSize="32"
+                            FontWeight="Bold"
+                            Foreground="#E2E2E6"
+                            Text="General Settings" />
+
+                        <!-- Close Button -->
+                        <Button
+                            Grid.Column="1" WindowChrome.IsHitTestVisibleInChrome="True"
+                            VerticalAlignment="Top"
+                            Click="CloseButton_Click"
+                            Style="{StaticResource SettingsCloseButton}">
+                            <Path
+                                Width="8"
+                                Height="8"
+                                Data="{StaticResource Icon.Close}"
+                                Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                Stretch="Uniform" />
+                        </Button>
+                    </Grid>
+
+                    <ContentControl Grid.Row="1" Content="{Binding CurrentSettingsPage}" />
+                </Grid>
+            </Border>
+
+
+
+        </Grid>
+    </Border>
+
 </Window>
