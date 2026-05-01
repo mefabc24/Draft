@@ -1,0 +1,69 @@
+<UserControl
+    x:Class="Draft.Views.Settings.GeneralSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:settings="clr-namespace:Draft.Wpf.Controls.Settings"
+    d:DesignHeight="500"
+    d:DesignWidth="540"
+    mc:Ignorable="d">
+    <Border Background="Black">
+        <StackPanel VerticalAlignment="Top">
+            <TextBlock
+                FontFamily="{StaticResource Font.Manrope}"
+                FontSize="32"
+                FontWeight="Bold"
+                Foreground="{StaticResource Brush.PrimaryAccent}"
+                Text="Lorem ipsum" />
+            <TextBlock
+                MaxWidth="420"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Left"
+                FontFamily="{StaticResource Font.Inter}"
+                FontSize="14"
+                Foreground="{StaticResource Brush.PrimaryText}"
+                Text="Dolor sit amet, consectetur adipiscing elit."
+                TextWrapping="Wrap" />
+
+            <StackPanel Margin="0,32,0,0">
+                <settings:SettingCard
+                    Title="Lorem ipsum"
+                    Margin="0,0,0,12"
+                    Description="Dolor sit amet, consectetur adipiscing elit">
+                    <CheckBox Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Sed do eiusmod"
+                    Margin="0,0,0,16"
+                    Description="Tempor incididunt ut labore et dolore magna aliqua">
+                    <CheckBox Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingFieldCard Title="Ut enim ad minim">
+                    <Grid Height="36">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            Grid.Column="0"
+                            Width="Auto"
+                            HorizontalAlignment="Stretch"
+                            Style="{StaticResource SettingsTextBox}"
+                            Text="Lorem ipsum dolor sit amet" />
+
+                        <Button
+                            Grid.Column="1"
+                            Margin="8,0,0,0"
+                            Padding="16,0"
+                            Content="Browse"
+                            Style="{StaticResource SettingButton}" />
+                    </Grid>
+                </settings:SettingFieldCard>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

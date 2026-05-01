@@ -18,7 +18,7 @@
     <!--  Window Logic: Native Window Chrome behavior  -->
     <WindowChrome.WindowChrome>
         <WindowChrome
-            CaptionHeight="40"
+            CaptionHeight="96"
             GlassFrameThickness="0"
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
@@ -58,7 +58,7 @@
                             BorderThickness="1"
                             CornerRadius="16">
                             <Grid>
-                                <wv2:WebView2 x:Name="WorkspaceWebView" DefaultBackgroundColor="transparent"/>
+                                <wv2:WebView2 x:Name="WorkspaceWebView" DefaultBackgroundColor="transparent" />
 
                                 <Grid
                                     x:Name="WorkspaceLoaderOverlay"

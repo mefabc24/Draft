@@ -10,4 +10,9 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         DataContext = new SettingsViewModel();
     }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
 }
