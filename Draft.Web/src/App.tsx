@@ -22,6 +22,7 @@ type LoadDocumentMessage = {
 }
 type ShowWhitespaceCharacters = 'Always' | 'Never' | 'Highlighted Only'
 type CursorStyle = 'Line' | 'Block' | 'Underline'
+type PreviewScrollSyncMode = 'Off' | 'EditorToPreview' | 'PreviewToEditor' | 'TwoWay'
 type DraftEditorSettings = {
   editorFontFamily: string
   editorFontSize: number
@@ -38,6 +39,8 @@ type DraftEditorSettings = {
   markdownSyntaxHighlighting: boolean
   cursorStyle: CursorStyle
   cursorBlinking: boolean
+  previewScrollSyncMode: PreviewScrollSyncMode
+  scrollPreviewToEditedSection: boolean
 }
 type SettingsChangedMessage = {
   type: 'settingsChanged'
@@ -86,6 +89,8 @@ const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
   markdownSyntaxHighlighting: true,
   cursorStyle: 'Line',
   cursorBlinking: true,
+  previewScrollSyncMode: 'TwoWay',
+  scrollPreviewToEditedSection: false,
 }
 
 const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
@@ -330,6 +335,23 @@ function readCursorStyle(record: Record<string, unknown>): CursorStyle {
   return DEFAULT_EDITOR_SETTINGS.cursorStyle
 }
 
+function readPreviewScrollSyncMode(
+  record: Record<string, unknown>,
+): PreviewScrollSyncMode {
+  const value = readRecordValue(record, 'previewScrollSyncMode')
+
+  if (
+    value === 'Off' ||
+    value === 'EditorToPreview' ||
+    value === 'PreviewToEditor' ||
+    value === 'TwoWay'
+  ) {
+    return value
+  }
+
+  return DEFAULT_EDITOR_SETTINGS.previewScrollSyncMode
+}
+
 function parseSettingsChangedMessage(
   record: Record<string, unknown>,
 ): SettingsChangedMessage | null {
@@ -399,6 +421,12 @@ function parseSettingsChangedMessage(
       record,
       'cursorBlinking',
       DEFAULT_EDITOR_SETTINGS.cursorBlinking,
+    ),
+    previewScrollSyncMode: readPreviewScrollSyncMode(record),
+    scrollPreviewToEditedSection: readBoolean(
+      record,
+      'scrollPreviewToEditedSection',
+      DEFAULT_EDITOR_SETTINGS.scrollPreviewToEditedSection,
     ),
   }
 }
@@ -618,6 +646,7 @@ function App() {
   const editorHostRef = useRef<HTMLDivElement | null>(null)
   const editorScrollbarRef = useRef<HTMLDivElement | null>(null)
   const editorThumbRef = useRef<HTMLDivElement | null>(null)
+  const previewScrollRef = useRef<HTMLDivElement | null>(null)
   const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(
     null,
   )
@@ -626,6 +655,9 @@ function App() {
   const draftEditorSettingsRef = useRef<DraftEditorSettings>(DEFAULT_EDITOR_SETTINGS)
   const editorDragOffsetRef = useRef(0)
   const isEditorDraggingRef = useRef(false)
+  const viewModeRef = useRef<ViewMode>(viewMode)
+  const scrollSyncSourceRef = useRef<'editor' | 'preview' | null>(null)
+  const scrollSyncReleaseTimeoutRef = useRef(0)
 
   const syncEditorScrollbarPosition = () => {
     const editor = editorInstanceRef.current
@@ -659,6 +691,119 @@ function App() {
     }
 
     setScrollbarFlag(scrollbarElement, 'dragging', dragging)
+  }
+
+  const releaseScrollSyncSource = (source: 'editor' | 'preview') => {
+    if (scrollSyncReleaseTimeoutRef.current !== 0) {
+      window.clearTimeout(scrollSyncReleaseTimeoutRef.current)
+    }
+
+    scrollSyncReleaseTimeoutRef.current = window.setTimeout(() => {
+      if (scrollSyncSourceRef.current === source) {
+        scrollSyncSourceRef.current = null
+      }
+
+      scrollSyncReleaseTimeoutRef.current = 0
+    }, 0)
+  }
+
+  const isScrollSyncActive = () => {
+    return (
+      viewModeRef.current === 'split' &&
+      draftEditorSettingsRef.current.previewScrollSyncMode !== 'Off'
+    )
+  }
+
+  const canSyncPreviewFromEditor = () => {
+    const mode = draftEditorSettingsRef.current.previewScrollSyncMode
+
+    return mode === 'EditorToPreview' || mode === 'TwoWay'
+  }
+
+  const canSyncEditorFromPreview = () => {
+    const mode = draftEditorSettingsRef.current.previewScrollSyncMode
+
+    return mode === 'PreviewToEditor' || mode === 'TwoWay'
+  }
+
+  const syncPreviewScrollFromEditor = () => {
+    if (
+      !isScrollSyncActive() ||
+      !canSyncPreviewFromEditor() ||
+      scrollSyncSourceRef.current === 'preview'
+    ) {
+      return
+    }
+
+    const editor = editorInstanceRef.current
+    const previewScrollElement = previewScrollRef.current
+
+    if (!editor || !previewScrollElement) {
+      return
+    }
+
+    const editorMaxScrollTop = Math.max(
+      editor.getScrollHeight() - editor.getLayoutInfo().height,
+      0,
+    )
+    const previewMaxScrollTop = Math.max(
+      previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
+      0,
+    )
+    const nextScrollTop =
+      editorMaxScrollTop === 0
+        ? 0
+        : (editor.getScrollTop() / editorMaxScrollTop) * previewMaxScrollTop
+
+    if (Math.abs(previewScrollElement.scrollTop - nextScrollTop) < 1) {
+      return
+    }
+
+    scrollSyncSourceRef.current = 'editor'
+    previewScrollElement.scrollTop = nextScrollTop
+    releaseScrollSyncSource('editor')
+  }
+
+  const syncEditorScrollFromPreview = () => {
+    if (
+      !isScrollSyncActive() ||
+      !canSyncEditorFromPreview() ||
+      scrollSyncSourceRef.current === 'editor'
+    ) {
+      return
+    }
+
+    const editor = editorInstanceRef.current
+    const previewScrollElement = previewScrollRef.current
+
+    if (!editor || !previewScrollElement) {
+      return
+    }
+
+    const previewMaxScrollTop = Math.max(
+      previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
+      0,
+    )
+    const editorMaxScrollTop = Math.max(
+      editor.getScrollHeight() - editor.getLayoutInfo().height,
+      0,
+    )
+    const nextScrollTop =
+      previewMaxScrollTop === 0
+        ? 0
+        : (previewScrollElement.scrollTop / previewMaxScrollTop) * editorMaxScrollTop
+
+    if (Math.abs(editor.getScrollTop() - nextScrollTop) < 1) {
+      return
+    }
+
+    scrollSyncSourceRef.current = 'preview'
+    editor.setScrollTop(nextScrollTop)
+    releaseScrollSyncSource('preview')
+  }
+
+  const handlePreviewScroll = () => {
+    syncEditorScrollFromPreview()
   }
 
   const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
@@ -695,8 +840,11 @@ function App() {
       )
     }
 
+    // TODO: Map Monaco cursor/source positions to rendered Markdown blocks before
+    // enabling scrollPreviewToEditedSection beyond persisted settings state.
     remeasureEditor(editor)
     syncEditorScrollbarPosition()
+    syncPreviewScrollFromEditor()
     void document.fonts.load(getEditorFontLoadTarget(settings)).then(() => {
       if (editorInstanceRef.current !== editor) {
         return
@@ -728,6 +876,10 @@ function App() {
       isApplyingDocumentFromHostRef.current = false
     }
   }
+
+  useEffect(() => {
+    viewModeRef.current = viewMode
+  }, [viewMode])
 
   useEffect(() => {
     window.setDraftViewMode = (mode) => {
@@ -788,6 +940,12 @@ function App() {
   }, [viewMode])
 
   useEffect(() => {
+    window.requestAnimationFrame(() => {
+      syncPreviewScrollFromEditor()
+    })
+  }, [markdown])
+
+  useEffect(() => {
     if (!editorHostRef.current) {
       return
     }
@@ -800,6 +958,7 @@ function App() {
       value: initialMarkdownRef.current,
       language: currentEditorSettings.markdownSyntaxHighlighting ? 'markdown' : 'plaintext',
       automaticLayout: true,
+      detectIndentation: false,
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
       padding: EDITOR_PADDING,
@@ -882,12 +1041,14 @@ function App() {
     })
     const scrollSub = editor.onDidScrollChange(() => {
       syncEditorScrollbarPosition()
+      syncPreviewScrollFromEditor()
     })
     const layoutSub = editor.onDidLayoutChange(() => {
       syncEditorScrollbarPosition()
     })
     const contentSizeSub = editor.onDidContentSizeChange(() => {
       syncEditorScrollbarPosition()
+      syncPreviewScrollFromEditor()
     })
 
     editorInstanceRef.current = editor
@@ -921,6 +1082,10 @@ function App() {
     return () => {
       document.fonts.removeEventListener('loadingdone', syncEditorFontMetrics)
       resizeObserver?.disconnect()
+      if (scrollSyncReleaseTimeoutRef.current !== 0) {
+        window.clearTimeout(scrollSyncReleaseTimeoutRef.current)
+        scrollSyncReleaseTimeoutRef.current = 0
+      }
       contentSizeSub.dispose()
       layoutSub.dispose()
       scrollSub.dispose()
@@ -946,6 +1111,7 @@ function App() {
 
       remeasureEditor(editor)
       syncEditorScrollbarPosition()
+      syncPreviewScrollFromEditor()
     })
 
     const timeoutId = window.setTimeout(() => {
@@ -955,6 +1121,7 @@ function App() {
 
       remeasureEditor(editor)
       syncEditorScrollbarPosition()
+      syncPreviewScrollFromEditor()
     }, 240)
 
     return () => {
@@ -1063,6 +1230,8 @@ function App() {
           headerLeft="Live Preview"
           headerRight={[`${previewWordCount} words`]}
           ariaHidden={viewMode === 'editor'}
+          previewScrollElementRef={previewScrollRef}
+          onPreviewScroll={handlePreviewScroll}
         />
       </section>
     </main>

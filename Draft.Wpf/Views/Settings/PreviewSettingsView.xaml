@@ -59,11 +59,14 @@
 
                 <settings:SettingCard
                     Margin="0,0,0,12"
-                    Title="Sync scroll with editor"
-                    Description="Keep the preview scroll position aligned with the editor.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.SyncScrollWithEditor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    Title="Scroll sync mode"
+                    Description="Choose how the editor and preview scroll together.">
+                    <ComboBox
+                        Width="200"
+                        Height="36"
+                        ItemsSource="{Binding Settings.PreviewScrollSyncModeOptions}"
+                        SelectedItem="{Binding Settings.PreviewScrollSyncMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard

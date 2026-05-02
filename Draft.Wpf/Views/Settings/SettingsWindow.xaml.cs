@@ -5,11 +5,15 @@ namespace Draft.Views;
 
 public partial class SettingsWindow : Window
 {
+    public event EventHandler<SettingsAppliedEventArgs>? SettingsApplied;
+
     public SettingsWindow()
     {
         InitializeComponent();
         SettingsViewModel viewModel = new();
         viewModel.CloseRequested += ViewModel_CloseRequested;
+        viewModel.ResetConfirmationRequested += ViewModel_ResetConfirmationRequested;
+        viewModel.SettingsApplied += ViewModel_SettingsApplied;
         DataContext = viewModel;
     }
 
@@ -29,9 +33,30 @@ public partial class SettingsWindow : Window
         if (DataContext is SettingsViewModel viewModel)
         {
             viewModel.CloseRequested -= ViewModel_CloseRequested;
+            viewModel.ResetConfirmationRequested -= ViewModel_ResetConfirmationRequested;
+            viewModel.SettingsApplied -= ViewModel_SettingsApplied;
         }
 
         base.OnClosed(e);
+    }
+
+    private void ViewModel_ResetConfirmationRequested(
+        object? sender,
+        ResetConfirmationRequestedEventArgs e)
+    {
+        MessageBoxResult result = MessageBox.Show(
+            this,
+            "Reset all settings to their default values?",
+            "Reset Settings",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        e.IsConfirmed = result == MessageBoxResult.Yes;
+    }
+
+    private void ViewModel_SettingsApplied(object? sender, SettingsAppliedEventArgs e)
+    {
+        SettingsApplied?.Invoke(this, e);
     }
 
     private void ViewModel_CloseRequested(object? sender, EventArgs e)

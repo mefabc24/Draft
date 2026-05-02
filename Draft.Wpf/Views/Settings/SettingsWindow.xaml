@@ -231,7 +231,7 @@
                             Margin="0,16,0,0"
                             Padding="24,0"
                             VerticalAlignment="Stretch"
-                            Command="{Binding CancelSettingsCommand}"
+                            Command="{Binding ResetToDefaultsCommand}"
                             Content="Reset to Defaults"
                             Style="{StaticResource SettingsSecondaryButton}" />
 

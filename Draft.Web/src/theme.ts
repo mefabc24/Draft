@@ -9,7 +9,14 @@ export const DRAFT_CURRENT_LINE_DECORATION_CLASS = 'editor-current-line'
 
 let markdownTokensProvider: monaco.IDisposable | null = null
 let markdownLanguageConfiguration: monaco.IDisposable | null = null
+let plaintextLanguageConfiguration: monaco.IDisposable | null = null
 let markdownLanguageRegistered = false
+
+const draftQuotePairs = [
+    { open: "'", close: "'" },
+    { open: '"', close: '"' },
+    { open: '`', close: '`' },
+]
 
 function ensureDraftThemeStyles(lineHighlightBackground: string) {
     if (typeof document === 'undefined') {
@@ -43,7 +50,28 @@ function registerDraftMarkdownTokens() {
     if (!markdownLanguageConfiguration) {
         markdownLanguageConfiguration = monaco.languages.setLanguageConfiguration(
             'markdown',
-            baseMarkdownConfiguration,
+            {
+                ...baseMarkdownConfiguration,
+                autoClosingPairs: [
+                    ...(baseMarkdownConfiguration.autoClosingPairs ?? []),
+                    ...draftQuotePairs,
+                ],
+                surroundingPairs: [
+                    ...(baseMarkdownConfiguration.surroundingPairs ?? []),
+                    { open: "'", close: "'" },
+                    { open: '"', close: '"' },
+                ],
+            },
+        )
+    }
+
+    if (!plaintextLanguageConfiguration) {
+        plaintextLanguageConfiguration = monaco.languages.setLanguageConfiguration(
+            'plaintext',
+            {
+                autoClosingPairs: draftQuotePairs,
+                surroundingPairs: draftQuotePairs,
+            },
         )
     }
 

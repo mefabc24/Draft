@@ -200,8 +200,14 @@ public partial class MainWindow : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };
 
+        settingsWindow.SettingsApplied += SettingsWindow_SettingsApplied;
         settingsWindow.ShowDialog();
-        ApplySettings(AppSettingsStore.Load());
+        settingsWindow.SettingsApplied -= SettingsWindow_SettingsApplied;
+    }
+
+    private void SettingsWindow_SettingsApplied(object? sender, SettingsAppliedEventArgs e)
+    {
+        ApplySettings(e.Settings);
     }
 
     private void ViewModel_FileOperationFailed(object? sender, FileOperationFailedEventArgs e)
@@ -296,13 +302,14 @@ public partial class MainWindow : Window
             _settings.AutoPairQuotes,
             _settings.MarkdownSyntaxHighlighting,
             _settings.CursorStyle,
-            _settings.CursorBlinking),
+            _settings.CursorBlinking,
+            _settings.PreviewScrollSyncMode,
+            _settings.ScrollPreviewToEditedSection),
             JsonOptions);
 
         WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
 
         // TODO: Wire preview link/security settings once link interception is hosted.
-        // TODO: Wire preview scroll sync settings once editor/preview section mapping exists.
     }
 
     private void PostDocumentToWebView()
@@ -501,5 +508,7 @@ public partial class MainWindow : Window
         bool AutoPairQuotes,
         bool MarkdownSyntaxHighlighting,
         string CursorStyle,
-        bool CursorBlinking);
+        bool CursorBlinking,
+        string PreviewScrollSyncMode,
+        bool ScrollPreviewToEditedSection);
 }

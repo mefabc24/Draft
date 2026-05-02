@@ -24,7 +24,7 @@ public class SettingsViewModel : BaseViewModel
     private bool _confirmBeforeClosingUnsavedFiles = true;
     private string _defaultStartupMode = "Last";
     private string _defaultSaveLocation = string.Empty;
-    private string _defaultFileExtension = ".md";
+    private string _defaultFileExtension = AppSettingsStore.DefaultFileExtension;
     private string _editorFontFamily = "JetBrains Mono";
     private int _editorFontSize = 18;
     private double _lineHeight = 1.6;
@@ -40,20 +40,21 @@ public class SettingsViewModel : BaseViewModel
     private bool _markdownSyntaxHighlighting = true;
     private string _cursorStyle = "Line";
     private bool _cursorBlinking = true;
-    private string _markdownTheme = "Default";
+    private string _markdownTheme = AppSettingsStore.DefaultMarkdownTheme;
     private bool _openLinksInBrowser = true;
-    private bool _confirmBeforeOpeningExternalLinks;
-    private bool _syncScrollWithEditor;
+    private bool _confirmBeforeOpeningExternalLinks = true;
+    private string _previewScrollSyncMode = AppSettingsStore.DefaultPreviewScrollSyncMode;
     private bool _scrollPreviewToEditedSection;
     private string _appTheme = "Dark";
     private bool _isStatusBarVisible = true;
-    private string _toolbarControlbarPosition = "Top";
+    private string _toolbarControlbarPosition = AppSettingsStore.DefaultToolbarPosition;
 
     public SettingsViewModel()
     {
         BrowseDefaultSaveLocationCommand = new RelayCommand(BrowseDefaultSaveLocation);
         ApplySettingsCommand = new RelayCommand(ApplyChanges);
         CancelSettingsCommand = new RelayCommand(CancelChanges);
+        ResetToDefaultsCommand = new RelayCommand(ResetToDefaults);
 
         _originalSettings = AppSettingsStore.Load();
         ApplySettings(_originalSettings);
@@ -73,40 +74,58 @@ public class SettingsViewModel : BaseViewModel
         new[] { "Last", "Editor", "Split", "Preview" };
 
     public IReadOnlyList<string> DefaultFileExtensionOptions { get; } =
-        new[] { ".md" };
+        new[]
+        {
+            AppSettingsStore.DefaultFileExtensionDisplay,
+        };
 
     public IReadOnlyList<string> EditorFontFamilyOptions { get; } =
         new[] { "Cascadia Code", "Cascadia Mono", "Consolas", "JetBrains Mono" };
 
     public IReadOnlyList<int> EditorFontSizeOptions { get; } =
-        new[] { 12, 14, 16, 18, 20 };
+        new[] { 12, 14, 16, 18, 20, 22 };
 
     public IReadOnlyList<double> LineHeightOptions { get; } =
-        new[] { 1.2, 1.4, 1.6, 1.8, 2.0 };
+        new[] { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.8, 2.0, 2.2 };
 
     public IReadOnlyList<string> ShowWhitespaceCharactersOptions { get; } =
         new[] { "Always", "Never", "Highlighted Only" };
 
     public IReadOnlyList<int> TabSizeOptions { get; } =
-        new[] { 2, 4, 8 };
+        new[] { 2, 4, 6, 8 };
 
     public IReadOnlyList<string> CursorStyleOptions { get; } =
         new[] { "Line", "Block", "Underline" };
 
     public IReadOnlyList<string> MarkdownThemeOptions { get; } =
-        new[] { "Default" };
+        new[] { AppSettingsStore.DefaultMarkdownTheme };
+
+    public IReadOnlyList<string> PreviewScrollSyncModeOptions { get; } =
+        new[]
+        {
+            "Off",
+            "Two-way sync",
+            "Editor controls preview",
+            "Preview controls editor",
+        };
 
     public IReadOnlyList<string> AppThemeOptions { get; } =
         new[] { "Dark" };
 
     public IReadOnlyList<string> ToolbarControlbarPositionOptions { get; } =
-        new[] { "Top", "Left", "Right" };
+        new[] { AppSettingsStore.DefaultToolbarPosition };
 
     public ICommand BrowseDefaultSaveLocationCommand { get; }
 
     public ICommand ApplySettingsCommand { get; }
 
     public ICommand CancelSettingsCommand { get; }
+
+    public ICommand ResetToDefaultsCommand { get; }
+
+    public event EventHandler<SettingsAppliedEventArgs>? SettingsApplied;
+
+    public event EventHandler<ResetConfirmationRequestedEventArgs>? ResetConfirmationRequested;
 
     public event EventHandler? CloseRequested;
 
@@ -224,15 +243,27 @@ public class SettingsViewModel : BaseViewModel
     public string DefaultSaveLocation
     {
         get => _defaultSaveLocation;
-        set => SetSetting(ref _defaultSaveLocation, value ?? string.Empty);
+        set
+        {
+            if (SetSetting(ref _defaultSaveLocation, value ?? string.Empty))
+            {
+                OnPropertyChanged(nameof(DefaultSaveLocationDisplay));
+            }
+        }
+    }
+
+    public string DefaultSaveLocationDisplay
+    {
+        get => AppSettingsStore.ToFriendlyDocumentsPath(DefaultSaveLocation);
+        set => DefaultSaveLocation = AppSettingsStore.ExpandFriendlyDocumentsPath(value ?? string.Empty);
     }
 
     public string DefaultFileExtension
     {
-        get => _defaultFileExtension;
+        get => GetDefaultFileExtensionDisplayName(_defaultFileExtension);
         set => SetSetting(
             ref _defaultFileExtension,
-            EnsureOption(DefaultFileExtensionOptions, value, ".md"));
+            GetDefaultFileExtensionValue(value));
     }
 
     public string EditorFontFamily
@@ -342,7 +373,7 @@ public class SettingsViewModel : BaseViewModel
         get => _markdownTheme;
         set => SetSetting(
             ref _markdownTheme,
-            EnsureOption(MarkdownThemeOptions, value, "Default"));
+            EnsureOption(MarkdownThemeOptions, value, AppSettingsStore.DefaultMarkdownTheme));
     }
 
     public bool OpenLinksInBrowser
@@ -357,19 +388,22 @@ public class SettingsViewModel : BaseViewModel
         set => SetSetting(ref _confirmBeforeOpeningExternalLinks, value);
     }
 
-    public bool SyncScrollWithEditor
+    public string PreviewScrollSyncMode
     {
-        get => _syncScrollWithEditor;
+        get => GetPreviewScrollSyncDisplayName(_previewScrollSyncMode);
         set
         {
-            if (SetSetting(ref _syncScrollWithEditor, value))
+            if (SetSetting(
+                ref _previewScrollSyncMode,
+                GetPreviewScrollSyncValue(value)))
             {
                 OnPropertyChanged(nameof(IsScrollPreviewToEditedSectionEnabled));
             }
         }
     }
 
-    public bool IsScrollPreviewToEditedSectionEnabled => SyncScrollWithEditor;
+    public bool IsScrollPreviewToEditedSectionEnabled =>
+        _previewScrollSyncMode != AppSettingsStore.PreviewScrollSyncOff;
 
     public bool ScrollPreviewToEditedSection
     {
@@ -396,7 +430,10 @@ public class SettingsViewModel : BaseViewModel
         get => _toolbarControlbarPosition;
         set => SetSetting(
             ref _toolbarControlbarPosition,
-            EnsureOption(ToolbarControlbarPositionOptions, value, "Top"));
+            EnsureOption(
+                ToolbarControlbarPositionOptions,
+                value,
+                AppSettingsStore.DefaultToolbarPosition));
     }
 
     public void SelectSettingsPage(SettingsPage page)
@@ -424,6 +461,8 @@ public class SettingsViewModel : BaseViewModel
 
     private void ApplySettings(DraftSettings settings)
     {
+        AppSettingsStore.Normalize(settings);
+
         _reopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup;
         _autosaveEnabled = settings.AutosaveEnabled;
         _autosaveInterval = EnsureOption(AutosaveIntervalOptions, settings.AutosaveInterval, "10s");
@@ -431,7 +470,9 @@ public class SettingsViewModel : BaseViewModel
         _confirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles;
         _defaultStartupMode = EnsureOption(DefaultStartupModeOptions, settings.DefaultStartupMode, "Last");
         _defaultSaveLocation = settings.DefaultSaveLocation ?? string.Empty;
-        _defaultFileExtension = EnsureOption(DefaultFileExtensionOptions, settings.DefaultFileExtension, ".md");
+        _defaultFileExtension = settings.DefaultFileExtension == AppSettingsStore.DefaultFileExtension
+            ? settings.DefaultFileExtension
+            : AppSettingsStore.DefaultFileExtension;
         _editorFontFamily = EnsureOption(EditorFontFamilyOptions, settings.EditorFontFamily, "JetBrains Mono");
         _editorFontSize = EnsureOption(EditorFontSizeOptions, settings.EditorFontSize, 18);
         _lineHeight = EnsureOption(LineHeightOptions, settings.LineHeight, 1.6);
@@ -447,14 +488,23 @@ public class SettingsViewModel : BaseViewModel
         _markdownSyntaxHighlighting = settings.MarkdownSyntaxHighlighting;
         _cursorStyle = EnsureOption(CursorStyleOptions, settings.CursorStyle, "Line");
         _cursorBlinking = settings.CursorBlinking;
-        _markdownTheme = EnsureOption(MarkdownThemeOptions, settings.MarkdownTheme, "Default");
+        _markdownTheme = EnsureOption(
+            MarkdownThemeOptions,
+            settings.MarkdownTheme,
+            AppSettingsStore.DefaultMarkdownTheme);
         _openLinksInBrowser = settings.OpenLinksInBrowser;
         _confirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks;
-        _syncScrollWithEditor = settings.SyncScrollWithEditor;
+        _previewScrollSyncMode = EnsureOptionValue(
+            GetPreviewScrollSyncValues(),
+            settings.PreviewScrollSyncMode,
+            AppSettingsStore.DefaultPreviewScrollSyncMode);
         _scrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection;
         _appTheme = EnsureOption(AppThemeOptions, settings.AppTheme, "Dark");
         _isStatusBarVisible = settings.IsStatusBarVisible;
-        _toolbarControlbarPosition = EnsureOption(ToolbarControlbarPositionOptions, settings.ToolbarControlbarPosition, "Top");
+        _toolbarControlbarPosition = EnsureOption(
+            ToolbarControlbarPositionOptions,
+            settings.ToolbarControlbarPosition,
+            AppSettingsStore.DefaultToolbarPosition);
     }
 
     private void BrowseDefaultSaveLocation()
@@ -479,6 +529,7 @@ public class SettingsViewModel : BaseViewModel
         DraftSettings settings = CaptureSettings();
         AppSettingsStore.TrySave(settings);
         _originalSettings = settings;
+        SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
         CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
@@ -487,6 +538,26 @@ public class SettingsViewModel : BaseViewModel
         ApplySettings(_originalSettings);
         RaiseAllSettingsPropertiesChanged();
         CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void ResetToDefaults()
+    {
+        ResetConfirmationRequestedEventArgs confirmation = new()
+        {
+            IsConfirmed = ResetConfirmationRequested is null,
+        };
+        ResetConfirmationRequested?.Invoke(this, confirmation);
+
+        if (!confirmation.IsConfirmed)
+            return;
+
+        DraftSettings settings = AppSettingsStore.CreateDefaultSettings();
+
+        AppSettingsStore.TrySave(settings);
+        _originalSettings = settings;
+        ApplySettings(settings);
+        RaiseAllSettingsPropertiesChanged();
+        SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
     }
 
     private bool SetSetting<T>(
@@ -499,7 +570,7 @@ public class SettingsViewModel : BaseViewModel
 
     private DraftSettings CaptureSettings()
     {
-        return new DraftSettings
+        return AppSettingsStore.Normalize(new DraftSettings
         {
             ReopenLastWorkspaceOnStartup = ReopenLastWorkspaceOnStartup,
             AutosaveEnabled = AutosaveEnabled,
@@ -508,7 +579,7 @@ public class SettingsViewModel : BaseViewModel
             ConfirmBeforeClosingUnsavedFiles = ConfirmBeforeClosingUnsavedFiles,
             DefaultStartupMode = DefaultStartupMode,
             DefaultSaveLocation = DefaultSaveLocation,
-            DefaultFileExtension = DefaultFileExtension,
+            DefaultFileExtension = _defaultFileExtension,
             EditorFontFamily = EditorFontFamily,
             EditorFontSize = EditorFontSize,
             LineHeight = LineHeight,
@@ -527,17 +598,72 @@ public class SettingsViewModel : BaseViewModel
             MarkdownTheme = MarkdownTheme,
             OpenLinksInBrowser = OpenLinksInBrowser,
             ConfirmBeforeOpeningExternalLinks = ConfirmBeforeOpeningExternalLinks,
-            SyncScrollWithEditor = SyncScrollWithEditor,
+            PreviewScrollSyncMode = _previewScrollSyncMode,
             ScrollPreviewToEditedSection = ScrollPreviewToEditedSection,
             AppTheme = AppTheme,
             IsStatusBarVisible = IsStatusBarVisible,
             ToolbarControlbarPosition = ToolbarControlbarPosition,
-        };
+        });
     }
 
     private static T EnsureOption<T>(IReadOnlyCollection<T> options, T value, T fallback)
     {
         return options.Contains(value) ? value : fallback;
+    }
+
+    private static T EnsureOptionValue<T>(
+        IReadOnlyCollection<T> options,
+        T value,
+        T fallback)
+    {
+        return options.Contains(value) ? value : fallback;
+    }
+
+    private static IReadOnlyList<string> GetPreviewScrollSyncValues()
+    {
+        return new[]
+        {
+            AppSettingsStore.PreviewScrollSyncOff,
+            AppSettingsStore.PreviewScrollSyncTwoWay,
+            AppSettingsStore.PreviewScrollSyncEditorToPreview,
+            AppSettingsStore.PreviewScrollSyncPreviewToEditor,
+        };
+    }
+
+    private static string GetPreviewScrollSyncValue(string displayName)
+    {
+        return displayName switch
+        {
+            "Two-way sync" => AppSettingsStore.PreviewScrollSyncTwoWay,
+            "Editor controls preview" => AppSettingsStore.PreviewScrollSyncEditorToPreview,
+            "Preview controls editor" => AppSettingsStore.PreviewScrollSyncPreviewToEditor,
+            _ => AppSettingsStore.PreviewScrollSyncOff,
+        };
+    }
+
+    private static string GetPreviewScrollSyncDisplayName(string value)
+    {
+        return value switch
+        {
+            AppSettingsStore.PreviewScrollSyncTwoWay => "Two-way sync",
+            AppSettingsStore.PreviewScrollSyncEditorToPreview => "Editor controls preview",
+            AppSettingsStore.PreviewScrollSyncPreviewToEditor => "Preview controls editor",
+            _ => "Off",
+        };
+    }
+
+    private static string GetDefaultFileExtensionValue(string displayName)
+    {
+        return displayName == AppSettingsStore.DefaultFileExtensionDisplay
+            ? AppSettingsStore.DefaultFileExtension
+            : AppSettingsStore.DefaultFileExtension;
+    }
+
+    private static string GetDefaultFileExtensionDisplayName(string value)
+    {
+        return value == AppSettingsStore.DefaultFileExtension
+            ? AppSettingsStore.DefaultFileExtensionDisplay
+            : AppSettingsStore.DefaultFileExtensionDisplay;
     }
 
     private void RaiseAllSettingsPropertiesChanged()
@@ -550,6 +676,7 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(ConfirmBeforeClosingUnsavedFiles));
         OnPropertyChanged(nameof(DefaultStartupMode));
         OnPropertyChanged(nameof(DefaultSaveLocation));
+        OnPropertyChanged(nameof(DefaultSaveLocationDisplay));
         OnPropertyChanged(nameof(DefaultFileExtension));
         OnPropertyChanged(nameof(EditorFontFamily));
         OnPropertyChanged(nameof(EditorFontSize));
@@ -569,11 +696,26 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(MarkdownTheme));
         OnPropertyChanged(nameof(OpenLinksInBrowser));
         OnPropertyChanged(nameof(ConfirmBeforeOpeningExternalLinks));
-        OnPropertyChanged(nameof(SyncScrollWithEditor));
+        OnPropertyChanged(nameof(PreviewScrollSyncMode));
         OnPropertyChanged(nameof(IsScrollPreviewToEditedSectionEnabled));
         OnPropertyChanged(nameof(ScrollPreviewToEditedSection));
         OnPropertyChanged(nameof(AppTheme));
         OnPropertyChanged(nameof(IsStatusBarVisible));
         OnPropertyChanged(nameof(ToolbarControlbarPosition));
     }
+}
+
+public sealed class SettingsAppliedEventArgs : EventArgs
+{
+    public SettingsAppliedEventArgs(DraftSettings settings)
+    {
+        Settings = settings;
+    }
+
+    public DraftSettings Settings { get; }
+}
+
+public sealed class ResetConfirmationRequestedEventArgs : EventArgs
+{
+    public bool IsConfirmed { get; set; }
 }

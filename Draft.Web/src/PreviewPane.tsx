@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import type { MutableRefObject } from 'react'
 import './PreviewContent.css'
 import PaneHeader from './PaneHeader'
 import { usePreviewScrollbar } from './usePreviewScrollbar'
@@ -9,6 +10,8 @@ type PreviewPaneProps = {
   headerLeft: string
   headerRight: string[]
   ariaHidden?: boolean
+  previewScrollElementRef?: MutableRefObject<HTMLDivElement | null>
+  onPreviewScroll?: () => void
 }
 
 function PreviewPane({
@@ -16,6 +19,8 @@ function PreviewPane({
   headerLeft,
   headerRight,
   ariaHidden = false,
+  previewScrollElementRef,
+  onPreviewScroll,
 }: PreviewPaneProps) {
   const {
     previewScrollRef,
@@ -28,6 +33,13 @@ function PreviewPane({
     handleThumbPointerUp,
     handleThumbPointerCancel,
   } = usePreviewScrollbar()
+  const setPreviewScrollElement = (element: HTMLDivElement | null) => {
+    previewScrollRef.current = element
+
+    if (previewScrollElementRef) {
+      previewScrollElementRef.current = element
+    }
+  }
 
   return (
     <article
@@ -39,8 +51,9 @@ function PreviewPane({
 
       <div className="pane-body preview-body">
         <div
-          ref={previewScrollRef}
+          ref={setPreviewScrollElement}
           className="preview-scroll"
+          onScroll={onPreviewScroll}
         >
           <div ref={previewContentRef} className="preview-content">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>

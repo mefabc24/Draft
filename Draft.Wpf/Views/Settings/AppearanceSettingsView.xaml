@@ -51,11 +51,12 @@
 
                 <settings:SettingCard
                     Margin="0,0,0,12"
-                    Title="Toolbar / Controlbar position"
+                    Title="Toolbar position"
                     Description="Choose where the main controls should be placed.">
                     <ComboBox
                         Width="160"
                         Height="36"
+                        IsEnabled="False"
                         ItemsSource="{Binding Settings.ToolbarControlbarPositionOptions}"
                         SelectedItem="{Binding Settings.ToolbarControlbarPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />

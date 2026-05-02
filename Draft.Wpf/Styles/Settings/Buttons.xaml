@@ -61,8 +61,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource Brush.Background.Hover}" />
-                <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Input}" />
+                <Setter Property="BorderBrush" Value="{StaticResource Brush.Text.Primary}" />
             </Trigger>
         </Style.Triggers>
     </Style>

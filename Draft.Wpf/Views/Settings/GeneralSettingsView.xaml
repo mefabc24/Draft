@@ -99,7 +99,7 @@
                             Grid.Column="0"
                             HorizontalAlignment="Stretch"
                             Style="{StaticResource SettingsTextBox}"
-                            Text="{Binding Settings.DefaultSaveLocation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            Text="{Binding Settings.DefaultSaveLocationDisplay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                         <Button
                             Grid.Column="1"
@@ -111,18 +111,17 @@
                     </Grid>
                 </settings:SettingFieldCard>
 
-                <settings:SettingCard
+                <settings:SettingFieldCard
                     Margin="0,0,0,12"
-                    Title="Default file extension"
-                    Description="Choose the default extension for newly created files.">
+                    Title="Default file extension">
                     <ComboBox
-                        Width="160"
                         Height="36"
+                        HorizontalAlignment="Stretch"
                         IsEnabled="False"
                         ItemsSource="{Binding Settings.DefaultFileExtensionOptions}"
                         SelectedItem="{Binding Settings.DefaultFileExtension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />
-                </settings:SettingCard>
+                </settings:SettingFieldCard>
             </StackPanel>
         </ScrollViewer>
     </Border>
