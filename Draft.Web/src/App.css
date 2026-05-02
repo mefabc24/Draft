@@ -30,22 +30,21 @@
   --preview-pane-width: 100%;
 }
 
-.workspace::after {
+.editor-pane::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 50%;
+  right: 0;
   width: 1px;
   background: #1b1b1b;
   pointer-events: none;
-  transform: translateX(-0.5px);
   z-index: 2;
   opacity: 0;
   transition: opacity var(--pane-transition-duration) ease;
 }
 
-.workspace.split::after {
+.workspace.split .editor-pane::after {
   opacity: 1;
 }
 
@@ -73,6 +72,7 @@
   --editor-scrollbar-offset: 4px;
   --editor-scrollbar-track: transparent;
   --editor-scrollbar-thumb: #353535;
+  position: relative;
   width: var(--editor-pane-width);
   flex-basis: var(--editor-pane-width);
 }
@@ -215,7 +215,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .workspace::after,
+  .editor-pane::after,
   .editor-pane,
   .preview-pane {
     transition: none;
