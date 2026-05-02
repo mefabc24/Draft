@@ -530,7 +530,6 @@ public class SettingsViewModel : BaseViewModel
         AppSettingsStore.TrySave(settings);
         _originalSettings = settings;
         SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
-        CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
     public void CancelChanges()

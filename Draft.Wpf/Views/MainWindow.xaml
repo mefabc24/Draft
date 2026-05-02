@@ -10,6 +10,7 @@
     Width="1920"
     MinWidth="900"
     Height="1080"
+    Icon="/Assets/Icons/draft.ico"
     MinHeight="600"
     AllowsTransparency="True"
     Background="Transparent"

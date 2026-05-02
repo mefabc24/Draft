@@ -8,6 +8,7 @@
     xmlns:settingsVm="clr-namespace:Draft.ViewModels"
     Title="Settings"
     Width="900"
+    Icon="/Assets/Icons/draft.ico"
     Height="600"
     AllowsTransparency="True"
     Background="Transparent"
