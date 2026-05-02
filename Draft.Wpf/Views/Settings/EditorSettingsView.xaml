@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:section="clr-namespace:Draft.Controls.Settings"
     xmlns:settings="clr-namespace:Draft.Wpf.Controls.Settings"
-    d:DesignHeight="500"
+    d:DesignHeight="2000"
     d:DesignWidth="540"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -23,16 +23,6 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <TextBlock
-                    MaxWidth="420"
-                    Margin="0,8,0,32"
-                    HorizontalAlignment="Left"
-                    FontFamily="{StaticResource Font.Inter}"
-                    FontSize="14"
-                    Foreground="{StaticResource Brush.Text.Secondary}"
-                    Text="{Binding Description}"
-                    TextWrapping="Wrap" />
-
                 <section:SectionHeader Title="Typography" />
 
                 <settings:SettingFieldCard Margin="0,0,0,12" Title="Editor font family">

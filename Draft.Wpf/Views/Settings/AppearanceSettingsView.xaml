@@ -23,16 +23,6 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <TextBlock
-                    MaxWidth="420"
-                    Margin="0,8,0,32"
-                    HorizontalAlignment="Left"
-                    FontFamily="{StaticResource Font.Inter}"
-                    FontSize="14"
-                    Foreground="{StaticResource Brush.Text.Secondary}"
-                    Text="{Binding Description}"
-                    TextWrapping="Wrap" />
-
                 <section:SectionHeader Title="Theme" />
 
                 <settings:SettingCard

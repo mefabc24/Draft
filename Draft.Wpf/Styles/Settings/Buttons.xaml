@@ -12,7 +12,7 @@
     </Style>
 
     <Style
-        x:Key="SettingsApplyButton"
+        x:Key="SettingsPrimaryButton"
         BasedOn="{StaticResource SettingsButtonBase}"
         TargetType="Button">
         <Setter Property="Background" Value="{StaticResource Brush.Accent.Primary}" />
@@ -38,7 +38,7 @@
     </Style>
 
     <Style
-        x:Key="SettingsCancelButton"
+        x:Key="SettingsSecondaryButton"
         BasedOn="{StaticResource SettingsButtonBase}"
         TargetType="Button">
         <Setter Property="Background" Value="Transparent" />

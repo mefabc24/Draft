@@ -91,8 +91,8 @@
 
                     <StackPanel Grid.Row="1" Margin="0,32">
                         <RadioButton
-                            Margin="0,0,0,4"
                             Height="36"
+                            Margin="0,0,0,4"
                             GroupName="SettingsMenu"
                             IsChecked="{Binding IsGeneralSettingsSelected, Mode=TwoWay}"
                             Style="{StaticResource SettingsMenuRadioButton}">
@@ -108,8 +108,8 @@
                         </RadioButton>
 
                         <RadioButton
-                            Margin="0,0,0,4"
                             Height="36"
+                            Margin="0,0,0,4"
                             GroupName="SettingsMenu"
                             IsChecked="{Binding IsEditorSettingsSelected, Mode=TwoWay}"
                             Style="{StaticResource SettingsMenuRadioButton}">
@@ -124,9 +124,9 @@
                             </StackPanel>
                         </RadioButton>
                         <RadioButton
+                            Height="36"
                             Margin="0,0,0,4"
                             GroupName="SettingsMenu"
-                            Height="36"
                             IsChecked="{Binding IsPreviewSettingsSelected, Mode=TwoWay}"
                             Style="{StaticResource SettingsMenuRadioButton}">
                             <StackPanel Orientation="Horizontal">
@@ -141,8 +141,8 @@
                         </RadioButton>
 
                         <RadioButton
-                            Margin="0,0,0,4"
                             Height="36"
+                            Margin="0,0,0,4"
                             GroupName="SettingsMenu"
                             IsChecked="{Binding IsAppearanceSettingsSelected, Mode=TwoWay}"
                             Style="{StaticResource SettingsMenuRadioButton}">
@@ -205,10 +205,11 @@
 
                         <!-- Close Button -->
                         <Button
-                            Grid.Column="1" WindowChrome.IsHitTestVisibleInChrome="True"
+                            Grid.Column="1"
                             VerticalAlignment="Top"
                             Click="CloseButton_Click"
-                            Style="{StaticResource SettingsCloseButton}">
+                            Style="{StaticResource SettingsCloseButton}"
+                            WindowChrome.IsHitTestVisibleInChrome="True">
                             <Path
                                 Width="8"
                                 Height="8"
@@ -220,26 +221,42 @@
 
                     <ContentControl Grid.Row="1" Content="{Binding CurrentSettingsPage}" />
 
-                    <StackPanel
-                        Grid.Row="2"
-                        Height="30"
-                        Margin="0,16,0,0"
-                        HorizontalAlignment="Right"
-                        Orientation="Horizontal">
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
                         <Button
-                            Margin="0,0,16,0"
+                            Margin="0,16,0,0"
                             Padding="24,0"
+                            VerticalAlignment="Stretch"
                             Command="{Binding CancelSettingsCommand}"
-                            Content="Cancel"
-                            Style="{StaticResource SettingsCancelButton}"
-                            VerticalAlignment="Stretch" />
-                        <Button
-                            Padding="24,0"
-                            Command="{Binding ApplySettingsCommand}"
-                            Content="Apply Changes"
-                            Style="{StaticResource SettingsApplyButton}"
-                            VerticalAlignment="Stretch" />
-                    </StackPanel>
+                            Content="Reset to Defaults"
+                            Style="{StaticResource SettingsSecondaryButton}" />
+
+                        <StackPanel
+                            Grid.Column="1"
+                            Height="30"
+                            Margin="0,16,0,0"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
+                            <Button
+                                Margin="0,0,16,0"
+                                Padding="24,0"
+                                VerticalAlignment="Stretch"
+                                Command="{Binding CancelSettingsCommand}"
+                                Content="Cancel"
+                                Style="{StaticResource SettingsSecondaryButton}" />
+                            <Button
+                                Padding="24,0"
+                                VerticalAlignment="Stretch"
+                                Command="{Binding ApplySettingsCommand}"
+                                Content="Apply Changes"
+                                Style="{StaticResource SettingsPrimaryButton}" />
+                        </StackPanel>
+                    </Grid>
+
                 </Grid>
             </Border>
 

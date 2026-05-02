@@ -12,10 +12,10 @@
             FontSize="12"
             FontWeight="Medium"
             Foreground="{StaticResource Brush.Accent.Primary}"
-            Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:SectionHeader}}}" />
+            Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:SectionHeader}}, FallbackValue='Section Header'}" />
         <Border
             Height="1"
-            Margin="0,8,0,32"
+            Margin="0,8,0,8"
             Background="{StaticResource Brush.Border.Default}" />
     </StackPanel>
 </UserControl>
