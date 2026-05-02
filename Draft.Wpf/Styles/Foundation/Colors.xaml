@@ -9,7 +9,7 @@
     <Color x:Key="Color.Background.Surface">#131313</Color>
     <Color x:Key="Color.Background.Secondary">#1B1B1B</Color>
     <Color x:Key="Color.Background.Input">#333538</Color>
-    <Color x:Key="Color.Background.InputHover">#3B3E42</Color>
+    <Color x:Key="Color.Background.InputHover">#222222</Color>
     <Color x:Key="Color.Background.Hover">#1F2020</Color>
     <Color x:Key="Color.Background.SelectedHover">#1F1F1F</Color>
     <Color x:Key="Color.Background.WindowControlClose">#C42B1C</Color>
