@@ -5,5 +5,6 @@ public enum SettingsPage
     General,
     Editor,
     Preview,
-    Appearance
+    Appearance,
+    About
 }

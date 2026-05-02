@@ -20,6 +20,28 @@ type LoadDocumentMessage = {
   content: string
   fileName: string
 }
+type ShowWhitespaceCharacters = 'Always' | 'Never' | 'Highlighted Only'
+type CursorStyle = 'Line' | 'Block' | 'Underline'
+type DraftEditorSettings = {
+  editorFontFamily: string
+  editorFontSize: number
+  lineHeight: number
+  wordWrap: boolean
+  showLineNumbers: boolean
+  highlightCurrentLine: boolean
+  showWhitespaceCharacters: ShowWhitespaceCharacters
+  showIndentationGuides: boolean
+  tabSize: number
+  insertSpacesInsteadOfTabs: boolean
+  autoPairBrackets: boolean
+  autoPairQuotes: boolean
+  markdownSyntaxHighlighting: boolean
+  cursorStyle: CursorStyle
+  cursorBlinking: boolean
+}
+type SettingsChangedMessage = {
+  type: 'settingsChanged'
+} & DraftEditorSettings
 
 declare global {
   interface Window {
@@ -40,15 +62,31 @@ declare global {
   }
 }
 
-const EDITOR_FONT_FAMILY = "'JetBrains Mono', Consolas, 'Courier New', monospace"
-const EDITOR_FONT_SIZE = 18
-const EDITOR_FONT_LOAD_TARGET = `${EDITOR_FONT_SIZE}px 'JetBrains Mono'`
 const EDITOR_SCROLL_SENSITIVITY = 1.5
 const MIN_EDITOR_THUMB_HEIGHT = 56
 const DEFAULT_FILE_NAME = 'untitled.md'
 const WORKSPACE_MODE_MESSAGE_TYPE = 'workspaceModeChanged'
 const LOAD_DOCUMENT_MESSAGE_TYPE = 'loadDocument'
 const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
+const SETTINGS_CHANGED_MESSAGE_TYPE = 'settingsChanged'
+
+const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
+  editorFontFamily: 'JetBrains Mono',
+  editorFontSize: 18,
+  lineHeight: 1.6,
+  wordWrap: true,
+  showLineNumbers: true,
+  highlightCurrentLine: true,
+  showWhitespaceCharacters: 'Never',
+  showIndentationGuides: false,
+  tabSize: 4,
+  insertSpacesInsteadOfTabs: true,
+  autoPairBrackets: true,
+  autoPairQuotes: true,
+  markdownSyntaxHighlighting: true,
+  cursorStyle: 'Line',
+  cursorBlinking: true,
+}
 
 const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
   top: 16,
@@ -90,7 +128,13 @@ function getCurrentLineDecorations(
 function syncCurrentLineDecorations(
   editor: monaco.editor.IStandaloneCodeEditor,
   decorations: monaco.editor.IEditorDecorationsCollection,
+  enabled: boolean,
 ) {
+  if (!enabled) {
+    decorations.set([])
+    return
+  }
+
   decorations.set(getCurrentLineDecorations(editor))
 }
 
@@ -229,6 +273,202 @@ function parseLoadDocumentMessage(
     type: LOAD_DOCUMENT_MESSAGE_TYPE,
     content,
     fileName: fileName.trim() || DEFAULT_FILE_NAME,
+  }
+}
+
+function readRecordValue(record: Record<string, unknown>, camelName: string) {
+  const pascalName = `${camelName[0]?.toUpperCase() ?? ''}${camelName.slice(1)}`
+  return record[camelName] ?? record[pascalName]
+}
+
+function readString(
+  record: Record<string, unknown>,
+  name: string,
+  fallback: string,
+) {
+  const value = readRecordValue(record, name)
+  return typeof value === 'string' && value.trim() ? value : fallback
+}
+
+function readNumber(
+  record: Record<string, unknown>,
+  name: string,
+  fallback: number,
+) {
+  const value = readRecordValue(record, name)
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+function readBoolean(
+  record: Record<string, unknown>,
+  name: string,
+  fallback: boolean,
+) {
+  const value = readRecordValue(record, name)
+  return typeof value === 'boolean' ? value : fallback
+}
+
+function readShowWhitespaceCharacters(
+  record: Record<string, unknown>,
+): ShowWhitespaceCharacters {
+  const value = readRecordValue(record, 'showWhitespaceCharacters')
+
+  if (value === 'Always' || value === 'Never' || value === 'Highlighted Only') {
+    return value
+  }
+
+  return DEFAULT_EDITOR_SETTINGS.showWhitespaceCharacters
+}
+
+function readCursorStyle(record: Record<string, unknown>): CursorStyle {
+  const value = readRecordValue(record, 'cursorStyle')
+
+  if (value === 'Line' || value === 'Block' || value === 'Underline') {
+    return value
+  }
+
+  return DEFAULT_EDITOR_SETTINGS.cursorStyle
+}
+
+function parseSettingsChangedMessage(
+  record: Record<string, unknown>,
+): SettingsChangedMessage | null {
+  const type = record.type ?? record.Type
+
+  if (type !== SETTINGS_CHANGED_MESSAGE_TYPE) {
+    return null
+  }
+
+  return {
+    type: SETTINGS_CHANGED_MESSAGE_TYPE,
+    editorFontFamily: readString(
+      record,
+      'editorFontFamily',
+      DEFAULT_EDITOR_SETTINGS.editorFontFamily,
+    ),
+    editorFontSize: readNumber(
+      record,
+      'editorFontSize',
+      DEFAULT_EDITOR_SETTINGS.editorFontSize,
+    ),
+    lineHeight: readNumber(
+      record,
+      'lineHeight',
+      DEFAULT_EDITOR_SETTINGS.lineHeight,
+    ),
+    wordWrap: readBoolean(record, 'wordWrap', DEFAULT_EDITOR_SETTINGS.wordWrap),
+    showLineNumbers: readBoolean(
+      record,
+      'showLineNumbers',
+      DEFAULT_EDITOR_SETTINGS.showLineNumbers,
+    ),
+    highlightCurrentLine: readBoolean(
+      record,
+      'highlightCurrentLine',
+      DEFAULT_EDITOR_SETTINGS.highlightCurrentLine,
+    ),
+    showWhitespaceCharacters: readShowWhitespaceCharacters(record),
+    showIndentationGuides: readBoolean(
+      record,
+      'showIndentationGuides',
+      DEFAULT_EDITOR_SETTINGS.showIndentationGuides,
+    ),
+    tabSize: readNumber(record, 'tabSize', DEFAULT_EDITOR_SETTINGS.tabSize),
+    insertSpacesInsteadOfTabs: readBoolean(
+      record,
+      'insertSpacesInsteadOfTabs',
+      DEFAULT_EDITOR_SETTINGS.insertSpacesInsteadOfTabs,
+    ),
+    autoPairBrackets: readBoolean(
+      record,
+      'autoPairBrackets',
+      DEFAULT_EDITOR_SETTINGS.autoPairBrackets,
+    ),
+    autoPairQuotes: readBoolean(
+      record,
+      'autoPairQuotes',
+      DEFAULT_EDITOR_SETTINGS.autoPairQuotes,
+    ),
+    markdownSyntaxHighlighting: readBoolean(
+      record,
+      'markdownSyntaxHighlighting',
+      DEFAULT_EDITOR_SETTINGS.markdownSyntaxHighlighting,
+    ),
+    cursorStyle: readCursorStyle(record),
+    cursorBlinking: readBoolean(
+      record,
+      'cursorBlinking',
+      DEFAULT_EDITOR_SETTINGS.cursorBlinking,
+    ),
+  }
+}
+
+function getEditorFontFamilyCss(fontFamily: string) {
+  switch (fontFamily) {
+    case 'Cascadia Code':
+      return "'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace"
+    case 'Cascadia Mono':
+      return "'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace"
+    case 'Consolas':
+      return "Consolas, 'JetBrains Mono', 'Courier New', monospace"
+    case 'JetBrains Mono':
+    default:
+      return "'JetBrains Mono', Consolas, 'Courier New', monospace"
+  }
+}
+
+function getEditorFontLoadTarget(settings: DraftEditorSettings) {
+  return `${settings.editorFontSize}px ${getEditorFontFamilyCss(settings.editorFontFamily)}`
+}
+
+function getEditorLineHeightPixels(settings: DraftEditorSettings) {
+  return Math.max(1, Math.round(settings.editorFontSize * settings.lineHeight))
+}
+
+function getRenderWhitespace(
+  value: ShowWhitespaceCharacters,
+): monaco.editor.IEditorOptions['renderWhitespace'] {
+  switch (value) {
+    case 'Always':
+      return 'all'
+    case 'Highlighted Only':
+      return 'selection'
+    case 'Never':
+    default:
+      return 'none'
+  }
+}
+
+function getCursorStyle(
+  value: CursorStyle,
+): monaco.editor.IEditorOptions['cursorStyle'] {
+  switch (value) {
+    case 'Block':
+      return 'block'
+    case 'Underline':
+      return 'underline'
+    case 'Line':
+    default:
+      return 'line'
+  }
+}
+
+function getEditorSettingsOptions(
+  settings: DraftEditorSettings,
+): monaco.editor.IEditorOptions {
+  return {
+    wordWrap: settings.wordWrap ? 'on' : 'off',
+    fontSize: settings.editorFontSize,
+    lineHeight: getEditorLineHeightPixels(settings),
+    fontFamily: getEditorFontFamilyCss(settings.editorFontFamily),
+    renderLineHighlight: settings.highlightCurrentLine ? 'gutter' : 'none',
+    lineNumbers: settings.showLineNumbers ? 'on' : 'off',
+    renderWhitespace: getRenderWhitespace(settings.showWhitespaceCharacters),
+    guides: { indentation: settings.showIndentationGuides },
+    autoClosingBrackets: settings.autoPairBrackets ? 'always' : 'never',
+    autoClosingQuotes: settings.autoPairQuotes ? 'always' : 'never',
+    cursorStyle: getCursorStyle(settings.cursorStyle),
+    cursorBlinking: settings.cursorBlinking ? 'blink' : 'solid',
   }
 }
 
@@ -381,6 +621,9 @@ function App() {
   const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(
     null,
   )
+  const currentLineDecorationsRef =
+    useRef<monaco.editor.IEditorDecorationsCollection | null>(null)
+  const draftEditorSettingsRef = useRef<DraftEditorSettings>(DEFAULT_EDITOR_SETTINGS)
   const editorDragOffsetRef = useRef(0)
   const isEditorDraggingRef = useRef(false)
 
@@ -416,6 +659,52 @@ function App() {
     }
 
     setScrollbarFlag(scrollbarElement, 'dragging', dragging)
+  }
+
+  const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
+    draftEditorSettingsRef.current = settings
+
+    const editor = editorInstanceRef.current
+
+    if (!editor) {
+      return
+    }
+
+    editor.updateOptions(getEditorSettingsOptions(settings))
+
+    const model = editor.getModel()
+
+    if (model) {
+      model.updateOptions({
+        tabSize: settings.tabSize,
+        insertSpaces: settings.insertSpacesInsteadOfTabs,
+      })
+      monaco.editor.setModelLanguage(
+        model,
+        settings.markdownSyntaxHighlighting ? 'markdown' : 'plaintext',
+      )
+    }
+
+    const currentLineDecorations = currentLineDecorationsRef.current
+
+    if (currentLineDecorations) {
+      syncCurrentLineDecorations(
+        editor,
+        currentLineDecorations,
+        settings.highlightCurrentLine,
+      )
+    }
+
+    remeasureEditor(editor)
+    syncEditorScrollbarPosition()
+    void document.fonts.load(getEditorFontLoadTarget(settings)).then(() => {
+      if (editorInstanceRef.current !== editor) {
+        return
+      }
+
+      remeasureEditor(editor)
+      syncEditorScrollbarPosition()
+    })
   }
 
   const applyDocumentFromHost = (message: LoadDocumentMessage) => {
@@ -466,6 +755,13 @@ function App() {
         return
       }
 
+      const settingsMessage = parseSettingsChangedMessage(record)
+
+      if (settingsMessage) {
+        applyDraftEditorSettings(settingsMessage)
+        return
+      }
+
       const workspaceMessage = parseWorkspaceModeMessage(record)
 
       if (workspaceMessage) {
@@ -499,18 +795,14 @@ function App() {
     registerDraftTheme()
     monaco.editor.setTheme(DRAFT_THEME_NAME)
 
+    const currentEditorSettings = draftEditorSettingsRef.current
     const editor = monaco.editor.create(editorHostRef.current, {
       value: initialMarkdownRef.current,
-      language: 'markdown',
+      language: currentEditorSettings.markdownSyntaxHighlighting ? 'markdown' : 'plaintext',
       automaticLayout: true,
       minimap: { enabled: false },
-      wordWrap: 'on',
       scrollBeyondLastLine: false,
-      fontSize: EDITOR_FONT_SIZE,
-      lineHeight: 28,
       padding: EDITOR_PADDING,
-      fontFamily: EDITOR_FONT_FAMILY,
-      renderLineHighlight: 'gutter',
       quickSuggestions: false,
       suggestOnTriggerCharacters: false,
       parameterHints: { enabled: false },
@@ -530,11 +822,21 @@ function App() {
         horizontalScrollbarSize: 0,
       },
       theme: DRAFT_THEME_NAME,
+      ...getEditorSettingsOptions(currentEditorSettings),
+    })
+    editor.getModel()?.updateOptions({
+      tabSize: currentEditorSettings.tabSize,
+      insertSpaces: currentEditorSettings.insertSpacesInsteadOfTabs,
     })
 
     const currentLineDecorations = editor.createDecorationsCollection()
+    currentLineDecorationsRef.current = currentLineDecorations
     const syncPersistentCurrentLine = () => {
-      syncCurrentLineDecorations(editor, currentLineDecorations)
+      syncCurrentLineDecorations(
+        editor,
+        currentLineDecorations,
+        draftEditorSettingsRef.current.highlightCurrentLine,
+      )
     }
 
     syncPersistentCurrentLine()
@@ -600,7 +902,9 @@ function App() {
 
     syncEditorFontMetrics()
     syncEditorScrollbarPosition()
-    void document.fonts.load(EDITOR_FONT_LOAD_TARGET).then(syncEditorFontMetrics)
+    void document.fonts
+      .load(getEditorFontLoadTarget(draftEditorSettingsRef.current))
+      .then(syncEditorFontMetrics)
     void document.fonts.ready.then(syncEditorFontMetrics)
     document.fonts.addEventListener('loadingdone', syncEditorFontMetrics)
 
@@ -624,6 +928,7 @@ function App() {
       sub.dispose()
       editor.dispose()
       editorInstanceRef.current = null
+      currentLineDecorationsRef.current = null
     }
   }, [])
 

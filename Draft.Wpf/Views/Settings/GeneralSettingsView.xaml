@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:section="clr-namespace:Draft.Controls.Settings"
     xmlns:settings="clr-namespace:Draft.Wpf.Controls.Settings"
     d:DesignHeight="500"
     d:DesignWidth="540"
@@ -17,33 +18,87 @@
     </UserControl.Resources>
 
     <Border Background="{StaticResource Brush.Background.Window}">
-        <StackPanel VerticalAlignment="Top">
-            <TextBlock
-                MaxWidth="420"
-                Margin="0,8,0,0"
-                HorizontalAlignment="Left"
-                FontFamily="{StaticResource Font.Inter}"
-                FontSize="14"
-                Foreground="{StaticResource Brush.PrimaryText}"
-                Text="Dolor sit amet, consectetur adipiscing elit."
-                TextWrapping="Wrap" />
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            Style="{StaticResource SettingsScrollViewer}"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel VerticalAlignment="Top">
+                <TextBlock
+                    MaxWidth="420"
+                    Margin="0,8,0,32"
+                    HorizontalAlignment="Left"
+                    FontFamily="{StaticResource Font.Inter}"
+                    FontSize="14"
+                    Foreground="{StaticResource Brush.Text.Secondary}"
+                    Text="{Binding Description}"
+                    TextWrapping="Wrap" />
 
-            <StackPanel Margin="0,32,0,0">
+                <section:SectionHeader Title="Startup &amp; Behavior" />
+
                 <settings:SettingCard
-                    Title="Lorem ipsum"
                     Margin="0,0,0,12"
-                    Description="Dolor sit amet, consectetur adipiscing elit">
-                    <CheckBox Style="{StaticResource SettingsCheckBox}" />
+                    Title="Reopen last workspace on startup"
+                    Description="Automatically restore the files and layout from your last session.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.ReopenLastWorkspaceOnStartup, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="Sed do eiusmod"
-                    Margin="0,0,0,16"
-                    Description="Tempor incididunt ut labore et dolore magna aliqua">
-                    <CheckBox Style="{StaticResource SettingsCheckBox}" />
+                    Margin="0,0,0,12"
+                    Title="Autosave enabled"
+                    Description="Save your changes automatically while you work.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.AutosaveEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
-                <settings:SettingFieldCard Title="Ut enim ad minim">
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Autosave interval"
+                    Description="Choose how often Draft should save changes automatically.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        IsEnabled="{Binding Settings.IsAutosaveIntervalEnabled}"
+                        ItemsSource="{Binding Settings.AutosaveIntervalOptions}"
+                        SelectedItem="{Binding Settings.AutosaveInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Save on focus lost"
+                    Description="Save the current file when Draft loses focus or you switch away from the app.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.SaveOnFocusLost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Confirm before closing unsaved files"
+                    Description="Show a warning before closing files with unsaved changes.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.ConfirmBeforeClosingUnsavedFiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,32"
+                    Title="Default startup mode"
+                    Description="Choose which workspace mode Draft should open with.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        ItemsSource="{Binding Settings.DefaultStartupModeOptions}"
+                        SelectedItem="{Binding Settings.DefaultStartupMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <section:SectionHeader Title="File Management" />
+
+                <settings:SettingFieldCard Margin="0,0,0,12" Title="Default save location">
                     <Grid Height="36">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -52,20 +107,33 @@
 
                         <TextBox
                             Grid.Column="0"
-                            Width="Auto"
                             HorizontalAlignment="Stretch"
                             Style="{StaticResource SettingsTextBox}"
-                            Text="Lorem ipsum dolor sit amet" />
+                            Text="{Binding Settings.DefaultSaveLocation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                         <Button
                             Grid.Column="1"
+                            Width="96"
                             Margin="8,0,0,0"
-                            Padding="16,0"
+                            Command="{Binding Settings.BrowseDefaultSaveLocationCommand}"
                             Content="Browse"
                             Style="{StaticResource SettingButton}" />
                     </Grid>
                 </settings:SettingFieldCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Default file extension"
+                    Description="Choose the default extension for newly created files.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        IsEnabled="False"
+                        ItemsSource="{Binding Settings.DefaultFileExtensionOptions}"
+                        SelectedItem="{Binding Settings.DefaultFileExtension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
             </StackPanel>
-        </StackPanel>
+        </ScrollViewer>
     </Border>
 </UserControl>

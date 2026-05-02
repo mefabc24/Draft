@@ -16,18 +16,27 @@ public partial class MainWindow : Window
     private const string WorkspaceModeMessageType = "workspaceModeChanged";
     private const string LoadDocumentMessageType = "loadDocument";
     private const string DocumentChangedMessageType = "documentChanged";
+    private const string SettingsChangedMessageType = "settingsChanged";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private DraftSettings _settings;
     private bool _isWebViewReady;
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     public MainWindow()
-        : this(new MainWindowViewModel())
+        : this(new MainWindowViewModel(), AppSettingsStore.Load())
     {
     }
 
     public MainWindow(MainWindowViewModel viewModel)
+        : this(viewModel, AppSettingsStore.Load())
+    {
+    }
+
+    public MainWindow(MainWindowViewModel viewModel, DraftSettings settings)
     {
         InitializeComponent();
+        _settings = settings;
+        viewModel.ApplySettings(settings);
         DataContext = viewModel;
         SubscribeToViewModel(viewModel);
         Loaded += MainWindow_Loaded;
@@ -40,6 +49,8 @@ public partial class MainWindow : Window
         await WorkspaceWebView.EnsureCoreWebView2Async();
 
         WorkspaceWebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+        WorkspaceWebView.CoreWebView2.Settings.IsZoomControlEnabled = false;
+        WorkspaceWebView.ZoomFactor = 1.0;
         WorkspaceWebView.CoreWebView2.SetVirtualHostNameToFolderMapping(
             WebHostName,
             webRootPath,
@@ -151,6 +162,13 @@ public partial class MainWindow : Window
             FileName = ViewModel.DisplayFileName,
         };
 
+        string? initialDirectory = GetDefaultSaveDirectory();
+
+        if (initialDirectory is not null)
+        {
+            dialog.InitialDirectory = initialDirectory;
+        }
+
         if (dialog.ShowDialog(this) != true)
             return;
 
@@ -183,6 +201,7 @@ public partial class MainWindow : Window
         };
 
         settingsWindow.ShowDialog();
+        ApplySettings(AppSettingsStore.Load());
     }
 
     private void ViewModel_FileOperationFailed(object? sender, FileOperationFailedEventArgs e)
@@ -197,6 +216,9 @@ public partial class MainWindow : Window
 
     private bool ConfirmDiscardUnsavedChanges()
     {
+        if (ViewModel?.ConfirmBeforeClosingUnsavedFiles == false)
+            return true;
+
         if (ViewModel?.IsDirty != true)
             return true;
 
@@ -212,6 +234,9 @@ public partial class MainWindow : Window
 
     private bool ConfirmCloseWithUnsavedChanges()
     {
+        if (ViewModel?.ConfirmBeforeClosingUnsavedFiles == false)
+            return true;
+
         if (ViewModel?.HasUnsavedWork != true)
             return true;
 
@@ -241,6 +266,43 @@ public partial class MainWindow : Window
             return;
 
         PostWorkspaceMode(ViewModel.WorkspaceMode);
+    }
+
+    private void ApplySettings(DraftSettings settings)
+    {
+        _settings = settings;
+        ViewModel?.ApplySettings(settings);
+        PostSettingsToWebView();
+    }
+
+    private void PostSettingsToWebView()
+    {
+        if (!_isWebViewReady)
+            return;
+
+        string message = JsonSerializer.Serialize(new SettingsChangedMessage(
+            SettingsChangedMessageType,
+            _settings.EditorFontFamily,
+            _settings.EditorFontSize,
+            _settings.LineHeight,
+            _settings.WordWrap,
+            _settings.ShowLineNumbers,
+            _settings.HighlightCurrentLine,
+            _settings.ShowWhitespaceCharacters,
+            _settings.ShowIndentationGuides,
+            _settings.TabSize,
+            _settings.InsertSpacesInsteadOfTabs,
+            _settings.AutoPairBrackets,
+            _settings.AutoPairQuotes,
+            _settings.MarkdownSyntaxHighlighting,
+            _settings.CursorStyle,
+            _settings.CursorBlinking),
+            JsonOptions);
+
+        WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
+
+        // TODO: Wire preview link/security settings once link interception is hosted.
+        // TODO: Wire preview scroll sync settings once editor/preview section mapping exists.
     }
 
     private void PostDocumentToWebView()
@@ -298,6 +360,7 @@ public partial class MainWindow : Window
             WorkspaceLoaderOverlay.Visibility = Visibility.Collapsed;
         }
 
+        PostSettingsToWebView();
         SyncWebViewWithWorkspaceState();
         PostDocumentToWebView();
     }
@@ -384,6 +447,17 @@ public partial class MainWindow : Window
             workspaceMode);
     }
 
+    private string? GetDefaultSaveDirectory()
+    {
+        if (!string.IsNullOrWhiteSpace(ViewModel?.DefaultSaveLocation)
+            && Directory.Exists(ViewModel.DefaultSaveLocation))
+        {
+            return ViewModel.DefaultSaveLocation;
+        }
+
+        return null;
+    }
+
     private static bool IsValidWindowBounds(Rect bounds)
     {
         if (bounds.Width < 480 || bounds.Height < 320)
@@ -410,4 +484,22 @@ public partial class MainWindow : Window
     private sealed record WorkspaceModeMessage(string Type, string Mode);
 
     private sealed record LoadDocumentMessage(string Type, string Content, string FileName);
+
+    private sealed record SettingsChangedMessage(
+        string Type,
+        string EditorFontFamily,
+        int EditorFontSize,
+        double LineHeight,
+        bool WordWrap,
+        bool ShowLineNumbers,
+        bool HighlightCurrentLine,
+        string ShowWhitespaceCharacters,
+        bool ShowIndentationGuides,
+        int TabSize,
+        bool InsertSpacesInsteadOfTabs,
+        bool AutoPairBrackets,
+        bool AutoPairQuotes,
+        bool MarkdownSyntaxHighlighting,
+        string CursorStyle,
+        bool CursorBlinking);
 }

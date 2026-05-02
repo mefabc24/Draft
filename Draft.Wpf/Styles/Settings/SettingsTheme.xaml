@@ -5,5 +5,6 @@
         <ResourceDictionary Source="/Styles/Settings/CheckBox.xaml" />
         <ResourceDictionary Source="/Styles/Settings/ComboBox.xaml" />
         <ResourceDictionary Source="/Styles/Settings/TextBox.xaml" />
+        <ResourceDictionary Source="/Styles/Settings/ScrollViewer.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

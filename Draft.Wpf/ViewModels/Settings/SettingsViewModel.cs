@@ -1,20 +1,114 @@
 using Draft.Helpers;
+using Microsoft.Win32;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace Draft.ViewModels;
 
 public class SettingsViewModel : BaseViewModel
 {
-    private readonly GeneralSettingsPageViewModel _generalSettingsPage = new();
-    private readonly EditorSettingsPageViewModel _editorSettingsPage = new();
-    private readonly PreviewSettingsPageViewModel _previewSettingsPage = new();
-    private readonly AppearanceSettingsPageViewModel _appearanceSettingsPage = new();
+    private readonly GeneralSettingsPageViewModel _generalSettingsPage;
+    private readonly EditorSettingsPageViewModel _editorSettingsPage;
+    private readonly PreviewSettingsPageViewModel _previewSettingsPage;
+    private readonly AppearanceSettingsPageViewModel _appearanceSettingsPage;
+    private readonly AboutSettingsPageViewModel _aboutSettingsPage;
+    private DraftSettings _originalSettings;
     private SettingsPage _selectedPage = SettingsPage.General;
     private SettingsPageViewModel _currentSettingsPage;
 
+    private bool _reopenLastWorkspaceOnStartup;
+    private bool _autosaveEnabled;
+    private string _autosaveInterval = "10s";
+    private bool _saveOnFocusLost;
+    private bool _confirmBeforeClosingUnsavedFiles = true;
+    private string _defaultStartupMode = "Last";
+    private string _defaultSaveLocation = string.Empty;
+    private string _defaultFileExtension = ".md";
+    private string _editorFontFamily = "JetBrains Mono";
+    private int _editorFontSize = 18;
+    private double _lineHeight = 1.6;
+    private bool _wordWrap = true;
+    private bool _showLineNumbers = true;
+    private bool _highlightCurrentLine = true;
+    private string _showWhitespaceCharacters = "Never";
+    private bool _showIndentationGuides;
+    private int _tabSize = 4;
+    private bool _insertSpacesInsteadOfTabs = true;
+    private bool _autoPairBrackets = true;
+    private bool _autoPairQuotes = true;
+    private bool _markdownSyntaxHighlighting = true;
+    private string _cursorStyle = "Line";
+    private bool _cursorBlinking = true;
+    private string _markdownTheme = "Default";
+    private bool _openLinksInBrowser = true;
+    private bool _confirmBeforeOpeningExternalLinks;
+    private bool _syncScrollWithEditor;
+    private bool _scrollPreviewToEditedSection;
+    private string _appTheme = "Dark";
+    private bool _isStatusBarVisible = true;
+    private string _toolbarControlbarPosition = "Top";
+
     public SettingsViewModel()
     {
+        BrowseDefaultSaveLocationCommand = new RelayCommand(BrowseDefaultSaveLocation);
+        ApplySettingsCommand = new RelayCommand(ApplyChanges);
+        CancelSettingsCommand = new RelayCommand(CancelChanges);
+
+        _originalSettings = AppSettingsStore.Load();
+        ApplySettings(_originalSettings);
+
+        _generalSettingsPage = new GeneralSettingsPageViewModel(this);
+        _editorSettingsPage = new EditorSettingsPageViewModel(this);
+        _previewSettingsPage = new PreviewSettingsPageViewModel(this);
+        _appearanceSettingsPage = new AppearanceSettingsPageViewModel(this);
+        _aboutSettingsPage = new AboutSettingsPageViewModel(this);
         _currentSettingsPage = _generalSettingsPage;
     }
+
+    public IReadOnlyList<string> AutosaveIntervalOptions { get; } =
+        new[] { "5s", "10s", "30s", "1m", "5m" };
+
+    public IReadOnlyList<string> DefaultStartupModeOptions { get; } =
+        new[] { "Last", "Editor", "Split", "Preview" };
+
+    public IReadOnlyList<string> DefaultFileExtensionOptions { get; } =
+        new[] { ".md" };
+
+    public IReadOnlyList<string> EditorFontFamilyOptions { get; } =
+        new[] { "Cascadia Code", "Cascadia Mono", "Consolas", "JetBrains Mono" };
+
+    public IReadOnlyList<int> EditorFontSizeOptions { get; } =
+        new[] { 12, 14, 16, 18, 20 };
+
+    public IReadOnlyList<double> LineHeightOptions { get; } =
+        new[] { 1.2, 1.4, 1.6, 1.8, 2.0 };
+
+    public IReadOnlyList<string> ShowWhitespaceCharactersOptions { get; } =
+        new[] { "Always", "Never", "Highlighted Only" };
+
+    public IReadOnlyList<int> TabSizeOptions { get; } =
+        new[] { 2, 4, 8 };
+
+    public IReadOnlyList<string> CursorStyleOptions { get; } =
+        new[] { "Line", "Block", "Underline" };
+
+    public IReadOnlyList<string> MarkdownThemeOptions { get; } =
+        new[] { "Default" };
+
+    public IReadOnlyList<string> AppThemeOptions { get; } =
+        new[] { "Dark" };
+
+    public IReadOnlyList<string> ToolbarControlbarPositionOptions { get; } =
+        new[] { "Top", "Left", "Right" };
+
+    public ICommand BrowseDefaultSaveLocationCommand { get; }
+
+    public ICommand ApplySettingsCommand { get; }
+
+    public ICommand CancelSettingsCommand { get; }
+
+    public event EventHandler? CloseRequested;
 
     public SettingsPageViewModel CurrentSettingsPage
     {
@@ -69,6 +163,242 @@ public class SettingsViewModel : BaseViewModel
         }
     }
 
+    public bool IsAboutSettingsSelected
+    {
+        get => _selectedPage == SettingsPage.About;
+        set
+        {
+            if (value)
+                SelectSettingsPage(SettingsPage.About);
+        }
+    }
+
+    public bool ReopenLastWorkspaceOnStartup
+    {
+        get => _reopenLastWorkspaceOnStartup;
+        set => SetSetting(ref _reopenLastWorkspaceOnStartup, value);
+    }
+
+    public bool AutosaveEnabled
+    {
+        get => _autosaveEnabled;
+        set
+        {
+            if (SetSetting(ref _autosaveEnabled, value))
+            {
+                OnPropertyChanged(nameof(IsAutosaveIntervalEnabled));
+            }
+        }
+    }
+
+    public bool IsAutosaveIntervalEnabled => AutosaveEnabled;
+
+    public string AutosaveInterval
+    {
+        get => _autosaveInterval;
+        set => SetSetting(
+            ref _autosaveInterval,
+            EnsureOption(AutosaveIntervalOptions, value, "10s"));
+    }
+
+    public bool SaveOnFocusLost
+    {
+        get => _saveOnFocusLost;
+        set => SetSetting(ref _saveOnFocusLost, value);
+    }
+
+    public bool ConfirmBeforeClosingUnsavedFiles
+    {
+        get => _confirmBeforeClosingUnsavedFiles;
+        set => SetSetting(ref _confirmBeforeClosingUnsavedFiles, value);
+    }
+
+    public string DefaultStartupMode
+    {
+        get => _defaultStartupMode;
+        set => SetSetting(
+            ref _defaultStartupMode,
+            EnsureOption(DefaultStartupModeOptions, value, "Last"));
+    }
+
+    public string DefaultSaveLocation
+    {
+        get => _defaultSaveLocation;
+        set => SetSetting(ref _defaultSaveLocation, value ?? string.Empty);
+    }
+
+    public string DefaultFileExtension
+    {
+        get => _defaultFileExtension;
+        set => SetSetting(
+            ref _defaultFileExtension,
+            EnsureOption(DefaultFileExtensionOptions, value, ".md"));
+    }
+
+    public string EditorFontFamily
+    {
+        get => _editorFontFamily;
+        set => SetSetting(
+            ref _editorFontFamily,
+            EnsureOption(EditorFontFamilyOptions, value, "JetBrains Mono"));
+    }
+
+    public int EditorFontSize
+    {
+        get => _editorFontSize;
+        set => SetSetting(
+            ref _editorFontSize,
+            EnsureOption(EditorFontSizeOptions, value, 18));
+    }
+
+    public double LineHeight
+    {
+        get => _lineHeight;
+        set => SetSetting(
+            ref _lineHeight,
+            EnsureOption(LineHeightOptions, value, 1.6));
+    }
+
+    public bool WordWrap
+    {
+        get => _wordWrap;
+        set => SetSetting(ref _wordWrap, value);
+    }
+
+    public bool ShowLineNumbers
+    {
+        get => _showLineNumbers;
+        set => SetSetting(ref _showLineNumbers, value);
+    }
+
+    public bool HighlightCurrentLine
+    {
+        get => _highlightCurrentLine;
+        set => SetSetting(ref _highlightCurrentLine, value);
+    }
+
+    public string ShowWhitespaceCharacters
+    {
+        get => _showWhitespaceCharacters;
+        set => SetSetting(
+            ref _showWhitespaceCharacters,
+            EnsureOption(ShowWhitespaceCharactersOptions, value, "Never"));
+    }
+
+    public bool ShowIndentationGuides
+    {
+        get => _showIndentationGuides;
+        set => SetSetting(ref _showIndentationGuides, value);
+    }
+
+    public int TabSize
+    {
+        get => _tabSize;
+        set => SetSetting(
+            ref _tabSize,
+            EnsureOption(TabSizeOptions, value, 4));
+    }
+
+    public bool InsertSpacesInsteadOfTabs
+    {
+        get => _insertSpacesInsteadOfTabs;
+        set => SetSetting(ref _insertSpacesInsteadOfTabs, value);
+    }
+
+    public bool AutoPairBrackets
+    {
+        get => _autoPairBrackets;
+        set => SetSetting(ref _autoPairBrackets, value);
+    }
+
+    public bool AutoPairQuotes
+    {
+        get => _autoPairQuotes;
+        set => SetSetting(ref _autoPairQuotes, value);
+    }
+
+    public bool MarkdownSyntaxHighlighting
+    {
+        get => _markdownSyntaxHighlighting;
+        set => SetSetting(ref _markdownSyntaxHighlighting, value);
+    }
+
+    public string CursorStyle
+    {
+        get => _cursorStyle;
+        set => SetSetting(
+            ref _cursorStyle,
+            EnsureOption(CursorStyleOptions, value, "Line"));
+    }
+
+    public bool CursorBlinking
+    {
+        get => _cursorBlinking;
+        set => SetSetting(ref _cursorBlinking, value);
+    }
+
+    public string MarkdownTheme
+    {
+        get => _markdownTheme;
+        set => SetSetting(
+            ref _markdownTheme,
+            EnsureOption(MarkdownThemeOptions, value, "Default"));
+    }
+
+    public bool OpenLinksInBrowser
+    {
+        get => _openLinksInBrowser;
+        set => SetSetting(ref _openLinksInBrowser, value);
+    }
+
+    public bool ConfirmBeforeOpeningExternalLinks
+    {
+        get => _confirmBeforeOpeningExternalLinks;
+        set => SetSetting(ref _confirmBeforeOpeningExternalLinks, value);
+    }
+
+    public bool SyncScrollWithEditor
+    {
+        get => _syncScrollWithEditor;
+        set
+        {
+            if (SetSetting(ref _syncScrollWithEditor, value))
+            {
+                OnPropertyChanged(nameof(IsScrollPreviewToEditedSectionEnabled));
+            }
+        }
+    }
+
+    public bool IsScrollPreviewToEditedSectionEnabled => SyncScrollWithEditor;
+
+    public bool ScrollPreviewToEditedSection
+    {
+        get => _scrollPreviewToEditedSection;
+        set => SetSetting(ref _scrollPreviewToEditedSection, value);
+    }
+
+    public string AppTheme
+    {
+        get => _appTheme;
+        set => SetSetting(
+            ref _appTheme,
+            EnsureOption(AppThemeOptions, value, "Dark"));
+    }
+
+    public bool IsStatusBarVisible
+    {
+        get => _isStatusBarVisible;
+        set => SetSetting(ref _isStatusBarVisible, value);
+    }
+
+    public string ToolbarControlbarPosition
+    {
+        get => _toolbarControlbarPosition;
+        set => SetSetting(
+            ref _toolbarControlbarPosition,
+            EnsureOption(ToolbarControlbarPositionOptions, value, "Top"));
+    }
+
     public void SelectSettingsPage(SettingsPage page)
     {
         if (_selectedPage == page)
@@ -81,6 +411,7 @@ public class SettingsViewModel : BaseViewModel
             SettingsPage.Editor => _editorSettingsPage,
             SettingsPage.Preview => _previewSettingsPage,
             SettingsPage.Appearance => _appearanceSettingsPage,
+            SettingsPage.About => _aboutSettingsPage,
             _ => _generalSettingsPage,
         };
 
@@ -88,5 +419,161 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsEditorSettingsSelected));
         OnPropertyChanged(nameof(IsPreviewSettingsSelected));
         OnPropertyChanged(nameof(IsAppearanceSettingsSelected));
+        OnPropertyChanged(nameof(IsAboutSettingsSelected));
+    }
+
+    private void ApplySettings(DraftSettings settings)
+    {
+        _reopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup;
+        _autosaveEnabled = settings.AutosaveEnabled;
+        _autosaveInterval = EnsureOption(AutosaveIntervalOptions, settings.AutosaveInterval, "10s");
+        _saveOnFocusLost = settings.SaveOnFocusLost;
+        _confirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles;
+        _defaultStartupMode = EnsureOption(DefaultStartupModeOptions, settings.DefaultStartupMode, "Last");
+        _defaultSaveLocation = settings.DefaultSaveLocation ?? string.Empty;
+        _defaultFileExtension = EnsureOption(DefaultFileExtensionOptions, settings.DefaultFileExtension, ".md");
+        _editorFontFamily = EnsureOption(EditorFontFamilyOptions, settings.EditorFontFamily, "JetBrains Mono");
+        _editorFontSize = EnsureOption(EditorFontSizeOptions, settings.EditorFontSize, 18);
+        _lineHeight = EnsureOption(LineHeightOptions, settings.LineHeight, 1.6);
+        _wordWrap = settings.WordWrap;
+        _showLineNumbers = settings.ShowLineNumbers;
+        _highlightCurrentLine = settings.HighlightCurrentLine;
+        _showWhitespaceCharacters = EnsureOption(ShowWhitespaceCharactersOptions, settings.ShowWhitespaceCharacters, "Never");
+        _showIndentationGuides = settings.ShowIndentationGuides;
+        _tabSize = EnsureOption(TabSizeOptions, settings.TabSize, 4);
+        _insertSpacesInsteadOfTabs = settings.InsertSpacesInsteadOfTabs;
+        _autoPairBrackets = settings.AutoPairBrackets;
+        _autoPairQuotes = settings.AutoPairQuotes;
+        _markdownSyntaxHighlighting = settings.MarkdownSyntaxHighlighting;
+        _cursorStyle = EnsureOption(CursorStyleOptions, settings.CursorStyle, "Line");
+        _cursorBlinking = settings.CursorBlinking;
+        _markdownTheme = EnsureOption(MarkdownThemeOptions, settings.MarkdownTheme, "Default");
+        _openLinksInBrowser = settings.OpenLinksInBrowser;
+        _confirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks;
+        _syncScrollWithEditor = settings.SyncScrollWithEditor;
+        _scrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection;
+        _appTheme = EnsureOption(AppThemeOptions, settings.AppTheme, "Dark");
+        _isStatusBarVisible = settings.IsStatusBarVisible;
+        _toolbarControlbarPosition = EnsureOption(ToolbarControlbarPositionOptions, settings.ToolbarControlbarPosition, "Top");
+    }
+
+    private void BrowseDefaultSaveLocation()
+    {
+        OpenFolderDialog dialog = new()
+        {
+            Title = "Choose default save location",
+            InitialDirectory = Directory.Exists(DefaultSaveLocation)
+                ? DefaultSaveLocation
+                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            Multiselect = false,
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            DefaultSaveLocation = dialog.FolderName;
+        }
+    }
+
+    private void ApplyChanges()
+    {
+        DraftSettings settings = CaptureSettings();
+        AppSettingsStore.TrySave(settings);
+        _originalSettings = settings;
+        CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void CancelChanges()
+    {
+        ApplySettings(_originalSettings);
+        RaiseAllSettingsPropertiesChanged();
+        CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private bool SetSetting<T>(
+        ref T field,
+        T value,
+        [CallerMemberName] string? propertyName = null)
+    {
+        return SetProperty(ref field, value, propertyName);
+    }
+
+    private DraftSettings CaptureSettings()
+    {
+        return new DraftSettings
+        {
+            ReopenLastWorkspaceOnStartup = ReopenLastWorkspaceOnStartup,
+            AutosaveEnabled = AutosaveEnabled,
+            AutosaveInterval = AutosaveInterval,
+            SaveOnFocusLost = SaveOnFocusLost,
+            ConfirmBeforeClosingUnsavedFiles = ConfirmBeforeClosingUnsavedFiles,
+            DefaultStartupMode = DefaultStartupMode,
+            DefaultSaveLocation = DefaultSaveLocation,
+            DefaultFileExtension = DefaultFileExtension,
+            EditorFontFamily = EditorFontFamily,
+            EditorFontSize = EditorFontSize,
+            LineHeight = LineHeight,
+            WordWrap = WordWrap,
+            ShowLineNumbers = ShowLineNumbers,
+            HighlightCurrentLine = HighlightCurrentLine,
+            ShowWhitespaceCharacters = ShowWhitespaceCharacters,
+            ShowIndentationGuides = ShowIndentationGuides,
+            TabSize = TabSize,
+            InsertSpacesInsteadOfTabs = InsertSpacesInsteadOfTabs,
+            AutoPairBrackets = AutoPairBrackets,
+            AutoPairQuotes = AutoPairQuotes,
+            MarkdownSyntaxHighlighting = MarkdownSyntaxHighlighting,
+            CursorStyle = CursorStyle,
+            CursorBlinking = CursorBlinking,
+            MarkdownTheme = MarkdownTheme,
+            OpenLinksInBrowser = OpenLinksInBrowser,
+            ConfirmBeforeOpeningExternalLinks = ConfirmBeforeOpeningExternalLinks,
+            SyncScrollWithEditor = SyncScrollWithEditor,
+            ScrollPreviewToEditedSection = ScrollPreviewToEditedSection,
+            AppTheme = AppTheme,
+            IsStatusBarVisible = IsStatusBarVisible,
+            ToolbarControlbarPosition = ToolbarControlbarPosition,
+        };
+    }
+
+    private static T EnsureOption<T>(IReadOnlyCollection<T> options, T value, T fallback)
+    {
+        return options.Contains(value) ? value : fallback;
+    }
+
+    private void RaiseAllSettingsPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(ReopenLastWorkspaceOnStartup));
+        OnPropertyChanged(nameof(AutosaveEnabled));
+        OnPropertyChanged(nameof(IsAutosaveIntervalEnabled));
+        OnPropertyChanged(nameof(AutosaveInterval));
+        OnPropertyChanged(nameof(SaveOnFocusLost));
+        OnPropertyChanged(nameof(ConfirmBeforeClosingUnsavedFiles));
+        OnPropertyChanged(nameof(DefaultStartupMode));
+        OnPropertyChanged(nameof(DefaultSaveLocation));
+        OnPropertyChanged(nameof(DefaultFileExtension));
+        OnPropertyChanged(nameof(EditorFontFamily));
+        OnPropertyChanged(nameof(EditorFontSize));
+        OnPropertyChanged(nameof(LineHeight));
+        OnPropertyChanged(nameof(WordWrap));
+        OnPropertyChanged(nameof(ShowLineNumbers));
+        OnPropertyChanged(nameof(HighlightCurrentLine));
+        OnPropertyChanged(nameof(ShowWhitespaceCharacters));
+        OnPropertyChanged(nameof(ShowIndentationGuides));
+        OnPropertyChanged(nameof(TabSize));
+        OnPropertyChanged(nameof(InsertSpacesInsteadOfTabs));
+        OnPropertyChanged(nameof(AutoPairBrackets));
+        OnPropertyChanged(nameof(AutoPairQuotes));
+        OnPropertyChanged(nameof(MarkdownSyntaxHighlighting));
+        OnPropertyChanged(nameof(CursorStyle));
+        OnPropertyChanged(nameof(CursorBlinking));
+        OnPropertyChanged(nameof(MarkdownTheme));
+        OnPropertyChanged(nameof(OpenLinksInBrowser));
+        OnPropertyChanged(nameof(ConfirmBeforeOpeningExternalLinks));
+        OnPropertyChanged(nameof(SyncScrollWithEditor));
+        OnPropertyChanged(nameof(IsScrollPreviewToEditedSectionEnabled));
+        OnPropertyChanged(nameof(ScrollPreviewToEditedSection));
+        OnPropertyChanged(nameof(AppTheme));
+        OnPropertyChanged(nameof(IsStatusBarVisible));
+        OnPropertyChanged(nameof(ToolbarControlbarPosition));
     }
 }

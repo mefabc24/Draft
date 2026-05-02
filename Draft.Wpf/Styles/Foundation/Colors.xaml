@@ -13,6 +13,7 @@
     <Color x:Key="Color.Background.Hover">#1F2020</Color>
     <Color x:Key="Color.Background.SelectedHover">#1F1F1F</Color>
     <Color x:Key="Color.Background.WindowControlClose">#C42B1C</Color>
+    <Color x:Key="Color.Background.ScrollbarThumb">#353535</Color>
 
     <!-- Border Colors -->
     <Color x:Key="Color.Border.Default">#1C1C1C</Color>
@@ -53,6 +54,7 @@
     <SolidColorBrush x:Key="Brush.Background.Hover" Color="{StaticResource Color.Background.Hover}" />
     <SolidColorBrush x:Key="Brush.Background.SelectedHover" Color="{StaticResource Color.Background.SelectedHover}" />
     <SolidColorBrush x:Key="Brush.Background.WindowControlClose" Color="{StaticResource Color.Background.WindowControlClose}" />
+    <SolidColorBrush x:Key="Brush.Background.ScrollbarThumb" Color="{StaticResource Color.Background.ScrollbarThumb}" />
 
     <!-- Border Brushes -->
     <SolidColorBrush x:Key="Brush.Border.Default" Color="{StaticResource Color.Border.Default}" />

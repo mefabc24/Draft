@@ -31,6 +31,9 @@
             <DataTemplate DataType="{x:Type settingsVm:AppearanceSettingsPageViewModel}">
                 <settings:AppearanceSettingsView />
             </DataTemplate>
+            <DataTemplate DataType="{x:Type settingsVm:AboutSettingsPageViewModel}">
+                <settings:AboutSettingsView />
+            </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -43,9 +46,18 @@
 
     <Border
         Background="{StaticResource Brush.WindowBG}"
-        BorderBrush="{StaticResource Brush.PrimaryAccent}"
         BorderThickness="1"
         CornerRadius="8">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
+                        <Setter Property="BorderBrush" Value="#3D3D3D" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250" />
@@ -127,13 +139,30 @@
                                 <TextBlock Margin="12,0,0,0" Text="Preview" />
                             </StackPanel>
                         </RadioButton>
+
+                        <RadioButton
+                            Margin="0,0,0,4"
+                            Height="36"
+                            GroupName="SettingsMenu"
+                            IsChecked="{Binding IsAppearanceSettingsSelected, Mode=TwoWay}"
+                            Style="{StaticResource SettingsMenuRadioButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path
+                                    Width="16"
+                                    Height="16"
+                                    Data="{StaticResource Icon.Settings}"
+                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                    Stretch="Uniform" />
+                                <TextBlock Margin="12,0,0,0" Text="Appearance" />
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
 
                     <RadioButton
                         Grid.Row="2"
                         Height="36"
                         GroupName="SettingsMenu"
-                        IsChecked="{Binding IsAppearanceSettingsSelected, Mode=TwoWay}"
+                        IsChecked="{Binding IsAboutSettingsSelected, Mode=TwoWay}"
                         Style="{StaticResource SettingsMenuRadioButton}">
                         <StackPanel Orientation="Horizontal">
                             <Path
@@ -142,7 +171,7 @@
                                 Data="{StaticResource Icon.Settings}"
                                 Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                 Stretch="Uniform" />
-                            <TextBlock Margin="12,0,0,0" Text="Appearance" />
+                            <TextBlock Margin="12,0,0,0" Text="About" />
                         </StackPanel>
                     </RadioButton>
                 </Grid>
@@ -191,9 +220,24 @@
 
                     <ContentControl Grid.Row="1" Content="{Binding CurrentSettingsPage}" />
 
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Height="30">
-                        <Button Content="Apply Changes" Style="{StaticResource SettingsResetButton}" VerticalAlignment="Stretch" Padding="24,0" Margin="0,0,16,0"/>
-                        <Button Content="Apply Changes" Style="{StaticResource SettingsApplyButton}" VerticalAlignment="Stretch" Padding="24,0"/>
+                    <StackPanel
+                        Grid.Row="2"
+                        Height="30"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <Button
+                            Margin="0,0,16,0"
+                            Padding="24,0"
+                            Command="{Binding CancelSettingsCommand}"
+                            Content="Cancel"
+                            Style="{StaticResource SettingsCancelButton}"
+                            VerticalAlignment="Stretch" />
+                        <Button
+                            Padding="24,0"
+                            Command="{Binding ApplySettingsCommand}"
+                            Content="Apply Changes"
+                            Style="{StaticResource SettingsApplyButton}"
+                            VerticalAlignment="Stretch" />
                     </StackPanel>
                 </Grid>
             </Border>

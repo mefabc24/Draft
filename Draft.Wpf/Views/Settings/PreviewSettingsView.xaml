@@ -4,6 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:section="clr-namespace:Draft.Controls.Settings"
+    xmlns:settings="clr-namespace:Draft.Wpf.Controls.Settings"
     d:DesignHeight="500"
     d:DesignWidth="540"
     mc:Ignorable="d">
@@ -15,18 +17,75 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border
-        Background="{StaticResource Brush.Background.Window}">
-        <StackPanel VerticalAlignment="Top">
-            <TextBlock
-                MaxWidth="420"
-                Margin="0,8,0,0"
-                HorizontalAlignment="Left"
-                FontFamily="{StaticResource Font.Inter}"
-                FontSize="14"
-                Foreground="{StaticResource Brush.PrimaryText}"
-                Text="{Binding Description, FallbackValue='Preview rendering options will appear here.'}"
-                TextWrapping="Wrap" />
-        </StackPanel>
+    <Border Background="{StaticResource Brush.Background.Window}">
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            Style="{StaticResource SettingsScrollViewer}"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel VerticalAlignment="Top">
+                <TextBlock
+                    MaxWidth="420"
+                    Margin="0,8,0,32"
+                    HorizontalAlignment="Left"
+                    FontFamily="{StaticResource Font.Inter}"
+                    FontSize="14"
+                    Foreground="{StaticResource Brush.Text.Secondary}"
+                    Text="{Binding Description}"
+                    TextWrapping="Wrap" />
+
+                <section:SectionHeader Title="Rendering" />
+
+                <settings:SettingFieldCard Margin="0,0,0,32" Title="Markdown theme">
+                    <ComboBox
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        IsEnabled="False"
+                        ItemsSource="{Binding Settings.MarkdownThemeOptions}"
+                        SelectedItem="{Binding Settings.MarkdownTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingFieldCard>
+
+                <section:SectionHeader Title="Links &amp; Security" />
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Open links in browser"
+                    Description="Open clicked links in your default external browser.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.OpenLinksInBrowser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,32"
+                    Title="Confirm before opening external links"
+                    Description="Ask for confirmation before opening links outside Draft.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.ConfirmBeforeOpeningExternalLinks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <section:SectionHeader Title="Scroll Behavior" />
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Sync scroll with editor"
+                    Description="Keep the preview scroll position aligned with the editor.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.SyncScrollWithEditor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Scroll preview to edited section"
+                    Description="Automatically jump the preview to the section you are currently editing.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.ScrollPreviewToEditedSection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        IsEnabled="{Binding Settings.IsScrollPreviewToEditedSectionEnabled}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+            </StackPanel>
+        </ScrollViewer>
     </Border>
 </UserControl>

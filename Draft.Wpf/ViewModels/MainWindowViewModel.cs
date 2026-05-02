@@ -21,6 +21,9 @@ public class MainWindowViewModel : BaseViewModel
     private string _lastSavedContent = string.Empty;
     private int _wordCount;
     private bool _isDirty;
+    private bool _confirmBeforeClosingUnsavedFiles = true;
+    private bool _isStatusBarVisible = true;
+    private string _defaultSaveLocation = string.Empty;
 
     public WorkspaceState WorkspaceState
     {
@@ -115,6 +118,45 @@ public class MainWindowViewModel : BaseViewModel
     public bool HasUnsavedWork => IsDirty
         || (!HasFilePath && !string.IsNullOrEmpty(CurrentContent));
 
+    public bool ConfirmBeforeClosingUnsavedFiles
+    {
+        get => _confirmBeforeClosingUnsavedFiles;
+        private set
+        {
+            if (_confirmBeforeClosingUnsavedFiles == value)
+                return;
+
+            _confirmBeforeClosingUnsavedFiles = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsStatusBarVisible
+    {
+        get => _isStatusBarVisible;
+        private set
+        {
+            if (_isStatusBarVisible == value)
+                return;
+
+            _isStatusBarVisible = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string DefaultSaveLocation
+    {
+        get => _defaultSaveLocation;
+        private set
+        {
+            if (_defaultSaveLocation == value)
+                return;
+
+            _defaultSaveLocation = value;
+            OnPropertyChanged();
+        }
+    }
+
     public string WorkspaceMode => WorkspaceState switch
     {
         WorkspaceState.Editor => "editor",
@@ -191,6 +233,17 @@ public class MainWindowViewModel : BaseViewModel
             "preview" => WorkspaceState.Preview,
             _ => WorkspaceState,
         };
+    }
+
+    public void ApplySettings(DraftSettings settings)
+    {
+        ConfirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles;
+        DefaultSaveLocation = settings.DefaultSaveLocation;
+        IsStatusBarVisible = settings.IsStatusBarVisible;
+
+        // TODO: Wire ReopenLastWorkspaceOnStartup once Draft tracks workspace file sets.
+        // TODO: Wire AutosaveEnabled/AutosaveInterval and SaveOnFocusLost to a save scheduler.
+        // TODO: Wire ToolbarControlbarPosition when alternate control bar layouts exist.
     }
 
     public void LoadDocumentFromPath(string path)

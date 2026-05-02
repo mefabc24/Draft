@@ -13,13 +13,12 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        DraftSettings settings = AppSettingsStore.Load();
         MainWindowViewModel viewModel = new();
+        viewModel.ApplySettings(settings);
         AppSessionStateStore.TryLoad(out AppSessionState? sessionState);
 
-        if (!string.IsNullOrWhiteSpace(sessionState?.WorkspaceMode))
-        {
-            viewModel.SetWorkspaceMode(sessionState.WorkspaceMode);
-        }
+        ApplyStartupWorkspaceMode(viewModel, settings, sessionState);
 
         string? startupFilePath = GetStartupFilePath(e.Args);
 
@@ -39,7 +38,7 @@ public partial class App : Application
             }
         }
 
-        MainWindow window = new(viewModel);
+        MainWindow window = new(viewModel, settings);
         if (sessionState is not null)
         {
             window.ApplySessionState(sessionState);
@@ -47,6 +46,25 @@ public partial class App : Application
 
         MainWindow = window;
         window.Show();
+    }
+
+    private static void ApplyStartupWorkspaceMode(
+        MainWindowViewModel viewModel,
+        DraftSettings settings,
+        AppSessionState? sessionState)
+    {
+        if (settings.DefaultStartupMode == "Last")
+        {
+            if (!string.IsNullOrWhiteSpace(sessionState?.WorkspaceMode))
+            {
+                viewModel.SetWorkspaceMode(sessionState.WorkspaceMode);
+            }
+
+            // TODO: ReopenLastWorkspaceOnStartup should restore files/layout when Draft stores workspace contents.
+            return;
+        }
+
+        viewModel.SetWorkspaceMode(settings.DefaultStartupMode.ToLowerInvariant());
     }
 
     private static string? GetStartupFilePath(IEnumerable<string> args)
