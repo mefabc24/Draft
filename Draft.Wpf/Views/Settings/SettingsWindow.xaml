@@ -117,7 +117,7 @@
                                 <Path
                                     Width="16"
                                     Height="16"
-                                    Data="{StaticResource Icon.Settings}"
+                                    Data="{StaticResource Icon.Editor}"
                                     Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                     Stretch="Uniform" />
                                 <TextBlock Margin="12,0,0,0" Text="Editor" />
@@ -133,7 +133,7 @@
                                 <Path
                                     Width="16"
                                     Height="16"
-                                    Data="{StaticResource Icon.Settings}"
+                                    Data="{StaticResource Icon.Preview}"
                                     Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                     Stretch="Uniform" />
                                 <TextBlock Margin="12,0,0,0" Text="Preview" />
@@ -150,7 +150,7 @@
                                 <Path
                                     Width="16"
                                     Height="16"
-                                    Data="{StaticResource Icon.Settings}"
+                                    Data="{StaticResource Icon.Appearance}"
                                     Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                     Stretch="Uniform" />
                                 <TextBlock Margin="12,0,0,0" Text="Appearance" />
@@ -168,7 +168,7 @@
                             <Path
                                 Width="16"
                                 Height="16"
-                                Data="{StaticResource Icon.Settings}"
+                                Data="{StaticResource Icon.About}"
                                 Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                 Stretch="Uniform" />
                             <TextBlock Margin="12,0,0,0" Text="About" />
@@ -190,7 +190,7 @@
                         <RowDefinition Height="auto" />
                     </Grid.RowDefinitions>
 
-                    <Grid>
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="auto" />
@@ -201,7 +201,7 @@
                             FontSize="32"
                             FontWeight="Bold"
                             Foreground="{StaticResource Brush.Text.Primary}"
-                            Text="{Binding CurrentSettingsPage.Title}" />
+                            Text="{Binding CurrentSettingsPage.Title, FallbackValue='Page Titel'}" />
 
                         <!-- Close Button -->
                         <Button
@@ -223,6 +223,7 @@
                     <StackPanel
                         Grid.Row="2"
                         Height="30"
+                        Margin="0,16,0,0"
                         HorizontalAlignment="Right"
                         Orientation="Horizontal">
                         <Button
