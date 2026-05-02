@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <DefaultItemExcludes>$(DefaultItemExcludes);.build-check\**;Draft.Wpf\**</DefaultItemExcludes>
+    <ApplicationIcon>Assets\Icons\draft.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +16,7 @@
     <None Remove="Assets\Fonts\JetBrainsMono-VariableFont_wght.ttf" />
     <None Remove="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <None Remove="Assets\Fonts\SpaceGrotesk-VariableFont_wght.ttf" />
+    <None Remove="Assets\Icons\draft.ico" />
     <None Remove="Assets\Icons\TestIcon.png" />
     <None Remove="Assets\Icons\TestIconHighRes.png" />
   </ItemGroup>
@@ -41,6 +43,7 @@
     <Resource Include="Assets\Fonts\JetBrainsMono-VariableFont_wght.ttf" />
     <Resource Include="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <Resource Include="Assets\Fonts\SpaceGrotesk-VariableFont_wght.ttf" />
+    <Resource Include="Assets\Icons\draft.ico" />
     <Resource Include="Assets\Icons\TestIcon.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
