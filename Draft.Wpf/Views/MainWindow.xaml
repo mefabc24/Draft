@@ -86,7 +86,7 @@
                 <!--  Status Bar  -->
                 <Border
                     Grid.Row="1"
-                    Padding="24,8"
+                    Padding="24,4"
                     Background="{StaticResource Brush.Background.Surface}"
                     BorderBrush="{StaticResource Brush.Border.Subtle}"
                     BorderThickness="0,1,0,0"

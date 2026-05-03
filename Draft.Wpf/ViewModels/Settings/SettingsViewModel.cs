@@ -21,6 +21,7 @@ public class SettingsViewModel : BaseViewModel
     private bool _autosaveEnabled;
     private string _autosaveInterval = "10s";
     private bool _saveOnFocusLost;
+    private bool _includeMarkdownSyntaxInCharacterCount;
     private bool _confirmBeforeClosingUnsavedFiles = true;
     private string _defaultStartupMode = "Last";
     private string _defaultSaveLocation = string.Empty;
@@ -224,6 +225,12 @@ public class SettingsViewModel : BaseViewModel
     {
         get => _saveOnFocusLost;
         set => SetSetting(ref _saveOnFocusLost, value);
+    }
+
+    public bool IncludeMarkdownSyntaxInCharacterCount
+    {
+        get => _includeMarkdownSyntaxInCharacterCount;
+        set => SetSetting(ref _includeMarkdownSyntaxInCharacterCount, value);
     }
 
     public bool ConfirmBeforeClosingUnsavedFiles
@@ -467,6 +474,7 @@ public class SettingsViewModel : BaseViewModel
         _autosaveEnabled = settings.AutosaveEnabled;
         _autosaveInterval = EnsureOption(AutosaveIntervalOptions, settings.AutosaveInterval, "10s");
         _saveOnFocusLost = settings.SaveOnFocusLost;
+        _includeMarkdownSyntaxInCharacterCount = settings.IncludeMarkdownSyntaxInCharacterCount;
         _confirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles;
         _defaultStartupMode = EnsureOption(DefaultStartupModeOptions, settings.DefaultStartupMode, "Last");
         _defaultSaveLocation = settings.DefaultSaveLocation ?? string.Empty;
@@ -530,6 +538,7 @@ public class SettingsViewModel : BaseViewModel
         AppSettingsStore.TrySave(settings);
         _originalSettings = settings;
         SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
+        CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
     public void CancelChanges()
@@ -575,6 +584,7 @@ public class SettingsViewModel : BaseViewModel
             AutosaveEnabled = AutosaveEnabled,
             AutosaveInterval = AutosaveInterval,
             SaveOnFocusLost = SaveOnFocusLost,
+            IncludeMarkdownSyntaxInCharacterCount = IncludeMarkdownSyntaxInCharacterCount,
             ConfirmBeforeClosingUnsavedFiles = ConfirmBeforeClosingUnsavedFiles,
             DefaultStartupMode = DefaultStartupMode,
             DefaultSaveLocation = DefaultSaveLocation,
@@ -672,6 +682,7 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsAutosaveIntervalEnabled));
         OnPropertyChanged(nameof(AutosaveInterval));
         OnPropertyChanged(nameof(SaveOnFocusLost));
+        OnPropertyChanged(nameof(IncludeMarkdownSyntaxInCharacterCount));
         OnPropertyChanged(nameof(ConfirmBeforeClosingUnsavedFiles));
         OnPropertyChanged(nameof(DefaultStartupMode));
         OnPropertyChanged(nameof(DefaultSaveLocation));

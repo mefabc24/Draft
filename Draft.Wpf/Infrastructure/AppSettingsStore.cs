@@ -14,6 +14,8 @@ public sealed class DraftSettings
 
     public bool SaveOnFocusLost { get; set; } = false;
 
+    public bool IncludeMarkdownSyntaxInCharacterCount { get; set; } = false;
+
     public bool ConfirmBeforeClosingUnsavedFiles { get; set; } = true;
 
     public string DefaultStartupMode { get; set; } = "Last";

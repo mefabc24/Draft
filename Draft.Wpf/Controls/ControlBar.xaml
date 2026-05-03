@@ -86,12 +86,41 @@
                     Command="{Binding SaveFileCommand}"
                     Style="{StaticResource ControlButton}"
                     ToolTip="Save">
-                    <Path
-                        Width="16"
-                        Height="16"
-                        Data="{StaticResource Icon.Save}"
-                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                        Stretch="Uniform" />
+                    <Grid>
+                        <Path
+                            Width="16"
+                            Height="16"
+                            Data="{StaticResource Icon.Save}"
+                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Stretch="Uniform" />
+                        <Canvas>
+                            <Ellipse
+                                Canvas.Top="-4"
+                                Canvas.Right="-4"
+                                Width="10"
+                                Height="10">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{StaticResource Brush.Function.Success}" />
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SaveStatusDotVisible}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="UNSAVED">
+                                                <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="MODIFIED">
+                                                <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+
+                            </Ellipse>
+                        </Canvas>
+                    </Grid>
+
                 </Button>
                 <!-- New File Button -->
                 <Button
@@ -104,6 +133,8 @@
                         Data="{StaticResource Icon.NewFile}"
                         Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                         Stretch="Uniform" />
+
+
                 </Button>
             </StackPanel>
 

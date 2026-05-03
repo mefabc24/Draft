@@ -16,10 +16,13 @@ public partial class MainWindow : Window
     private const string WorkspaceModeMessageType = "workspaceModeChanged";
     private const string LoadDocumentMessageType = "loadDocument";
     private const string DocumentChangedMessageType = "documentChanged";
+    private const string CursorPositionChangedMessageType = "cursorPositionChanged";
     private const string SettingsChangedMessageType = "settingsChanged";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private DraftSettings _settings;
     private bool _isWebViewReady;
+    private bool _isSettingsWindowOpen;
+    private bool _hasHandledFocusLostSave;
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     public MainWindow()
@@ -59,6 +62,23 @@ public partial class MainWindow : Window
         WorkspaceWebView.NavigationCompleted += WorkspaceWebView_NavigationCompleted;
 
         WorkspaceWebView.Source = new Uri($"https://{WebHostName}/index.html");
+    }
+
+    protected override void OnActivated(EventArgs e)
+    {
+        _hasHandledFocusLostSave = false;
+        base.OnActivated(e);
+    }
+
+    protected override async void OnDeactivated(EventArgs e)
+    {
+        base.OnDeactivated(e);
+
+        if (_isSettingsWindowOpen || _hasHandledFocusLostSave || ViewModel is null)
+            return;
+
+        _hasHandledFocusLostSave = true;
+        await ViewModel.TrySaveOnFocusLostAsync();
     }
 
     protected override void OnClosed(EventArgs e)
@@ -148,7 +168,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ViewModel_SaveFileAsRequested(object? sender, EventArgs e)
+    private async void ViewModel_SaveFileAsRequested(object? sender, EventArgs e)
     {
         if (ViewModel is null)
             return;
@@ -172,15 +192,8 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog(this) != true)
             return;
 
-        try
-        {
-            ViewModel.SaveDocumentToPath(dialog.FileName);
-            PostDocumentToWebView();
-        }
-        catch (Exception ex) when (IsFileOperationException(ex))
-        {
-            ShowFileOperationError("Save File", ex);
-        }
+        await ViewModel.SaveDocumentToPathAsync(dialog.FileName, "Unable to save the current file.");
+        PostDocumentToWebView();
     }
 
     private void ViewModel_NewFileRequested(object? sender, EventArgs e)
@@ -201,8 +214,17 @@ public partial class MainWindow : Window
         };
 
         settingsWindow.SettingsApplied += SettingsWindow_SettingsApplied;
-        settingsWindow.ShowDialog();
-        settingsWindow.SettingsApplied -= SettingsWindow_SettingsApplied;
+        _isSettingsWindowOpen = true;
+
+        try
+        {
+            settingsWindow.ShowDialog();
+        }
+        finally
+        {
+            _isSettingsWindowOpen = false;
+            settingsWindow.SettingsApplied -= SettingsWindow_SettingsApplied;
+        }
     }
 
     private void SettingsWindow_SettingsApplied(object? sender, SettingsAppliedEventArgs e)
@@ -410,6 +432,9 @@ public partial class MainWindow : Window
                 case DocumentChangedMessageType:
                     HandleDocumentChangedMessage(root);
                     break;
+                case CursorPositionChangedMessageType:
+                    HandleCursorPositionChangedMessage(root);
+                    break;
             }
         }
         catch (JsonException)
@@ -438,6 +463,29 @@ public partial class MainWindow : Window
 
         string? content = contentElement.GetString();
         ViewModel.UpdateContentFromWeb(content ?? string.Empty);
+    }
+
+    private void HandleCursorPositionChangedMessage(JsonElement root)
+    {
+        if (ViewModel is null
+            || !root.TryGetProperty("line", out JsonElement lineElement)
+            || !root.TryGetProperty("column", out JsonElement columnElement))
+        {
+            return;
+        }
+
+        int selectedCharacterCount = root.TryGetProperty(
+            "selectedCharacterCount",
+            out JsonElement selectedCharacterCountElement)
+                && selectedCharacterCountElement.TryGetInt32(out int selectedCount)
+            ? selectedCount
+            : 0;
+
+        if (lineElement.TryGetInt32(out int line)
+            && columnElement.TryGetInt32(out int column))
+        {
+            ViewModel.UpdateCursorPosition(line, column, selectedCharacterCount);
+        }
     }
 
     private AppSessionState CaptureSessionState(string workspaceMode)

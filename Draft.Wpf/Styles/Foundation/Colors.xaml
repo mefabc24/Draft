@@ -3,6 +3,7 @@
     <Color x:Key="Color.Accent.Primary">#A5C8FF</Color>
     <Color x:Key="Color.Accent.PrimaryHover">#8DB9FF</Color>
     <Color x:Key="Color.Accent.Secondary">#79A986</Color>
+    <Color x:Key="Color.Accent.Tertiary">#D3A760</Color>
 
     <!-- Background Colors -->
     <Color x:Key="Color.Background.Window">#0D0D0D</Color>
@@ -32,11 +33,11 @@
     <Color x:Key="Color.Icon.SubtleHover">#A7AFBA</Color>
 
     <!-- Functional Colors -->
-    <Color x:Key="Color.Function.Success">#22C55E</Color>
-    <Color x:Key="Color.Function.Warning">#F59E0B</Color>
+    <Color x:Key="Color.Function.Success">#79A986</Color>
+    <Color x:Key="Color.Function.Warning">#D3A760</Color>
     <Color x:Key="Color.Function.Critical">#EF4444</Color>
     <Color x:Key="Color.Function.Info">#60A5FA</Color>
-
+    
     <!-- Utility Colors -->
     <Color x:Key="Color.Shadow.Default">#000000</Color>
 

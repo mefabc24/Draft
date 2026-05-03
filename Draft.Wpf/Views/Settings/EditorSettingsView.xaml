@@ -87,6 +87,15 @@
                         Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Include Markdown syntax in character count"
+                    Description="Count raw Markdown characters in the status bar character total.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.IncludeMarkdownSyntaxInCharacterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
                 <settings:SettingFieldCard Margin="0,0,0,12" Title="Show whitespace characters">
                     <ComboBox
                         Height="36"
