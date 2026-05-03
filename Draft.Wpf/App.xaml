@@ -12,6 +12,7 @@
 
                 <ResourceDictionary Source="/Styles/Components/ControlBarButton.xaml" />
                 <ResourceDictionary Source="/Styles/Components/WindowControlButton.xaml" />
+                <ResourceDictionary Source="/Styles/Components/StatusBarButton.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
