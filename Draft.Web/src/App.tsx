@@ -71,6 +71,7 @@ const DEFAULT_FILE_NAME = 'untitled.md'
 const WORKSPACE_MODE_MESSAGE_TYPE = 'workspaceModeChanged'
 const LOAD_DOCUMENT_MESSAGE_TYPE = 'loadDocument'
 const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
+const CURSOR_POSITION_CHANGED_MESSAGE_TYPE = 'cursorPositionChanged'
 const SETTINGS_CHANGED_MESSAGE_TYPE = 'settingsChanged'
 
 function stripMarkdownSyntax(content: string) {
@@ -537,6 +538,40 @@ function postDocumentChanged(content: string) {
     JSON.stringify({
       type: DOCUMENT_CHANGED_MESSAGE_TYPE,
       content,
+    }),
+  )
+}
+
+function getSelectedCharacterCount(editor: monaco.editor.IStandaloneCodeEditor) {
+  const model = editor.getModel()
+  const selections = editor.getSelections()
+
+  if (!model || !selections || selections.length === 0) {
+    return 0
+  }
+
+  return selections.reduce((total, selection) => {
+    const isEmptySelection =
+      selection.selectionStartLineNumber === selection.positionLineNumber &&
+      selection.selectionStartColumn === selection.positionColumn
+
+    if (isEmptySelection) {
+      return total
+    }
+
+    return total + model.getValueInRange(selection).length
+  }, 0)
+}
+
+function postCursorPositionChanged(editor: monaco.editor.IStandaloneCodeEditor) {
+  const position = editor.getPosition()
+
+  window.chrome?.webview?.postMessage(
+    JSON.stringify({
+      type: CURSOR_POSITION_CHANGED_MESSAGE_TYPE,
+      line: position?.lineNumber ?? 1,
+      column: position?.column ?? 1,
+      selectedCharacterCount: getSelectedCharacterCount(editor),
     }),
   )
 }
@@ -1061,6 +1096,7 @@ function App() {
     })
     const selectionSub = editor.onDidChangeCursorSelection(() => {
       syncPersistentCurrentLine()
+      postCursorPositionChanged(editor)
     })
     const scrollSub = editor.onDidScrollChange(() => {
       syncEditorScrollbarPosition()
@@ -1075,6 +1111,7 @@ function App() {
     })
 
     editorInstanceRef.current = editor
+    postCursorPositionChanged(editor)
 
     const syncEditorFontMetrics = () => {
       if (editorInstanceRef.current !== editor) {
