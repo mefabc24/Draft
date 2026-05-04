@@ -7,9 +7,10 @@
 #define MyAppPublisher "mefabc24"
 #define MyAppURL "https://github.com/mefabc24/Draft"
 #define MyAppExeName "Draft.exe"
-#define MyAppAssocName "Markdown Document"
-#define MyAppAssocExt ".md"
-#define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
+#define MyAppMarkdownAssocName "Markdown Document"
+#define MyAppMarkdownAssocKey "Draft.MarkdownFile"
+#define MyAppTextAssocName "Text Document"
+#define MyAppTextAssocKey "Draft.TextFile"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -22,7 +23,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName}
+DefaultDirName={localappdata}\Programs\{#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
 ; on anything but x64 and Windows 11 on Arm.
@@ -36,6 +37,7 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
+CloseApplications=yes
 OutputDir=M:\CS Projects\Draft\Installer\Output
 OutputBaseFilename=DraftSetup
 SetupIconFile=M:\CS Projects\Draft\Draft.Wpf\Assets\Icons\draft.ico
@@ -49,16 +51,34 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
+Name: "assoc_md"; Description: "Associate .md files with Draft"; GroupDescription: "File associations:"; Flags: checkedonce
+Name: "assoc_markdown"; Description: "Associate .markdown files with Draft"; GroupDescription: "File associations:"; Flags: checkedonce
+Name: "assoc_mdown"; Description: "Associate .mdown files with Draft"; GroupDescription: "File associations:"; Flags: checkedonce
+Name: "assoc_mkd"; Description: "Associate .mkd files with Draft"; GroupDescription: "File associations:"; Flags: checkedonce
+Name: "assoc_txt"; Description: "Associate .txt files with Draft"; GroupDescription: "File associations:"; Flags: unchecked
+
 [Files]
-Source: "M:\CS Projects\Draft\Draft.Wpf\bin\Release\net10.0-windows\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "M:\CS Projects\Draft\Draft.Wpf\bin\Release\net10.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
-Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}"; ValueType: string; ValueName: ""; ValueData: "{#MyAppAssocName}"; Flags: uninsdeletekey
-Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
-Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+; Markdown ProgID
+Root: HKA; Subkey: "Software\Classes\{#MyAppMarkdownAssocKey}"; ValueType: string; ValueName: ""; ValueData: "{#MyAppMarkdownAssocName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\{#MyAppMarkdownAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\{#MyAppMarkdownAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+
+; Markdown extensions
+Root: HKA; Subkey: "Software\Classes\.md\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_md
+Root: HKA; Subkey: "Software\Classes\.markdown\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
+Root: HKA; Subkey: "Software\Classes\.mdown\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_mdown
+Root: HKA; Subkey: "Software\Classes\.mkd\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_mkd
+
+; Text ProgID
+Root: HKA; Subkey: "Software\Classes\{#MyAppTextAssocKey}"; ValueType: string; ValueName: ""; ValueData: "{#MyAppTextAssocName}"; Flags: uninsdeletekey; Tasks: assoc_txt
+Root: HKA; Subkey: "Software\Classes\{#MyAppTextAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Tasks: assoc_txt
+Root: HKA; Subkey: "Software\Classes\{#MyAppTextAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: assoc_txt
+
+; Text extension
+Root: HKA; Subkey: "Software\Classes\.txt\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppTextAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_txt
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
