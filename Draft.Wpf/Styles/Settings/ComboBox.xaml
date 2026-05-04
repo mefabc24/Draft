@@ -162,7 +162,9 @@
                                 <ScrollViewer
                                     MaxHeight="240"
                                     Padding="0,4"
-                                    CanContentScroll="True">
+                                    CanContentScroll="True"
+                                    HorizontalScrollBarVisibility="Disabled"
+                                    VerticalScrollBarVisibility="Disabled">
 
                                     <ItemsPresenter />
                                 </ScrollViewer>
@@ -191,6 +193,10 @@
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="MainBorder" Property="Opacity" Value="0.5" />
+                            <Setter Property="Foreground" Value="#606060" />
+
+                            <Setter TargetName="Arrow" Property="Opacity" Value="0.5" />
+                            <Setter TargetName="Arrow" Property="Fill" Value="#606060" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

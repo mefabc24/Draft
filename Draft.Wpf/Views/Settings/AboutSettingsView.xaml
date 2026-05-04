@@ -47,7 +47,7 @@
                             FontSize="13"
                             FontWeight="SemiBold"
                             Foreground="{StaticResource Brush.Text.Primary}"
-                            Text="{Binding VersionText, RelativeSource={RelativeSource AncestorType={x:Type local:AboutSettingsView}}}" />
+                            Text="{Binding VersionText, RelativeSource={RelativeSource AncestorType={x:Type local:AboutSettingsView}}, FallbackValue='1.0.0'}" />
                         <Button
                             Width="132"
                             Height="36"
