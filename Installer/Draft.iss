@@ -18,7 +18,7 @@
 AppId={{B59AA9CF-9D11-413B-9B3F-68E91E984FD6}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
+AppVerName={#MyAppName}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -51,10 +51,7 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
-Name: "assoc_md"; Description: "Associate .md files with Draft"; GroupDescription: "File associations:"; Flags: checkedonce
-Name: "assoc_markdown"; Description: "Associate .markdown files with Draft"; GroupDescription: "File associations:"; Flags: checkedonce
-Name: "assoc_mdown"; Description: "Associate .mdown files with Draft"; GroupDescription: "File associations:"; Flags: checkedonce
-Name: "assoc_mkd"; Description: "Associate .mkd files with Draft"; GroupDescription: "File associations:"; Flags: checkedonce
+Name: "assoc_markdown"; Description: "Associate Markdown files with Draft (.md, .markdown, .mdown, .mkd)"; GroupDescription: "File associations:"; Flags: checkedonce
 Name: "assoc_txt"; Description: "Associate .txt files with Draft"; GroupDescription: "File associations:"; Flags: unchecked
 
 [Files]
@@ -67,10 +64,10 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppMarkdownAssocKey}\DefaultIcon"; Valu
 Root: HKA; Subkey: "Software\Classes\{#MyAppMarkdownAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
 
 ; Markdown extensions
-Root: HKA; Subkey: "Software\Classes\.md\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_md
+Root: HKA; Subkey: "Software\Classes\.md\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
 Root: HKA; Subkey: "Software\Classes\.markdown\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-Root: HKA; Subkey: "Software\Classes\.mdown\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_mdown
-Root: HKA; Subkey: "Software\Classes\.mkd\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_mkd
+Root: HKA; Subkey: "Software\Classes\.mdown\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
+Root: HKA; Subkey: "Software\Classes\.mkd\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppMarkdownAssocKey}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
 
 ; Text ProgID
 Root: HKA; Subkey: "Software\Classes\{#MyAppTextAssocKey}"; ValueType: string; ValueName: ""; ValueData: "{#MyAppTextAssocName}"; Flags: uninsdeletekey; Tasks: assoc_txt
