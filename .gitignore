@@ -42,3 +42,7 @@ pnpm-debug.log*
 
 # Instructions
 Instructions/
+
+# Inno Setup output
+Installer/Output/
+*.exe
