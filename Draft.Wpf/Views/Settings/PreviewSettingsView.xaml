@@ -68,16 +68,6 @@
                         SelectedItem="{Binding Settings.PreviewScrollSyncMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingCard>
-
-                <settings:SettingCard
-                    Margin="0,0,0,12"
-                    Title="Scroll preview to edited section"
-                    Description="Automatically jump the preview to the section you are currently editing.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.ScrollPreviewToEditedSection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        IsEnabled="{Binding Settings.IsScrollPreviewToEditedSectionEnabled}"
-                        Style="{StaticResource SettingsCheckBox}" />
-                </settings:SettingCard>
             </StackPanel>
         </ScrollViewer>
     </Border>

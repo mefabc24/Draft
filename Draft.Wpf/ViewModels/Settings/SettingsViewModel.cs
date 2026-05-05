@@ -45,7 +45,6 @@ public class SettingsViewModel : BaseViewModel
     private bool _openLinksInBrowser = true;
     private bool _confirmBeforeOpeningExternalLinks = true;
     private string _previewScrollSyncMode = AppSettingsStore.DefaultPreviewScrollSyncMode;
-    private bool _scrollPreviewToEditedSection;
     private string _appTheme = "Dark";
     private bool _isStatusBarVisible = true;
     private string _toolbarControlbarPosition = AppSettingsStore.DefaultToolbarPosition;
@@ -108,6 +107,7 @@ public class SettingsViewModel : BaseViewModel
             "Two-way sync",
             "Editor controls preview",
             "Preview controls editor",
+            "Follow edited section",
         };
 
     public IReadOnlyList<string> AppThemeOptions { get; } =
@@ -398,24 +398,9 @@ public class SettingsViewModel : BaseViewModel
     public string PreviewScrollSyncMode
     {
         get => GetPreviewScrollSyncDisplayName(_previewScrollSyncMode);
-        set
-        {
-            if (SetSetting(
-                ref _previewScrollSyncMode,
-                GetPreviewScrollSyncValue(value)))
-            {
-                OnPropertyChanged(nameof(IsScrollPreviewToEditedSectionEnabled));
-            }
-        }
-    }
-
-    public bool IsScrollPreviewToEditedSectionEnabled =>
-        _previewScrollSyncMode != AppSettingsStore.PreviewScrollSyncOff;
-
-    public bool ScrollPreviewToEditedSection
-    {
-        get => _scrollPreviewToEditedSection;
-        set => SetSetting(ref _scrollPreviewToEditedSection, value);
+        set => SetSetting(
+            ref _previewScrollSyncMode,
+            GetPreviewScrollSyncValue(value));
     }
 
     public string AppTheme
@@ -506,7 +491,6 @@ public class SettingsViewModel : BaseViewModel
             GetPreviewScrollSyncValues(),
             settings.PreviewScrollSyncMode,
             AppSettingsStore.DefaultPreviewScrollSyncMode);
-        _scrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection;
         _appTheme = EnsureOption(AppThemeOptions, settings.AppTheme, "Dark");
         _isStatusBarVisible = settings.IsStatusBarVisible;
         _toolbarControlbarPosition = EnsureOption(
@@ -608,7 +592,7 @@ public class SettingsViewModel : BaseViewModel
             OpenLinksInBrowser = OpenLinksInBrowser,
             ConfirmBeforeOpeningExternalLinks = ConfirmBeforeOpeningExternalLinks,
             PreviewScrollSyncMode = _previewScrollSyncMode,
-            ScrollPreviewToEditedSection = ScrollPreviewToEditedSection,
+            ScrollPreviewToEditedSection = false,
             AppTheme = AppTheme,
             IsStatusBarVisible = IsStatusBarVisible,
             ToolbarControlbarPosition = ToolbarControlbarPosition,
@@ -636,6 +620,7 @@ public class SettingsViewModel : BaseViewModel
             AppSettingsStore.PreviewScrollSyncTwoWay,
             AppSettingsStore.PreviewScrollSyncEditorToPreview,
             AppSettingsStore.PreviewScrollSyncPreviewToEditor,
+            AppSettingsStore.PreviewScrollSyncFollowEditedSection,
         };
     }
 
@@ -646,6 +631,7 @@ public class SettingsViewModel : BaseViewModel
             "Two-way sync" => AppSettingsStore.PreviewScrollSyncTwoWay,
             "Editor controls preview" => AppSettingsStore.PreviewScrollSyncEditorToPreview,
             "Preview controls editor" => AppSettingsStore.PreviewScrollSyncPreviewToEditor,
+            "Follow edited section" => AppSettingsStore.PreviewScrollSyncFollowEditedSection,
             _ => AppSettingsStore.PreviewScrollSyncOff,
         };
     }
@@ -657,6 +643,7 @@ public class SettingsViewModel : BaseViewModel
             AppSettingsStore.PreviewScrollSyncTwoWay => "Two-way sync",
             AppSettingsStore.PreviewScrollSyncEditorToPreview => "Editor controls preview",
             AppSettingsStore.PreviewScrollSyncPreviewToEditor => "Preview controls editor",
+            AppSettingsStore.PreviewScrollSyncFollowEditedSection => "Follow edited section",
             _ => "Off",
         };
     }
@@ -707,8 +694,6 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(OpenLinksInBrowser));
         OnPropertyChanged(nameof(ConfirmBeforeOpeningExternalLinks));
         OnPropertyChanged(nameof(PreviewScrollSyncMode));
-        OnPropertyChanged(nameof(IsScrollPreviewToEditedSectionEnabled));
-        OnPropertyChanged(nameof(ScrollPreviewToEditedSection));
         OnPropertyChanged(nameof(AppTheme));
         OnPropertyChanged(nameof(IsStatusBarVisible));
         OnPropertyChanged(nameof(ToolbarControlbarPosition));

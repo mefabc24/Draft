@@ -9,7 +9,8 @@ public sealed record AppSessionState(
     double WindowHeight,
     double WindowLeft,
     double WindowTop,
-    string WorkspaceMode);
+    string WorkspaceMode,
+    string? LastDocumentPath);
 
 public static class AppSessionStateStore
 {

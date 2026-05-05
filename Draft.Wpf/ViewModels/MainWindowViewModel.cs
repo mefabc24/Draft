@@ -428,7 +428,6 @@ public class MainWindowViewModel : BaseViewModel
         DefaultSaveLocation = settings.DefaultSaveLocation;
         IsStatusBarVisible = settings.IsStatusBarVisible;
 
-        // TODO: Wire ReopenLastWorkspaceOnStartup once Draft tracks workspace file sets.
         // TODO: Wire ToolbarControlbarPosition when alternate control bar layouts exist.
     }
 

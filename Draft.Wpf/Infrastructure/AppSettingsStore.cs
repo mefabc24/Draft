@@ -81,6 +81,7 @@ public static class AppSettingsStore
     public const string PreviewScrollSyncEditorToPreview = "EditorToPreview";
     public const string PreviewScrollSyncPreviewToEditor = "PreviewToEditor";
     public const string PreviewScrollSyncTwoWay = "TwoWay";
+    public const string PreviewScrollSyncFollowEditedSection = "FollowEditedSection";
     public const string DefaultPreviewScrollSyncMode = PreviewScrollSyncTwoWay;
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
@@ -174,6 +175,12 @@ public static class AppSettingsStore
             settings.PreviewScrollSyncMode = IsPreviewScrollSyncMode(settings.PreviewScrollSyncMode)
                 ? settings.PreviewScrollSyncMode
                 : DefaultPreviewScrollSyncMode;
+        }
+
+        if (settings.ScrollPreviewToEditedSection)
+        {
+            settings.PreviewScrollSyncMode = PreviewScrollSyncFollowEditedSection;
+            settings.ScrollPreviewToEditedSection = false;
         }
 
         TryEnsureDefaultSaveLocationDirectory(settings.DefaultSaveLocation);
@@ -326,7 +333,8 @@ public static class AppSettingsStore
         return value is PreviewScrollSyncOff
             or PreviewScrollSyncEditorToPreview
             or PreviewScrollSyncPreviewToEditor
-            or PreviewScrollSyncTwoWay;
+            or PreviewScrollSyncTwoWay
+            or PreviewScrollSyncFollowEditedSection;
     }
 
     private static bool TryGetStringProperty(JsonElement root, string name, out string? value)

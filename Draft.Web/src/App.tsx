@@ -22,7 +22,12 @@ type LoadDocumentMessage = {
 }
 type ShowWhitespaceCharacters = 'Always' | 'Never' | 'Highlighted Only'
 type CursorStyle = 'Line' | 'Block' | 'Underline'
-type PreviewScrollSyncMode = 'Off' | 'EditorToPreview' | 'PreviewToEditor' | 'TwoWay'
+type PreviewScrollSyncMode =
+  | 'Off'
+  | 'EditorToPreview'
+  | 'PreviewToEditor'
+  | 'TwoWay'
+  | 'FollowEditedSection'
 type DraftEditorSettings = {
   editorFontFamily: string
   editorFontSize: number
@@ -40,7 +45,6 @@ type DraftEditorSettings = {
   cursorStyle: CursorStyle
   cursorBlinking: boolean
   previewScrollSyncMode: PreviewScrollSyncMode
-  scrollPreviewToEditedSection: boolean
 }
 type SettingsChangedMessage = {
   type: 'settingsChanged'
@@ -67,6 +71,8 @@ declare global {
 
 const EDITOR_SCROLL_SENSITIVITY = 1.5
 const MIN_EDITOR_THUMB_HEIGHT = 56
+const FOLLOW_EDITED_SECTION_DEBOUNCE_MS = 60
+const FOLLOW_EDITED_SECTION_SCROLL_PADDING = 16
 const DEFAULT_FILE_NAME = 'untitled.md'
 const WORKSPACE_MODE_MESSAGE_TYPE = 'workspaceModeChanged'
 const LOAD_DOCUMENT_MESSAGE_TYPE = 'loadDocument'
@@ -89,7 +95,7 @@ function stripMarkdownSyntax(content: string) {
     .replace(/\[[ xX]\]\s+/g, ' ')
     .replace(/<[^>\r\n]+>/g, ' ')
     .replace(/[`*_~|]/g, ' ')
-    .replace(/\\([\\`*_{}\[\]()#+\-.!>])/g, '$1')
+    .replace(/\\([\\`*_{}[\]()#+\-.!>])/g, '$1')
 }
 
 function countMarkdownWords(content: string) {
@@ -114,7 +120,6 @@ const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
   cursorStyle: 'Line',
   cursorBlinking: true,
   previewScrollSyncMode: 'TwoWay',
-  scrollPreviewToEditedSection: false,
 }
 
 const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
@@ -245,6 +250,64 @@ function scrollEditorFromPointer(
   editor.setScrollTop(maxThumbTop === 0 ? 0 : (thumbTop / maxThumbTop) * maxScrollTop)
 }
 
+function getPreviewBlockSourceLine(element: HTMLElement) {
+  const value = Number(element.dataset.sourceLine)
+  return Number.isFinite(value) && value > 0 ? value : null
+}
+
+function findPreviewBlockForEditorLine(
+  previewScrollElement: HTMLDivElement,
+  lineNumber: number,
+) {
+  const elements = previewScrollElement.querySelectorAll<HTMLElement>(
+    '[data-source-line]',
+  )
+  let closestPreviousElement: HTMLElement | null = null
+  let closestPreviousLine = -Infinity
+  let closestNextElement: HTMLElement | null = null
+  let closestNextLine = Infinity
+
+  for (const element of elements) {
+    const sourceLine = getPreviewBlockSourceLine(element)
+
+    if (sourceLine === null) {
+      continue
+    }
+
+    if (sourceLine <= lineNumber && sourceLine >= closestPreviousLine) {
+      closestPreviousElement = element
+      closestPreviousLine = sourceLine
+      continue
+    }
+
+    if (sourceLine > lineNumber && sourceLine < closestNextLine) {
+      closestNextElement = element
+      closestNextLine = sourceLine
+    }
+  }
+
+  return closestPreviousElement ?? closestNextElement
+}
+
+function getPreviewScrollTopForElement(
+  previewScrollElement: HTMLDivElement,
+  targetElement: HTMLElement,
+) {
+  const previewBounds = previewScrollElement.getBoundingClientRect()
+  const targetBounds = targetElement.getBoundingClientRect()
+  const targetTop =
+    targetBounds.top - previewBounds.top + previewScrollElement.scrollTop
+  const maxScrollTop = Math.max(
+    previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
+    0,
+  )
+
+  return Math.min(
+    Math.max(targetTop - FOLLOW_EDITED_SECTION_SCROLL_PADDING, 0),
+    maxScrollTop,
+  )
+}
+
 function isViewMode(value: string): value is ViewMode {
   return value === 'editor' || value === 'split' || value === 'preview'
 }
@@ -368,7 +431,8 @@ function readPreviewScrollSyncMode(
     value === 'Off' ||
     value === 'EditorToPreview' ||
     value === 'PreviewToEditor' ||
-    value === 'TwoWay'
+    value === 'TwoWay' ||
+    value === 'FollowEditedSection'
   ) {
     return value
   }
@@ -447,11 +511,6 @@ function parseSettingsChangedMessage(
       DEFAULT_EDITOR_SETTINGS.cursorBlinking,
     ),
     previewScrollSyncMode: readPreviewScrollSyncMode(record),
-    scrollPreviewToEditedSection: readBoolean(
-      record,
-      'scrollPreviewToEditedSection',
-      DEFAULT_EDITOR_SETTINGS.scrollPreviewToEditedSection,
-    ),
   }
 }
 
@@ -716,6 +775,8 @@ function App() {
   const viewModeRef = useRef<ViewMode>(viewMode)
   const scrollSyncSourceRef = useRef<'editor' | 'preview' | null>(null)
   const scrollSyncReleaseTimeoutRef = useRef(0)
+  const followEditedSectionTimeoutRef = useRef(0)
+  const followEditedSectionAnimationFrameRef = useRef(0)
 
   const syncEditorScrollbarPosition = () => {
     const editor = editorInstanceRef.current
@@ -766,9 +827,19 @@ function App() {
   }
 
   const isScrollSyncActive = () => {
+    const mode = draftEditorSettingsRef.current.previewScrollSyncMode
+
     return (
       viewModeRef.current === 'split' &&
-      draftEditorSettingsRef.current.previewScrollSyncMode !== 'Off'
+      mode !== 'Off' &&
+      mode !== 'FollowEditedSection'
+    )
+  }
+
+  const isFollowEditedSectionActive = () => {
+    return (
+      viewModeRef.current === 'split' &&
+      draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection'
     )
   }
 
@@ -860,6 +931,64 @@ function App() {
     releaseScrollSyncSource('preview')
   }
 
+  const followEditedSection = () => {
+    if (
+      !isFollowEditedSectionActive() ||
+      scrollSyncSourceRef.current === 'preview'
+    ) {
+      return
+    }
+
+    const editor = editorInstanceRef.current
+    const previewScrollElement = previewScrollRef.current
+
+    if (!editor || !previewScrollElement) {
+      return
+    }
+
+    const lineNumber = editor.getPosition()?.lineNumber ?? 1
+    const targetElement = findPreviewBlockForEditorLine(
+      previewScrollElement,
+      lineNumber,
+    )
+
+    if (!targetElement) {
+      return
+    }
+
+    const nextScrollTop = getPreviewScrollTopForElement(
+      previewScrollElement,
+      targetElement,
+    )
+
+    if (Math.abs(previewScrollElement.scrollTop - nextScrollTop) < 1) {
+      return
+    }
+
+    scrollSyncSourceRef.current = 'editor'
+    previewScrollElement.scrollTop = nextScrollTop
+    releaseScrollSyncSource('editor')
+  }
+
+  const scheduleFollowEditedSection = () => {
+    if (followEditedSectionTimeoutRef.current !== 0) {
+      window.clearTimeout(followEditedSectionTimeoutRef.current)
+    }
+
+    followEditedSectionTimeoutRef.current = window.setTimeout(() => {
+      followEditedSectionTimeoutRef.current = 0
+
+      if (followEditedSectionAnimationFrameRef.current !== 0) {
+        window.cancelAnimationFrame(followEditedSectionAnimationFrameRef.current)
+      }
+
+      followEditedSectionAnimationFrameRef.current = window.requestAnimationFrame(() => {
+        followEditedSectionAnimationFrameRef.current = 0
+        followEditedSection()
+      })
+    }, FOLLOW_EDITED_SECTION_DEBOUNCE_MS)
+  }
+
   const handlePreviewScroll = () => {
     syncEditorScrollFromPreview()
   }
@@ -898,11 +1027,13 @@ function App() {
       )
     }
 
-    // TODO: Map Monaco cursor/source positions to rendered Markdown blocks before
-    // enabling scrollPreviewToEditedSection beyond persisted settings state.
     remeasureEditor(editor)
     syncEditorScrollbarPosition()
-    syncPreviewScrollFromEditor()
+    if (settings.previewScrollSyncMode === 'FollowEditedSection') {
+      scheduleFollowEditedSection()
+    } else {
+      syncPreviewScrollFromEditor()
+    }
     void document.fonts.load(getEditorFontLoadTarget(settings)).then(() => {
       if (editorInstanceRef.current !== editor) {
         return
@@ -991,6 +1122,8 @@ function App() {
     return () => {
       webview.removeEventListener('message', handleWebViewMessage)
     }
+    // WebView messages read current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -999,8 +1132,15 @@ function App() {
 
   useEffect(() => {
     window.requestAnimationFrame(() => {
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+        return
+      }
+
       syncPreviewScrollFromEditor()
     })
+    // Scroll syncing reads current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [markdown])
 
   useEffect(() => {
@@ -1097,6 +1237,7 @@ function App() {
     const selectionSub = editor.onDidChangeCursorSelection(() => {
       syncPersistentCurrentLine()
       postCursorPositionChanged(editor)
+      scheduleFollowEditedSection()
     })
     const scrollSub = editor.onDidScrollChange(() => {
       syncEditorScrollbarPosition()
@@ -1107,7 +1248,11 @@ function App() {
     })
     const contentSizeSub = editor.onDidContentSizeChange(() => {
       syncEditorScrollbarPosition()
-      syncPreviewScrollFromEditor()
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+      } else {
+        syncPreviewScrollFromEditor()
+      }
     })
 
     editorInstanceRef.current = editor
@@ -1146,6 +1291,14 @@ function App() {
         window.clearTimeout(scrollSyncReleaseTimeoutRef.current)
         scrollSyncReleaseTimeoutRef.current = 0
       }
+      if (followEditedSectionTimeoutRef.current !== 0) {
+        window.clearTimeout(followEditedSectionTimeoutRef.current)
+        followEditedSectionTimeoutRef.current = 0
+      }
+      if (followEditedSectionAnimationFrameRef.current !== 0) {
+        window.cancelAnimationFrame(followEditedSectionAnimationFrameRef.current)
+        followEditedSectionAnimationFrameRef.current = 0
+      }
       contentSizeSub.dispose()
       layoutSub.dispose()
       scrollSub.dispose()
@@ -1155,6 +1308,8 @@ function App() {
       editorInstanceRef.current = null
       currentLineDecorationsRef.current = null
     }
+    // Monaco subscriptions read current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -1171,7 +1326,11 @@ function App() {
 
       remeasureEditor(editor)
       syncEditorScrollbarPosition()
-      syncPreviewScrollFromEditor()
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+      } else {
+        syncPreviewScrollFromEditor()
+      }
     })
 
     const timeoutId = window.setTimeout(() => {
@@ -1181,12 +1340,18 @@ function App() {
 
       remeasureEditor(editor)
       syncEditorScrollbarPosition()
-      syncPreviewScrollFromEditor()
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+      } else {
+        syncPreviewScrollFromEditor()
+      }
     }, 240)
 
     return () => {
       window.clearTimeout(timeoutId)
     }
+    // Layout resync reads current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode])
 
   const previewWordCount = useMemo(() => {

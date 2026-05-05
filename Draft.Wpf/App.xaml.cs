@@ -18,9 +18,8 @@ public partial class App : Application
         viewModel.ApplySettings(settings);
         AppSessionStateStore.TryLoad(out AppSessionState? sessionState);
 
-        ApplyStartupWorkspaceMode(viewModel, settings, sessionState);
-
         string? startupFilePath = GetStartupFilePath(e.Args);
+        ApplyStartupWorkspaceMode(viewModel, settings, sessionState);
 
         if (startupFilePath is not null)
         {
@@ -36,6 +35,11 @@ public partial class App : Application
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+        else if (settings.ReopenLastWorkspaceOnStartup
+            && TryGetRestorableSessionFilePath(sessionState, out string? sessionFilePath))
+        {
+            TryLoadReopenedDocument(viewModel, sessionFilePath);
         }
 
         MainWindow window = new(viewModel, settings);
@@ -59,12 +63,48 @@ public partial class App : Application
             {
                 viewModel.SetWorkspaceMode(sessionState.WorkspaceMode);
             }
-
-            // TODO: ReopenLastWorkspaceOnStartup should restore files/layout when Draft stores workspace contents.
             return;
         }
 
         viewModel.SetWorkspaceMode(settings.DefaultStartupMode.ToLowerInvariant());
+    }
+
+    private static bool TryGetRestorableSessionFilePath(
+        AppSessionState? sessionState,
+        out string filePath)
+    {
+        filePath = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(sessionState?.LastDocumentPath))
+            return false;
+
+        try
+        {
+            string path = Path.GetFullPath(sessionState.LastDocumentPath);
+
+            if (!SupportedDocumentTypes.IsSupportedExistingFile(path))
+                return false;
+
+            filePath = path;
+            return true;
+        }
+        catch (Exception ex) when (IsStartupArgumentException(ex))
+        {
+            return false;
+        }
+    }
+
+    private static bool TryLoadReopenedDocument(MainWindowViewModel viewModel, string path)
+    {
+        try
+        {
+            viewModel.LoadDocumentFromPath(path);
+            return true;
+        }
+        catch (Exception ex) when (IsFileOperationException(ex))
+        {
+            return false;
+        }
     }
 
     private static string? GetStartupFilePath(IEnumerable<string> args)

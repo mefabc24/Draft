@@ -108,7 +108,7 @@ public partial class MainWindow : Window
 
         if (ViewModel is not null)
         {
-            AppSessionStateStore.TrySave(CaptureSessionState(ViewModel.WorkspaceMode));
+            AppSessionStateStore.TrySave(CaptureSessionState(ViewModel));
         }
 
         base.OnClosing(e);
@@ -325,8 +325,7 @@ public partial class MainWindow : Window
             _settings.MarkdownSyntaxHighlighting,
             _settings.CursorStyle,
             _settings.CursorBlinking,
-            _settings.PreviewScrollSyncMode,
-            _settings.ScrollPreviewToEditedSection),
+            _settings.PreviewScrollSyncMode),
             JsonOptions);
 
         WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
@@ -488,18 +487,38 @@ public partial class MainWindow : Window
         }
     }
 
-    private AppSessionState CaptureSessionState(string workspaceMode)
+    private AppSessionState CaptureSessionState(MainWindowViewModel viewModel)
     {
         Rect bounds = WindowState == WindowState.Normal
             ? new Rect(Left, Top, Width, Height)
             : RestoreBounds;
+        string? lastDocumentPath = GetRestorableDocumentPath(viewModel.CurrentFilePath);
 
         return new AppSessionState(
             bounds.Width,
             bounds.Height,
             bounds.Left,
             bounds.Top,
-            workspaceMode);
+            viewModel.WorkspaceMode,
+            lastDocumentPath);
+    }
+
+    private static string? GetRestorableDocumentPath(string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+            return null;
+
+        try
+        {
+            string fullPath = Path.GetFullPath(filePath);
+            return SupportedDocumentTypes.IsSupportedExistingFile(fullPath)
+                ? fullPath
+                : null;
+        }
+        catch (Exception ex) when (IsFileOperationException(ex))
+        {
+            return null;
+        }
     }
 
     private string? GetDefaultSaveDirectory()
@@ -531,7 +550,9 @@ public partial class MainWindow : Window
     {
         return ex is IOException
             or UnauthorizedAccessException
+            or ArgumentException
             or NotSupportedException
+            or PathTooLongException
             or SecurityException
             or InvalidOperationException;
     }
@@ -557,6 +578,5 @@ public partial class MainWindow : Window
         bool MarkdownSyntaxHighlighting,
         string CursorStyle,
         bool CursorBlinking,
-        string PreviewScrollSyncMode,
-        bool ScrollPreviewToEditedSection);
+        string PreviewScrollSyncMode);
 }
