@@ -552,14 +552,8 @@ public class SettingsViewModel : BaseViewModel
         if (!confirmation.IsConfirmed)
             return;
 
-        DraftSettings settings = AppSettingsStore.CreateDefaultSettings();
-
-        AppSettingsStore.TrySave(settings);
-        FileAssociationService.TryApplyTextAssociations(settings.AssociateTxtFilesWithDraft);
-        _originalSettings = settings;
-        ApplySettings(settings);
+        ApplySettings(AppSettingsStore.CreateDefaultSettings());
         RaiseAllSettingsPropertiesChanged();
-        SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
     }
 
     private bool SetSetting<T>(

@@ -517,14 +517,14 @@ function parseSettingsChangedMessage(
 function getEditorFontFamilyCss(fontFamily: string) {
   switch (fontFamily) {
     case 'Cascadia Code':
-      return "'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace"
+      return "'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', 'Courier New', monospace"
     case 'Cascadia Mono':
-      return "'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace"
+      return "'Cascadia Mono', 'Cascadia Code', 'JetBrains Mono', 'Courier New', monospace"
     case 'Consolas':
-      return "Consolas, 'JetBrains Mono', 'Courier New', monospace"
+      return "Consolas, 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', 'Courier New', monospace"
     case 'JetBrains Mono':
     default:
-      return "'JetBrains Mono', Consolas, 'Courier New', monospace"
+      return "'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace"
   }
 }
 
