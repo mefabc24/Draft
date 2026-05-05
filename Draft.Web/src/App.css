@@ -2,85 +2,69 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #111827;
+  background: transparent;
   color: #e5e7eb;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  border-bottom: 1px solid #2f3545;
-  background: #0f172a;
-}
-
-.mode-buttons {
-  display: inline-flex;
-  gap: 8px;
-}
-
-.mode-buttons button {
-  border: 1px solid #3f4860;
-  background: #1f2937;
-  color: #e5e7eb;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.mode-buttons button.active {
-  border-color: #2563eb;
-  background: #1e3a8a;
-}
-
-.mode-label {
-  font-size: 13px;
-  color: #93c5fd;
 }
 
 .workspace {
+  --pane-transition-duration: 240ms;
+  --pane-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --pane-slide-distance: 32px;
+  --editor-pane-width: 50%;
+  --preview-pane-width: 50%;
   flex: 1;
   min-height: 0;
   display: flex;
-}
-
-.workspace.split {
   position: relative;
+  overflow: hidden;
+  border-radius: 16px;
 }
 
-.workspace.editor .editor-pane,
-.workspace.preview .preview-pane {
-  width: 100%;
+.workspace.editor {
+  --editor-pane-width: 100%;
+  --preview-pane-width: 0%;
 }
 
-.workspace.split .editor-pane,
-.workspace.split .preview-pane {
-  width: 50%;
+.workspace.preview {
+  --editor-pane-width: 0%;
+  --preview-pane-width: 100%;
 }
 
-.workspace.split::after {
+.editor-pane::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 50%;
+  right: 0;
   width: 1px;
   background: #1b1b1b;
   pointer-events: none;
-  transform: translateX(-0.5px);
   z-index: 2;
+  opacity: 0;
+  transition: opacity var(--pane-transition-duration) ease;
+}
+
+.workspace.split .editor-pane::after {
+  opacity: 1;
 }
 
 .editor-pane,
 .preview-pane {
   display: flex;
   flex-direction: column;
+  flex: 0 0 50%;
   min-width: 0;
   min-height: 0;
   height: 100%;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    width var(--pane-transition-duration) var(--pane-transition-easing),
+    flex-basis var(--pane-transition-duration) var(--pane-transition-easing),
+    opacity 180ms ease,
+    transform var(--pane-transition-duration) var(--pane-transition-easing);
+  will-change: width, flex-basis, opacity, transform;
 }
 
 .editor-pane {
@@ -88,6 +72,26 @@
   --editor-scrollbar-offset: 4px;
   --editor-scrollbar-track: transparent;
   --editor-scrollbar-thumb: #353535;
+  position: relative;
+  width: var(--editor-pane-width);
+  flex-basis: var(--editor-pane-width);
+}
+
+.preview-pane {
+  width: var(--preview-pane-width);
+  flex-basis: var(--preview-pane-width);
+}
+
+.workspace.editor .preview-pane {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(var(--pane-slide-distance));
+}
+
+.workspace.preview .editor-pane {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(calc(var(--pane-slide-distance) * -1));
 }
 
 .pane-header {
@@ -95,16 +99,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 48px;
+  padding: 8px 20px;
   border-bottom: 0px solid #1f1f1f;
   background: #131313;
   color: #8c8c8c;
   font-size: 12px;
-  line-height: 1;
+  line-height: 1.2;
   position: relative;
   z-index: 1;
-  transition: box-shadow 0.2s ease;
 }
 
 .pane-header-left {
@@ -211,13 +214,16 @@
   overflow: hidden;
 }
 
-.preview-body {
-  overflow: hidden;
+@media (prefers-reduced-motion: reduce) {
+  .editor-pane::after,
+  .editor-pane,
+  .preview-pane {
+    transition: none;
+  }
 }
 
-.editor-pane[data-scrolled='true'] .pane-header,
-.preview-pane[data-scrolled='true'] .pane-header {
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.38);
+.preview-body {
+  overflow: hidden;
 }
 
 .preview-scroll {
@@ -281,24 +287,3 @@
   touch-action: none;
 }
 
-.preview-pane h1,
-.preview-pane h2,
-.preview-pane h3 {
-  color: #f9fafb;
-}
-
-.preview-pane pre {
-  background: #111827;
-  border: 1px solid #2f3545;
-  border-radius: 8px;
-  padding: 12px;
-  overflow-x: auto;
-}
-
-.preview-pane code {
-  font-family: Consolas, 'Courier New', monospace;
-}
-
-.preview-pane a {
-  color: #60a5fa;
-}

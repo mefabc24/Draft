@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <FontFamily x:Key="Font.Manrope">/Assets/Fonts/#Manrope</FontFamily>
+    <FontFamily x:Key="Font.JetbrainsMono">/Assets/Fonts/#JetBrains Mono</FontFamily>
+    <FontFamily x:Key="Font.SpaceGrotesk">/Assets/Fonts/#Space Grotesk</FontFamily>
+    <FontFamily x:Key="Font.Inter">/Assets/Fonts/#Inter</FontFamily>
+    <FontFamily x:Key="Font.Consolas">/Assets/Fonts/#Consolas</FontFamily>
+    <FontFamily x:Key="Font.CascadiaMono">/Assets/Fonts/#Cascadia Mono</FontFamily>
+    <FontFamily x:Key="Font.CascadiaCode">/Assets/Fonts/#Cascadia Code</FontFamily>
+</ResourceDictionary>

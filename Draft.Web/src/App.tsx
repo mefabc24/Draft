@@ -1,112 +1,175 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import * as monaco from 'monaco-editor'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import './App.css'
 import PaneHeader from './PaneHeader'
 import PreviewPane from './PreviewPane'
+import {
+  DRAFT_CURRENT_LINE_DECORATION_CLASS,
+  DRAFT_THEME_NAME,
+  registerDraftTheme,
+} from './theme'
 
 type ViewMode = 'editor' | 'split' | 'preview'
+type WebViewMessageEvent = Event & { data: unknown }
+type WorkspaceModeMessage = {
+  type: 'workspaceModeChanged'
+  mode: ViewMode
+}
+type LoadDocumentMessage = {
+  type: 'loadDocument'
+  content: string
+  fileName: string
+}
+type ShowWhitespaceCharacters = 'Always' | 'Never' | 'Highlighted Only'
+type CursorStyle = 'Line' | 'Block' | 'Underline'
+type PreviewScrollSyncMode =
+  | 'Off'
+  | 'EditorToPreview'
+  | 'PreviewToEditor'
+  | 'TwoWay'
+  | 'FollowEditedSection'
+type DraftEditorSettings = {
+  editorFontFamily: string
+  editorFontSize: number
+  lineHeight: number
+  wordWrap: boolean
+  showLineNumbers: boolean
+  highlightCurrentLine: boolean
+  showWhitespaceCharacters: ShowWhitespaceCharacters
+  showIndentationGuides: boolean
+  tabSize: number
+  insertSpacesInsteadOfTabs: boolean
+  autoPairBrackets: boolean
+  autoPairQuotes: boolean
+  markdownSyntaxHighlighting: boolean
+  cursorStyle: CursorStyle
+  cursorBlinking: boolean
+  previewScrollSyncMode: PreviewScrollSyncMode
+}
+type SettingsChangedMessage = {
+  type: 'settingsChanged'
+} & DraftEditorSettings
 
-const EDITOR_FONT_FAMILY = "'JetBrains Mono', Consolas, 'Courier New', monospace"
-const EDITOR_FONT_SIZE = 18
-const EDITOR_FONT_LOAD_TARGET = `${EDITOR_FONT_SIZE}px 'JetBrains Mono'`
-const EDITOR_FILE_LABEL = 'drafts/lorem_ipsum.md'
+declare global {
+  interface Window {
+    setDraftViewMode?: (mode: ViewMode) => void
+    chrome?: {
+      webview?: {
+        addEventListener: (
+          type: 'message',
+          listener: (event: WebViewMessageEvent) => void,
+        ) => void
+        removeEventListener: (
+          type: 'message',
+          listener: (event: WebViewMessageEvent) => void,
+        ) => void
+        postMessage: (message: string) => void
+      }
+    }
+  }
+}
+
 const EDITOR_SCROLL_SENSITIVITY = 1.5
 const MIN_EDITOR_THUMB_HEIGHT = 56
+const FOLLOW_EDITED_SECTION_DEBOUNCE_MS = 60
+const FOLLOW_EDITED_SECTION_SCROLL_PADDING = 16
+const DEFAULT_FILE_NAME = 'untitled.md'
+const WORKSPACE_MODE_MESSAGE_TYPE = 'workspaceModeChanged'
+const LOAD_DOCUMENT_MESSAGE_TYPE = 'loadDocument'
+const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
+const CURSOR_POSITION_CHANGED_MESSAGE_TYPE = 'cursorPositionChanged'
+const SETTINGS_CHANGED_MESSAGE_TYPE = 'settingsChanged'
 
-const INITIAL_MARKDOWN = `# Lorem Ipsum
+function stripMarkdownSyntax(content: string) {
+  return content
+    .replace(/^\s{0,3}(?:`{3,}|~{3,}).*$/gm, ' ')
+    .replace(/^\s{0,3}\[[^\]]+\]:\s+\S+.*$/gm, ' ')
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\[[^\]]*\]/g, '$1')
+    .replace(/^\s{0,3}#{1,6}\s*/gm, ' ')
+    .replace(/^\s{0,3}>\s?/gm, ' ')
+    .replace(/^\s{0,3}(?:[-+*]|\d+[.)])\s+/gm, ' ')
+    .replace(/^\s{0,3}(?:[-*_]\s*){3,}$/gm, ' ')
+    .replace(/^\s{0,3}(?:=+|-+)\s*$/gm, ' ')
+    .replace(/\[[ xX]\]\s+/g, ' ')
+    .replace(/<[^>\r\n]+>/g, ' ')
+    .replace(/[`*_~|]/g, ' ')
+    .replace(/\\([\\`*_{}[\]()#+\-.!>])/g, '$1')
+}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+function countMarkdownWords(content: string) {
+  const words = stripMarkdownSyntax(content).match(/[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*/gu)
+  return words ? words.length : 0
+}
 
-## Lorem Ipsum Dolor
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-### Lorem Ipsum Sit
-
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-
-### Lorem Ipsum Amet
-
-1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-2. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-3. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-
-### Lorem Ipsum Elit
-
-- [x] Lorem ipsum dolor sit amet.
-- [ ] Lorem ipsum dolor sit amet.
-- [ ] Lorem ipsum dolor sit amet.
-
-> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
->
-> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
----
-
-### Lorem Ipsum Table
-
-| Lorem | Ipsum | Dolor |
-| --- | --- | --- |
-| Lorem ipsum | Dolor sit amet | Consectetur adipiscing |
-| Sed do eiusmod | Tempor incididunt | Ut labore dolore |
-| Magna aliqua | Lorem ipsum | Dolor sit amet |
-
-### Lorem Ipsum Code
-
-\`\`\`txt
-Lorem ipsum dolor sit amet
-Consectetur adipiscing elit
-Sed do eiusmod tempor incididunt
-Ut labore et dolore magna aliqua
-\`\`\`
-
-### Lorem Ipsum Inline
-
-Lorem ipsum \`dolor sit amet\` consectetur **adipiscing elit** sed do *eiusmod tempor* incididunt ut labore et dolore magna aliqua.
-
-### Lorem Ipsum Longform
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-#### Lorem Ipsum Quattuor
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-
-#### Lorem Ipsum Quinque
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-### Lorem Ipsum Finale
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-`
+const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
+  editorFontFamily: 'JetBrains Mono',
+  editorFontSize: 18,
+  lineHeight: 1.6,
+  wordWrap: true,
+  showLineNumbers: true,
+  highlightCurrentLine: true,
+  showWhitespaceCharacters: 'Never',
+  showIndentationGuides: false,
+  tabSize: 4,
+  insertSpacesInsteadOfTabs: true,
+  autoPairBrackets: true,
+  autoPairQuotes: true,
+  markdownSyntaxHighlighting: true,
+  cursorStyle: 'Line',
+  cursorBlinking: true,
+  previewScrollSyncMode: 'TwoWay',
+}
 
 const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
   top: 16,
   bottom: 16,
+}
+
+function getCurrentLineDecorations(
+  editor: monaco.editor.IStandaloneCodeEditor,
+): monaco.editor.IModelDeltaDecoration[] {
+  const selections = editor.getSelections()
+
+  if (!selections || selections.length === 0) {
+    return []
+  }
+
+  const lineNumbers = new Set<number>()
+  const decorations: monaco.editor.IModelDeltaDecoration[] = []
+
+  for (const selection of selections) {
+    const lineNumber = selection.positionLineNumber
+
+    if (lineNumbers.has(lineNumber)) {
+      continue
+    }
+
+    lineNumbers.add(lineNumber)
+    decorations.push({
+      range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+      options: {
+        className: DRAFT_CURRENT_LINE_DECORATION_CLASS,
+        isWholeLine: true,
+      },
+    })
+  }
+
+  return decorations
+}
+
+function syncCurrentLineDecorations(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  decorations: monaco.editor.IEditorDecorationsCollection,
+  enabled: boolean,
+) {
+  if (!enabled) {
+    decorations.set([])
+    return
+  }
+
+  decorations.set(getCurrentLineDecorations(editor))
 }
 
 type EditorScrollbarElements = {
@@ -187,21 +250,533 @@ function scrollEditorFromPointer(
   editor.setScrollTop(maxThumbTop === 0 ? 0 : (thumbTop / maxThumbTop) * maxScrollTop)
 }
 
+function getPreviewBlockSourceLine(element: HTMLElement) {
+  const value = Number(element.dataset.sourceLine)
+  return Number.isFinite(value) && value > 0 ? value : null
+}
+
+function findPreviewBlockForEditorLine(
+  previewScrollElement: HTMLDivElement,
+  lineNumber: number,
+) {
+  const elements = previewScrollElement.querySelectorAll<HTMLElement>(
+    '[data-source-line]',
+  )
+  let closestPreviousElement: HTMLElement | null = null
+  let closestPreviousLine = -Infinity
+  let closestNextElement: HTMLElement | null = null
+  let closestNextLine = Infinity
+
+  for (const element of elements) {
+    const sourceLine = getPreviewBlockSourceLine(element)
+
+    if (sourceLine === null) {
+      continue
+    }
+
+    if (sourceLine <= lineNumber && sourceLine >= closestPreviousLine) {
+      closestPreviousElement = element
+      closestPreviousLine = sourceLine
+      continue
+    }
+
+    if (sourceLine > lineNumber && sourceLine < closestNextLine) {
+      closestNextElement = element
+      closestNextLine = sourceLine
+    }
+  }
+
+  return closestPreviousElement ?? closestNextElement
+}
+
+function getPreviewScrollTopForElement(
+  previewScrollElement: HTMLDivElement,
+  targetElement: HTMLElement,
+) {
+  const previewBounds = previewScrollElement.getBoundingClientRect()
+  const targetBounds = targetElement.getBoundingClientRect()
+  const targetTop =
+    targetBounds.top - previewBounds.top + previewScrollElement.scrollTop
+  const maxScrollTop = Math.max(
+    previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
+    0,
+  )
+
+  return Math.min(
+    Math.max(targetTop - FOLLOW_EDITED_SECTION_SCROLL_PADDING, 0),
+    maxScrollTop,
+  )
+}
+
+function isViewMode(value: string): value is ViewMode {
+  return value === 'editor' || value === 'split' || value === 'preview'
+}
+
+function parseWebViewRecord(data: unknown): Record<string, unknown> | null {
+  let message = data
+
+  if (typeof message === 'string') {
+    try {
+      message = JSON.parse(message) as unknown
+    } catch {
+      return null
+    }
+  }
+
+  if (!message || typeof message !== 'object') {
+    return null
+  }
+
+  return message as Record<string, unknown>
+}
+
+function parseWorkspaceModeMessage(
+  record: Record<string, unknown>,
+): WorkspaceModeMessage | null {
+  const type = record.type ?? record.Type
+  const mode = record.mode ?? record.Mode
+
+  if (type !== WORKSPACE_MODE_MESSAGE_TYPE || typeof mode !== 'string' || !isViewMode(mode)) {
+    return null
+  }
+
+  return {
+    type: WORKSPACE_MODE_MESSAGE_TYPE,
+    mode,
+  }
+}
+
+function parseLoadDocumentMessage(
+  record: Record<string, unknown>,
+): LoadDocumentMessage | null {
+  const type = record.type ?? record.Type
+  const content = record.content ?? record.Content
+  const fileName = record.fileName ?? record.FileName
+
+  if (
+    type !== LOAD_DOCUMENT_MESSAGE_TYPE ||
+    typeof content !== 'string' ||
+    typeof fileName !== 'string'
+  ) {
+    return null
+  }
+
+  return {
+    type: LOAD_DOCUMENT_MESSAGE_TYPE,
+    content,
+    fileName: fileName.trim() || DEFAULT_FILE_NAME,
+  }
+}
+
+function readRecordValue(record: Record<string, unknown>, camelName: string) {
+  const pascalName = `${camelName[0]?.toUpperCase() ?? ''}${camelName.slice(1)}`
+  return record[camelName] ?? record[pascalName]
+}
+
+function readString(
+  record: Record<string, unknown>,
+  name: string,
+  fallback: string,
+) {
+  const value = readRecordValue(record, name)
+  return typeof value === 'string' && value.trim() ? value : fallback
+}
+
+function readNumber(
+  record: Record<string, unknown>,
+  name: string,
+  fallback: number,
+) {
+  const value = readRecordValue(record, name)
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+function readBoolean(
+  record: Record<string, unknown>,
+  name: string,
+  fallback: boolean,
+) {
+  const value = readRecordValue(record, name)
+  return typeof value === 'boolean' ? value : fallback
+}
+
+function readShowWhitespaceCharacters(
+  record: Record<string, unknown>,
+): ShowWhitespaceCharacters {
+  const value = readRecordValue(record, 'showWhitespaceCharacters')
+
+  if (value === 'Always' || value === 'Never' || value === 'Highlighted Only') {
+    return value
+  }
+
+  return DEFAULT_EDITOR_SETTINGS.showWhitespaceCharacters
+}
+
+function readCursorStyle(record: Record<string, unknown>): CursorStyle {
+  const value = readRecordValue(record, 'cursorStyle')
+
+  if (value === 'Line' || value === 'Block' || value === 'Underline') {
+    return value
+  }
+
+  return DEFAULT_EDITOR_SETTINGS.cursorStyle
+}
+
+function readPreviewScrollSyncMode(
+  record: Record<string, unknown>,
+): PreviewScrollSyncMode {
+  const value = readRecordValue(record, 'previewScrollSyncMode')
+
+  if (
+    value === 'Off' ||
+    value === 'EditorToPreview' ||
+    value === 'PreviewToEditor' ||
+    value === 'TwoWay' ||
+    value === 'FollowEditedSection'
+  ) {
+    return value
+  }
+
+  return DEFAULT_EDITOR_SETTINGS.previewScrollSyncMode
+}
+
+function parseSettingsChangedMessage(
+  record: Record<string, unknown>,
+): SettingsChangedMessage | null {
+  const type = record.type ?? record.Type
+
+  if (type !== SETTINGS_CHANGED_MESSAGE_TYPE) {
+    return null
+  }
+
+  return {
+    type: SETTINGS_CHANGED_MESSAGE_TYPE,
+    editorFontFamily: readString(
+      record,
+      'editorFontFamily',
+      DEFAULT_EDITOR_SETTINGS.editorFontFamily,
+    ),
+    editorFontSize: readNumber(
+      record,
+      'editorFontSize',
+      DEFAULT_EDITOR_SETTINGS.editorFontSize,
+    ),
+    lineHeight: readNumber(
+      record,
+      'lineHeight',
+      DEFAULT_EDITOR_SETTINGS.lineHeight,
+    ),
+    wordWrap: readBoolean(record, 'wordWrap', DEFAULT_EDITOR_SETTINGS.wordWrap),
+    showLineNumbers: readBoolean(
+      record,
+      'showLineNumbers',
+      DEFAULT_EDITOR_SETTINGS.showLineNumbers,
+    ),
+    highlightCurrentLine: readBoolean(
+      record,
+      'highlightCurrentLine',
+      DEFAULT_EDITOR_SETTINGS.highlightCurrentLine,
+    ),
+    showWhitespaceCharacters: readShowWhitespaceCharacters(record),
+    showIndentationGuides: readBoolean(
+      record,
+      'showIndentationGuides',
+      DEFAULT_EDITOR_SETTINGS.showIndentationGuides,
+    ),
+    tabSize: readNumber(record, 'tabSize', DEFAULT_EDITOR_SETTINGS.tabSize),
+    insertSpacesInsteadOfTabs: readBoolean(
+      record,
+      'insertSpacesInsteadOfTabs',
+      DEFAULT_EDITOR_SETTINGS.insertSpacesInsteadOfTabs,
+    ),
+    autoPairBrackets: readBoolean(
+      record,
+      'autoPairBrackets',
+      DEFAULT_EDITOR_SETTINGS.autoPairBrackets,
+    ),
+    autoPairQuotes: readBoolean(
+      record,
+      'autoPairQuotes',
+      DEFAULT_EDITOR_SETTINGS.autoPairQuotes,
+    ),
+    markdownSyntaxHighlighting: readBoolean(
+      record,
+      'markdownSyntaxHighlighting',
+      DEFAULT_EDITOR_SETTINGS.markdownSyntaxHighlighting,
+    ),
+    cursorStyle: readCursorStyle(record),
+    cursorBlinking: readBoolean(
+      record,
+      'cursorBlinking',
+      DEFAULT_EDITOR_SETTINGS.cursorBlinking,
+    ),
+    previewScrollSyncMode: readPreviewScrollSyncMode(record),
+  }
+}
+
+function getEditorFontFamilyCss(fontFamily: string) {
+  switch (fontFamily) {
+    case 'Cascadia Code':
+      return "'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace"
+    case 'Cascadia Mono':
+      return "'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace"
+    case 'Consolas':
+      return "Consolas, 'JetBrains Mono', 'Courier New', monospace"
+    case 'JetBrains Mono':
+    default:
+      return "'JetBrains Mono', Consolas, 'Courier New', monospace"
+  }
+}
+
+function getEditorFontLoadTarget(settings: DraftEditorSettings) {
+  return `${settings.editorFontSize}px ${getEditorFontFamilyCss(settings.editorFontFamily)}`
+}
+
+function getEditorLineHeightPixels(settings: DraftEditorSettings) {
+  return Math.max(1, Math.round(settings.editorFontSize * settings.lineHeight))
+}
+
+function getRenderWhitespace(
+  value: ShowWhitespaceCharacters,
+): monaco.editor.IEditorOptions['renderWhitespace'] {
+  switch (value) {
+    case 'Always':
+      return 'all'
+    case 'Highlighted Only':
+      return 'selection'
+    case 'Never':
+    default:
+      return 'none'
+  }
+}
+
+function getCursorStyle(
+  value: CursorStyle,
+): monaco.editor.IEditorOptions['cursorStyle'] {
+  switch (value) {
+    case 'Block':
+      return 'block'
+    case 'Underline':
+      return 'underline'
+    case 'Line':
+    default:
+      return 'line'
+  }
+}
+
+function getEditorSettingsOptions(
+  settings: DraftEditorSettings,
+): monaco.editor.IEditorOptions {
+  return {
+    wordWrap: settings.wordWrap ? 'on' : 'off',
+    fontSize: settings.editorFontSize,
+    lineHeight: getEditorLineHeightPixels(settings),
+    fontFamily: getEditorFontFamilyCss(settings.editorFontFamily),
+    renderLineHighlight: settings.highlightCurrentLine ? 'gutter' : 'none',
+    lineNumbers: settings.showLineNumbers ? 'on' : 'off',
+    renderWhitespace: getRenderWhitespace(settings.showWhitespaceCharacters),
+    guides: { indentation: settings.showIndentationGuides },
+    autoClosingBrackets: settings.autoPairBrackets ? 'always' : 'never',
+    autoClosingQuotes: settings.autoPairQuotes ? 'always' : 'never',
+    cursorStyle: getCursorStyle(settings.cursorStyle),
+    cursorBlinking: settings.cursorBlinking ? 'blink' : 'solid',
+  }
+}
+
+function postWorkspaceMode(mode: ViewMode) {
+  window.chrome?.webview?.postMessage(
+    JSON.stringify({
+      type: WORKSPACE_MODE_MESSAGE_TYPE,
+      mode,
+    }),
+  )
+}
+
+function postDocumentChanged(content: string) {
+  window.chrome?.webview?.postMessage(
+    JSON.stringify({
+      type: DOCUMENT_CHANGED_MESSAGE_TYPE,
+      content,
+    }),
+  )
+}
+
+function getSelectedCharacterCount(editor: monaco.editor.IStandaloneCodeEditor) {
+  const model = editor.getModel()
+  const selections = editor.getSelections()
+
+  if (!model || !selections || selections.length === 0) {
+    return 0
+  }
+
+  return selections.reduce((total, selection) => {
+    const isEmptySelection =
+      selection.selectionStartLineNumber === selection.positionLineNumber &&
+      selection.selectionStartColumn === selection.positionColumn
+
+    if (isEmptySelection) {
+      return total
+    }
+
+    return total + model.getValueInRange(selection).length
+  }, 0)
+}
+
+function postCursorPositionChanged(editor: monaco.editor.IStandaloneCodeEditor) {
+  const position = editor.getPosition()
+
+  window.chrome?.webview?.postMessage(
+    JSON.stringify({
+      type: CURSOR_POSITION_CHANGED_MESSAGE_TYPE,
+      line: position?.lineNumber ?? 1,
+      column: position?.column ?? 1,
+      selectedCharacterCount: getSelectedCharacterCount(editor),
+    }),
+  )
+}
+
+type WordNavigationCharacterKind = 'whitespace' | 'word' | 'symbol'
+
+function getWordNavigationCharacterKind(value: string): WordNavigationCharacterKind {
+  if (/\s/u.test(value)) {
+    return 'whitespace'
+  }
+
+  if (/[\p{L}\p{N}_]/u.test(value)) {
+    return 'word'
+  }
+
+  return 'symbol'
+}
+
+function getNextWordOffset(text: string, offset: number) {
+  if (offset >= text.length) {
+    return text.length
+  }
+
+  let nextOffset = offset
+  const currentKind = getWordNavigationCharacterKind(text[nextOffset])
+
+  if (currentKind === 'whitespace') {
+    while (
+      nextOffset < text.length &&
+      getWordNavigationCharacterKind(text[nextOffset]) === 'whitespace'
+    ) {
+      nextOffset += 1
+    }
+
+    return nextOffset
+  }
+
+  while (
+    nextOffset < text.length &&
+    getWordNavigationCharacterKind(text[nextOffset]) === currentKind
+  ) {
+    nextOffset += 1
+  }
+
+  return nextOffset
+}
+
+function getPreviousWordOffset(text: string, offset: number) {
+  if (offset <= 0) {
+    return 0
+  }
+
+  let previousOffset = offset
+  const previousKind = getWordNavigationCharacterKind(text[previousOffset - 1])
+
+  if (previousKind === 'whitespace') {
+    while (
+      previousOffset > 0 &&
+      getWordNavigationCharacterKind(text[previousOffset - 1]) === 'whitespace'
+    ) {
+      previousOffset -= 1
+    }
+
+    return previousOffset
+  }
+
+  while (
+    previousOffset > 0 &&
+    getWordNavigationCharacterKind(text[previousOffset - 1]) === previousKind
+  ) {
+    previousOffset -= 1
+  }
+
+  return previousOffset
+}
+
+function moveSelectionsByWord(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  direction: 'left' | 'right',
+  select: boolean,
+) {
+  const model = editor.getModel()
+  const selections = editor.getSelections()
+
+  if (!model || !selections || selections.length === 0) {
+    return
+  }
+
+  const text = model.getValue()
+  const nextSelections = selections.map((selection) => {
+    const activePosition = {
+      lineNumber: selection.positionLineNumber,
+      column: selection.positionColumn,
+    }
+    const activeOffset = model.getOffsetAt(activePosition)
+    const nextOffset =
+      direction === 'left'
+        ? getPreviousWordOffset(text, activeOffset)
+        : getNextWordOffset(text, activeOffset)
+    const nextPosition = model.getPositionAt(nextOffset)
+
+    if (!select) {
+      return new monaco.Selection(
+        nextPosition.lineNumber,
+        nextPosition.column,
+        nextPosition.lineNumber,
+        nextPosition.column,
+      )
+    }
+
+    return new monaco.Selection(
+      selection.selectionStartLineNumber,
+      selection.selectionStartColumn,
+      nextPosition.lineNumber,
+      nextPosition.column,
+    )
+  })
+
+  editor.setSelections(nextSelections)
+  editor.revealPositionInCenterIfOutsideViewport(nextSelections[0].getPosition())
+}
+
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('split')
-  const [markdown, setMarkdown] = useState(INITIAL_MARKDOWN)
-  const [isEditorScrolled, setIsEditorScrolled] = useState(false)
+  const [markdown, setMarkdown] = useState('')
+  const [fileName, setFileName] = useState(DEFAULT_FILE_NAME)
+  const initialMarkdownRef = useRef(markdown)
+  const hasReceivedDocumentFromHostRef = useRef(false)
+  const isApplyingDocumentFromHostRef = useRef(false)
   const editorHostRef = useRef<HTMLDivElement | null>(null)
   const editorScrollbarRef = useRef<HTMLDivElement | null>(null)
   const editorThumbRef = useRef<HTMLDivElement | null>(null)
+  const previewScrollRef = useRef<HTMLDivElement | null>(null)
   const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(
     null,
   )
+  const currentLineDecorationsRef =
+    useRef<monaco.editor.IEditorDecorationsCollection | null>(null)
+  const draftEditorSettingsRef = useRef<DraftEditorSettings>(DEFAULT_EDITOR_SETTINGS)
   const editorDragOffsetRef = useRef(0)
   const isEditorDraggingRef = useRef(false)
-
-  const showEditor = viewMode !== 'preview'
-  const showPreview = viewMode !== 'editor'
+  const viewModeRef = useRef<ViewMode>(viewMode)
+  const scrollSyncSourceRef = useRef<'editor' | 'preview' | null>(null)
+  const scrollSyncReleaseTimeoutRef = useRef(0)
+  const followEditedSectionTimeoutRef = useRef(0)
+  const followEditedSectionAnimationFrameRef = useRef(0)
 
   const syncEditorScrollbarPosition = () => {
     const editor = editorInstanceRef.current
@@ -237,74 +812,354 @@ function App() {
     setScrollbarFlag(scrollbarElement, 'dragging', dragging)
   }
 
-  useEffect(() => {
-    if (!showEditor || !editorHostRef.current) {
-      editorInstanceRef.current?.dispose()
-      editorInstanceRef.current = null
-      setIsEditorScrolled(false)
+  const releaseScrollSyncSource = (source: 'editor' | 'preview') => {
+    if (scrollSyncReleaseTimeoutRef.current !== 0) {
+      window.clearTimeout(scrollSyncReleaseTimeoutRef.current)
+    }
+
+    scrollSyncReleaseTimeoutRef.current = window.setTimeout(() => {
+      if (scrollSyncSourceRef.current === source) {
+        scrollSyncSourceRef.current = null
+      }
+
+      scrollSyncReleaseTimeoutRef.current = 0
+    }, 0)
+  }
+
+  const isScrollSyncActive = () => {
+    const mode = draftEditorSettingsRef.current.previewScrollSyncMode
+
+    return (
+      viewModeRef.current === 'split' &&
+      mode !== 'Off' &&
+      mode !== 'FollowEditedSection'
+    )
+  }
+
+  const isFollowEditedSectionActive = () => {
+    return (
+      viewModeRef.current === 'split' &&
+      draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection'
+    )
+  }
+
+  const canSyncPreviewFromEditor = () => {
+    const mode = draftEditorSettingsRef.current.previewScrollSyncMode
+
+    return mode === 'EditorToPreview' || mode === 'TwoWay'
+  }
+
+  const canSyncEditorFromPreview = () => {
+    const mode = draftEditorSettingsRef.current.previewScrollSyncMode
+
+    return mode === 'PreviewToEditor' || mode === 'TwoWay'
+  }
+
+  const syncPreviewScrollFromEditor = () => {
+    if (
+      !isScrollSyncActive() ||
+      !canSyncPreviewFromEditor() ||
+      scrollSyncSourceRef.current === 'preview'
+    ) {
       return
     }
 
-    if (editorInstanceRef.current) {
-      editorInstanceRef.current.updateOptions({
-        padding: EDITOR_PADDING,
-        lineHeight: 30,
-        fontSize: EDITOR_FONT_SIZE,
-        quickSuggestions: false,
-        suggestOnTriggerCharacters: false,
-        parameterHints: { enabled: false },
-        wordBasedSuggestions: 'off',
-        inlineSuggest: { enabled: false },
-        snippetSuggestions: 'none',
-        overviewRulerLanes: 0,
-        overviewRulerBorder: false,
-        cursorWidth: 4,
-        cursorHeight: 20,
-        mouseWheelScrollSensitivity: EDITOR_SCROLL_SENSITIVITY,
-        scrollbar: {
-          vertical: 'hidden',
-          horizontal: 'hidden',
-          verticalScrollbarSize: 0,
-          horizontalScrollbarSize: 0,
-        },
-      })
-      remeasureEditor(editorInstanceRef.current)
-      window.requestAnimationFrame(() => {
-        syncEditorScrollbarPosition()
-      })
+    const editor = editorInstanceRef.current
+    const previewScrollElement = previewScrollRef.current
+
+    if (!editor || !previewScrollElement) {
       return
     }
 
-    monaco.editor.defineTheme('markdown-editor-dark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [],
-      colors: {
-        'editor.background': '#131313',
-        'editor.lineHighlightBackground': '#1B1B1B',
-        'editor.lineHighlightBorder': '#00000000',
-        'editor.wordHighlightBackground': '#3f3f4655',
-        'editor.wordHighlightStrongBackground': '#3f3f4670',
-        'editor.wordHighlightBorder': '#00000000',
-        'editor.wordHighlightStrongBorder': '#00000000',
-        'editor.selectionHighlightBackground': '#3f3f4655',
-        'editor.selectionHighlightBorder': '#00000000',
-        'editorOverviewRuler.border': '#00000000',
-      },
+    const editorMaxScrollTop = Math.max(
+      editor.getScrollHeight() - editor.getLayoutInfo().height,
+      0,
+    )
+    const previewMaxScrollTop = Math.max(
+      previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
+      0,
+    )
+    const nextScrollTop =
+      editorMaxScrollTop === 0
+        ? 0
+        : (editor.getScrollTop() / editorMaxScrollTop) * previewMaxScrollTop
+
+    if (Math.abs(previewScrollElement.scrollTop - nextScrollTop) < 1) {
+      return
+    }
+
+    scrollSyncSourceRef.current = 'editor'
+    previewScrollElement.scrollTop = nextScrollTop
+    releaseScrollSyncSource('editor')
+  }
+
+  const syncEditorScrollFromPreview = () => {
+    if (
+      !isScrollSyncActive() ||
+      !canSyncEditorFromPreview() ||
+      scrollSyncSourceRef.current === 'editor'
+    ) {
+      return
+    }
+
+    const editor = editorInstanceRef.current
+    const previewScrollElement = previewScrollRef.current
+
+    if (!editor || !previewScrollElement) {
+      return
+    }
+
+    const previewMaxScrollTop = Math.max(
+      previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
+      0,
+    )
+    const editorMaxScrollTop = Math.max(
+      editor.getScrollHeight() - editor.getLayoutInfo().height,
+      0,
+    )
+    const nextScrollTop =
+      previewMaxScrollTop === 0
+        ? 0
+        : (previewScrollElement.scrollTop / previewMaxScrollTop) * editorMaxScrollTop
+
+    if (Math.abs(editor.getScrollTop() - nextScrollTop) < 1) {
+      return
+    }
+
+    scrollSyncSourceRef.current = 'preview'
+    editor.setScrollTop(nextScrollTop)
+    releaseScrollSyncSource('preview')
+  }
+
+  const followEditedSection = () => {
+    if (
+      !isFollowEditedSectionActive() ||
+      scrollSyncSourceRef.current === 'preview'
+    ) {
+      return
+    }
+
+    const editor = editorInstanceRef.current
+    const previewScrollElement = previewScrollRef.current
+
+    if (!editor || !previewScrollElement) {
+      return
+    }
+
+    const lineNumber = editor.getPosition()?.lineNumber ?? 1
+    const targetElement = findPreviewBlockForEditorLine(
+      previewScrollElement,
+      lineNumber,
+    )
+
+    if (!targetElement) {
+      return
+    }
+
+    const nextScrollTop = getPreviewScrollTopForElement(
+      previewScrollElement,
+      targetElement,
+    )
+
+    if (Math.abs(previewScrollElement.scrollTop - nextScrollTop) < 1) {
+      return
+    }
+
+    scrollSyncSourceRef.current = 'editor'
+    previewScrollElement.scrollTop = nextScrollTop
+    releaseScrollSyncSource('editor')
+  }
+
+  const scheduleFollowEditedSection = () => {
+    if (followEditedSectionTimeoutRef.current !== 0) {
+      window.clearTimeout(followEditedSectionTimeoutRef.current)
+    }
+
+    followEditedSectionTimeoutRef.current = window.setTimeout(() => {
+      followEditedSectionTimeoutRef.current = 0
+
+      if (followEditedSectionAnimationFrameRef.current !== 0) {
+        window.cancelAnimationFrame(followEditedSectionAnimationFrameRef.current)
+      }
+
+      followEditedSectionAnimationFrameRef.current = window.requestAnimationFrame(() => {
+        followEditedSectionAnimationFrameRef.current = 0
+        followEditedSection()
+      })
+    }, FOLLOW_EDITED_SECTION_DEBOUNCE_MS)
+  }
+
+  const handlePreviewScroll = () => {
+    syncEditorScrollFromPreview()
+  }
+
+  const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
+    draftEditorSettingsRef.current = settings
+
+    const editor = editorInstanceRef.current
+
+    if (!editor) {
+      return
+    }
+
+    editor.updateOptions(getEditorSettingsOptions(settings))
+
+    const model = editor.getModel()
+
+    if (model) {
+      model.updateOptions({
+        tabSize: settings.tabSize,
+        insertSpaces: settings.insertSpacesInsteadOfTabs,
+      })
+      monaco.editor.setModelLanguage(
+        model,
+        settings.markdownSyntaxHighlighting ? 'markdown' : 'plaintext',
+      )
+    }
+
+    const currentLineDecorations = currentLineDecorationsRef.current
+
+    if (currentLineDecorations) {
+      syncCurrentLineDecorations(
+        editor,
+        currentLineDecorations,
+        settings.highlightCurrentLine,
+      )
+    }
+
+    remeasureEditor(editor)
+    syncEditorScrollbarPosition()
+    if (settings.previewScrollSyncMode === 'FollowEditedSection') {
+      scheduleFollowEditedSection()
+    } else {
+      syncPreviewScrollFromEditor()
+    }
+    void document.fonts.load(getEditorFontLoadTarget(settings)).then(() => {
+      if (editorInstanceRef.current !== editor) {
+        return
+      }
+
+      remeasureEditor(editor)
+      syncEditorScrollbarPosition()
     })
+  }
 
+  const applyDocumentFromHost = (message: LoadDocumentMessage) => {
+    const editor = editorInstanceRef.current
+
+    hasReceivedDocumentFromHostRef.current = true
+    isApplyingDocumentFromHostRef.current = true
+    initialMarkdownRef.current = message.content
+    setFileName(message.fileName)
+    setMarkdown(message.content)
+
+    if (editor) {
+      try {
+        if (editor.getValue() !== message.content) {
+          editor.setValue(message.content)
+        }
+      } finally {
+        isApplyingDocumentFromHostRef.current = false
+      }
+    } else {
+      isApplyingDocumentFromHostRef.current = false
+    }
+  }
+
+  useEffect(() => {
+    viewModeRef.current = viewMode
+  }, [viewMode])
+
+  useEffect(() => {
+    window.setDraftViewMode = (mode) => {
+      if (isViewMode(mode)) {
+        setViewMode(mode)
+      }
+    }
+
+    return () => {
+      window.setDraftViewMode = undefined
+    }
+  }, [])
+
+  useEffect(() => {
+    const webview = window.chrome?.webview
+
+    if (!webview) {
+      return
+    }
+
+    const handleWebViewMessage = (event: WebViewMessageEvent) => {
+      const record = parseWebViewRecord(event.data)
+
+      if (!record) {
+        return
+      }
+
+      const settingsMessage = parseSettingsChangedMessage(record)
+
+      if (settingsMessage) {
+        applyDraftEditorSettings(settingsMessage)
+        return
+      }
+
+      const workspaceMessage = parseWorkspaceModeMessage(record)
+
+      if (workspaceMessage) {
+        setViewMode(workspaceMessage.mode)
+        return
+      }
+
+      const loadDocumentMessage = parseLoadDocumentMessage(record)
+
+      if (loadDocumentMessage) {
+        applyDocumentFromHost(loadDocumentMessage)
+      }
+    }
+
+    webview.addEventListener('message', handleWebViewMessage)
+
+    return () => {
+      webview.removeEventListener('message', handleWebViewMessage)
+    }
+    // WebView messages read current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    postWorkspaceMode(viewMode)
+  }, [viewMode])
+
+  useEffect(() => {
+    window.requestAnimationFrame(() => {
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+        return
+      }
+
+      syncPreviewScrollFromEditor()
+    })
+    // Scroll syncing reads current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [markdown])
+
+  useEffect(() => {
+    if (!editorHostRef.current) {
+      return
+    }
+
+    registerDraftTheme()
+    monaco.editor.setTheme(DRAFT_THEME_NAME)
+
+    const currentEditorSettings = draftEditorSettingsRef.current
     const editor = monaco.editor.create(editorHostRef.current, {
-      value: markdown,
-      language: 'markdown',
+      value: initialMarkdownRef.current,
+      language: currentEditorSettings.markdownSyntaxHighlighting ? 'markdown' : 'plaintext',
       automaticLayout: true,
+      detectIndentation: false,
       minimap: { enabled: false },
-      wordWrap: 'on',
       scrollBeyondLastLine: false,
-      fontSize: EDITOR_FONT_SIZE,
-      lineHeight: 28,
       padding: EDITOR_PADDING,
-      fontFamily: EDITOR_FONT_FAMILY,
-      renderLineHighlight: 'all',
       quickSuggestions: false,
       suggestOnTriggerCharacters: false,
       parameterHints: { enabled: false },
@@ -313,6 +1168,7 @@ function App() {
       snippetSuggestions: 'none',
       overviewRulerLanes: 0,
       overviewRulerBorder: false,
+      contextmenu: false,
       cursorWidth: 2,
       cursorHeight: 22,
       mouseWheelScrollSensitivity: EDITOR_SCROLL_SENSITIVITY,
@@ -322,24 +1178,85 @@ function App() {
         verticalScrollbarSize: 0,
         horizontalScrollbarSize: 0,
       },
-      theme: 'markdown-editor-dark',
+      theme: DRAFT_THEME_NAME,
+      ...getEditorSettingsOptions(currentEditorSettings),
+    })
+    editor.getModel()?.updateOptions({
+      tabSize: currentEditorSettings.tabSize,
+      insertSpaces: currentEditorSettings.insertSpacesInsteadOfTabs,
     })
 
+    const currentLineDecorations = editor.createDecorationsCollection()
+    currentLineDecorationsRef.current = currentLineDecorations
+    const syncPersistentCurrentLine = () => {
+      syncCurrentLineDecorations(
+        editor,
+        currentLineDecorations,
+        draftEditorSettingsRef.current.highlightCurrentLine,
+      )
+    }
+
+    syncPersistentCurrentLine()
+
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.LeftArrow,
+      () => {
+        moveSelectionsByWord(editor, 'left', false)
+      },
+    )
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.RightArrow,
+      () => {
+        moveSelectionsByWord(editor, 'right', false)
+      },
+    )
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.LeftArrow,
+      () => {
+        moveSelectionsByWord(editor, 'left', true)
+      },
+    )
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.RightArrow,
+      () => {
+        moveSelectionsByWord(editor, 'right', true)
+      },
+    )
+
     const sub = editor.onDidChangeModelContent(() => {
-      setMarkdown(editor.getValue())
+      const nextMarkdown = editor.getValue()
+
+      setMarkdown(nextMarkdown)
+
+      if (isApplyingDocumentFromHostRef.current || !hasReceivedDocumentFromHostRef.current) {
+        return
+      }
+
+      postDocumentChanged(nextMarkdown)
     })
-    const scrollSub = editor.onDidScrollChange((event) => {
-      setIsEditorScrolled(event.scrollTop > 0)
+    const selectionSub = editor.onDidChangeCursorSelection(() => {
+      syncPersistentCurrentLine()
+      postCursorPositionChanged(editor)
+      scheduleFollowEditedSection()
+    })
+    const scrollSub = editor.onDidScrollChange(() => {
       syncEditorScrollbarPosition()
+      syncPreviewScrollFromEditor()
     })
     const layoutSub = editor.onDidLayoutChange(() => {
       syncEditorScrollbarPosition()
     })
     const contentSizeSub = editor.onDidContentSizeChange(() => {
       syncEditorScrollbarPosition()
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+      } else {
+        syncPreviewScrollFromEditor()
+      }
     })
 
     editorInstanceRef.current = editor
+    postCursorPositionChanged(editor)
 
     const syncEditorFontMetrics = () => {
       if (editorInstanceRef.current !== editor) {
@@ -351,7 +1268,9 @@ function App() {
 
     syncEditorFontMetrics()
     syncEditorScrollbarPosition()
-    void document.fonts.load(EDITOR_FONT_LOAD_TARGET).then(syncEditorFontMetrics)
+    void document.fonts
+      .load(getEditorFontLoadTarget(draftEditorSettingsRef.current))
+      .then(syncEditorFontMetrics)
     void document.fonts.ready.then(syncEditorFontMetrics)
     document.fonts.addEventListener('loadingdone', syncEditorFontMetrics)
 
@@ -368,164 +1287,176 @@ function App() {
     return () => {
       document.fonts.removeEventListener('loadingdone', syncEditorFontMetrics)
       resizeObserver?.disconnect()
+      if (scrollSyncReleaseTimeoutRef.current !== 0) {
+        window.clearTimeout(scrollSyncReleaseTimeoutRef.current)
+        scrollSyncReleaseTimeoutRef.current = 0
+      }
+      if (followEditedSectionTimeoutRef.current !== 0) {
+        window.clearTimeout(followEditedSectionTimeoutRef.current)
+        followEditedSectionTimeoutRef.current = 0
+      }
+      if (followEditedSectionAnimationFrameRef.current !== 0) {
+        window.cancelAnimationFrame(followEditedSectionAnimationFrameRef.current)
+        followEditedSectionAnimationFrameRef.current = 0
+      }
       contentSizeSub.dispose()
       layoutSub.dispose()
       scrollSub.dispose()
+      selectionSub.dispose()
       sub.dispose()
       editor.dispose()
       editorInstanceRef.current = null
-      setIsEditorScrolled(false)
+      currentLineDecorationsRef.current = null
     }
-  }, [showEditor])
+    // Monaco subscriptions read current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const editor = editorInstanceRef.current
-    if (!editor) return
 
-    const currentValue = editor.getValue()
-    if (currentValue !== markdown) {
-      editor.setValue(markdown)
+    if (!editor) {
+      return
     }
-  }, [markdown])
 
-  const modeLabel = useMemo(() => {
-    if (viewMode === 'editor') return 'Nur Editor'
-    if (viewMode === 'preview') return 'Nur Preview'
-    return 'Split 50/50'
+    window.requestAnimationFrame(() => {
+      if (editorInstanceRef.current !== editor) {
+        return
+      }
+
+      remeasureEditor(editor)
+      syncEditorScrollbarPosition()
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+      } else {
+        syncPreviewScrollFromEditor()
+      }
+    })
+
+    const timeoutId = window.setTimeout(() => {
+      if (editorInstanceRef.current !== editor) {
+        return
+      }
+
+      remeasureEditor(editor)
+      syncEditorScrollbarPosition()
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+      } else {
+        syncPreviewScrollFromEditor()
+      }
+    }, 240)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+    // Layout resync reads current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode])
 
   const previewWordCount = useMemo(() => {
-    const words = markdown.match(/\S+/g)
-    return words ? words.length : 0
+    return countMarkdownWords(markdown)
   }, [markdown])
 
   return (
-    <main className="app-shell">
-      <header className="toolbar">
-        <div className="mode-buttons" role="group" aria-label="Ansichtsmodus">
-          <button
-            type="button"
-            className={viewMode === 'editor' ? 'active' : ''}
-            onClick={() => setViewMode('editor')}
-          >
-            Editor
-          </button>
-          <button
-            type="button"
-            className={viewMode === 'split' ? 'active' : ''}
-            onClick={() => setViewMode('split')}
-          >
-            Split
-          </button>
-          <button
-            type="button"
-            className={viewMode === 'preview' ? 'active' : ''}
-            onClick={() => setViewMode('preview')}
-          >
-            Preview
-          </button>
-        </div>
-        <span className="mode-label">{modeLabel}</span>
-      </header>
-
+    <main className="app-shell" onContextMenu={(event) => event.preventDefault()}>
       <section className={`workspace ${viewMode}`}>
-        {showEditor ? (
-          <div
-            className="editor-pane"
-            data-scrolled={isEditorScrolled ? 'true' : 'false'}
-            aria-label="Markdown Editor"
-          >
-            <PaneHeader
-              leftLabel={EDITOR_FILE_LABEL}
-              rightItems={['UTF-8', 'Markdown']}
-            />
-            <div className="pane-body editor-body">
-              <div ref={editorHostRef} className="editor-host" />
+        <div
+          className="editor-pane"
+          aria-label="Markdown Editor"
+          aria-hidden={viewMode === 'preview'}
+        >
+          <PaneHeader
+            leftLabel={fileName}
+            rightItems={['UTF-8', 'Markdown']}
+          />
+          <div className="pane-body editor-body">
+            <div ref={editorHostRef} className="editor-host" />
+            <div
+              ref={editorScrollbarRef}
+              className="editor-scrollbar"
+              data-dragging="false"
+              data-scrollable="false"
+              aria-hidden="true"
+              onPointerDown={(event) => {
+                if (event.target !== event.currentTarget) {
+                  return
+                }
+
+                const thumbElement = editorThumbRef.current
+
+                if (!thumbElement) {
+                  return
+                }
+
+                scrollEditorScrollbarFromPointer(
+                  event.clientY,
+                  thumbElement.offsetHeight / 2,
+                )
+                syncEditorScrollbarPosition()
+              }}
+            >
               <div
-                ref={editorScrollbarRef}
-                className="editor-scrollbar"
-                data-dragging="false"
-                data-scrollable="false"
-                aria-hidden="true"
+                ref={editorThumbRef}
+                className="editor-scrollbar-thumb"
                 onPointerDown={(event) => {
-                  if (event.target !== event.currentTarget) {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  editorDragOffsetRef.current =
+                    event.clientY - event.currentTarget.getBoundingClientRect().top
+                  isEditorDraggingRef.current = true
+                  setEditorDraggingState(true)
+                  event.currentTarget.setPointerCapture(event.pointerId)
+                }}
+                onPointerMove={(event) => {
+                  if (!isEditorDraggingRef.current) {
                     return
                   }
 
-                  const thumbElement = editorThumbRef.current
-
-                  if (!thumbElement) {
-                    return
-                  }
-
+                  event.preventDefault()
                   scrollEditorScrollbarFromPointer(
                     event.clientY,
-                    thumbElement.offsetHeight / 2,
+                    editorDragOffsetRef.current,
                   )
                   syncEditorScrollbarPosition()
                 }}
-              >
-                <div
-                  ref={editorThumbRef}
-                  className="editor-scrollbar-thumb"
-                  onPointerDown={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    editorDragOffsetRef.current =
-                      event.clientY - event.currentTarget.getBoundingClientRect().top
-                    isEditorDraggingRef.current = true
-                    setEditorDraggingState(true)
-                    event.currentTarget.setPointerCapture(event.pointerId)
-                  }}
-                  onPointerMove={(event) => {
-                    if (!isEditorDraggingRef.current) {
-                      return
-                    }
+                onPointerUp={(event) => {
+                  if (!isEditorDraggingRef.current) {
+                    return
+                  }
 
-                    event.preventDefault()
-                    scrollEditorScrollbarFromPointer(
-                      event.clientY,
-                      editorDragOffsetRef.current,
-                    )
-                    syncEditorScrollbarPosition()
-                  }}
-                  onPointerUp={(event) => {
-                    if (!isEditorDraggingRef.current) {
-                      return
-                    }
+                  isEditorDraggingRef.current = false
+                  setEditorDraggingState(false)
 
-                    isEditorDraggingRef.current = false
-                    setEditorDraggingState(false)
+                  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                    event.currentTarget.releasePointerCapture(event.pointerId)
+                  }
+                }}
+                onPointerCancel={(event) => {
+                  if (!isEditorDraggingRef.current) {
+                    return
+                  }
 
-                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                      event.currentTarget.releasePointerCapture(event.pointerId)
-                    }
-                  }}
-                  onPointerCancel={(event) => {
-                    if (!isEditorDraggingRef.current) {
-                      return
-                    }
+                  isEditorDraggingRef.current = false
+                  setEditorDraggingState(false)
 
-                    isEditorDraggingRef.current = false
-                    setEditorDraggingState(false)
-
-                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                      event.currentTarget.releasePointerCapture(event.pointerId)
-                    }
-                  }}
-                />
-              </div>
+                  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                    event.currentTarget.releasePointerCapture(event.pointerId)
+                  }
+                }}
+              />
             </div>
           </div>
-        ) : null}
+        </div>
 
-        {showPreview ? (
-          <PreviewPane
-            markdown={markdown}
-            headerLeft="Live Preview"
-            headerRight={[`${previewWordCount} words`]}
-          />
-        ) : null}
+        <PreviewPane
+          markdown={markdown}
+          headerLeft="Live Preview"
+          headerRight={[`${previewWordCount} words`]}
+          ariaHidden={viewMode === 'editor'}
+          previewScrollElementRef={previewScrollRef}
+          onPreviewScroll={handlePreviewScroll}
+        />
       </section>
     </main>
   )

@@ -1,0 +1,151 @@
+<UserControl
+    x:Class="Draft.Views.Settings.GeneralSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:section="clr-namespace:Draft.Controls.Settings"
+    xmlns:settings="clr-namespace:Draft.Wpf.Controls.Settings"
+    d:DesignHeight="500"
+    d:DesignWidth="540"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource Brush.Background.Window}">
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            Style="{StaticResource SettingsScrollViewer}"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel VerticalAlignment="Top">
+                <section:SectionHeader Title="Startup &amp; Behavior" />
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Reopen last workspace on startup"
+                    Description="Automatically restore the files and layout from your last session.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.ReopenLastWorkspaceOnStartup, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Autosave enabled"
+                    Description="Save your changes automatically while you work.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.AutosaveEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Autosave interval"
+                    Description="Choose how often Draft should save changes automatically.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        IsEnabled="{Binding Settings.IsAutosaveIntervalEnabled}"
+                        ItemsSource="{Binding Settings.AutosaveIntervalOptions}"
+                        SelectedItem="{Binding Settings.AutosaveInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Save on focus lost"
+                    Description="Save the current file when Draft loses focus or you switch away from the app.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.SaveOnFocusLost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Confirm before closing unsaved files"
+                    Description="Show a warning before closing files with unsaved changes.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.ConfirmBeforeClosingUnsavedFiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,32"
+                    Title="Default startup mode"
+                    Description="Choose which workspace mode Draft should open with.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        ItemsSource="{Binding Settings.DefaultStartupModeOptions}"
+                        SelectedItem="{Binding Settings.DefaultStartupMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <section:SectionHeader Title="Workspace Behavior" />
+
+                <settings:SettingCard
+                    Margin="0,0,0,32"
+                    Title="Scroll sync mode"
+                    Description="Choose how the editor and preview scroll together.">
+                    <ComboBox
+                        Width="200"
+                        Height="36"
+                        ItemsSource="{Binding Settings.PreviewScrollSyncModeOptions}"
+                        SelectedItem="{Binding Settings.PreviewScrollSyncMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <section:SectionHeader Title="File Management" />
+
+                <settings:SettingFieldCard Margin="0,0,0,12" Title="Default save location">
+                    <Grid Height="36">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            Style="{StaticResource SettingsTextBox}"
+                            Text="{Binding Settings.DefaultSaveLocationDisplay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <Button
+                            Grid.Column="1"
+                            Width="96"
+                            Margin="8,0,0,0"
+                            Command="{Binding Settings.BrowseDefaultSaveLocationCommand}"
+                            Content="Browse"
+                            Style="{StaticResource SettingButton}" />
+                    </Grid>
+                </settings:SettingFieldCard>
+
+                <settings:SettingFieldCard
+                    Margin="0,0,0,12"
+                    Title="Default file extension">
+                    <ComboBox
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        IsEnabled="False"
+                        ItemsSource="{Binding Settings.DefaultFileExtensionOptions}"
+                        SelectedItem="{Binding Settings.DefaultFileExtension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingFieldCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Associate .txt files with Draft"
+                    Description="Allow Draft to appear as an option for opening plain text files.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.AssociateTxtFilesWithDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

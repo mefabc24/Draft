@@ -1,18 +1,18 @@
-﻿<Application
+<Application
     x:Class="Draft.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:Draft"
-    StartupUri="MainWindow.xaml">
+    xmlns:local="clr-namespace:Draft">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Styles/Colors.xaml"/>
-                <ResourceDictionary Source="/Styles/Typography.xaml"/>
-                <ResourceDictionary Source="/Styles/Geometry.xaml"/>
-                
-                <ResourceDictionary Source="/Styles/ControlButtonStyles.xaml"/>
-                <ResourceDictionary Source="/Styles/WindowControlButtonStyle.xaml"/>
+                <ResourceDictionary Source="/Styles/Foundation/Colors.xaml" />
+                <ResourceDictionary Source="/Styles/Foundation/Typography.xaml" />
+                <ResourceDictionary Source="/Styles/Foundation/Icons.xaml" />
+
+                <ResourceDictionary Source="/Styles/Components/ControlBarButton.xaml" />
+                <ResourceDictionary Source="/Styles/Components/WindowControlButton.xaml" />
+                <ResourceDictionary Source="/Styles/Components/StatusBarButton.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

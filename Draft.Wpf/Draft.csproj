@@ -6,34 +6,56 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <StartupObject>Draft.App</StartupObject>
+    <DefaultItemExcludes>$(DefaultItemExcludes);.build-check\**;Draft.Wpf\**</DefaultItemExcludes>
+    <ApplicationIcon>Assets\Icons\draft.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\Fonts\CascadiaMono-VariableFont_wght.ttf" />
+    <None Remove="Assets\Fonts\consolas.ttf" />
     <None Remove="Assets\Fonts\JetBrainsMono-VariableFont_wght.ttf" />
     <None Remove="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
-    <None Remove="Assets\Icons\TestIcon.png" />
-    <None Remove="Assets\Icons\TestIconHighRes.png" />
-    <None Remove="View\Workspace\Editor.html" />
-    <None Remove="View\Workspace\Preview.html" />
+    <None Remove="Assets\Fonts\SpaceGrotesk-VariableFont_wght.ttf" />
+    <None Remove="Assets\Icons\draft.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3912.50" />
+    <PackageReference Include="Velopack" Version="0.0.1298" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\Draft.Web\dist\**\*">
+      <Link>Web\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\CascadiaMono-VariableFont_wght.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Fonts\consolas.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\Fonts\JetBrainsMono-VariableFont_wght.ttf" />
     <Resource Include="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
-    <Resource Include="Assets\Icons\TestIcon.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\Icons\TestIconHighRes.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Assets\Fonts\SpaceGrotesk-VariableFont_wght.ttf" />
+    <Resource Include="Assets\Icons\draft.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="View\Workspace\" />
+    <Folder Include=".github\" />
   </ItemGroup>
 
 </Project>

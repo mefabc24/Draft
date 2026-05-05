@@ -1,69 +1,13 @@
-# Markdown Editor Workspace
+# Draft.Web
 
-Dieses Projekt ist ein React+Vite Workspace fuer einen Markdown-Editor, der spaeter in WPF per WebView2 eingebettet werden kann.
+Draft.Web contains the web-based workspace UI for Draft. It is built with React, TypeScript, and Vite, and is embedded by the Windows desktop app through WebView2.
 
-## Enthaltene Funktionen
+This project owns the editor-facing web experience, including the Markdown workspace and preview UI.
 
-- Monaco Editor als Eingabeflaeche
-- Live Markdown-Preview
-- Drei Ansichtsmodi:
-  - `Editor`: nur Editor (100%)
-  - `Split`: Editor links + Preview rechts (50/50) mit roter Trennlinie
-  - `Preview`: nur Preview (100%)
+## Scripts
 
-## Entwicklung starten
-
-```bash
-npm install
+```powershell
 npm run dev
-```
-
-## Production Build
-
-```bash
 npm run build
-npm run preview
+npm run lint
 ```
-
-## Wichtige Dateien
-
-- `src/App.tsx`: Monaco-Integration, Modus-Logik, Preview-Rendering
-- `src/App.css`: Layout und Styling fuer Editor/Split/Preview
-- `src/index.css`: Globale Basisstyles
-
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-## Wichtige Dateien
-
-
-
-

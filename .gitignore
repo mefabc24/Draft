@@ -1,0 +1,51 @@
+.dotnet-home/
+.build-check/
+.verify/
+
+# Shared editor and IDE folders
+.vs/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local environment overrides
+.env.local
+.env.*.local
+*.local
+
+# Common build and dependency outputs across subprojects
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/coverage/
+**/*.tsbuildinfo
+**/[Bb]in/
+**/[Oo]bj/
+
+# User-specific IDE/project files
+*.suo
+*.user
+*.userosscache
+*.rsuser
+*.sln.docstates
+
+# Instructions
+Instructions/
+
+# Generated release artifacts
+Releases/
+
+# Inno Setup output
+Installer/Output/
+*.exe
