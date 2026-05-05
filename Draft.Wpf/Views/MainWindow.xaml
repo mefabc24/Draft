@@ -28,15 +28,20 @@
     <Grid>
         <!--  App Logic  -->
         <Border
-            Background="{StaticResource Brush.WindowBG}"
-            BorderThickness="1"
-            CornerRadius="8">
+            Background="{StaticResource Brush.WindowBG}">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="CornerRadius" Value="8" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
                             <Setter Property="BorderBrush" Value="#3D3D3D" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                            <Setter Property="BorderBrush" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="CornerRadius" Value="0" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -89,14 +94,17 @@
                     Padding="24,4"
                     Background="{StaticResource Brush.Background.Surface}"
                     BorderBrush="{StaticResource Brush.Border.Subtle}"
-                    BorderThickness="0,1,0,0"
-                    CornerRadius="0,0,8,8">
+                    BorderThickness="0,1,0,0">
                     <Border.Style>
                         <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="0,0,8,8" />
                             <Setter Property="Visibility" Value="Visible" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsStatusBarVisible}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                                    <Setter Property="CornerRadius" Value="0" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -108,9 +116,18 @@
 
         <!--  Window Logic: custom titlebar controls overlay  -->
         <Grid
-            Margin="1"
             VerticalAlignment="Top"
             WindowChrome.IsHitTestVisibleInChrome="True">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Margin" Value="1" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                            <Setter Property="Margin" Value="0" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
             <uc:WindowControls HorizontalAlignment="Right" />
         </Grid>
     </Grid>
