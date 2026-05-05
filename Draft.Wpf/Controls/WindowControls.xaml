@@ -39,10 +39,28 @@
                 </Path.Style>
             </Path>
         </Button>
-        <Button
-            Click="Close_Click"
-            Style="{StaticResource WindowControlButton}"
-            Tag="Close">
+        <Button Click="Close_Click">
+            <Button.Style>
+                <Style BasedOn="{StaticResource WindowControlButton}" TargetType="Button">
+                    <Setter Property="Tag" Value="Close" />
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                                <Condition Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Normal" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="local:ControlButtonAssist.CornerRadius" Value="0,8,0,0" />
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                                <Condition Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="local:ControlButtonAssist.CornerRadius" Value="0" />
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
             <Path
                 Width="12"
                 Height="12"

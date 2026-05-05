@@ -45,25 +45,43 @@
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
 
-    <Border Padding="24" Background="Transparent">
+    <Border Background="Transparent">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Padding" Value="24" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                        <Setter Property="Padding" Value="0" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Border
-            Background="{StaticResource Brush.Island}"
-            BorderThickness="1"
-            CornerRadius="8">
-        <Border.Effect>
-            <DropShadowEffect
-                BlurRadius="24"
-                Direction="270"
-                Opacity="0.28"
-                ShadowDepth="6"
-                Color="{StaticResource Color.Shadow.Default}" />
-        </Border.Effect>
+            Background="{StaticResource Brush.Island}">
         <Border.Style>
             <Style TargetType="Border">
                 <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect
+                            BlurRadius="24"
+                            Direction="270"
+                            Opacity="0.28"
+                            ShadowDepth="6"
+                            Color="{StaticResource Color.Shadow.Default}" />
+                    </Setter.Value>
+                </Setter>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
                         <Setter Property="BorderBrush" Value="#3D3D3D" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="CornerRadius" Value="0" />
+                        <Setter Property="Effect" Value="{x:Null}" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
