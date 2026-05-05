@@ -13,7 +13,7 @@
                     </Border>
 
                     <ControlTemplate.Triggers>
-                        <!--  Close Hover  -->
+                        <!-- Close Hover -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsMouseOver" Value="True" />
@@ -23,7 +23,7 @@
                             <Setter Property="Background" Value="{StaticResource Brush.CloseButtonBackground}" />
                         </MultiTrigger>
 
-                        <!--  Default Hover  -->
+                        <!-- Default Hover -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsMouseOver" Value="True" />

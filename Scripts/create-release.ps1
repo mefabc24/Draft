@@ -5,7 +5,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$root = Split-Path -Parent $scriptDir
 $webProject = Join-Path $root "Draft.Web"
 $wpfProject = Join-Path $root "Draft.Wpf\Draft.csproj"
 $wpfProjectDir = Join-Path $root "Draft.Wpf"
@@ -43,11 +44,20 @@ Write-Host "Packaging Velopack release $Version..." -ForegroundColor Cyan
 vpk pack `
     --packId mefabc24.Draft `
     --packTitle Draft `
+    --packAuthors mefabc24 `
     --packVersion $Version `
     --packDir $publishDir `
     --mainExe Draft.exe `
     --icon $iconPath `
     --shortcuts Desktop,StartMenuRoot `
     --outputDir $releaseDir
+
+$setupFiles = Get-ChildItem -LiteralPath $releaseDir -Filter "*Setup.exe" -File
+if ($setupFiles.Count -eq 1 -and $setupFiles[0].Name -ne "DraftSetup.exe") {
+    Rename-Item -LiteralPath $setupFiles[0].FullName -NewName "DraftSetup.exe" -Force
+}
+elseif ($setupFiles.Count -gt 1) {
+    Write-Warning "Found multiple setup installers in $releaseDir. Skipping automatic rename to DraftSetup.exe."
+}
 
 Write-Host "Release created in: $releaseDir" -ForegroundColor Green
