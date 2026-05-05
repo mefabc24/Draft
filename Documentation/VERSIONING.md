@@ -1,6 +1,16 @@
 # Versioning
 
-Update the version in the following locations before creating a new release.
+Update the version before creating a new release.
+
+## Recommended Command
+
+From the repository root, run:
+
+```powershell
+.\Scripts\update-version.ps1 -Version 1.1.0
+```
+
+The script updates all manually maintained version fields listed below.
 
 ## Desktop App
 

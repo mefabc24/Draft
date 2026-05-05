@@ -554,6 +554,7 @@ public class SettingsViewModel : BaseViewModel
 
         ApplySettings(AppSettingsStore.CreateDefaultSettings());
         RaiseAllSettingsPropertiesChanged();
+        ApplyChanges();
     }
 
     private bool SetSetting<T>(
