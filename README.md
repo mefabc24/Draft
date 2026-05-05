@@ -113,6 +113,12 @@ Upload the generated files from `Releases/` as GitHub Release assets. They do no
 - `Draft.Web/README.md` describes the web workspace.
 - `Draft.Wpf/README.md` describes the Windows desktop host.
 
+## License
+
+Draft is licensed under the GNU General Public License v3.0. See `LICENSE` for the full license text.
+
+Bundled fonts remain under their original third-party licenses. See `THIRD_PARTY_NOTICES.md` and `Licenses/OFL-1.1.txt` for details.
+
 ## Credits
 
 Application icons are based on assets from [Icons8](https://icons8.com/).

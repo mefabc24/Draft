@@ -46,7 +46,7 @@ public partial class SettingsWindow : Window
     {
         MessageBoxResult result = MessageBox.Show(
             this,
-            "Reset all settings to their default values?",
+            "Reset all settings controls to their default values? Changes are only saved when you apply them.",
             "Reset Settings",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);

@@ -3,7 +3,7 @@
     <FontFamily x:Key="Font.JetbrainsMono">/Assets/Fonts/#JetBrains Mono</FontFamily>
     <FontFamily x:Key="Font.SpaceGrotesk">/Assets/Fonts/#Space Grotesk</FontFamily>
     <FontFamily x:Key="Font.Inter">/Assets/Fonts/#Inter</FontFamily>
-    <FontFamily x:Key="Font.Consolas">/Assets/Fonts/#Consolas</FontFamily>
+    <FontFamily x:Key="Font.Consolas">Consolas, Cascadia Code, Cascadia Mono, JetBrains Mono</FontFamily>
     <FontFamily x:Key="Font.CascadiaMono">/Assets/Fonts/#Cascadia Mono</FontFamily>
     <FontFamily x:Key="Font.CascadiaCode">/Assets/Fonts/#Cascadia Code</FontFamily>
 </ResourceDictionary>
