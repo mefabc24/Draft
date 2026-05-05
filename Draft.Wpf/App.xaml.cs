@@ -4,11 +4,23 @@ using Draft.Views;
 using System.IO;
 using System.Security;
 using System.Windows;
+using Velopack;
 
 namespace Draft;
 
 public partial class App : Application
 {
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        VelopackApp.Build()
+            .Run();
+
+        App app = new();
+        app.InitializeComponent();
+        app.Run();
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);

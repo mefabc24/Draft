@@ -9,9 +9,15 @@
     <Version>1.0.0</Version>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <FileVersion>1.0.0</FileVersion>
+    <StartupObject>Draft.App</StartupObject>
     <DefaultItemExcludes>$(DefaultItemExcludes);.build-check\**;Draft.Wpf\**</DefaultItemExcludes>
     <ApplicationIcon>Assets\Icons\draft.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Assets\Fonts\CascadiaMono-VariableFont_wght.ttf" />
@@ -24,6 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3912.50" />
+    <PackageReference Include="Velopack" Version="0.0.1298" />
   </ItemGroup>
 
   <ItemGroup>
