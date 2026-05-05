@@ -202,7 +202,7 @@
                             FontSize="32"
                             FontWeight="Bold"
                             Foreground="{StaticResource Brush.Text.Primary}"
-                            Text="{Binding CurrentSettingsPage.Title, FallbackValue='Page Titel'}" />
+                            Text="{Binding CurrentSettingsPage.Title, FallbackValue='Page Title'}" />
 
                         <!-- Close Button -->
                         <Button

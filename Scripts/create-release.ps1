@@ -22,6 +22,11 @@ if (-not $Version) {
     throw "Unable to determine release version from Draft.Wpf\Draft.csproj. Pass -Version explicitly."
 }
 
+$binaryVersion = $Version
+if ($Version -match '^(\d+\.\d+\.\d+(?:\.\d+)?)') {
+    $binaryVersion = $Matches[1]
+}
+
 $publishDir = Join-Path $wpfProjectDir "bin\Release\net10.0-windows\$Runtime\publish"
 
 Write-Host "Building Draft.Web..." -ForegroundColor Cyan
@@ -34,7 +39,14 @@ finally {
 }
 
 Write-Host "Publishing Draft.Wpf $Version for $Runtime..." -ForegroundColor Cyan
-dotnet publish $wpfProject -c Release --self-contained -r $Runtime
+dotnet publish $wpfProject `
+    -c Release `
+    --self-contained `
+    -r $Runtime `
+    /p:Version=$Version `
+    /p:InformationalVersion=$Version `
+    /p:AssemblyVersion=$binaryVersion `
+    /p:FileVersion=$binaryVersion
 
 if (-not (Test-Path -LiteralPath $publishDir)) {
     throw "Publish directory was not found: $publishDir"
@@ -66,7 +78,9 @@ if ($setupFiles.Count -eq 1 -and $setupFiles[0].Name -ne "DraftSetup.exe") {
             }
         }
 
-        $assetsManifest | ConvertTo-Json -Compress | Set-Content -LiteralPath $assetsManifestPath -NoNewline
+        $assetsManifestJson = ($assetsManifest | ConvertTo-Json -Compress) + [Environment]::NewLine
+        $utf8NoBom = New-Object System.Text.UTF8Encoding -ArgumentList $false
+        [System.IO.File]::WriteAllText($assetsManifestPath, $assetsManifestJson, $utf8NoBom)
     }
 }
 elseif ($setupFiles.Count -gt 1) {
