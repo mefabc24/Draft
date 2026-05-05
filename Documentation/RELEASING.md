@@ -62,6 +62,7 @@ The script performs these steps:
 3. Creates Velopack packages from the WPF publish output.
 4. Writes the generated release files to `Releases`.
 5. Renames the generated setup executable to `DraftSetup.exe` when there is exactly one setup executable.
+6. Updates `Releases/assets.win.json` so the installer entry points to `DraftSetup.exe`.
 
 The WPF publish output is created under:
 

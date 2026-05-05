@@ -54,7 +54,20 @@ vpk pack `
 
 $setupFiles = Get-ChildItem -LiteralPath $releaseDir -Filter "*Setup.exe" -File
 if ($setupFiles.Count -eq 1 -and $setupFiles[0].Name -ne "DraftSetup.exe") {
+    $originalSetupName = $setupFiles[0].Name
     Rename-Item -LiteralPath $setupFiles[0].FullName -NewName "DraftSetup.exe" -Force
+
+    $assetsManifestPath = Join-Path $releaseDir "assets.win.json"
+    if (Test-Path -LiteralPath $assetsManifestPath) {
+        $assetsManifest = Get-Content -LiteralPath $assetsManifestPath -Raw | ConvertFrom-Json
+        foreach ($asset in $assetsManifest) {
+            if ($asset.Type -eq "Installer" -and $asset.RelativeFileName -eq $originalSetupName) {
+                $asset.RelativeFileName = "DraftSetup.exe"
+            }
+        }
+
+        $assetsManifest | ConvertTo-Json -Compress | Set-Content -LiteralPath $assetsManifestPath -NoNewline
+    }
 }
 elseif ($setupFiles.Count -gt 1) {
     Write-Warning "Found multiple setup installers in $releaseDir. Skipping automatic rename to DraftSetup.exe."
