@@ -1,3 +1,5 @@
+using Draft.Dialogs.Models;
+using Draft.Dialogs.Services;
 using Draft.Helpers;
 using Draft.ViewModels;
 using Draft.Views;
@@ -49,11 +51,7 @@ public partial class App : Application
             }
             catch (Exception ex) when (IsFileOperationException(ex))
             {
-                MessageBox.Show(
-                    $"Unable to open the startup file.\n\n{ex.Message}",
-                    "Open File",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                ShowStartupFileError(ex.Message);
             }
         }
         else if (settings.ReopenLastWorkspaceOnStartup
@@ -161,5 +159,19 @@ public partial class App : Application
             or UnauthorizedAccessException
             or NotSupportedException
             or SecurityException;
+    }
+
+    private static void ShowStartupFileError(string message)
+    {
+        IDraftDialogService dialogService = new DraftDialogService();
+        dialogService.ShowMessage(
+            new DraftMessageDialogRequest(
+                "Open File",
+                $"Unable to open the startup file. {message}",
+                DraftDialogType.Error,
+                new[]
+                {
+                    DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                }));
     }
 }

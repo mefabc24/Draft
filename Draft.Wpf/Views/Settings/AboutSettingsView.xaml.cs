@@ -1,3 +1,5 @@
+using Draft.Dialogs.Models;
+using Draft.Dialogs.Services;
 using Draft.Helpers;
 using Draft.ViewModels;
 using System.ComponentModel;
@@ -12,6 +14,7 @@ namespace Draft.Views.Settings;
 public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
 {
     private const string ProjectUrl = "https://github.com/mefabc24/Draft";
+    private readonly IDraftDialogService _draftDialogService = new DraftDialogService();
     private readonly UpdateService _updateService = new();
     private bool _isCheckingForUpdates;
     private bool _isCheckForUpdatesEnabled = true;
@@ -88,35 +91,35 @@ public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
             case UpdateCheckStatus.NotInstalledWithVelopack:
             case UpdateCheckStatus.UpToDate:
                 SetUpdateStatus(result.Message);
-                MessageBox.Show(
-                    owner,
-                    result.Message,
+                ShowMessageDialog(
                     "Check for Updates",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    result.Message,
+                    DraftDialogType.Info);
                 return;
             case UpdateCheckStatus.Failed:
                 SetUpdateStatus("Unable to check for updates.");
-                MessageBox.Show(
-                    owner,
-                    result.Message,
+                ShowMessageDialog(
                     "Check for Updates",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    result.Message,
+                    DraftDialogType.Error);
                 return;
             case UpdateCheckStatus.UpdateAvailable:
                 SetUpdateStatus(result.Message);
                 break;
         }
 
-        MessageBoxResult installResult = MessageBox.Show(
-            owner,
-            $"Draft {result.Version} is available.\n\nInstall this update now? Draft will restart to finish installing.",
-            "Update Available",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Information);
+        DraftDialogResult installResult = _draftDialogService.ShowMessage(
+            new DraftMessageDialogRequest(
+                "Update Available",
+                $"Draft {result.Version} is available. Install this update now? Draft will restart to finish installing.",
+                DraftDialogType.Info,
+                new[]
+                {
+                    DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
+                    DraftDialogButtonDefinition.Primary("Install", new DraftDialogResult("install-update")),
+                }));
 
-        if (installResult != MessageBoxResult.Yes)
+        if (installResult.Id != "install-update")
         {
             SetUpdateStatus("Update available.");
             return;
@@ -136,16 +139,14 @@ public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
         catch (Exception ex)
         {
             SetUpdateStatus("Unable to install update.");
-            MessageBox.Show(
-                owner,
-                $"Unable to install the update.\n\n{ex.Message}",
+            ShowMessageDialog(
                 "Install Update",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                $"Unable to install the update. {ex.Message}",
+                DraftDialogType.Error);
         }
     }
 
-    private static bool CanRestartForUpdate(Window? owner)
+    private bool CanRestartForUpdate(Window? owner)
     {
         if (owner?.Owner?.DataContext is not MainWindowViewModel viewModel
             || !viewModel.HasUnsavedWork)
@@ -153,12 +154,10 @@ public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
             return true;
         }
 
-        MessageBox.Show(
-            owner,
-            "Draft has unsaved work. Save or discard your changes before installing the update.",
+        ShowMessageDialog(
             "Unsaved Changes",
-            MessageBoxButton.OK,
-            MessageBoxImage.Warning);
+            "Draft has unsaved work. Save or discard your changes before installing the update.",
+            DraftDialogType.Warning);
 
         return false;
     }
@@ -166,6 +165,19 @@ public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
     private void SetUpdateStatus(string status)
     {
         UpdateStatus = status;
+    }
+
+    private void ShowMessageDialog(string title, string description, DraftDialogType dialogType)
+    {
+        _draftDialogService.ShowMessage(
+            new DraftMessageDialogRequest(
+                title,
+                description,
+                dialogType,
+                new[]
+                {
+                    DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                }));
     }
 
     private bool SetProperty<T>(

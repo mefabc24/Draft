@@ -1,3 +1,5 @@
+using Draft.Dialogs.Models;
+using Draft.Dialogs.Services;
 using Draft.ViewModels;
 using System.Windows;
 
@@ -5,6 +7,8 @@ namespace Draft.Views;
 
 public partial class SettingsWindow : Window
 {
+    private readonly IDraftDialogService _draftDialogService = new DraftDialogService();
+
     public event EventHandler<SettingsAppliedEventArgs>? SettingsApplied;
 
     public SettingsWindow()
@@ -44,14 +48,18 @@ public partial class SettingsWindow : Window
         object? sender,
         ResetConfirmationRequestedEventArgs e)
     {
-        MessageBoxResult result = MessageBox.Show(
-            this,
-            "Reset all settings controls to their default values? Changes are only saved when you apply them.",
-            "Reset Settings",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+        DraftDialogResult result = _draftDialogService.ShowMessage(
+            new DraftMessageDialogRequest(
+                "Reset Settings",
+                "Reset all settings to their default values? This will be saved immediately.",
+                DraftDialogType.Warning,
+                new[]
+                {
+                    DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
+                    DraftDialogButtonDefinition.Primary("Reset", new DraftDialogResult("reset")),
+                }));
 
-        e.IsConfirmed = result == MessageBoxResult.Yes;
+        e.IsConfirmed = result.Id == "reset";
     }
 
     private void ViewModel_SettingsApplied(object? sender, SettingsAppliedEventArgs e)

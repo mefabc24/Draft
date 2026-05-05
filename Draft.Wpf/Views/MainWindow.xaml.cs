@@ -1,3 +1,5 @@
+using Draft.Dialogs.Models;
+using Draft.Dialogs.Services;
 using Draft.Helpers;
 using Draft.ViewModels;
 using Microsoft.Win32;
@@ -19,6 +21,7 @@ public partial class MainWindow : Window
     private const string CursorPositionChangedMessageType = "cursorPositionChanged";
     private const string SettingsChangedMessageType = "settingsChanged";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly IDraftDialogService _draftDialogService = new DraftDialogService();
     private DraftSettings _settings;
     private bool _isWebViewReady;
     private bool _isSettingsWindowOpen;
@@ -234,12 +237,10 @@ public partial class MainWindow : Window
 
     private void ViewModel_FileOperationFailed(object? sender, FileOperationFailedEventArgs e)
     {
-        MessageBox.Show(
-            this,
-            e.Message,
+        ShowMessageDialog(
             e.Title,
-            MessageBoxButton.OK,
-            MessageBoxImage.Error);
+            e.Message,
+            DraftDialogType.Error);
     }
 
     private bool ConfirmDiscardUnsavedChanges()
@@ -250,14 +251,13 @@ public partial class MainWindow : Window
         if (ViewModel?.IsDirty != true)
             return true;
 
-        MessageBoxResult result = MessageBox.Show(
-            this,
-            "You have unsaved changes. Do you want to continue?",
+        DraftDialogResult result = ShowConfirmationDialog(
             "Unsaved Changes",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            "You have unsaved changes. Do you want to continue?",
+            "Continue",
+            "continue");
 
-        return result == MessageBoxResult.Yes;
+        return result.Id == "continue";
     }
 
     private bool ConfirmCloseWithUnsavedChanges()
@@ -268,24 +268,52 @@ public partial class MainWindow : Window
         if (ViewModel?.HasUnsavedWork != true)
             return true;
 
-        MessageBoxResult result = MessageBox.Show(
-            this,
-            "This file has unsaved changes or has not been saved yet.\n\nIf you close now, all unsaved work will be lost.\n\nDo you really want to close Draft?",
+        DraftDialogResult result = ShowConfirmationDialog(
             "Unsaved Changes",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            "This file has unsaved changes or has not been saved yet. If you close now, all unsaved work will be lost. Do you really want to close Draft?",
+            "Close Draft",
+            "close-draft");
 
-        return result == MessageBoxResult.Yes;
+        return result.Id == "close-draft";
     }
 
     private void ShowFileOperationError(string title, Exception ex)
     {
-        MessageBox.Show(
-            this,
-            ex.Message,
+        ShowMessageDialog(
             title,
-            MessageBoxButton.OK,
-            MessageBoxImage.Error);
+            ex.Message,
+            DraftDialogType.Error);
+    }
+
+    private void ShowMessageDialog(string title, string description, DraftDialogType dialogType)
+    {
+        _draftDialogService.ShowMessage(
+            new DraftMessageDialogRequest(
+                title,
+                description,
+                dialogType,
+                new[]
+                {
+                    DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                }));
+    }
+
+    private DraftDialogResult ShowConfirmationDialog(
+        string title,
+        string description,
+        string primaryButtonText,
+        string primaryResultId)
+    {
+        return _draftDialogService.ShowMessage(
+            new DraftMessageDialogRequest(
+                title,
+                description,
+                DraftDialogType.Warning,
+                new[]
+                {
+                    DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
+                    DraftDialogButtonDefinition.Primary(primaryButtonText, new DraftDialogResult(primaryResultId)),
+                }));
     }
 
     private void SyncWebViewWithWorkspaceState()

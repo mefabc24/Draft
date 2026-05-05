@@ -7,9 +7,9 @@
     xmlns:settings="clr-namespace:Draft.Views.Settings"
     xmlns:settingsVm="clr-namespace:Draft.ViewModels"
     Title="Settings"
-    Width="900"
+    Width="948"
     Icon="/Assets/Icons/draft.ico"
-    Height="600"
+    Height="648"
     AllowsTransparency="True"
     Background="Transparent"
     WindowStyle="None"
@@ -45,10 +45,19 @@
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
 
-    <Border
-        Background="{StaticResource Brush.WindowBG}"
-        BorderThickness="1"
-        CornerRadius="8">
+    <Border Padding="24" Background="Transparent">
+        <Border
+            Background="{StaticResource Brush.Island}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Border.Effect>
+            <DropShadowEffect
+                BlurRadius="24"
+                Direction="270"
+                Opacity="0.28"
+                ShadowDepth="6"
+                Color="{StaticResource Color.Shadow.Default}" />
+        </Border.Effect>
         <Border.Style>
             <Style TargetType="Border">
                 <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
@@ -264,6 +273,7 @@
 
 
         </Grid>
+        </Border>
     </Border>
 
 </Window>
