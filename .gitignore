@@ -43,6 +43,9 @@ pnpm-debug.log*
 # Instructions
 Instructions/
 
+# Generated release artifacts
+Releases/
+
 # Inno Setup output
 Installer/Output/
 *.exe
