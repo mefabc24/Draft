@@ -95,6 +95,23 @@
                             Stretch="Uniform" />
                         <Canvas>
                             <Ellipse
+                                Canvas.Top="-5"
+                                Canvas.Right="-5"
+                                Width="12"
+                                Height="12"
+                                Fill="{Binding Path=(local:ControlButtonAssist.CutoutBackground), RelativeSource={RelativeSource AncestorType=Button}}">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SaveStatusDotVisible}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <Ellipse
                                 Canvas.Top="-4"
                                 Canvas.Right="-4"
                                 Width="10"

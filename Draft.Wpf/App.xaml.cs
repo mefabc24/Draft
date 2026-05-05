@@ -14,6 +14,9 @@ public partial class App : Application
     public static void Main(string[] args)
     {
         VelopackApp.Build()
+            .OnAfterInstallFastCallback(_ => FileAssociationService.TryRegisterMarkdownAssociations())
+            .OnAfterUpdateFastCallback(_ => FileAssociationService.TryRegisterMarkdownAssociations())
+            .OnBeforeUninstallFastCallback(_ => FileAssociationService.TryUnregisterMarkdownAssociations())
             .Run();
 
         App app = new();
@@ -26,6 +29,11 @@ public partial class App : Application
         base.OnStartup(e);
 
         DraftSettings settings = AppSettingsStore.Load();
+        if (settings.AssociateTxtFilesWithDraft)
+        {
+            FileAssociationService.TryApplyTextAssociations(true);
+        }
+
         MainWindowViewModel viewModel = new();
         viewModel.ApplySettings(settings);
         AppSessionStateStore.TryLoad(out AppSessionState? sessionState);

@@ -86,6 +86,20 @@
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingCard>
 
+                <section:SectionHeader Title="Workspace Behavior" />
+
+                <settings:SettingCard
+                    Margin="0,0,0,32"
+                    Title="Scroll sync mode"
+                    Description="Choose how the editor and preview scroll together.">
+                    <ComboBox
+                        Width="200"
+                        Height="36"
+                        ItemsSource="{Binding Settings.PreviewScrollSyncModeOptions}"
+                        SelectedItem="{Binding Settings.PreviewScrollSyncMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
                 <section:SectionHeader Title="File Management" />
 
                 <settings:SettingFieldCard Margin="0,0,0,12" Title="Default save location">
@@ -122,6 +136,15 @@
                         SelectedItem="{Binding Settings.DefaultFileExtension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingFieldCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Associate .txt files with Draft"
+                    Description="Allow Draft to appear as an option for opening plain text files.">
+                    <CheckBox
+                        IsChecked="{Binding Settings.AssociateTxtFilesWithDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
             </StackPanel>
         </ScrollViewer>
     </Border>

@@ -26,6 +26,7 @@ public class SettingsViewModel : BaseViewModel
     private string _defaultStartupMode = "Last";
     private string _defaultSaveLocation = string.Empty;
     private string _defaultFileExtension = AppSettingsStore.DefaultFileExtension;
+    private bool _associateTxtFilesWithDraft;
     private string _editorFontFamily = "JetBrains Mono";
     private int _editorFontSize = 18;
     private double _lineHeight = 1.6;
@@ -273,6 +274,12 @@ public class SettingsViewModel : BaseViewModel
             GetDefaultFileExtensionValue(value));
     }
 
+    public bool AssociateTxtFilesWithDraft
+    {
+        get => _associateTxtFilesWithDraft;
+        set => SetSetting(ref _associateTxtFilesWithDraft, value);
+    }
+
     public string EditorFontFamily
     {
         get => _editorFontFamily;
@@ -466,6 +473,7 @@ public class SettingsViewModel : BaseViewModel
         _defaultFileExtension = settings.DefaultFileExtension == AppSettingsStore.DefaultFileExtension
             ? settings.DefaultFileExtension
             : AppSettingsStore.DefaultFileExtension;
+        _associateTxtFilesWithDraft = settings.AssociateTxtFilesWithDraft;
         _editorFontFamily = EnsureOption(EditorFontFamilyOptions, settings.EditorFontFamily, "JetBrains Mono");
         _editorFontSize = EnsureOption(EditorFontSizeOptions, settings.EditorFontSize, 18);
         _lineHeight = EnsureOption(LineHeightOptions, settings.LineHeight, 1.6);
@@ -520,6 +528,7 @@ public class SettingsViewModel : BaseViewModel
     {
         DraftSettings settings = CaptureSettings();
         AppSettingsStore.TrySave(settings);
+        FileAssociationService.TryApplyTextAssociations(settings.AssociateTxtFilesWithDraft);
         _originalSettings = settings;
         SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
         CloseRequested?.Invoke(this, EventArgs.Empty);
@@ -546,6 +555,7 @@ public class SettingsViewModel : BaseViewModel
         DraftSettings settings = AppSettingsStore.CreateDefaultSettings();
 
         AppSettingsStore.TrySave(settings);
+        FileAssociationService.TryApplyTextAssociations(settings.AssociateTxtFilesWithDraft);
         _originalSettings = settings;
         ApplySettings(settings);
         RaiseAllSettingsPropertiesChanged();
@@ -573,6 +583,7 @@ public class SettingsViewModel : BaseViewModel
             DefaultStartupMode = DefaultStartupMode,
             DefaultSaveLocation = DefaultSaveLocation,
             DefaultFileExtension = _defaultFileExtension,
+            AssociateTxtFilesWithDraft = AssociateTxtFilesWithDraft,
             EditorFontFamily = EditorFontFamily,
             EditorFontSize = EditorFontSize,
             LineHeight = LineHeight,
@@ -675,6 +686,7 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(DefaultSaveLocation));
         OnPropertyChanged(nameof(DefaultSaveLocationDisplay));
         OnPropertyChanged(nameof(DefaultFileExtension));
+        OnPropertyChanged(nameof(AssociateTxtFilesWithDraft));
         OnPropertyChanged(nameof(EditorFontFamily));
         OnPropertyChanged(nameof(EditorFontSize));
         OnPropertyChanged(nameof(LineHeight));

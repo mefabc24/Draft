@@ -24,6 +24,8 @@ public sealed class DraftSettings
 
     public string DefaultFileExtension { get; set; } = AppSettingsStore.DefaultFileExtension;
 
+    public bool AssociateTxtFilesWithDraft { get; set; } = false;
+
     public string EditorFontFamily { get; set; } = "JetBrains Mono";
 
     public int EditorFontSize { get; set; } = 18;
