@@ -61,8 +61,8 @@ The script performs these steps:
 2. Publishes the WPF app from `Draft.Wpf/Draft.csproj` with `dotnet publish`.
 3. Creates Velopack packages from the WPF publish output.
 4. Writes the generated release files to `Releases`.
-5. Renames the generated setup executable to `DraftSetup.exe` when there is exactly one setup executable.
-6. Updates `Releases/assets.win.json` so the installer entry points to `DraftSetup.exe`.
+5. Renames the generated setup executable to `Draft-Setup-v<version>.exe`.
+6. Updates `Releases/assets.win.json` so the installer entry points to the versioned setup executable.
 
 The WPF publish output is created under:
 
@@ -83,7 +83,7 @@ Releases
 A normal Windows release contains files like:
 
 ```text
-Releases/DraftSetup.exe
+Releases/Draft-Setup-v<version>.exe
 Releases/mefabc24.Draft-<version>-full.nupkg
 Releases/mefabc24.Draft-win-Portable.zip
 Releases/RELEASES
@@ -91,7 +91,7 @@ Releases/releases.win.json
 Releases/assets.win.json
 ```
 
-Upload the full generated asset set from `Releases`. Do not upload only `DraftSetup.exe`, because update checks need the Velopack feed and package files too.
+Upload the full generated asset set from `Releases`. Do not upload only the setup executable, because update checks need the Velopack feed and package files too.
 
 ## GitHub Release
 
