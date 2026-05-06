@@ -1,19 +1,42 @@
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$Version
 )
 
 $ErrorActionPreference = "Stop"
-
-if ($Version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') {
-    throw "Version must use semantic version format, for example 1.1.0 or 1.1.0-beta.1."
-}
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $root = Split-Path -Parent $scriptDir
 $wpfProject = Join-Path $root "Draft.Wpf\Draft.csproj"
 $webPackage = Join-Path $root "Draft.Web\package.json"
 $webPackageLock = Join-Path $root "Draft.Web\package-lock.json"
+
+function Get-CurrentVersion {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $text = [System.IO.File]::ReadAllText($Path)
+    $match = [regex]::Match($text, '<Version>([^<]+)</Version>')
+
+    if (-not $match.Success) {
+        throw "Unable to find current version in Draft.Wpf project."
+    }
+
+    $match.Groups[1].Value
+}
+
+$currentVersion = Get-CurrentVersion -Path $wpfProject
+Write-Host "Current version: $currentVersion" -ForegroundColor Cyan
+
+if ([string]::IsNullOrWhiteSpace($Version)) {
+    $Version = Read-Host "New version"
+}
+
+if ($Version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') {
+    throw "Version must use semantic version format, for example 1.1.0 or 1.1.0-beta.1."
+}
 
 $binaryVersion = $Version
 if ($Version -match '^(\d+\.\d+\.\d+(?:\.\d+)?)') {
