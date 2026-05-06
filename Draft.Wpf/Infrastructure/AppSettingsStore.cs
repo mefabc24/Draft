@@ -20,6 +20,8 @@ public sealed class DraftSettings
 
     public string DefaultStartupMode { get; set; } = "Last";
 
+    public double WindowMinimumSizeScale { get; set; } = AppSettingsStore.DefaultWindowMinimumSizeScale;
+
     public string DefaultSaveLocation { get; set; } = AppSettingsStore.GetDefaultSaveLocation();
 
     public string DefaultFileExtension { get; set; } = AppSettingsStore.DefaultFileExtension;
@@ -85,6 +87,7 @@ public static class AppSettingsStore
     public const string PreviewScrollSyncTwoWay = "TwoWay";
     public const string PreviewScrollSyncFollowEditedSection = "FollowEditedSection";
     public const string DefaultPreviewScrollSyncMode = PreviewScrollSyncTwoWay;
+    public const double DefaultWindowMinimumSizeScale = 1.0;
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -165,6 +168,9 @@ public static class AppSettingsStore
         settings.DefaultFileExtension = DefaultFileExtension;
         settings.MarkdownTheme = DefaultMarkdownTheme;
         settings.ToolbarControlbarPosition = DefaultToolbarPosition;
+        settings.WindowMinimumSizeScale = IsWindowMinimumSizeScale(settings.WindowMinimumSizeScale)
+            ? settings.WindowMinimumSizeScale
+            : DefaultWindowMinimumSizeScale;
 
         if (!hasPreviewScrollSyncMode && legacySyncScrollWithEditor.HasValue)
         {
@@ -337,6 +343,15 @@ public static class AppSettingsStore
             or PreviewScrollSyncPreviewToEditor
             or PreviewScrollSyncTwoWay
             or PreviewScrollSyncFollowEditedSection;
+    }
+
+    private static bool IsWindowMinimumSizeScale(double value)
+    {
+        return value is 0.5
+            or 0.75
+            or DefaultWindowMinimumSizeScale
+            or 1.25
+            or 1.5;
     }
 
     private static bool TryGetStringProperty(JsonElement root, string name, out string? value)

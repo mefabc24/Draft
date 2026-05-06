@@ -75,7 +75,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,12"
                     Title="Default startup mode"
                     Description="Choose which workspace mode Draft should open with.">
                     <ComboBox
@@ -83,6 +83,19 @@
                         Height="36"
                         ItemsSource="{Binding Settings.DefaultStartupModeOptions}"
                         SelectedItem="{Binding Settings.DefaultStartupMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Margin="0,0,0,32"
+                    Title="Window Minimum Size Scale"
+                    Description="Controls how small the main window is allowed to become.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        ItemStringFormat="{}{0:0.0#}"
+                        ItemsSource="{Binding Settings.WindowMinimumSizeScaleOptions}"
+                        SelectedItem="{Binding Settings.WindowMinimumSizeScale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingCard>
 
