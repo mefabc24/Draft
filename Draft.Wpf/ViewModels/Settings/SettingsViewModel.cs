@@ -24,6 +24,7 @@ public class SettingsViewModel : BaseViewModel
     private bool _includeMarkdownSyntaxInCharacterCount;
     private bool _confirmBeforeClosingUnsavedFiles = true;
     private string _defaultStartupMode = "Last";
+    private double _windowMinimumSizeScale = AppSettingsStore.DefaultWindowMinimumSizeScale;
     private string _defaultSaveLocation = string.Empty;
     private string _defaultFileExtension = AppSettingsStore.DefaultFileExtension;
     private bool _associateTxtFilesWithDraft;
@@ -73,6 +74,9 @@ public class SettingsViewModel : BaseViewModel
 
     public IReadOnlyList<string> DefaultStartupModeOptions { get; } =
         new[] { "Last", "Editor", "Split", "Preview" };
+
+    public IReadOnlyList<double> WindowMinimumSizeScaleOptions { get; } =
+        new[] { 0.5, 0.75, 1.0, 1.25, 1.5 };
 
     public IReadOnlyList<string> DefaultFileExtensionOptions { get; } =
         new[]
@@ -246,6 +250,17 @@ public class SettingsViewModel : BaseViewModel
         set => SetSetting(
             ref _defaultStartupMode,
             EnsureOption(DefaultStartupModeOptions, value, "Last"));
+    }
+
+    public double WindowMinimumSizeScale
+    {
+        get => _windowMinimumSizeScale;
+        set => SetSetting(
+            ref _windowMinimumSizeScale,
+            EnsureOption(
+                WindowMinimumSizeScaleOptions,
+                value,
+                AppSettingsStore.DefaultWindowMinimumSizeScale));
     }
 
     public string DefaultSaveLocation
@@ -469,6 +484,10 @@ public class SettingsViewModel : BaseViewModel
         _includeMarkdownSyntaxInCharacterCount = settings.IncludeMarkdownSyntaxInCharacterCount;
         _confirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles;
         _defaultStartupMode = EnsureOption(DefaultStartupModeOptions, settings.DefaultStartupMode, "Last");
+        _windowMinimumSizeScale = EnsureOption(
+            WindowMinimumSizeScaleOptions,
+            settings.WindowMinimumSizeScale,
+            AppSettingsStore.DefaultWindowMinimumSizeScale);
         _defaultSaveLocation = settings.DefaultSaveLocation ?? string.Empty;
         _defaultFileExtension = settings.DefaultFileExtension == AppSettingsStore.DefaultFileExtension
             ? settings.DefaultFileExtension
@@ -576,6 +595,7 @@ public class SettingsViewModel : BaseViewModel
             IncludeMarkdownSyntaxInCharacterCount = IncludeMarkdownSyntaxInCharacterCount,
             ConfirmBeforeClosingUnsavedFiles = ConfirmBeforeClosingUnsavedFiles,
             DefaultStartupMode = DefaultStartupMode,
+            WindowMinimumSizeScale = WindowMinimumSizeScale,
             DefaultSaveLocation = DefaultSaveLocation,
             DefaultFileExtension = _defaultFileExtension,
             AssociateTxtFilesWithDraft = AssociateTxtFilesWithDraft,
@@ -678,6 +698,7 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(IncludeMarkdownSyntaxInCharacterCount));
         OnPropertyChanged(nameof(ConfirmBeforeClosingUnsavedFiles));
         OnPropertyChanged(nameof(DefaultStartupMode));
+        OnPropertyChanged(nameof(WindowMinimumSizeScale));
         OnPropertyChanged(nameof(DefaultSaveLocation));
         OnPropertyChanged(nameof(DefaultSaveLocationDisplay));
         OnPropertyChanged(nameof(DefaultFileExtension));

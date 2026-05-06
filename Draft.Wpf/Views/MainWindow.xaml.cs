@@ -14,12 +14,23 @@ namespace Draft.Views;
 
 public partial class MainWindow : Window
 {
+    public static readonly DependencyProperty IsWindowSnappedProperty =
+        DependencyProperty.Register(
+            nameof(IsWindowSnapped),
+            typeof(bool),
+            typeof(MainWindow),
+            new PropertyMetadata(false));
+
     private const string WebHostName = "draft.local";
     private const string WorkspaceModeMessageType = "workspaceModeChanged";
     private const string LoadDocumentMessageType = "loadDocument";
     private const string DocumentChangedMessageType = "documentChanged";
     private const string CursorPositionChangedMessageType = "cursorPositionChanged";
     private const string SettingsChangedMessageType = "settingsChanged";
+    private const double StartupWindowHeightScale = 0.8;
+    private const double StartupWindowAspectRatio = 16.0 / 9.0;
+    private const double BaseMinWindowWidth = 1000;
+    private const double BaseMinWindowHeight = 500;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IDraftDialogService _draftDialogService = new DraftDialogService();
     private DraftSettings _settings;
@@ -27,6 +38,19 @@ public partial class MainWindow : Window
     private bool _isSettingsWindowOpen;
     private bool _hasHandledFocusLostSave;
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+
+    public bool IsWindowSnapped
+    {
+        get => (bool)GetValue(IsWindowSnappedProperty);
+        private set
+        {
+            if (IsWindowSnapped == value)
+                return;
+
+            SetValue(IsWindowSnappedProperty, value);
+            UpdateWindowCornerRadius();
+        }
+    }
 
     public MainWindow()
         : this(new MainWindowViewModel(), AppSettingsStore.Load())
@@ -41,15 +65,23 @@ public partial class MainWindow : Window
     public MainWindow(MainWindowViewModel viewModel, DraftSettings settings)
     {
         InitializeComponent();
-        _settings = settings;
-        viewModel.ApplySettings(settings);
+        _settings = AppSettingsStore.Normalize(settings);
+        ApplyStartupWindowSize();
+        ApplyMinimumWindowSize(_settings);
+        viewModel.ApplySettings(_settings);
         DataContext = viewModel;
         SubscribeToViewModel(viewModel);
         Loaded += MainWindow_Loaded;
+        LocationChanged += MainWindow_PositionChanged;
+        SizeChanged += MainWindow_SizeChanged;
+        StateChanged += MainWindow_PositionChanged;
+        UpdateWindowCornerRadius();
     }
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        UpdateWindowSnapState();
+
         string webRootPath = GetWebRootPath();
 
         await WorkspaceWebView.EnsureCoreWebView2Async();
@@ -86,6 +118,10 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        LocationChanged -= MainWindow_PositionChanged;
+        SizeChanged -= MainWindow_SizeChanged;
+        StateChanged -= MainWindow_PositionChanged;
+
         if (ViewModel is not null)
         {
             UnsubscribeFromViewModel(ViewModel);
@@ -99,6 +135,32 @@ public partial class MainWindow : Window
         WorkspaceWebView.NavigationCompleted -= WorkspaceWebView_NavigationCompleted;
 
         base.OnClosed(e);
+    }
+
+    private void MainWindow_PositionChanged(object? sender, EventArgs e)
+    {
+        UpdateWindowSnapState();
+        UpdateWindowCornerRadius();
+    }
+
+    private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdateWindowSnapState();
+        UpdateWindowCornerRadius();
+    }
+
+    private void UpdateWindowCornerRadius()
+    {
+        bool shouldUseSquareCorners = WindowState == WindowState.Maximized || IsWindowSnapped;
+        CornerRadius frameCornerRadius = shouldUseSquareCorners
+            ? new CornerRadius(0)
+            : new CornerRadius(8);
+
+        WindowFrameBorder.CornerRadius = frameCornerRadius;
+        MainWindowChrome.CornerRadius = frameCornerRadius;
+        StatusBarBorder.CornerRadius = shouldUseSquareCorners
+            ? new CornerRadius(0)
+            : new CornerRadius(0, 0, 8, 8);
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -326,9 +388,35 @@ public partial class MainWindow : Window
 
     private void ApplySettings(DraftSettings settings)
     {
-        _settings = settings;
-        ViewModel?.ApplySettings(settings);
+        _settings = AppSettingsStore.Normalize(settings);
+        ApplyMinimumWindowSize(_settings);
+        ViewModel?.ApplySettings(_settings);
         PostSettingsToWebView();
+    }
+
+    private void ApplyStartupWindowSize()
+    {
+        WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
+        double height = SystemParameters.WorkArea.Height * StartupWindowHeightScale;
+        Height = height;
+        Width = height * StartupWindowAspectRatio;
+    }
+
+    private void ApplyMinimumWindowSize(DraftSettings settings)
+    {
+        MinWidth = BaseMinWindowWidth * settings.WindowMinimumSizeScale;
+        MinHeight = BaseMinWindowHeight * settings.WindowMinimumSizeScale;
+
+        if (Width < MinWidth)
+        {
+            Width = MinWidth;
+        }
+
+        if (Height < MinHeight)
+        {
+            Height = MinHeight;
+        }
     }
 
     private void PostSettingsToWebView()
