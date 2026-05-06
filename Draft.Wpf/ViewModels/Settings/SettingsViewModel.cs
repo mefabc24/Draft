@@ -12,6 +12,7 @@ public class SettingsViewModel : BaseViewModel
     private readonly EditorSettingsPageViewModel _editorSettingsPage;
     private readonly PreviewSettingsPageViewModel _previewSettingsPage;
     private readonly AppearanceSettingsPageViewModel _appearanceSettingsPage;
+    private readonly DevelopSettingsPageViewModel _developSettingsPage;
     private readonly AboutSettingsPageViewModel _aboutSettingsPage;
     private DraftSettings _originalSettings;
     private SettingsPage _selectedPage = SettingsPage.General;
@@ -65,6 +66,7 @@ public class SettingsViewModel : BaseViewModel
         _editorSettingsPage = new EditorSettingsPageViewModel(this);
         _previewSettingsPage = new PreviewSettingsPageViewModel(this);
         _appearanceSettingsPage = new AppearanceSettingsPageViewModel(this);
+        _developSettingsPage = new DevelopSettingsPageViewModel(this);
         _aboutSettingsPage = new AboutSettingsPageViewModel(this);
         _currentSettingsPage = _generalSettingsPage;
     }
@@ -185,6 +187,28 @@ public class SettingsViewModel : BaseViewModel
         {
             if (value)
                 SelectSettingsPage(SettingsPage.Appearance);
+        }
+    }
+
+    public bool IsDevelopSettingsVisible
+    {
+        get
+        {
+#if DEBUG
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
+
+    public bool IsDevelopSettingsSelected
+    {
+        get => _selectedPage == SettingsPage.Develop;
+        set
+        {
+            if (value)
+                SelectSettingsPage(SettingsPage.Develop);
         }
     }
 
@@ -452,6 +476,9 @@ public class SettingsViewModel : BaseViewModel
 
     public void SelectSettingsPage(SettingsPage page)
     {
+        if (page == SettingsPage.Develop && !IsDevelopSettingsVisible)
+            return;
+
         if (_selectedPage == page)
             return;
 
@@ -462,6 +489,9 @@ public class SettingsViewModel : BaseViewModel
             SettingsPage.Editor => _editorSettingsPage,
             SettingsPage.Preview => _previewSettingsPage,
             SettingsPage.Appearance => _appearanceSettingsPage,
+            SettingsPage.Develop => IsDevelopSettingsVisible
+                ? _developSettingsPage
+                : _generalSettingsPage,
             SettingsPage.About => _aboutSettingsPage,
             _ => _generalSettingsPage,
         };
@@ -470,6 +500,7 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsEditorSettingsSelected));
         OnPropertyChanged(nameof(IsPreviewSettingsSelected));
         OnPropertyChanged(nameof(IsAppearanceSettingsSelected));
+        OnPropertyChanged(nameof(IsDevelopSettingsSelected));
         OnPropertyChanged(nameof(IsAboutSettingsSelected));
     }
 

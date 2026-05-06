@@ -23,7 +23,7 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <section:SectionHeader Title="Rendering" />
+                <section:SectionHeader Title="RENDERING" />
 
                 <settings:SettingFieldCard Margin="0,0,0,32" Title="Markdown theme">
                     <ComboBox
@@ -35,7 +35,7 @@
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingFieldCard>
 
-                <section:SectionHeader Title="Links &amp; Security" />
+                <section:SectionHeader Title="LINKS &amp; SECURITY" />
 
                 <settings:SettingCard
                     Margin="0,0,0,12"

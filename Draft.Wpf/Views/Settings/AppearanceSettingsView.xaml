@@ -23,7 +23,7 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <section:SectionHeader Title="Theme" />
+                <section:SectionHeader Title="THEME" />
 
                 <settings:SettingCard
                     Margin="0,0,0,32"
@@ -38,7 +38,7 @@
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingCard>
 
-                <section:SectionHeader Title="Layout" />
+                <section:SectionHeader Title="LAYOUT" />
 
                 <settings:SettingCard
                     Margin="0,0,0,12"

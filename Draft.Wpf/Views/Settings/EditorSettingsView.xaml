@@ -23,7 +23,7 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <section:SectionHeader Title="Typography" />
+                <section:SectionHeader Title="TYPOGRAPHY" />
 
                 <settings:SettingFieldCard Margin="0,0,0,12" Title="Editor font family">
                     <ComboBox
@@ -58,7 +58,7 @@
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingCard>
 
-                <section:SectionHeader Title="Layout &amp; Display" />
+                <section:SectionHeader Title="LAYOUT &amp; DISPLAY" />
 
                 <settings:SettingCard
                     Margin="0,0,0,12"
@@ -114,7 +114,7 @@
                         Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
-                <section:SectionHeader Title="Editing Behavior" />
+                <section:SectionHeader Title="EDITING BEHAVIOR" />
 
                 <settings:SettingCard
                     Margin="0,0,0,12"
@@ -164,7 +164,7 @@
                         Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
-                <section:SectionHeader Title="Cursor" />
+                <section:SectionHeader Title="CURSOR" />
 
                 <settings:SettingCard
                     Margin="0,0,0,12"

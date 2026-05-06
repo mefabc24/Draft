@@ -23,7 +23,7 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <section:SectionHeader Title="Startup &amp; Behavior" />
+                <section:SectionHeader Title="STARTUP &amp; BEHAVIOR" />
 
                 <settings:SettingCard
                     Margin="0,0,0,12"
@@ -99,7 +99,7 @@
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingCard>
 
-                <section:SectionHeader Title="Workspace Behavior" />
+                <section:SectionHeader Title="WORKSPACE BEHAVIOR" />
 
                 <settings:SettingCard
                     Margin="0,0,0,32"
@@ -113,7 +113,7 @@
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingCard>
 
-                <section:SectionHeader Title="File Management" />
+                <section:SectionHeader Title="FILE MANAGEMENT" />
 
                 <settings:SettingFieldCard Margin="0,0,0,12" Title="Default save location">
                     <Grid Height="36">

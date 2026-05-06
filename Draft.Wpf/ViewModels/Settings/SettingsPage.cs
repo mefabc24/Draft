@@ -6,5 +6,6 @@ public enum SettingsPage
     Editor,
     Preview,
     Appearance,
+    Develop,
     About
 }
