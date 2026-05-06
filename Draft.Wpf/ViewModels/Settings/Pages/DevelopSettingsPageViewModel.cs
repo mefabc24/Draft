@@ -1,6 +1,9 @@
 using Draft.Dialogs.Models;
 using Draft.Dialogs.Services;
 using Draft.Helpers;
+using Draft.Popup.DraftPrompt.Views;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Draft.ViewModels;
@@ -16,6 +19,7 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
         ShowWarningDialogCommand = new RelayCommand(() => ShowDialog(DraftDialogType.Warning, WarningDialogButtonCount));
         ShowErrorDialogCommand = new RelayCommand(() => ShowDialog(DraftDialogType.Error, ErrorDialogButtonCount));
         ShowSuccessDialogCommand = new RelayCommand(() => ShowDialog(DraftDialogType.Success, SuccessDialogButtonCount));
+        ShowPromptWindowCommand = new RelayCommand(ShowPromptWindow);
     }
 
     public IReadOnlyList<int> DialogButtonCountOptions { get; } = new[] { 1, 2, 3 };
@@ -35,6 +39,92 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
     public ICommand ShowErrorDialogCommand { get; }
 
     public ICommand ShowSuccessDialogCommand { get; }
+
+    public ICommand ShowPromptWindowCommand { get; }
+
+    private void ShowPromptWindow()
+    {
+        DraftPromptWindow window = new();
+        window.Title = "Rename File";
+        window.PromptContent = CreatePromptPreviewContent(window);
+        window.PromptActions = CreatePromptPreviewActions(window);
+
+        Window? owner = Application.Current.Windows
+            .OfType<Window>()
+            .FirstOrDefault(activeWindow => activeWindow.IsActive)
+            ?? Application.Current.MainWindow;
+
+        if (owner is not null)
+        {
+            window.Owner = owner;
+        }
+        else
+        {
+            window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
+
+        window.ShowDialog();
+    }
+
+    private static object CreatePromptPreviewContent(DraftPromptWindow window)
+    {
+        StackPanel content = new()
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Orientation = Orientation.Vertical,
+        };
+
+        content.Children.Add(new TextBlock
+        {
+            Margin = new Thickness(0, 0, 0, 12),
+            FontFamily = (System.Windows.Media.FontFamily)Application.Current.FindResource("Font.Manrope"),
+            FontSize = 16,
+            Foreground = (System.Windows.Media.Brush)Application.Current.FindResource("Brush.Text.Secondary"),
+            Text = "Enter a new name for the document",
+        });
+
+        content.Children.Add(new TextBox
+        {
+            Height = 36,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Style = (Style)window.FindResource("SettingsTextBox"),
+            Text = "current-document.md",
+        });
+
+        return content;
+    }
+
+    private static IReadOnlyList<UIElement> CreatePromptPreviewActions(DraftPromptWindow window)
+    {
+        Button cancelButton = new()
+        {
+            Margin = new Thickness(0, 0, 8, 0),
+            Content = "Cancel",
+            Padding = new Thickness(24, 0, 24, 0),
+            Style = (Style)window.FindResource("SettingsSecondaryButton"),
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        cancelButton.Click += (_, _) => window.Close();
+
+        Button confirmButton = new()
+        {
+            Content = "Rename",
+            Padding = new Thickness(24, 0, 24, 0),
+            Style = (Style)window.FindResource("SettingsPrimaryButton"),
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        confirmButton.Click += (_, _) =>
+        {
+            window.DialogResult = true;
+            window.Close();
+        };
+
+        return new UIElement[]
+        {
+            cancelButton,
+            confirmButton,
+        };
+    }
 
     private void ShowDialog(DraftDialogType dialogType, int buttonCount)
     {

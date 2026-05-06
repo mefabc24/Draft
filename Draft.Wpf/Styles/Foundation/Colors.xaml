@@ -37,7 +37,7 @@
     <Color x:Key="Color.Function.Warning">#D3A760</Color>
     <Color x:Key="Color.Function.Critical">#E25E5E</Color>
     <Color x:Key="Color.Function.Info">#A5C8FF</Color>
-    
+
     <!-- Utility Colors -->
     <Color x:Key="Color.Shadow.Default">#000000</Color>
 

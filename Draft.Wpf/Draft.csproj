@@ -52,7 +52,6 @@
 
   <ItemGroup>
     <Folder Include=".github\" />
-    <Folder Include="Popup\DraftPrompt\" />
   </ItemGroup>
 
 </Project>

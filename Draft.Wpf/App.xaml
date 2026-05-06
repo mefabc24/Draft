@@ -13,6 +13,7 @@
                 <ResourceDictionary Source="/Styles/Components/ControlBarButton.xaml" />
                 <ResourceDictionary Source="/Styles/Components/WindowControlButton.xaml" />
                 <ResourceDictionary Source="/Styles/Components/StatusBarButton.xaml" />
+                <ResourceDictionary Source="/Styles/Components/DraftCloseButton.xaml" />
                 <ResourceDictionary Source="/Styles/Dialogs/DraftDialog.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

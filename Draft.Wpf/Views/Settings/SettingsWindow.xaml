@@ -265,11 +265,11 @@
                             Grid.Column="1"
                             VerticalAlignment="Top"
                             Click="CloseButton_Click"
-                            Style="{StaticResource SettingsCloseButton}"
+                            Style="{StaticResource DraftCloseButton}"
                             WindowChrome.IsHitTestVisibleInChrome="True">
                             <Path
-                                Width="8"
-                                Height="8"
+                                Width="12"
+                                Height="12"
                                 Data="{StaticResource Icon.Close}"
                                 Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                 Stretch="Uniform" />

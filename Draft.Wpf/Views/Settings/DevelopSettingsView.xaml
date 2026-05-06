@@ -108,6 +108,20 @@
                             Style="{StaticResource SettingButton}" />
                     </StackPanel>
                 </settings:SettingCard>
+
+                <section:SectionHeader Title="Prompt Preview" />
+
+                <settings:SettingCard
+                    Margin="0,0,0,12"
+                    Title="Prompt window"
+                    Description="Open the empty prompt window shell.">
+                    <Button
+                        Width="120"
+                        Height="36"
+                        Command="{Binding ShowPromptWindowCommand}"
+                        Content="Open"
+                        Style="{StaticResource SettingButton}" />
+                </settings:SettingCard>
             </StackPanel>
         </ScrollViewer>
     </Border>

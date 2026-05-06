@@ -26,7 +26,7 @@
             <StackPanel VerticalAlignment="Top">
                 <section:SectionHeader Title="DRAFT"/>
 
-                <settings:SettingCard Title="A focused Markdown editor for writing, previewing, and saving clean Markdown documents in a calm desktop workspace." Margin="0,0,0,12" />
+                <settings:SettingCard Title="A focused Markdown editor for writing, previewing, and saving clean Markdown documents in a calm desktop workspace." Margin="0,0,0,32" />
 
                 <section:SectionHeader Title="VERSION &amp; UPDATES"/>
                 <settings:SettingCard
