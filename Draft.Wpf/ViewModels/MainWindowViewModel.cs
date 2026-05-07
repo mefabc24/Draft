@@ -384,6 +384,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand OpenSettingsCommand { get; }
 
+    public ICommand OpenCursorPositionPromptCommand { get; }
+
     public event EventHandler? OpenFileRequested;
 
     public event EventHandler? SaveFileAsRequested;
@@ -391,6 +393,8 @@ public class MainWindowViewModel : BaseViewModel
     public event EventHandler? NewFileRequested;
 
     public event EventHandler? OpenSettingsRequested;
+
+    public event EventHandler? OpenCursorPositionPromptRequested;
 
     public event EventHandler<FileOperationFailedEventArgs>? FileOperationFailed;
 
@@ -402,6 +406,8 @@ public class MainWindowViewModel : BaseViewModel
         SaveFileCommand = new RelayCommand(ExecuteSaveFileCommand);
         NewFileCommand = new RelayCommand(() => NewFileRequested?.Invoke(this, EventArgs.Empty));
         OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
+        OpenCursorPositionPromptCommand = new RelayCommand(
+            () => OpenCursorPositionPromptRequested?.Invoke(this, EventArgs.Empty));
 
         WorkspaceState = WorkspaceState.Split;
         UpdateTextMetrics();

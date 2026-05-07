@@ -1,6 +1,7 @@
 using Draft.Dialogs.Models;
 using Draft.Dialogs.Services;
 using Draft.Helpers;
+using Draft.Popup.DraftPrompt.Views;
 using Draft.ViewModels;
 using Microsoft.Win32;
 using Microsoft.Web.WebView2.Core;
@@ -9,6 +10,9 @@ using System.IO;
 using System.Security;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Draft.Views;
 
@@ -27,6 +31,7 @@ public partial class MainWindow : Window
     private const string DocumentChangedMessageType = "documentChanged";
     private const string CursorPositionChangedMessageType = "cursorPositionChanged";
     private const string SettingsChangedMessageType = "settingsChanged";
+    private const string GoToPositionMessageType = "goToPosition";
     private const double StartupWindowHeightScale = 0.8;
     private const double StartupWindowAspectRatio = 16.0 / 9.0;
     private const double BaseMinWindowWidth = 1000;
@@ -36,6 +41,7 @@ public partial class MainWindow : Window
     private DraftSettings _settings;
     private bool _isWebViewReady;
     private bool _isSettingsWindowOpen;
+    private bool _isPromptWindowOpen;
     private bool _hasHandledFocusLostSave;
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
@@ -109,7 +115,7 @@ public partial class MainWindow : Window
     {
         base.OnDeactivated(e);
 
-        if (_isSettingsWindowOpen || _hasHandledFocusLostSave || ViewModel is null)
+        if (_isSettingsWindowOpen || _isPromptWindowOpen || _hasHandledFocusLostSave || ViewModel is null)
             return;
 
         _hasHandledFocusLostSave = true;
@@ -186,6 +192,7 @@ public partial class MainWindow : Window
         viewModel.SaveFileAsRequested += ViewModel_SaveFileAsRequested;
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
+        viewModel.OpenCursorPositionPromptRequested += ViewModel_OpenCursorPositionPromptRequested;
         viewModel.FileOperationFailed += ViewModel_FileOperationFailed;
     }
 
@@ -196,6 +203,7 @@ public partial class MainWindow : Window
         viewModel.SaveFileAsRequested -= ViewModel_SaveFileAsRequested;
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
+        viewModel.OpenCursorPositionPromptRequested -= ViewModel_OpenCursorPositionPromptRequested;
         viewModel.FileOperationFailed -= ViewModel_FileOperationFailed;
     }
 
@@ -295,6 +303,167 @@ public partial class MainWindow : Window
     private void SettingsWindow_SettingsApplied(object? sender, SettingsAppliedEventArgs e)
     {
         ApplySettings(e.Settings);
+    }
+
+    private void ViewModel_OpenCursorPositionPromptRequested(object? sender, EventArgs e)
+    {
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        DraftPromptWindow promptWindow = new()
+        {
+            Owner = this,
+            Title = "Go to Position",
+            Focusable = true,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        };
+
+        TextBlock descriptionText = new()
+        {
+            Margin = new Thickness(0, 0, 0, 12),
+            FontFamily = (System.Windows.Media.FontFamily)FindResource("Font.Manrope"),
+            FontSize = 14,
+            Foreground = (System.Windows.Media.Brush)FindResource("Brush.Text.Secondary"),
+            Text = "Enter a line, a line and column, or a column for the current line.",
+            TextWrapping = TextWrapping.Wrap,
+        };
+
+        TextBox positionTextBox = new()
+        {
+            Height = 36,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Style = (Style)promptWindow.FindResource("SettingsTextBox"),
+            Text = $"{viewModel.CursorLine}:{viewModel.CursorColumn}",
+        };
+
+        TextBlock errorText = new()
+        {
+            Margin = new Thickness(0, 8, 0, 0),
+            FontFamily = (System.Windows.Media.FontFamily)FindResource("Font.Manrope"),
+            FontSize = 12,
+            Foreground = (System.Windows.Media.Brush)FindResource("Brush.Function.Critical"),
+            Visibility = Visibility.Collapsed,
+            TextWrapping = TextWrapping.Wrap,
+        };
+
+        StackPanel content = new()
+        {
+            Focusable = true,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Orientation = Orientation.Vertical,
+        };
+        content.Children.Add(descriptionText);
+        content.Children.Add(positionTextBox);
+        content.Children.Add(errorText);
+
+        promptWindow.PromptContent = content;
+        CursorPositionTarget? selectedTarget = null;
+
+        void ConfirmPosition()
+        {
+            if (!TryParseCursorPositionInput(
+                positionTextBox.Text,
+                viewModel.CursorLine,
+                out CursorPositionTarget target,
+                out string errorMessage))
+            {
+                errorText.Text = errorMessage;
+                errorText.Visibility = Visibility.Visible;
+                positionTextBox.Focus();
+                positionTextBox.SelectAll();
+                return;
+            }
+
+            selectedTarget = target;
+            promptWindow.DialogResult = true;
+            promptWindow.Close();
+        }
+
+        promptWindow.PreviewKeyDown += (_, args) =>
+        {
+            if (args.Key == Key.Enter)
+            {
+                args.Handled = true;
+                ConfirmPosition();
+            }
+            else if (args.Key == Key.Escape)
+            {
+                args.Handled = true;
+                promptWindow.Close();
+            }
+        };
+        promptWindow.PreviewTextInput += (_, args) =>
+        {
+            if (args.OriginalSource is TextBox)
+                return;
+
+            positionTextBox.Focus();
+            positionTextBox.Text = args.Text;
+            positionTextBox.CaretIndex = positionTextBox.Text.Length;
+            args.Handled = true;
+        };
+        positionTextBox.TextChanged += (_, _) =>
+        {
+            errorText.Visibility = Visibility.Collapsed;
+        };
+        promptWindow.ContentRendered += (_, _) =>
+        {
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    positionTextBox.Focus();
+                    Keyboard.Focus(positionTextBox);
+                    positionTextBox.SelectAll();
+                }),
+                DispatcherPriority.ApplicationIdle);
+        };
+
+        Button cancelButton = new()
+        {
+            Content = "Cancel",
+            Margin = new Thickness(0, 0, 8, 0),
+            Padding = new Thickness(24, 0, 24, 0),
+            Style = (Style)promptWindow.FindResource("DraftPromptSecondaryButton"),
+        };
+        cancelButton.Click += (_, _) => promptWindow.Close();
+
+        Button confirmButton = new()
+        {
+            Content = "Confirm",
+            Padding = new Thickness(24, 0, 24, 0),
+            Style = (Style)promptWindow.FindResource("SettingsPrimaryButton"),
+        };
+        confirmButton.Click += (_, _) => ConfirmPosition();
+
+        promptWindow.PromptActions = new UIElement[]
+        {
+            cancelButton,
+            confirmButton,
+        };
+
+        _isPromptWindowOpen = true;
+
+        try
+        {
+            promptWindow.ShowDialog();
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
+        }
+
+        if (promptWindow.DialogResult == true && selectedTarget is not null)
+        {
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    Activate();
+                    WorkspaceWebView.Focus();
+                    Keyboard.Focus(WorkspaceWebView);
+                    PostGoToPosition(selectedTarget.Line, selectedTarget.Column);
+                }),
+                DispatcherPriority.ContextIdle);
+        }
     }
 
     private void ViewModel_FileOperationFailed(object? sender, FileOperationFailedEventArgs e)
@@ -458,6 +627,20 @@ public partial class MainWindow : Window
             LoadDocumentMessageType,
             ViewModel.CurrentContent,
             ViewModel.DisplayFileName),
+            JsonOptions);
+
+        WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
+    }
+
+    private void PostGoToPosition(int line, int column)
+    {
+        if (!_isWebViewReady)
+            return;
+
+        string message = JsonSerializer.Serialize(new GoToPositionMessage(
+            GoToPositionMessageType,
+            line,
+            column),
             JsonOptions);
 
         WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
@@ -673,9 +856,76 @@ public partial class MainWindow : Window
             or InvalidOperationException;
     }
 
+    private static bool TryParseCursorPositionInput(
+        string? input,
+        int currentLine,
+        out CursorPositionTarget target,
+        out string errorMessage)
+    {
+        target = new CursorPositionTarget(1, 1);
+        errorMessage = string.Empty;
+
+        string value = input?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            errorMessage = "Enter a value like 14, 15:53, or :44.";
+            return false;
+        }
+
+        if (value.StartsWith(':'))
+        {
+            string columnText = value[1..];
+
+            if (string.IsNullOrWhiteSpace(columnText)
+                || !TryParsePositiveNumber(columnText, out int currentLineColumn))
+            {
+                errorMessage = "For a column-only jump, enter : followed by a positive number.";
+                return false;
+            }
+
+            target = new CursorPositionTarget(currentLine, currentLineColumn);
+            return true;
+        }
+
+        string[] parts = value.Split(':');
+
+        if (parts.Length == 1)
+        {
+            if (!TryParsePositiveNumber(parts[0], out int line))
+            {
+                errorMessage = "Line must be a positive number.";
+                return false;
+            }
+
+            target = new CursorPositionTarget(line, 1);
+            return true;
+        }
+
+        if (parts.Length == 2
+            && TryParsePositiveNumber(parts[0], out int targetLine)
+            && TryParsePositiveNumber(parts[1], out int targetColumn))
+        {
+            target = new CursorPositionTarget(targetLine, targetColumn);
+            return true;
+        }
+
+        errorMessage = "Enter a line as 14, a line and column as 15:53, or only a column as :44.";
+        return false;
+    }
+
+    private static bool TryParsePositiveNumber(string value, out int number)
+    {
+        return int.TryParse(value.Trim(), out number) && number > 0;
+    }
+
     private sealed record WorkspaceModeMessage(string Type, string Mode);
 
     private sealed record LoadDocumentMessage(string Type, string Content, string FileName);
+
+    private sealed record GoToPositionMessage(string Type, int Line, int Column);
+
+    private sealed record CursorPositionTarget(int Line, int Column);
 
     private sealed record SettingsChangedMessage(
         string Type,

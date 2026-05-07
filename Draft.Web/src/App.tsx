@@ -20,6 +20,11 @@ type LoadDocumentMessage = {
   content: string
   fileName: string
 }
+type GoToPositionMessage = {
+  type: 'goToPosition'
+  line: number
+  column: number
+}
 type ShowWhitespaceCharacters = 'Always' | 'Never' | 'Highlighted Only'
 type CursorStyle = 'Line' | 'Block' | 'Underline'
 type PreviewScrollSyncMode =
@@ -76,6 +81,7 @@ const FOLLOW_EDITED_SECTION_SCROLL_PADDING = 16
 const DEFAULT_FILE_NAME = 'untitled.md'
 const WORKSPACE_MODE_MESSAGE_TYPE = 'workspaceModeChanged'
 const LOAD_DOCUMENT_MESSAGE_TYPE = 'loadDocument'
+const GO_TO_POSITION_MESSAGE_TYPE = 'goToPosition'
 const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
 const CURSOR_POSITION_CHANGED_MESSAGE_TYPE = 'cursorPositionChanged'
 const SETTINGS_CHANGED_MESSAGE_TYPE = 'settingsChanged'
@@ -389,6 +395,32 @@ function readNumber(
 ) {
   const value = readRecordValue(record, name)
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+function parseGoToPositionMessage(
+  record: Record<string, unknown>,
+): GoToPositionMessage | null {
+  const type = record.type ?? record.Type
+  const line = readRecordValue(record, 'line')
+  const column = readRecordValue(record, 'column')
+
+  if (
+    type !== GO_TO_POSITION_MESSAGE_TYPE ||
+    typeof line !== 'number' ||
+    typeof column !== 'number' ||
+    !Number.isFinite(line) ||
+    !Number.isFinite(column) ||
+    line < 1 ||
+    column < 1
+  ) {
+    return null
+  }
+
+  return {
+    type: GO_TO_POSITION_MESSAGE_TYPE,
+    line: Math.trunc(line),
+    column: Math.trunc(column),
+  }
 }
 
 function readBoolean(
@@ -1066,6 +1098,31 @@ function App() {
     }
   }
 
+  const applyGoToPositionFromHost = (message: GoToPositionMessage) => {
+    const editor = editorInstanceRef.current
+    const model = editor?.getModel()
+
+    if (!editor || !model) {
+      return
+    }
+
+    const lineNumber = Math.min(
+      Math.max(Math.trunc(message.line), 1),
+      model.getLineCount(),
+    )
+    const column = Math.min(
+      Math.max(Math.trunc(message.column), 1),
+      model.getLineMaxColumn(lineNumber),
+    )
+    const position = { lineNumber, column }
+
+    editor.setPosition(position)
+    editor.revealPositionInCenterIfOutsideViewport(position)
+    editor.focus()
+    postCursorPositionChanged(editor)
+    scheduleFollowEditedSection()
+  }
+
   useEffect(() => {
     viewModeRef.current = viewMode
   }, [viewMode])
@@ -1100,6 +1157,13 @@ function App() {
 
       if (settingsMessage) {
         applyDraftEditorSettings(settingsMessage)
+        return
+      }
+
+      const goToPositionMessage = parseGoToPositionMessage(record)
+
+      if (goToPositionMessage) {
+        applyGoToPositionFromHost(goToPositionMessage)
         return
       }
 

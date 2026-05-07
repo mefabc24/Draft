@@ -147,9 +147,11 @@
         <!-- Right -->
         <StackPanel Grid.Column="2" Orientation="Horizontal">
             <Button
+                Command="{Binding OpenCursorPositionPromptCommand}"
                 Margin="16,0"
                 Padding="8,4"
-                Style="{StaticResource StatusBarButton}">
+                Style="{StaticResource StatusBarButton}"
+                ToolTip="Go to line or column">
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
