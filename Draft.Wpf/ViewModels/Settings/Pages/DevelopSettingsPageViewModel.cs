@@ -101,8 +101,7 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
             Margin = new Thickness(0, 0, 8, 0),
             Content = "Cancel",
             Padding = new Thickness(24, 0, 24, 0),
-            Style = (Style)window.FindResource("SettingsSecondaryButton"),
-            VerticalAlignment = VerticalAlignment.Stretch,
+            Style = (Style)window.FindResource("DraftPromptSecondaryButton"),
         };
         cancelButton.Click += (_, _) => window.Close();
 
@@ -111,7 +110,6 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
             Content = "Rename",
             Padding = new Thickness(24, 0, 24, 0),
             Style = (Style)window.FindResource("SettingsPrimaryButton"),
-            VerticalAlignment = VerticalAlignment.Stretch,
         };
         confirmButton.Click += (_, _) =>
         {
