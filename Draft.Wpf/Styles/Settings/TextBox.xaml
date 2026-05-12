@@ -20,11 +20,36 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="4">
-                        <ScrollViewer
-                            x:Name="PART_ContentHost"
-                            Margin="{TemplateBinding Padding}"
-                            VerticalAlignment="Center" />
+                        <Grid>
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Margin="{TemplateBinding Padding}"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                x:Name="hintText"
+                                Margin="6,0,4,0"
+                                VerticalAlignment="Center"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                Foreground="{StaticResource Brush.Text.Secondary}"
+                                IsHitTestVisible="False"
+                                Opacity="0.5"
+                                Text="{TemplateBinding Tag}"
+                                Visibility="Collapsed" />
+                        </Grid>
                     </Border>
+
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Text" Value="" />
+                                <Condition Property="IsKeyboardFocusWithin" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="hintText" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

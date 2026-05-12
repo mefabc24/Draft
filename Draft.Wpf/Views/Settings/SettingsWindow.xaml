@@ -16,10 +16,6 @@
     mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-
             <DataTemplate DataType="{x:Type settingsVm:GeneralSettingsPageViewModel}">
                 <settings:GeneralSettingsView />
             </DataTemplate>
@@ -31,6 +27,9 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type settingsVm:AppearanceSettingsPageViewModel}">
                 <settings:AppearanceSettingsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type settingsVm:DevelopSettingsPageViewModel}">
+                <settings:DevelopSettingsView />
             </DataTemplate>
             <DataTemplate DataType="{x:Type settingsVm:AboutSettingsPageViewModel}">
                 <settings:AboutSettingsView />
@@ -184,6 +183,32 @@
                                 <TextBlock Margin="12,0,0,0" Text="Appearance" />
                             </StackPanel>
                         </RadioButton>
+
+                        <RadioButton
+                            Height="36"
+                            Margin="0,0,0,4"
+                            GroupName="SettingsMenu"
+                            IsChecked="{Binding IsDevelopSettingsSelected, Mode=TwoWay}">
+                            <RadioButton.Style>
+                                <Style BasedOn="{StaticResource SettingsMenuRadioButton}" TargetType="RadioButton">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDevelopSettingsVisible}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <Path
+                                    Width="16"
+                                    Height="16"
+                                    Data="{StaticResource Icon.Terminal}"
+                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                    Stretch="Uniform" />
+                                <TextBlock Margin="12,0,0,0" Text="Develop" />
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
 
                     <RadioButton
@@ -236,11 +261,11 @@
                             Grid.Column="1"
                             VerticalAlignment="Top"
                             Click="CloseButton_Click"
-                            Style="{StaticResource SettingsCloseButton}"
+                            Style="{StaticResource DraftCloseButton}"
                             WindowChrome.IsHitTestVisibleInChrome="True">
                             <Path
-                                Width="8"
-                                Height="8"
+                                Width="12"
+                                Height="12"
                                 Data="{StaticResource Icon.Close}"
                                 Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                 Stretch="Uniform" />

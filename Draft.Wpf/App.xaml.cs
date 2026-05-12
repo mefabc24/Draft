@@ -1,5 +1,5 @@
-using Draft.Dialogs.Models;
-using Draft.Dialogs.Services;
+using Draft.Dialogs.Message.Models;
+using Draft.Dialogs.Message.Services;
 using Draft.Helpers;
 using Draft.ViewModels;
 using Draft.Views;
@@ -163,15 +163,15 @@ public partial class App : Application
 
     private static void ShowStartupFileError(string message)
     {
-        IDraftDialogService dialogService = new DraftDialogService();
+        IMessageDialogService dialogService = new MessageDialogService();
         dialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+            new MessageDialogRequest(
                 "Open File",
                 $"Unable to open the startup file. {message}",
-                DraftDialogType.Error,
+                MessageDialogType.Error,
                 new[]
                 {
-                    DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                    MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
                 }));
     }
 }

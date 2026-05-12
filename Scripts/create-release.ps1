@@ -64,27 +64,45 @@ vpk pack `
     --shortcuts Desktop,StartMenuRoot `
     --outputDir $releaseDir
 
-$setupFiles = Get-ChildItem -LiteralPath $releaseDir -Filter "*Setup.exe" -File
-if ($setupFiles.Count -eq 1 -and $setupFiles[0].Name -ne "DraftSetup.exe") {
-    $originalSetupName = $setupFiles[0].Name
-    Rename-Item -LiteralPath $setupFiles[0].FullName -NewName "DraftSetup.exe" -Force
+$versionedSetupName = "Draft-Setup-v$Version.exe"
+$assetsManifestPath = Join-Path $releaseDir "assets.win.json"
+$installerAsset = $null
 
-    $assetsManifestPath = Join-Path $releaseDir "assets.win.json"
-    if (Test-Path -LiteralPath $assetsManifestPath) {
-        $assetsManifest = Get-Content -LiteralPath $assetsManifestPath -Raw | ConvertFrom-Json
-        foreach ($asset in $assetsManifest) {
-            if ($asset.Type -eq "Installer" -and $asset.RelativeFileName -eq $originalSetupName) {
-                $asset.RelativeFileName = "DraftSetup.exe"
-            }
-        }
+if (Test-Path -LiteralPath $assetsManifestPath) {
+    $assetsManifest = Get-Content -LiteralPath $assetsManifestPath -Raw | ConvertFrom-Json
+    $installerAssets = @($assetsManifest | Where-Object { $_.Type -eq "Installer" })
 
-        $assetsManifestJson = ($assetsManifest | ConvertTo-Json -Compress) + [Environment]::NewLine
-        $utf8NoBom = New-Object System.Text.UTF8Encoding -ArgumentList $false
-        [System.IO.File]::WriteAllText($assetsManifestPath, $assetsManifestJson, $utf8NoBom)
+    if ($installerAssets.Count -eq 1) {
+        $installerAsset = $installerAssets[0]
     }
 }
-elseif ($setupFiles.Count -gt 1) {
-    Write-Warning "Found multiple setup installers in $releaseDir. Skipping automatic rename to DraftSetup.exe."
+
+if ($installerAsset -ne $null) {
+    $originalSetupName = $installerAsset.RelativeFileName
+    $originalSetupPath = Join-Path $releaseDir $originalSetupName
+
+    if (-not (Test-Path -LiteralPath $originalSetupPath)) {
+        throw "Velopack installer was listed in assets.win.json but was not found: $originalSetupPath"
+    }
+
+    if ($originalSetupName -ne $versionedSetupName) {
+        Rename-Item -LiteralPath $originalSetupPath -NewName $versionedSetupName -Force
+    }
+
+    $installerAsset.RelativeFileName = $versionedSetupName
+    $assetsManifestJson = ($assetsManifest | ConvertTo-Json -Compress) + [Environment]::NewLine
+    $utf8NoBom = New-Object System.Text.UTF8Encoding -ArgumentList $false
+    [System.IO.File]::WriteAllText($assetsManifestPath, $assetsManifestJson, $utf8NoBom)
+}
+else {
+    $setupFiles = @(Get-ChildItem -LiteralPath $releaseDir -Filter "*Setup.exe" -File)
+
+    if ($setupFiles.Count -eq 1 -and $setupFiles[0].Name -ne $versionedSetupName) {
+        Rename-Item -LiteralPath $setupFiles[0].FullName -NewName $versionedSetupName -Force
+    }
+    elseif ($setupFiles.Count -gt 1) {
+        Write-Warning "Found multiple setup installers in $releaseDir. Skipping automatic rename to $versionedSetupName."
+    }
 }
 
 Write-Host "Release created in: $releaseDir" -ForegroundColor Green

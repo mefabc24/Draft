@@ -1,5 +1,6 @@
-using Draft.Dialogs.Models;
-using Draft.Dialogs.Services;
+using Draft.Dialogs.Message.Models;
+using Draft.Dialogs.Message.Services;
+using Draft.Helpers;
 using Draft.ViewModels;
 using System.Windows;
 
@@ -7,7 +8,7 @@ namespace Draft.Views;
 
 public partial class SettingsWindow : Window
 {
-    private readonly IDraftDialogService _draftDialogService = new DraftDialogService();
+    private readonly IMessageDialogService _messageDialogService = new MessageDialogService();
 
     public event EventHandler<SettingsAppliedEventArgs>? SettingsApplied;
 
@@ -48,15 +49,15 @@ public partial class SettingsWindow : Window
         object? sender,
         ResetConfirmationRequestedEventArgs e)
     {
-        DraftDialogResult result = _draftDialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+        MessageDialogResult result = _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
                 "Reset Settings",
                 "Reset all settings to their default values? This will be saved immediately.",
-                DraftDialogType.Warning,
+                MessageDialogType.Warning,
                 new[]
                 {
-                    DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
-                    DraftDialogButtonDefinition.Primary("Reset", new DraftDialogResult("reset")),
+                    MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Primary("Reset", new MessageDialogResult("reset")),
                 }));
 
         e.IsConfirmed = result.Id == "reset";
@@ -65,6 +66,11 @@ public partial class SettingsWindow : Window
     private void ViewModel_SettingsApplied(object? sender, SettingsAppliedEventArgs e)
     {
         SettingsApplied?.Invoke(this, e);
+    }
+
+    internal void NotifySettingsApplied(DraftSettings settings)
+    {
+        SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
     }
 
     private void ViewModel_CloseRequested(object? sender, EventArgs e)

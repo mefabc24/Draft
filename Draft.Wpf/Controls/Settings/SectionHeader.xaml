@@ -11,6 +11,7 @@
             FontFamily="{StaticResource Font.Inter}"
             FontSize="12"
             FontWeight="Medium"
+            FontStretch="UltraCondensed"
             Foreground="{StaticResource Brush.Accent.Primary}"
             Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:SectionHeader}}, FallbackValue='Section Header'}" />
         <Border

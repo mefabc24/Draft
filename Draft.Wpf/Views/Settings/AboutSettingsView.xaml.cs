@@ -1,5 +1,5 @@
-using Draft.Dialogs.Models;
-using Draft.Dialogs.Services;
+using Draft.Dialogs.Message.Models;
+using Draft.Dialogs.Message.Services;
 using Draft.Helpers;
 using Draft.ViewModels;
 using System.ComponentModel;
@@ -14,7 +14,7 @@ namespace Draft.Views.Settings;
 public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
 {
     private const string ProjectUrl = "https://github.com/mefabc24/Draft";
-    private readonly IDraftDialogService _draftDialogService = new DraftDialogService();
+    private readonly IMessageDialogService _messageDialogService = new MessageDialogService();
     private readonly UpdateService _updateService = new();
     private bool _isCheckingForUpdates;
     private bool _isCheckForUpdatesEnabled = true;
@@ -94,29 +94,29 @@ public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
                 ShowMessageDialog(
                     "Check for Updates",
                     result.Message,
-                    DraftDialogType.Info);
+                    MessageDialogType.Info);
                 return;
             case UpdateCheckStatus.Failed:
                 SetUpdateStatus("Unable to check for updates.");
                 ShowMessageDialog(
                     "Check for Updates",
                     result.Message,
-                    DraftDialogType.Error);
+                    MessageDialogType.Error);
                 return;
             case UpdateCheckStatus.UpdateAvailable:
                 SetUpdateStatus(result.Message);
                 break;
         }
 
-        DraftDialogResult installResult = _draftDialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+        MessageDialogResult installResult = _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
                 "Update Available",
                 $"Draft {result.Version} is available. Install this update now? Draft will restart to finish installing.",
-                DraftDialogType.Info,
+                MessageDialogType.Info,
                 new[]
                 {
-                    DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
-                    DraftDialogButtonDefinition.Primary("Install", new DraftDialogResult("install-update")),
+                    MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Primary("Install", new MessageDialogResult("install-update")),
                 }));
 
         if (installResult.Id != "install-update")
@@ -142,7 +142,7 @@ public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
             ShowMessageDialog(
                 "Install Update",
                 $"Unable to install the update. {ex.Message}",
-                DraftDialogType.Error);
+                MessageDialogType.Error);
         }
     }
 
@@ -157,7 +157,7 @@ public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
         ShowMessageDialog(
             "Unsaved Changes",
             "Draft has unsaved work. Save or discard your changes before installing the update.",
-            DraftDialogType.Warning);
+            MessageDialogType.Warning);
 
         return false;
     }
@@ -167,16 +167,16 @@ public partial class AboutSettingsView : UserControl, INotifyPropertyChanged
         UpdateStatus = status;
     }
 
-    private void ShowMessageDialog(string title, string description, DraftDialogType dialogType)
+    private void ShowMessageDialog(string title, string description, MessageDialogType dialogType)
     {
-        _draftDialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+        _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
                 title,
                 description,
                 dialogType,
                 new[]
                 {
-                    DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                    MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
                 }));
     }
 

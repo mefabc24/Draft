@@ -20,6 +20,7 @@
     <Color x:Key="Color.Border.Default">#1C1C1C</Color>
     <Color x:Key="Color.Border.Subtle">#1A1A1A</Color>
     <Color x:Key="Color.Border.Input">#43474F</Color>
+    <Color x:Key="Color.Border.Window">#3D3D3D</Color>
 
     <!-- Text and Icon Colors -->
     <Color x:Key="Color.Text.Primary">#E2E2E6</Color>
@@ -37,7 +38,7 @@
     <Color x:Key="Color.Function.Warning">#D3A760</Color>
     <Color x:Key="Color.Function.Critical">#E25E5E</Color>
     <Color x:Key="Color.Function.Info">#A5C8FF</Color>
-    
+
     <!-- Utility Colors -->
     <Color x:Key="Color.Shadow.Default">#000000</Color>
 
@@ -61,6 +62,7 @@
     <SolidColorBrush x:Key="Brush.Border.Default" Color="{StaticResource Color.Border.Default}" />
     <SolidColorBrush x:Key="Brush.Border.Subtle" Color="{StaticResource Color.Border.Subtle}" />
     <SolidColorBrush x:Key="Brush.Border.Input" Color="{StaticResource Color.Border.Input}" />
+    <SolidColorBrush x:Key="Brush.Border.Window" Color="{StaticResource Color.Border.Window}" />
 
     <!-- Text and Icon Brushes -->
     <SolidColorBrush x:Key="Brush.Text.Primary" Color="{StaticResource Color.Text.Primary}" />

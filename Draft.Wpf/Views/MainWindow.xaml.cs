@@ -1,5 +1,9 @@
-using Draft.Dialogs.Models;
-using Draft.Dialogs.Services;
+using Draft.Dialogs.Message.Models;
+using Draft.Dialogs.Message.Services;
+using Draft.Dialogs.Prompt.AutosavePrompt.Models;
+using Draft.Dialogs.Prompt.AutosavePrompt.Services;
+using Draft.Dialogs.Prompt.GoToPosition.Models;
+using Draft.Dialogs.Prompt.GoToPosition.Services;
 using Draft.Helpers;
 using Draft.ViewModels;
 using Microsoft.Win32;
@@ -9,6 +13,8 @@ using System.IO;
 using System.Security;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Draft.Views;
 
@@ -27,15 +33,19 @@ public partial class MainWindow : Window
     private const string DocumentChangedMessageType = "documentChanged";
     private const string CursorPositionChangedMessageType = "cursorPositionChanged";
     private const string SettingsChangedMessageType = "settingsChanged";
+    private const string GoToPositionMessageType = "goToPosition";
     private const double StartupWindowHeightScale = 0.8;
     private const double StartupWindowAspectRatio = 16.0 / 9.0;
     private const double BaseMinWindowWidth = 1000;
     private const double BaseMinWindowHeight = 500;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-    private readonly IDraftDialogService _draftDialogService = new DraftDialogService();
+    private readonly IMessageDialogService _messageDialogService = new MessageDialogService();
+    private readonly IGoToPositionPromptService _goToPositionPromptService = new GoToPositionPromptService();
+    private readonly IAutosavePromptService _autosavePromptService = new AutosavePromptService();
     private DraftSettings _settings;
     private bool _isWebViewReady;
     private bool _isSettingsWindowOpen;
+    private bool _isPromptWindowOpen;
     private bool _hasHandledFocusLostSave;
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
@@ -103,14 +113,20 @@ public partial class MainWindow : Window
     {
         _hasHandledFocusLostSave = false;
         base.OnActivated(e);
+        PlaceShadowBehindMainWindow();
     }
 
     protected override async void OnDeactivated(EventArgs e)
     {
         base.OnDeactivated(e);
 
-        if (_isSettingsWindowOpen || _hasHandledFocusLostSave || ViewModel is null)
+        if (_isSettingsWindowOpen
+            || _isPromptWindowOpen
+            || _hasHandledFocusLostSave
+            || ViewModel is null)
+        {
             return;
+        }
 
         _hasHandledFocusLostSave = true;
         await ViewModel.TrySaveOnFocusLostAsync();
@@ -121,6 +137,7 @@ public partial class MainWindow : Window
         LocationChanged -= MainWindow_PositionChanged;
         SizeChanged -= MainWindow_SizeChanged;
         StateChanged -= MainWindow_PositionChanged;
+        CloseShadowWindow();
 
         if (ViewModel is not null)
         {
@@ -141,12 +158,14 @@ public partial class MainWindow : Window
     {
         UpdateWindowSnapState();
         UpdateWindowCornerRadius();
+        SyncShadowWindow();
     }
 
     private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         UpdateWindowSnapState();
         UpdateWindowCornerRadius();
+        SyncShadowWindow();
     }
 
     private void UpdateWindowCornerRadius()
@@ -161,6 +180,7 @@ public partial class MainWindow : Window
         StatusBarBorder.CornerRadius = shouldUseSquareCorners
             ? new CornerRadius(0)
             : new CornerRadius(0, 0, 8, 8);
+        SyncShadowWindow();
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -186,6 +206,8 @@ public partial class MainWindow : Window
         viewModel.SaveFileAsRequested += ViewModel_SaveFileAsRequested;
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
+        viewModel.OpenCursorPositionPromptRequested += ViewModel_OpenCursorPositionPromptRequested;
+        viewModel.OpenAutosavePromptRequested += ViewModel_OpenAutosavePromptRequested;
         viewModel.FileOperationFailed += ViewModel_FileOperationFailed;
     }
 
@@ -196,6 +218,8 @@ public partial class MainWindow : Window
         viewModel.SaveFileAsRequested -= ViewModel_SaveFileAsRequested;
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
+        viewModel.OpenCursorPositionPromptRequested -= ViewModel_OpenCursorPositionPromptRequested;
+        viewModel.OpenAutosavePromptRequested -= ViewModel_OpenAutosavePromptRequested;
         viewModel.FileOperationFailed -= ViewModel_FileOperationFailed;
     }
 
@@ -297,12 +321,72 @@ public partial class MainWindow : Window
         ApplySettings(e.Settings);
     }
 
+    private void ViewModel_OpenCursorPositionPromptRequested(object? sender, EventArgs e)
+    {
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        _isPromptWindowOpen = true;
+        GoToPositionPromptResult result;
+
+        try
+        {
+            result = _goToPositionPromptService.Show(
+                new GoToPositionPromptRequest(viewModel.CursorLine, viewModel.CursorColumn),
+                this);
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
+        }
+
+        if (result.IsConfirmed)
+        {
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    Activate();
+                    WorkspaceWebView.Focus();
+                    Keyboard.Focus(WorkspaceWebView);
+                    PostGoToPosition(result.Line, result.Column);
+                }),
+                DispatcherPriority.ContextIdle);
+        }
+    }
+
     private void ViewModel_FileOperationFailed(object? sender, FileOperationFailedEventArgs e)
     {
         ShowMessageDialog(
             e.Title,
             e.Message,
-            DraftDialogType.Error);
+            MessageDialogType.Error);
+    }
+
+    private void ViewModel_OpenAutosavePromptRequested(object? sender, EventArgs e)
+    {
+        _isPromptWindowOpen = true;
+        AutosavePromptResult result;
+
+        try
+        {
+            result = _autosavePromptService.Show(
+                new AutosavePromptRequest(_settings.AutosaveEnabled, _settings.AutosaveInterval),
+                this);
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
+        }
+
+        if (!result.IsConfirmed)
+            return;
+
+        DraftSettings updatedSettings = CopySettings(_settings);
+        updatedSettings.AutosaveEnabled = result.AutosaveEnabled;
+        updatedSettings.AutosaveInterval = result.AutosaveInterval;
+
+        AppSettingsStore.TrySave(updatedSettings);
+        ApplySettings(updatedSettings);
     }
 
     private bool ConfirmDiscardUnsavedChanges()
@@ -313,7 +397,7 @@ public partial class MainWindow : Window
         if (ViewModel?.IsDirty != true)
             return true;
 
-        DraftDialogResult result = ShowConfirmationDialog(
+        MessageDialogResult result = ShowConfirmationDialog(
             "Unsaved Changes",
             "You have unsaved changes. Do you want to continue?",
             "Continue",
@@ -330,7 +414,7 @@ public partial class MainWindow : Window
         if (ViewModel?.HasUnsavedWork != true)
             return true;
 
-        DraftDialogResult result = ShowConfirmationDialog(
+        MessageDialogResult result = ShowConfirmationDialog(
             "Unsaved Changes",
             "This file has unsaved changes or has not been saved yet. If you close now, all unsaved work will be lost. Do you really want to close Draft?",
             "Close Draft",
@@ -344,37 +428,37 @@ public partial class MainWindow : Window
         ShowMessageDialog(
             title,
             ex.Message,
-            DraftDialogType.Error);
+            MessageDialogType.Error);
     }
 
-    private void ShowMessageDialog(string title, string description, DraftDialogType dialogType)
+    private void ShowMessageDialog(string title, string description, MessageDialogType dialogType)
     {
-        _draftDialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+        _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
                 title,
                 description,
                 dialogType,
                 new[]
                 {
-                    DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                    MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
                 }));
     }
 
-    private DraftDialogResult ShowConfirmationDialog(
+    private MessageDialogResult ShowConfirmationDialog(
         string title,
         string description,
         string primaryButtonText,
         string primaryResultId)
     {
-        return _draftDialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+        return _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
                 title,
                 description,
-                DraftDialogType.Warning,
+                MessageDialogType.Warning,
                 new[]
                 {
-                    DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
-                    DraftDialogButtonDefinition.Primary(primaryButtonText, new DraftDialogResult(primaryResultId)),
+                    MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Primary(primaryButtonText, new MessageDialogResult(primaryResultId)),
                 }));
     }
 
@@ -392,6 +476,47 @@ public partial class MainWindow : Window
         ApplyMinimumWindowSize(_settings);
         ViewModel?.ApplySettings(_settings);
         PostSettingsToWebView();
+    }
+
+    private static DraftSettings CopySettings(DraftSettings settings)
+    {
+        return new DraftSettings
+        {
+            ReopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup,
+            AutosaveEnabled = settings.AutosaveEnabled,
+            AutosaveInterval = settings.AutosaveInterval,
+            SaveOnFocusLost = settings.SaveOnFocusLost,
+            IncludeMarkdownSyntaxInCharacterCount = settings.IncludeMarkdownSyntaxInCharacterCount,
+            ConfirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles,
+            DefaultStartupMode = settings.DefaultStartupMode,
+            WindowMinimumSizeScale = settings.WindowMinimumSizeScale,
+            DefaultSaveLocation = settings.DefaultSaveLocation,
+            DefaultFileExtension = settings.DefaultFileExtension,
+            AssociateTxtFilesWithDraft = settings.AssociateTxtFilesWithDraft,
+            EditorFontFamily = settings.EditorFontFamily,
+            EditorFontSize = settings.EditorFontSize,
+            LineHeight = settings.LineHeight,
+            WordWrap = settings.WordWrap,
+            ShowLineNumbers = settings.ShowLineNumbers,
+            HighlightCurrentLine = settings.HighlightCurrentLine,
+            ShowWhitespaceCharacters = settings.ShowWhitespaceCharacters,
+            ShowIndentationGuides = settings.ShowIndentationGuides,
+            TabSize = settings.TabSize,
+            InsertSpacesInsteadOfTabs = settings.InsertSpacesInsteadOfTabs,
+            AutoPairBrackets = settings.AutoPairBrackets,
+            AutoPairQuotes = settings.AutoPairQuotes,
+            MarkdownSyntaxHighlighting = settings.MarkdownSyntaxHighlighting,
+            CursorStyle = settings.CursorStyle,
+            CursorBlinking = settings.CursorBlinking,
+            MarkdownTheme = settings.MarkdownTheme,
+            OpenLinksInBrowser = settings.OpenLinksInBrowser,
+            ConfirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks,
+            PreviewScrollSyncMode = settings.PreviewScrollSyncMode,
+            ScrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection,
+            AppTheme = settings.AppTheme,
+            IsStatusBarVisible = settings.IsStatusBarVisible,
+            ToolbarControlbarPosition = settings.ToolbarControlbarPosition,
+        };
     }
 
     private void ApplyStartupWindowSize()
@@ -458,6 +583,20 @@ public partial class MainWindow : Window
             LoadDocumentMessageType,
             ViewModel.CurrentContent,
             ViewModel.DisplayFileName),
+            JsonOptions);
+
+        WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
+    }
+
+    private void PostGoToPosition(int line, int column)
+    {
+        if (!_isWebViewReady)
+            return;
+
+        string message = JsonSerializer.Serialize(new GoToPositionMessage(
+            GoToPositionMessageType,
+            line,
+            column),
             JsonOptions);
 
         WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
@@ -676,6 +815,8 @@ public partial class MainWindow : Window
     private sealed record WorkspaceModeMessage(string Type, string Mode);
 
     private sealed record LoadDocumentMessage(string Type, string Content, string FileName);
+
+    private sealed record GoToPositionMessage(string Type, int Line, int Column);
 
     private sealed record SettingsChangedMessage(
         string Type,

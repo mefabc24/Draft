@@ -1,0 +1,43 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="FileSaveStatusTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Function.Success}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="UNSAVED">
+                <Setter Property="Foreground" Value="{StaticResource Brush.Function.Warning}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="MODIFIED">
+                <Setter Property="Foreground" Value="{StaticResource Brush.Function.Warning}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="FileSaveStatusPathStyle" TargetType="Path">
+        <Setter Property="Fill" Value="{StaticResource Brush.Function.Success}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="UNSAVED">
+                <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="MODIFIED">
+                <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="AutosaveModeTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Function.Success}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding AutosaveModeDisplay}" Value="MANUAL SAVE">
+                <Setter Property="Foreground" Value="{StaticResource Brush.PrimaryText}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="AutosaveModePathStyle" TargetType="Path">
+        <Setter Property="Fill" Value="{StaticResource Brush.Function.Success}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding AutosaveModeDisplay}" Value="MANUAL SAVE">
+                <Setter Property="Fill" Value="{StaticResource Brush.PrimaryText}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>
