@@ -13,8 +13,10 @@
                 <ResourceDictionary Source="/Styles/Components/ControlBarButton.xaml" />
                 <ResourceDictionary Source="/Styles/Components/WindowControlButton.xaml" />
                 <ResourceDictionary Source="/Styles/Components/StatusBarButton.xaml" />
+                <ResourceDictionary Source="/Styles/Components/StatusBarStatus.xaml" />
                 <ResourceDictionary Source="/Styles/Components/DraftCloseButton.xaml" />
-                <ResourceDictionary Source="/Styles/Dialogs/DraftDialog.xaml" />
+                <ResourceDictionary Source="/Dialogs/Message/Styles/MessageDialogButtons.xaml" />
+                <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

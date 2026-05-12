@@ -1,24 +1,24 @@
-using Draft.Dialogs.Models;
-using Draft.Dialogs.Services;
+using Draft.Dialogs.Message.Models;
+using Draft.Dialogs.Message.Services;
+using Draft.Dialogs.Prompt.GoToPosition.Models;
+using Draft.Dialogs.Prompt.GoToPosition.Services;
 using Draft.Helpers;
-using Draft.Popup.DraftPrompt.Views;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Draft.ViewModels;
 
 public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
 {
-    private readonly IDraftDialogService _dialogService = new DraftDialogService();
+    private readonly IMessageDialogService _dialogService = new MessageDialogService();
+    private readonly IGoToPositionPromptService _goToPositionPromptService = new GoToPositionPromptService();
 
     public DevelopSettingsPageViewModel(SettingsViewModel settings)
         : base("Develop", settings)
     {
-        ShowInfoDialogCommand = new RelayCommand(() => ShowDialog(DraftDialogType.Info, InfoDialogButtonCount));
-        ShowWarningDialogCommand = new RelayCommand(() => ShowDialog(DraftDialogType.Warning, WarningDialogButtonCount));
-        ShowErrorDialogCommand = new RelayCommand(() => ShowDialog(DraftDialogType.Error, ErrorDialogButtonCount));
-        ShowSuccessDialogCommand = new RelayCommand(() => ShowDialog(DraftDialogType.Success, SuccessDialogButtonCount));
+        ShowInfoDialogCommand = new RelayCommand(() => ShowDialog(MessageDialogType.Info, InfoDialogButtonCount));
+        ShowWarningDialogCommand = new RelayCommand(() => ShowDialog(MessageDialogType.Warning, WarningDialogButtonCount));
+        ShowErrorDialogCommand = new RelayCommand(() => ShowDialog(MessageDialogType.Error, ErrorDialogButtonCount));
+        ShowSuccessDialogCommand = new RelayCommand(() => ShowDialog(MessageDialogType.Success, SuccessDialogButtonCount));
         ShowPromptWindowCommand = new RelayCommand(ShowPromptWindow);
     }
 
@@ -44,132 +44,55 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
 
     private void ShowPromptWindow()
     {
-        DraftPromptWindow window = new();
-        window.Title = "Rename File";
-        window.PromptContent = CreatePromptPreviewContent(window);
-        window.PromptActions = CreatePromptPreviewActions(window);
-
-        Window? owner = Application.Current.Windows
-            .OfType<Window>()
-            .FirstOrDefault(activeWindow => activeWindow.IsActive)
-            ?? Application.Current.MainWindow;
-
-        if (owner is not null)
-        {
-            window.Owner = owner;
-        }
-        else
-        {
-            window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        }
-
-        window.ShowDialog();
+        _goToPositionPromptService.Show(new GoToPositionPromptRequest(1, 1));
     }
 
-    private static object CreatePromptPreviewContent(DraftPromptWindow window)
-    {
-        StackPanel content = new()
-        {
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            Orientation = Orientation.Vertical,
-        };
-
-        content.Children.Add(new TextBlock
-        {
-            Margin = new Thickness(0, 0, 0, 12),
-            FontFamily = (System.Windows.Media.FontFamily)Application.Current.FindResource("Font.Manrope"),
-            FontSize = 16,
-            Foreground = (System.Windows.Media.Brush)Application.Current.FindResource("Brush.Text.Secondary"),
-            Text = "Enter a new name for the document",
-        });
-
-        content.Children.Add(new TextBox
-        {
-            Height = 36,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            Style = (Style)window.FindResource("SettingsTextBox"),
-            Text = "current-document.md",
-        });
-
-        return content;
-    }
-
-    private static IReadOnlyList<UIElement> CreatePromptPreviewActions(DraftPromptWindow window)
-    {
-        Button cancelButton = new()
-        {
-            Margin = new Thickness(0, 0, 8, 0),
-            Content = "Cancel",
-            Padding = new Thickness(24, 0, 24, 0),
-            Style = (Style)window.FindResource("DraftPromptSecondaryButton"),
-        };
-        cancelButton.Click += (_, _) => window.Close();
-
-        Button confirmButton = new()
-        {
-            Content = "Rename",
-            Padding = new Thickness(24, 0, 24, 0),
-            Style = (Style)window.FindResource("SettingsPrimaryButton"),
-        };
-        confirmButton.Click += (_, _) =>
-        {
-            window.DialogResult = true;
-            window.Close();
-        };
-
-        return new UIElement[]
-        {
-            cancelButton,
-            confirmButton,
-        };
-    }
-
-    private void ShowDialog(DraftDialogType dialogType, int buttonCount)
+    private void ShowDialog(MessageDialogType dialogType, int buttonCount)
     {
         string title = dialogType switch
         {
-            DraftDialogType.Info => "Info Dialog",
-            DraftDialogType.Warning => "Warning Dialog",
-            DraftDialogType.Error => "Error Dialog",
-            DraftDialogType.Success => "Success Dialog",
+            MessageDialogType.Info => "Info Dialog",
+            MessageDialogType.Warning => "Warning Dialog",
+            MessageDialogType.Error => "Error Dialog",
+            MessageDialogType.Success => "Success Dialog",
             _ => "Dialog",
         };
 
         string description = dialogType switch
         {
-            DraftDialogType.Info => "This is a development preview of an informational dialog.",
-            DraftDialogType.Warning => "This is a development preview of a warning dialog.",
-            DraftDialogType.Error => "This is a development preview of an error dialog.",
-            DraftDialogType.Success => "This is a development preview of a success dialog.",
+            MessageDialogType.Info => "This is a development preview of an informational dialog.",
+            MessageDialogType.Warning => "This is a development preview of a warning dialog.",
+            MessageDialogType.Error => "This is a development preview of an error dialog.",
+            MessageDialogType.Success => "This is a development preview of a success dialog.",
             _ => "This is a development preview dialog.",
         };
 
         _dialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+            new MessageDialogRequest(
                 title,
                 description,
                 dialogType,
                 CreateButtonDefinitions(buttonCount)));
     }
 
-    private static IReadOnlyList<DraftDialogButtonDefinition> CreateButtonDefinitions(int buttonCount)
+    private static IReadOnlyList<MessageDialogButtonDefinition> CreateButtonDefinitions(int buttonCount)
     {
         return buttonCount switch
         {
             2 => new[]
             {
-                DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
-                DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
+                MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
             },
             3 => new[]
             {
-                DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
-                DraftDialogButtonDefinition.Secondary("Later", new DraftDialogResult("later")),
-                DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
+                MessageDialogButtonDefinition.Secondary("Later", new MessageDialogResult("later")),
+                MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
             },
             _ => new[]
             {
-                DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
             },
         };
     }

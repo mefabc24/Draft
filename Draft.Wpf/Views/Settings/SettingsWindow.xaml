@@ -16,10 +16,6 @@
     mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-
             <DataTemplate DataType="{x:Type settingsVm:GeneralSettingsPageViewModel}">
                 <settings:GeneralSettingsView />
             </DataTemplate>

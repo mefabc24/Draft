@@ -7,12 +7,12 @@
     xmlns:uc="clr-namespace:Draft.Controls"
     xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     Title="Draft"
-    Icon="/Assets/Icons/draft.ico"
     AllowsTransparency="True"
     Background="Transparent"
+    Icon="/Assets/Icons/draft.ico"
     WindowStyle="None"
     mc:Ignorable="d">
-    <!--  Window Logic: Native Window Chrome behavior  -->
+    <!-- Window Logic: Native Window Chrome behavior -->
     <WindowChrome.WindowChrome>
         <WindowChrome
             x:Name="MainWindowChrome"
@@ -22,12 +22,10 @@
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
 
-    <!--  Root: App Logic + Window Logic overlay  -->
-    <Grid>
-        <!--  App Logic  -->
-        <Border
-            x:Name="WindowFrameBorder"
-            Background="{StaticResource Brush.WindowBG}">
+    <!-- Root: App Logic + Window Logic overlay -->
+    <Grid x:Name="RootGrid">
+        <!-- App Logic -->
+        <Border x:Name="WindowFrameBorder" Background="{StaticResource Brush.WindowBG}">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
@@ -54,7 +52,7 @@
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
 
-                <!--  App Surface  -->
+                <!-- App Surface -->
                 <Border Padding="24">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -62,14 +60,15 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <!--  App Controls  -->
+                        <!-- App Controls -->
                         <Grid Grid.Row="0" Margin="0,0,0,24">
                             <uc:ControlBar x:Name="ControlBar" WindowChrome.IsHitTestVisibleInChrome="True" />
                         </Grid>
 
-                        <!--  Workspace  -->
+                        <!-- Workspace -->
                         <Border
                             Grid.Row="1"
+                            Panel.ZIndex="0"
                             Background="{StaticResource Brush.Island}"
                             BorderBrush="{StaticResource Brush.Outline}"
                             BorderThickness="1"
@@ -81,20 +80,19 @@
                                     x:Name="WorkspaceLoaderOverlay"
                                     Panel.ZIndex="1"
                                     Background="{StaticResource Brush.Island}">
-                                    <uc:LoadingDots
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center" />
+                                    <uc:LoadingDots HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Grid>
                             </Grid>
                         </Border>
                     </Grid>
                 </Border>
 
-                <!--  Status Bar  -->
+                <!-- Status Bar -->
                 <Border
                     x:Name="StatusBarBorder"
                     Grid.Row="1"
                     Padding="24,4"
+                    Panel.ZIndex="10"
                     Background="{StaticResource Brush.Background.Surface}"
                     BorderBrush="{StaticResource Brush.Border.Subtle}"
                     BorderThickness="0,1,0,0">
@@ -115,19 +113,23 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <uc:StatusBar />
+                    <uc:StatusBar x:Name="MainStatusBar" />
                 </Border>
             </Grid>
         </Border>
 
-        <!--  Window Logic: custom titlebar controls overlay  -->
+        <!-- Window Logic: custom titlebar controls overlay -->
         <Grid
             VerticalAlignment="Top"
+            Panel.ZIndex="20"
             WindowChrome.IsHitTestVisibleInChrome="True">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Setter Property="Margin" Value="1" />
                     <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsWindowSnapped, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                            <Setter Property="Margin" Value="0" />
+                        </DataTrigger>
                         <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
                             <Setter Property="Margin" Value="0" />
                         </DataTrigger>
@@ -136,5 +138,6 @@
             </Grid.Style>
             <uc:WindowControls HorizontalAlignment="Right" />
         </Grid>
+
     </Grid>
 </Window>

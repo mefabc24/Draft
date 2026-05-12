@@ -8,50 +8,6 @@
     d:DesignHeight="32"
     d:DesignWidth="1000"
     mc:Ignorable="d">
-    <UserControl.Resources>
-        <Style x:Key="FileSaveStatusTextStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Brush.Function.Success}" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="UNSAVED">
-                    <Setter Property="Foreground" Value="{StaticResource Brush.Function.Warning}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="MODIFIED">
-                    <Setter Property="Foreground" Value="{StaticResource Brush.Function.Warning}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="FileSaveStatusPathStyle" TargetType="Path">
-            <Setter Property="Fill" Value="{StaticResource Brush.Function.Success}" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="UNSAVED">
-                    <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="MODIFIED">
-                    <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="AutosaveModeTextStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Brush.Function.Success}" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding AutosaveModeDisplay}" Value="MANUAL SAVE">
-                    <Setter Property="Foreground" Value="{StaticResource Brush.PrimaryText}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="AutosaveModePathStyle" TargetType="Path">
-            <Setter Property="Fill" Value="{StaticResource Brush.Function.Success}" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding AutosaveModeDisplay}" Value="MANUAL SAVE">
-                    <Setter Property="Fill" Value="{StaticResource Brush.PrimaryText}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
@@ -62,6 +18,8 @@
         <!-- Left -->
         <StackPanel Grid.Column="0" Orientation="Horizontal">
             <Button Padding="8,4" Style="{StaticResource StatusBarButton}">
+
+                <!-- File Type -->
                 <StackPanel Height="16" Orientation="Horizontal">
                     <Path
                         Width="16"
@@ -80,6 +38,7 @@
                 </StackPanel>
             </Button>
 
+            <!-- Encoding Type -->
             <Button
                 Margin="16,0"
                 Padding="8,4"
@@ -102,6 +61,7 @@
                 </StackPanel>
             </Button>
 
+            <!-- Word Count -->
             <Button
                 Margin="0,0,16,0"
                 Padding="8,4"
@@ -124,6 +84,7 @@
                 </StackPanel>
             </Button>
 
+            <!-- Character Count -->
             <Button Padding="8,4" Style="{StaticResource StatusBarButton}">
                 <StackPanel Height="16" Orientation="Horizontal">
                     <Path
@@ -145,11 +106,13 @@
         </StackPanel>
 
         <!-- Right -->
+
+        <!-- Editor Position -->
         <StackPanel Grid.Column="2" Orientation="Horizontal">
             <Button
-                Command="{Binding OpenCursorPositionPromptCommand}"
                 Margin="16,0"
                 Padding="8,4"
+                Command="{Binding OpenCursorPositionPromptCommand}"
                 Style="{StaticResource StatusBarButton}"
                 ToolTip="Go to line or column">
                 <TextBlock
@@ -161,7 +124,12 @@
                     Text="{Binding CursorPositionDisplay, FallbackValue='LN 1, COL 1'}" />
             </Button>
 
-            <Button Padding="8,4" Style="{StaticResource StatusBarButton}">
+            <!-- Save Status -->
+            <Button
+                Padding="8,4"
+                Command="{Binding SaveFileCommand}"
+                Style="{StaticResource StatusBarButton}"
+                ToolTip="Save file">
                 <StackPanel Height="16" Orientation="Horizontal">
                     <Path
                         Width="14"
@@ -180,7 +148,12 @@
                 </StackPanel>
             </Button>
 
-            <Button Padding="8,4" Style="{StaticResource StatusBarButton}">
+            <!-- Autosave Status -->
+            <Button
+                x:Name="AutosaveModeButton"
+                Padding="8,4"
+                Command="{Binding OpenAutosavePromptCommand}"
+                Style="{StaticResource StatusBarButton}">
                 <StackPanel Height="16" Orientation="Horizontal">
                     <Path
                         Width="16"

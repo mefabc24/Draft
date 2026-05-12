@@ -71,8 +71,10 @@ public class SettingsViewModel : BaseViewModel
         _currentSettingsPage = _generalSettingsPage;
     }
 
-    public IReadOnlyList<string> AutosaveIntervalOptions { get; } =
+    public static IReadOnlyList<string> AutosaveIntervalOptionValues { get; } =
         new[] { "5s", "10s", "30s", "1m", "5m" };
+
+    public IReadOnlyList<string> AutosaveIntervalOptions => AutosaveIntervalOptionValues;
 
     public IReadOnlyList<string> DefaultStartupModeOptions { get; } =
         new[] { "Last", "Editor", "Split", "Preview" };

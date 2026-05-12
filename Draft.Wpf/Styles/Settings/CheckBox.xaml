@@ -12,7 +12,7 @@
                         x:Name="Track"
                         Width="{TemplateBinding Width}"
                         Height="{TemplateBinding Height}"
-                        Padding="3"
+                        Padding="2"
                         Background="{TemplateBinding Background}"
                         CornerRadius="10">
 

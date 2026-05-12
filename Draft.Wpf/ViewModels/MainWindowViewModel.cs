@@ -386,6 +386,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand OpenCursorPositionPromptCommand { get; }
 
+    public ICommand OpenAutosavePromptCommand { get; }
+
     public event EventHandler? OpenFileRequested;
 
     public event EventHandler? SaveFileAsRequested;
@@ -395,6 +397,8 @@ public class MainWindowViewModel : BaseViewModel
     public event EventHandler? OpenSettingsRequested;
 
     public event EventHandler? OpenCursorPositionPromptRequested;
+
+    public event EventHandler? OpenAutosavePromptRequested;
 
     public event EventHandler<FileOperationFailedEventArgs>? FileOperationFailed;
 
@@ -408,6 +412,8 @@ public class MainWindowViewModel : BaseViewModel
         OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
         OpenCursorPositionPromptCommand = new RelayCommand(
             () => OpenCursorPositionPromptRequested?.Invoke(this, EventArgs.Empty));
+        OpenAutosavePromptCommand = new RelayCommand(
+            () => OpenAutosavePromptRequested?.Invoke(this, EventArgs.Empty));
 
         WorkspaceState = WorkspaceState.Split;
         UpdateTextMetrics();
@@ -527,6 +533,9 @@ public class MainWindowViewModel : BaseViewModel
 
     private async void ExecuteSaveFileCommand()
     {
+        if (HasFilePath && !IsDirty)
+            return;
+
         if (!HasFilePath)
         {
             SaveFileAsRequested?.Invoke(this, EventArgs.Empty);

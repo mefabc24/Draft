@@ -1,0 +1,42 @@
+<Window
+    x:Class="Draft.Dialogs.Base.Views.BaseDialogWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="DialogBase"
+    AllowsTransparency="True"
+    Background="Transparent"
+    Icon="/Assets/Icons/draft.ico"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    SizeToContent="WidthAndHeight"
+    WindowStartupLocation="CenterOwner"
+    WindowStyle="None"
+    mc:Ignorable="d">
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="96"
+            GlassFrameThickness="0"
+            ResizeBorderThickness="6" />
+    </WindowChrome.WindowChrome>
+
+    <Border Padding="24" Background="Transparent">
+        <Border
+            Background="{StaticResource Brush.Background.Surface}"
+            BorderBrush="{StaticResource Brush.Border.Window}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="24"
+                    Direction="270"
+                    Opacity="0.28"
+                    ShadowDepth="6"
+                    Color="{StaticResource Color.Shadow.Default}" />
+            </Border.Effect>
+
+            <ContentControl x:Name="DialogContentHost" />
+        </Border>
+    </Border>
+</Window>

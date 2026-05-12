@@ -1,7 +1,10 @@
-using Draft.Dialogs.Models;
-using Draft.Dialogs.Services;
+using Draft.Dialogs.Message.Models;
+using Draft.Dialogs.Message.Services;
+using Draft.Dialogs.Prompt.AutosavePrompt.Models;
+using Draft.Dialogs.Prompt.AutosavePrompt.Services;
+using Draft.Dialogs.Prompt.GoToPosition.Models;
+using Draft.Dialogs.Prompt.GoToPosition.Services;
 using Draft.Helpers;
-using Draft.Popup.DraftPrompt.Views;
 using Draft.ViewModels;
 using Microsoft.Win32;
 using Microsoft.Web.WebView2.Core;
@@ -10,7 +13,6 @@ using System.IO;
 using System.Security;
 using System.Text.Json;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -37,7 +39,9 @@ public partial class MainWindow : Window
     private const double BaseMinWindowWidth = 1000;
     private const double BaseMinWindowHeight = 500;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-    private readonly IDraftDialogService _draftDialogService = new DraftDialogService();
+    private readonly IMessageDialogService _messageDialogService = new MessageDialogService();
+    private readonly IGoToPositionPromptService _goToPositionPromptService = new GoToPositionPromptService();
+    private readonly IAutosavePromptService _autosavePromptService = new AutosavePromptService();
     private DraftSettings _settings;
     private bool _isWebViewReady;
     private bool _isSettingsWindowOpen;
@@ -109,14 +113,20 @@ public partial class MainWindow : Window
     {
         _hasHandledFocusLostSave = false;
         base.OnActivated(e);
+        PlaceShadowBehindMainWindow();
     }
 
     protected override async void OnDeactivated(EventArgs e)
     {
         base.OnDeactivated(e);
 
-        if (_isSettingsWindowOpen || _isPromptWindowOpen || _hasHandledFocusLostSave || ViewModel is null)
+        if (_isSettingsWindowOpen
+            || _isPromptWindowOpen
+            || _hasHandledFocusLostSave
+            || ViewModel is null)
+        {
             return;
+        }
 
         _hasHandledFocusLostSave = true;
         await ViewModel.TrySaveOnFocusLostAsync();
@@ -127,6 +137,7 @@ public partial class MainWindow : Window
         LocationChanged -= MainWindow_PositionChanged;
         SizeChanged -= MainWindow_SizeChanged;
         StateChanged -= MainWindow_PositionChanged;
+        CloseShadowWindow();
 
         if (ViewModel is not null)
         {
@@ -147,12 +158,14 @@ public partial class MainWindow : Window
     {
         UpdateWindowSnapState();
         UpdateWindowCornerRadius();
+        SyncShadowWindow();
     }
 
     private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         UpdateWindowSnapState();
         UpdateWindowCornerRadius();
+        SyncShadowWindow();
     }
 
     private void UpdateWindowCornerRadius()
@@ -167,6 +180,7 @@ public partial class MainWindow : Window
         StatusBarBorder.CornerRadius = shouldUseSquareCorners
             ? new CornerRadius(0)
             : new CornerRadius(0, 0, 8, 8);
+        SyncShadowWindow();
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -193,6 +207,7 @@ public partial class MainWindow : Window
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
         viewModel.OpenCursorPositionPromptRequested += ViewModel_OpenCursorPositionPromptRequested;
+        viewModel.OpenAutosavePromptRequested += ViewModel_OpenAutosavePromptRequested;
         viewModel.FileOperationFailed += ViewModel_FileOperationFailed;
     }
 
@@ -204,6 +219,7 @@ public partial class MainWindow : Window
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
         viewModel.OpenCursorPositionPromptRequested -= ViewModel_OpenCursorPositionPromptRequested;
+        viewModel.OpenAutosavePromptRequested -= ViewModel_OpenAutosavePromptRequested;
         viewModel.FileOperationFailed -= ViewModel_FileOperationFailed;
     }
 
@@ -310,149 +326,21 @@ public partial class MainWindow : Window
         if (ViewModel is not MainWindowViewModel viewModel)
             return;
 
-        DraftPromptWindow promptWindow = new()
-        {
-            Owner = this,
-            Title = "Go to Position",
-            Focusable = true,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-        };
-
-        TextBlock descriptionText = new()
-        {
-            Margin = new Thickness(0, 0, 0, 12),
-            FontFamily = (System.Windows.Media.FontFamily)FindResource("Font.Manrope"),
-            FontSize = 14,
-            Foreground = (System.Windows.Media.Brush)FindResource("Brush.Text.Secondary"),
-            Text = "Enter a line, a line and column, or a column for the current line.",
-            TextWrapping = TextWrapping.Wrap,
-        };
-
-        TextBox positionTextBox = new()
-        {
-            Height = 36,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            Style = (Style)promptWindow.FindResource("SettingsTextBox"),
-            Text = $"{viewModel.CursorLine}:{viewModel.CursorColumn}",
-        };
-
-        TextBlock errorText = new()
-        {
-            Margin = new Thickness(0, 8, 0, 0),
-            FontFamily = (System.Windows.Media.FontFamily)FindResource("Font.Manrope"),
-            FontSize = 12,
-            Foreground = (System.Windows.Media.Brush)FindResource("Brush.Function.Critical"),
-            Visibility = Visibility.Collapsed,
-            TextWrapping = TextWrapping.Wrap,
-        };
-
-        StackPanel content = new()
-        {
-            Focusable = true,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            Orientation = Orientation.Vertical,
-        };
-        content.Children.Add(descriptionText);
-        content.Children.Add(positionTextBox);
-        content.Children.Add(errorText);
-
-        promptWindow.PromptContent = content;
-        CursorPositionTarget? selectedTarget = null;
-
-        void ConfirmPosition()
-        {
-            if (!TryParseCursorPositionInput(
-                positionTextBox.Text,
-                viewModel.CursorLine,
-                out CursorPositionTarget target,
-                out string errorMessage))
-            {
-                errorText.Text = errorMessage;
-                errorText.Visibility = Visibility.Visible;
-                positionTextBox.Focus();
-                positionTextBox.SelectAll();
-                return;
-            }
-
-            selectedTarget = target;
-            promptWindow.DialogResult = true;
-            promptWindow.Close();
-        }
-
-        promptWindow.PreviewKeyDown += (_, args) =>
-        {
-            if (args.Key == Key.Enter)
-            {
-                args.Handled = true;
-                ConfirmPosition();
-            }
-            else if (args.Key == Key.Escape)
-            {
-                args.Handled = true;
-                promptWindow.Close();
-            }
-        };
-        promptWindow.PreviewTextInput += (_, args) =>
-        {
-            if (args.OriginalSource is TextBox)
-                return;
-
-            positionTextBox.Focus();
-            positionTextBox.Text = args.Text;
-            positionTextBox.CaretIndex = positionTextBox.Text.Length;
-            args.Handled = true;
-        };
-        positionTextBox.TextChanged += (_, _) =>
-        {
-            errorText.Visibility = Visibility.Collapsed;
-        };
-        promptWindow.ContentRendered += (_, _) =>
-        {
-            Dispatcher.BeginInvoke(
-                new Action(() =>
-                {
-                    positionTextBox.Focus();
-                    Keyboard.Focus(positionTextBox);
-                    positionTextBox.SelectAll();
-                }),
-                DispatcherPriority.ApplicationIdle);
-        };
-
-        Button cancelButton = new()
-        {
-            Content = "Cancel",
-            Margin = new Thickness(0, 0, 8, 0),
-            Padding = new Thickness(24, 0, 24, 0),
-            Style = (Style)promptWindow.FindResource("DraftPromptSecondaryButton"),
-        };
-        cancelButton.Click += (_, _) => promptWindow.Close();
-
-        Button confirmButton = new()
-        {
-            Content = "Confirm",
-            Padding = new Thickness(24, 0, 24, 0),
-            Style = (Style)promptWindow.FindResource("SettingsPrimaryButton"),
-        };
-        confirmButton.Click += (_, _) => ConfirmPosition();
-
-        promptWindow.PromptActions = new UIElement[]
-        {
-            cancelButton,
-            confirmButton,
-        };
-
         _isPromptWindowOpen = true;
+        GoToPositionPromptResult result;
 
         try
         {
-            promptWindow.ShowDialog();
+            result = _goToPositionPromptService.Show(
+                new GoToPositionPromptRequest(viewModel.CursorLine, viewModel.CursorColumn),
+                this);
         }
         finally
         {
             _isPromptWindowOpen = false;
         }
 
-        if (promptWindow.DialogResult == true && selectedTarget is not null)
+        if (result.IsConfirmed)
         {
             Dispatcher.BeginInvoke(
                 new Action(() =>
@@ -460,7 +348,7 @@ public partial class MainWindow : Window
                     Activate();
                     WorkspaceWebView.Focus();
                     Keyboard.Focus(WorkspaceWebView);
-                    PostGoToPosition(selectedTarget.Line, selectedTarget.Column);
+                    PostGoToPosition(result.Line, result.Column);
                 }),
                 DispatcherPriority.ContextIdle);
         }
@@ -471,7 +359,34 @@ public partial class MainWindow : Window
         ShowMessageDialog(
             e.Title,
             e.Message,
-            DraftDialogType.Error);
+            MessageDialogType.Error);
+    }
+
+    private void ViewModel_OpenAutosavePromptRequested(object? sender, EventArgs e)
+    {
+        _isPromptWindowOpen = true;
+        AutosavePromptResult result;
+
+        try
+        {
+            result = _autosavePromptService.Show(
+                new AutosavePromptRequest(_settings.AutosaveEnabled, _settings.AutosaveInterval),
+                this);
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
+        }
+
+        if (!result.IsConfirmed)
+            return;
+
+        DraftSettings updatedSettings = CopySettings(_settings);
+        updatedSettings.AutosaveEnabled = result.AutosaveEnabled;
+        updatedSettings.AutosaveInterval = result.AutosaveInterval;
+
+        AppSettingsStore.TrySave(updatedSettings);
+        ApplySettings(updatedSettings);
     }
 
     private bool ConfirmDiscardUnsavedChanges()
@@ -482,7 +397,7 @@ public partial class MainWindow : Window
         if (ViewModel?.IsDirty != true)
             return true;
 
-        DraftDialogResult result = ShowConfirmationDialog(
+        MessageDialogResult result = ShowConfirmationDialog(
             "Unsaved Changes",
             "You have unsaved changes. Do you want to continue?",
             "Continue",
@@ -499,7 +414,7 @@ public partial class MainWindow : Window
         if (ViewModel?.HasUnsavedWork != true)
             return true;
 
-        DraftDialogResult result = ShowConfirmationDialog(
+        MessageDialogResult result = ShowConfirmationDialog(
             "Unsaved Changes",
             "This file has unsaved changes or has not been saved yet. If you close now, all unsaved work will be lost. Do you really want to close Draft?",
             "Close Draft",
@@ -513,37 +428,37 @@ public partial class MainWindow : Window
         ShowMessageDialog(
             title,
             ex.Message,
-            DraftDialogType.Error);
+            MessageDialogType.Error);
     }
 
-    private void ShowMessageDialog(string title, string description, DraftDialogType dialogType)
+    private void ShowMessageDialog(string title, string description, MessageDialogType dialogType)
     {
-        _draftDialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+        _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
                 title,
                 description,
                 dialogType,
                 new[]
                 {
-                    DraftDialogButtonDefinition.Primary("Okay", DraftDialogResult.Ok),
+                    MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
                 }));
     }
 
-    private DraftDialogResult ShowConfirmationDialog(
+    private MessageDialogResult ShowConfirmationDialog(
         string title,
         string description,
         string primaryButtonText,
         string primaryResultId)
     {
-        return _draftDialogService.ShowMessage(
-            new DraftMessageDialogRequest(
+        return _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
                 title,
                 description,
-                DraftDialogType.Warning,
+                MessageDialogType.Warning,
                 new[]
                 {
-                    DraftDialogButtonDefinition.Secondary("Cancel", DraftDialogResult.Cancel),
-                    DraftDialogButtonDefinition.Primary(primaryButtonText, new DraftDialogResult(primaryResultId)),
+                    MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Primary(primaryButtonText, new MessageDialogResult(primaryResultId)),
                 }));
     }
 
@@ -561,6 +476,47 @@ public partial class MainWindow : Window
         ApplyMinimumWindowSize(_settings);
         ViewModel?.ApplySettings(_settings);
         PostSettingsToWebView();
+    }
+
+    private static DraftSettings CopySettings(DraftSettings settings)
+    {
+        return new DraftSettings
+        {
+            ReopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup,
+            AutosaveEnabled = settings.AutosaveEnabled,
+            AutosaveInterval = settings.AutosaveInterval,
+            SaveOnFocusLost = settings.SaveOnFocusLost,
+            IncludeMarkdownSyntaxInCharacterCount = settings.IncludeMarkdownSyntaxInCharacterCount,
+            ConfirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles,
+            DefaultStartupMode = settings.DefaultStartupMode,
+            WindowMinimumSizeScale = settings.WindowMinimumSizeScale,
+            DefaultSaveLocation = settings.DefaultSaveLocation,
+            DefaultFileExtension = settings.DefaultFileExtension,
+            AssociateTxtFilesWithDraft = settings.AssociateTxtFilesWithDraft,
+            EditorFontFamily = settings.EditorFontFamily,
+            EditorFontSize = settings.EditorFontSize,
+            LineHeight = settings.LineHeight,
+            WordWrap = settings.WordWrap,
+            ShowLineNumbers = settings.ShowLineNumbers,
+            HighlightCurrentLine = settings.HighlightCurrentLine,
+            ShowWhitespaceCharacters = settings.ShowWhitespaceCharacters,
+            ShowIndentationGuides = settings.ShowIndentationGuides,
+            TabSize = settings.TabSize,
+            InsertSpacesInsteadOfTabs = settings.InsertSpacesInsteadOfTabs,
+            AutoPairBrackets = settings.AutoPairBrackets,
+            AutoPairQuotes = settings.AutoPairQuotes,
+            MarkdownSyntaxHighlighting = settings.MarkdownSyntaxHighlighting,
+            CursorStyle = settings.CursorStyle,
+            CursorBlinking = settings.CursorBlinking,
+            MarkdownTheme = settings.MarkdownTheme,
+            OpenLinksInBrowser = settings.OpenLinksInBrowser,
+            ConfirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks,
+            PreviewScrollSyncMode = settings.PreviewScrollSyncMode,
+            ScrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection,
+            AppTheme = settings.AppTheme,
+            IsStatusBarVisible = settings.IsStatusBarVisible,
+            ToolbarControlbarPosition = settings.ToolbarControlbarPosition,
+        };
     }
 
     private void ApplyStartupWindowSize()
@@ -856,76 +812,11 @@ public partial class MainWindow : Window
             or InvalidOperationException;
     }
 
-    private static bool TryParseCursorPositionInput(
-        string? input,
-        int currentLine,
-        out CursorPositionTarget target,
-        out string errorMessage)
-    {
-        target = new CursorPositionTarget(1, 1);
-        errorMessage = string.Empty;
-
-        string value = input?.Trim() ?? string.Empty;
-
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            errorMessage = "Enter a value like 14, 15:53, or :44.";
-            return false;
-        }
-
-        if (value.StartsWith(':'))
-        {
-            string columnText = value[1..];
-
-            if (string.IsNullOrWhiteSpace(columnText)
-                || !TryParsePositiveNumber(columnText, out int currentLineColumn))
-            {
-                errorMessage = "For a column-only jump, enter : followed by a positive number.";
-                return false;
-            }
-
-            target = new CursorPositionTarget(currentLine, currentLineColumn);
-            return true;
-        }
-
-        string[] parts = value.Split(':');
-
-        if (parts.Length == 1)
-        {
-            if (!TryParsePositiveNumber(parts[0], out int line))
-            {
-                errorMessage = "Line must be a positive number.";
-                return false;
-            }
-
-            target = new CursorPositionTarget(line, 1);
-            return true;
-        }
-
-        if (parts.Length == 2
-            && TryParsePositiveNumber(parts[0], out int targetLine)
-            && TryParsePositiveNumber(parts[1], out int targetColumn))
-        {
-            target = new CursorPositionTarget(targetLine, targetColumn);
-            return true;
-        }
-
-        errorMessage = "Enter a line as 14, a line and column as 15:53, or only a column as :44.";
-        return false;
-    }
-
-    private static bool TryParsePositiveNumber(string value, out int number)
-    {
-        return int.TryParse(value.Trim(), out number) && number > 0;
-    }
-
     private sealed record WorkspaceModeMessage(string Type, string Mode);
 
     private sealed record LoadDocumentMessage(string Type, string Content, string FileName);
 
     private sealed record GoToPositionMessage(string Type, int Line, int Column);
-
-    private sealed record CursorPositionTarget(int Line, int Column);
 
     private sealed record SettingsChangedMessage(
         string Type,
