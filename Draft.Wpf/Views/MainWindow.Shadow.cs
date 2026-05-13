@@ -1,17 +1,18 @@
+using Draft.Helpers;
 using System.Windows;
 
 namespace Draft.Views;
 
 public partial class MainWindow
 {
-    private MainWindowShadowWindow? _shadowWindow;
+    private WindowShadowWindow? _shadowWindow;
 
     private void InitializeShadowWindow()
     {
         if (_shadowWindow is not null)
             return;
 
-        _shadowWindow = new MainWindowShadowWindow();
+        _shadowWindow = new WindowShadowWindow("Brush.WindowBG");
         SyncShadowWindow();
     }
 
@@ -20,6 +21,11 @@ public partial class MainWindow
         bool isShadowVisible = IsVisible
             && WindowState == WindowState.Normal
             && !IsWindowSnapped;
+
+        if (_shadowWindow is not null)
+        {
+            _shadowWindow.CornerRadius = WindowFrameBorder.CornerRadius;
+        }
 
         _shadowWindow?.SyncWith(this, isShadowVisible);
     }
@@ -34,7 +40,7 @@ public partial class MainWindow
         if (_shadowWindow is null)
             return;
 
-        MainWindowShadowWindow shadowWindow = _shadowWindow;
+        WindowShadowWindow shadowWindow = _shadowWindow;
         _shadowWindow = null;
         shadowWindow.Close();
     }

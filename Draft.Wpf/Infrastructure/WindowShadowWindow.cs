@@ -4,9 +4,9 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 
-namespace Draft.Views;
+namespace Draft.Helpers;
 
-internal sealed class MainWindowShadowWindow : Window
+internal sealed class WindowShadowWindow : Window
 {
     public const double ShadowMargin = 24;
 
@@ -19,7 +19,9 @@ internal sealed class MainWindowShadowWindow : Window
     private const int WsExToolWindow = 0x00000080;
     private const int WsExNoActivate = 0x08000000;
 
-    public MainWindowShadowWindow()
+    private readonly Border _shadowFrame;
+
+    public WindowShadowWindow(string backgroundResourceKey)
     {
         AllowsTransparency = true;
         Background = Brushes.Transparent;
@@ -31,10 +33,10 @@ internal sealed class MainWindowShadowWindow : Window
         WindowStartupLocation = WindowStartupLocation.Manual;
         WindowStyle = WindowStyle.None;
 
-        Content = new Border
+        _shadowFrame = new Border
         {
             Margin = new Thickness(ShadowMargin),
-            Background = FindBrush("Brush.WindowBG", Brushes.Black),
+            Background = FindBrush(backgroundResourceKey, Brushes.Black),
             CornerRadius = new CornerRadius(8),
             Effect = new System.Windows.Media.Effects.DropShadowEffect
             {
@@ -46,7 +48,14 @@ internal sealed class MainWindowShadowWindow : Window
             },
         };
 
-        SourceInitialized += MainWindowShadowWindow_SourceInitialized;
+        Content = _shadowFrame;
+        SourceInitialized += WindowShadowWindow_SourceInitialized;
+    }
+
+    public CornerRadius CornerRadius
+    {
+        get => _shadowFrame.CornerRadius;
+        set => _shadowFrame.CornerRadius = value;
     }
 
     public void SyncWith(Window owner, bool isShadowVisible)
@@ -100,7 +109,7 @@ internal sealed class MainWindowShadowWindow : Window
             SwpNoActivate | SwpNoMove | SwpNoSize | SwpNoOwnerZOrder);
     }
 
-    private void MainWindowShadowWindow_SourceInitialized(object? sender, EventArgs e)
+    private void WindowShadowWindow_SourceInitialized(object? sender, EventArgs e)
     {
         IntPtr handle = new WindowInteropHelper(this).Handle;
         if (handle == IntPtr.Zero)

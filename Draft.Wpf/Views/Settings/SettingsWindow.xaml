@@ -7,8 +7,8 @@
     xmlns:settings="clr-namespace:Draft.Views.Settings"
     xmlns:settingsVm="clr-namespace:Draft.ViewModels"
     Title="Settings"
-    Width="948"
-    Height="648"
+    Width="900"
+    Height="600"
     AllowsTransparency="True"
     Background="Transparent"
     Icon="/Assets/Icons/draft.ico"
@@ -44,33 +44,14 @@
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
 
-    <Border Background="Transparent">
-        <Border.Style>
-            <Style TargetType="Border">
-                <Setter Property="Padding" Value="24" />
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
-                        <Setter Property="Padding" Value="0" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </Border.Style>
-        <Border Background="{StaticResource Brush.Island}">
+    <Border
+        x:Name="SettingsWindowFrameBorder"
+        Background="{StaticResource Brush.Island}">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.SettingsWindow.Active}" />
                     <Setter Property="BorderThickness" Value="1" />
                     <Setter Property="CornerRadius" Value="8" />
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect
-                                BlurRadius="24"
-                                Direction="270"
-                                Opacity="0.28"
-                                ShadowDepth="6"
-                                Color="{StaticResource Color.Shadow.Default}" />
-                        </Setter.Value>
-                    </Setter>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
                             <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.SettingsWindow.Inactive}" />
@@ -96,7 +77,6 @@
                             <Setter Property="BorderBrush" Value="Transparent" />
                             <Setter Property="BorderThickness" Value="0" />
                             <Setter Property="CornerRadius" Value="0" />
-                            <Setter Property="Effect" Value="{x:Null}" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -332,7 +312,6 @@
 
 
             </Grid>
-        </Border>
     </Border>
 
 </Window>
