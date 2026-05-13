@@ -50,6 +50,7 @@ public class SettingsViewModel : BaseViewModel
     private string _previewScrollSyncMode = AppSettingsStore.DefaultPreviewScrollSyncMode;
     private string _appTheme = "Dark";
     private bool _isStatusBarVisible = true;
+    private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _toolbarControlbarPosition = AppSettingsStore.DefaultToolbarPosition;
 
     public SettingsViewModel()
@@ -121,6 +122,9 @@ public class SettingsViewModel : BaseViewModel
 
     public IReadOnlyList<string> AppThemeOptions { get; } =
         new[] { "Dark" };
+
+    public IReadOnlyList<string> WindowBorderAccentModeOptions { get; } =
+        new[] { "Disabled", "Always", "Focused only", "Unfocused only" };
 
     public IReadOnlyList<string> ToolbarControlbarPositionOptions { get; } =
         new[] { AppSettingsStore.DefaultToolbarPosition };
@@ -465,6 +469,16 @@ public class SettingsViewModel : BaseViewModel
         set => SetSetting(ref _isStatusBarVisible, value);
     }
 
+    public string WindowBorderAccentMode
+    {
+        get => GetWindowBorderAccentModeDisplayName(_windowBorderAccentMode);
+        set => SetSetting(
+            ref _windowBorderAccentMode,
+            GetWindowBorderAccentModeValue(value));
+    }
+
+    public string AppliedWindowBorderAccentMode => _originalSettings.WindowBorderAccentMode;
+
     public string ToolbarControlbarPosition
     {
         get => _toolbarControlbarPosition;
@@ -553,6 +567,10 @@ public class SettingsViewModel : BaseViewModel
             AppSettingsStore.DefaultPreviewScrollSyncMode);
         _appTheme = EnsureOption(AppThemeOptions, settings.AppTheme, "Dark");
         _isStatusBarVisible = settings.IsStatusBarVisible;
+        _windowBorderAccentMode = EnsureOptionValue(
+            GetWindowBorderAccentModeValues(),
+            settings.WindowBorderAccentMode,
+            AppSettingsStore.WindowBorderAccentDisabled);
         _toolbarControlbarPosition = EnsureOption(
             ToolbarControlbarPositionOptions,
             settings.ToolbarControlbarPosition,
@@ -582,6 +600,7 @@ public class SettingsViewModel : BaseViewModel
         AppSettingsStore.TrySave(settings);
         FileAssociationService.TryApplyTextAssociations(settings.AssociateTxtFilesWithDraft);
         _originalSettings = settings;
+        OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
         CloseRequested?.Invoke(this, EventArgs.Empty);
     }
@@ -654,6 +673,7 @@ public class SettingsViewModel : BaseViewModel
             ScrollPreviewToEditedSection = false,
             AppTheme = AppTheme,
             IsStatusBarVisible = IsStatusBarVisible,
+            WindowBorderAccentMode = _windowBorderAccentMode,
             ToolbarControlbarPosition = ToolbarControlbarPosition,
         });
     }
@@ -680,6 +700,41 @@ public class SettingsViewModel : BaseViewModel
             AppSettingsStore.PreviewScrollSyncEditorToPreview,
             AppSettingsStore.PreviewScrollSyncPreviewToEditor,
             AppSettingsStore.PreviewScrollSyncFollowEditedSection,
+        };
+    }
+
+    private static IReadOnlyList<string> GetWindowBorderAccentModeValues()
+    {
+        return new[]
+        {
+            AppSettingsStore.WindowBorderAccentDisabled,
+            AppSettingsStore.WindowBorderAccentAlways,
+            AppSettingsStore.WindowBorderAccentFocusedOnly,
+            AppSettingsStore.WindowBorderAccentUnfocusedOnly,
+        };
+    }
+
+    private static string GetWindowBorderAccentModeValue(string displayName)
+    {
+        return displayName switch
+        {
+            "Always" => AppSettingsStore.WindowBorderAccentAlways,
+            "Focused only" => AppSettingsStore.WindowBorderAccentFocusedOnly,
+            "Focused window only" => AppSettingsStore.WindowBorderAccentFocusedOnly,
+            "Unfocused only" => AppSettingsStore.WindowBorderAccentUnfocusedOnly,
+            "Unfocused windows only" => AppSettingsStore.WindowBorderAccentUnfocusedOnly,
+            _ => AppSettingsStore.WindowBorderAccentDisabled,
+        };
+    }
+
+    private static string GetWindowBorderAccentModeDisplayName(string value)
+    {
+        return value switch
+        {
+            AppSettingsStore.WindowBorderAccentAlways => "Always",
+            AppSettingsStore.WindowBorderAccentFocusedOnly => "Focused only",
+            AppSettingsStore.WindowBorderAccentUnfocusedOnly => "Unfocused only",
+            _ => "Disabled",
         };
     }
 
@@ -757,6 +812,8 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(PreviewScrollSyncMode));
         OnPropertyChanged(nameof(AppTheme));
         OnPropertyChanged(nameof(IsStatusBarVisible));
+        OnPropertyChanged(nameof(WindowBorderAccentMode));
+        OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         OnPropertyChanged(nameof(ToolbarControlbarPosition));
     }
 }

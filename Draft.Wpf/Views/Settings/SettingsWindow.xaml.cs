@@ -15,6 +15,10 @@ public partial class SettingsWindow : Window
     public SettingsWindow()
     {
         InitializeComponent();
+        LocationChanged += SettingsWindow_PositionChanged;
+        SizeChanged += SettingsWindow_SizeChanged;
+        StateChanged += SettingsWindow_PositionChanged;
+
         SettingsViewModel viewModel = new();
         viewModel.CloseRequested += ViewModel_CloseRequested;
         viewModel.ResetConfirmationRequested += ViewModel_ResetConfirmationRequested;
@@ -41,6 +45,11 @@ public partial class SettingsWindow : Window
             viewModel.ResetConfirmationRequested -= ViewModel_ResetConfirmationRequested;
             viewModel.SettingsApplied -= ViewModel_SettingsApplied;
         }
+
+        LocationChanged -= SettingsWindow_PositionChanged;
+        SizeChanged -= SettingsWindow_SizeChanged;
+        StateChanged -= SettingsWindow_PositionChanged;
+        CloseShadowWindow();
 
         base.OnClosed(e);
     }

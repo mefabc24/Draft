@@ -21,22 +21,13 @@
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
 
-    <Border Padding="24" Background="Transparent">
-        <Border
-            Background="{StaticResource Brush.Background.Surface}"
-            BorderBrush="{StaticResource Brush.Border.Window}"
-            BorderThickness="1"
-            CornerRadius="8">
-            <Border.Effect>
-                <DropShadowEffect
-                    BlurRadius="24"
-                    Direction="270"
-                    Opacity="0.28"
-                    ShadowDepth="6"
-                    Color="{StaticResource Color.Shadow.Default}" />
-            </Border.Effect>
+    <Border
+        x:Name="DialogFrameBorder"
+        Background="{StaticResource Brush.Background.Surface}"
+        BorderBrush="{StaticResource Brush.Border.Window}"
+        BorderThickness="1"
+        CornerRadius="8">
 
-            <ContentControl x:Name="DialogContentHost" />
-        </Border>
+        <ContentControl x:Name="DialogContentHost" />
     </Border>
 </Window>

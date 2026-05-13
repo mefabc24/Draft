@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import './App.css'
 import PaneHeader from './PaneHeader'
@@ -85,6 +92,9 @@ const GO_TO_POSITION_MESSAGE_TYPE = 'goToPosition'
 const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
 const CURSOR_POSITION_CHANGED_MESSAGE_TYPE = 'cursorPositionChanged'
 const SETTINGS_CHANGED_MESSAGE_TYPE = 'settingsChanged'
+const DEFAULT_SPLIT_RATIO = 0.5
+const MIN_SPLIT_PANE_WIDTH = 280
+const SPLIT_SIZING_STORAGE_KEY = 'draft.workspace.splitSizing'
 
 function stripMarkdownSyntax(content: string) {
   return content
@@ -131,6 +141,63 @@ const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
 const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
   top: 16,
   bottom: 16,
+}
+
+function readStoredSplitEditorRatio() {
+  try {
+    const value = window.localStorage.getItem(SPLIT_SIZING_STORAGE_KEY)
+
+    if (!value) {
+      return DEFAULT_SPLIT_RATIO
+    }
+
+    const parsed = JSON.parse(value) as unknown
+
+    if (!parsed || typeof parsed !== 'object') {
+      return DEFAULT_SPLIT_RATIO
+    }
+
+    const { editorRatio } = parsed as { editorRatio?: unknown }
+
+    return typeof editorRatio === 'number' &&
+      Number.isFinite(editorRatio) &&
+      editorRatio > 0 &&
+      editorRatio < 1
+      ? editorRatio
+      : DEFAULT_SPLIT_RATIO
+  } catch {
+    return DEFAULT_SPLIT_RATIO
+  }
+}
+
+function writeStoredSplitEditorRatio(editorRatio: number) {
+  try {
+    window.localStorage.setItem(
+      SPLIT_SIZING_STORAGE_KEY,
+      JSON.stringify({ editorRatio }),
+    )
+  } catch {
+    // Ignore storage failures, such as blocked localStorage in embedded contexts.
+  }
+}
+
+function clampSplitEditorRatio(editorRatio: number, workspaceWidth: number) {
+  const normalizedRatio =
+    Number.isFinite(editorRatio) && editorRatio > 0 && editorRatio < 1
+      ? editorRatio
+      : DEFAULT_SPLIT_RATIO
+
+  if (
+    !Number.isFinite(workspaceWidth) ||
+    workspaceWidth < MIN_SPLIT_PANE_WIDTH * 2
+  ) {
+    return DEFAULT_SPLIT_RATIO
+  }
+
+  const minRatio = MIN_SPLIT_PANE_WIDTH / workspaceWidth
+  const maxRatio = 1 - minRatio
+
+  return Math.min(Math.max(normalizedRatio, minRatio), maxRatio)
 }
 
 function getCurrentLineDecorations(
@@ -789,9 +856,16 @@ function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [markdown, setMarkdown] = useState('')
   const [fileName, setFileName] = useState(DEFAULT_FILE_NAME)
+  const [splitEditorRatio, setSplitEditorRatio] = useState(
+    readStoredSplitEditorRatio,
+  )
+  const [workspaceWidth, setWorkspaceWidth] = useState(0)
+  const [isSplitResizing, setIsSplitResizing] = useState(false)
   const initialMarkdownRef = useRef(markdown)
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
+  const workspaceRef = useRef<HTMLElement | null>(null)
+  const splitResizerRef = useRef<HTMLDivElement | null>(null)
   const editorHostRef = useRef<HTMLDivElement | null>(null)
   const editorScrollbarRef = useRef<HTMLDivElement | null>(null)
   const editorThumbRef = useRef<HTMLDivElement | null>(null)
@@ -804,11 +878,26 @@ function App() {
   const draftEditorSettingsRef = useRef<DraftEditorSettings>(DEFAULT_EDITOR_SETTINGS)
   const editorDragOffsetRef = useRef(0)
   const isEditorDraggingRef = useRef(false)
+  const splitResizePointerOffsetRef = useRef(0)
+  const splitResizePointerIdRef = useRef<number | null>(null)
+  const isSplitResizingRef = useRef(false)
   const viewModeRef = useRef<ViewMode>(viewMode)
   const scrollSyncSourceRef = useRef<'editor' | 'preview' | null>(null)
   const scrollSyncReleaseTimeoutRef = useRef(0)
   const followEditedSectionTimeoutRef = useRef(0)
   const followEditedSectionAnimationFrameRef = useRef(0)
+  const clampedSplitEditorRatio = useMemo(
+    () => clampSplitEditorRatio(splitEditorRatio, workspaceWidth),
+    [splitEditorRatio, workspaceWidth],
+  )
+  const workspaceStyle = useMemo(
+    () =>
+      ({
+        '--split-editor-pane-width': `${clampedSplitEditorRatio * 100}%`,
+        '--split-preview-pane-width': `${(1 - clampedSplitEditorRatio) * 100}%`,
+      }) as CSSProperties,
+    [clampedSplitEditorRatio],
+  )
 
   const syncEditorScrollbarPosition = () => {
     const editor = editorInstanceRef.current
@@ -842,6 +931,110 @@ function App() {
     }
 
     setScrollbarFlag(scrollbarElement, 'dragging', dragging)
+  }
+
+  const clearSplitResizeState = () => {
+    isSplitResizingRef.current = false
+    splitResizePointerIdRef.current = null
+    splitResizePointerOffsetRef.current = 0
+    setIsSplitResizing(false)
+  }
+
+  const releaseSplitResizePointer = (pointerId: number) => {
+    const resizerElement = splitResizerRef.current
+
+    if (resizerElement?.hasPointerCapture(pointerId)) {
+      resizerElement.releasePointerCapture(pointerId)
+    }
+  }
+
+  const resizeSplitFromPointer = (clientX: number) => {
+    const workspaceElement = workspaceRef.current
+
+    if (!workspaceElement) {
+      return
+    }
+
+    const { left, width } = workspaceElement.getBoundingClientRect()
+
+    if (width <= 0) {
+      return
+    }
+
+    const dividerX = clientX - left - splitResizePointerOffsetRef.current
+    const nextRatio = clampSplitEditorRatio(dividerX / width, width)
+
+    setSplitEditorRatio((currentRatio) =>
+      Math.abs(currentRatio - nextRatio) < 0.0001 ? currentRatio : nextRatio,
+    )
+  }
+
+  const handleSplitResizePointerDown = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (viewMode !== 'split') {
+      return
+    }
+
+    const workspaceElement = workspaceRef.current
+
+    if (!workspaceElement) {
+      return
+    }
+
+    const { left, width } = workspaceElement.getBoundingClientRect()
+
+    if (width <= 0) {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    splitResizePointerOffsetRef.current =
+      event.clientX - (left + clampedSplitEditorRatio * width)
+    splitResizePointerIdRef.current = event.pointerId
+    isSplitResizingRef.current = true
+    setIsSplitResizing(true)
+    event.currentTarget.setPointerCapture(event.pointerId)
+    resizeSplitFromPointer(event.clientX)
+  }
+
+  const handleSplitResizePointerMove = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (
+      !isSplitResizingRef.current ||
+      splitResizePointerIdRef.current !== event.pointerId
+    ) {
+      return
+    }
+
+    event.preventDefault()
+    resizeSplitFromPointer(event.clientX)
+  }
+
+  const handleSplitResizePointerEnd = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (
+      !isSplitResizingRef.current ||
+      splitResizePointerIdRef.current !== event.pointerId
+    ) {
+      return
+    }
+
+    event.preventDefault()
+    releaseSplitResizePointer(event.pointerId)
+    clearSplitResizeState()
+  }
+
+  const handleSplitResizeLostPointerCapture = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (splitResizePointerIdRef.current === event.pointerId) {
+      clearSplitResizeState()
+    }
   }
 
   const releaseScrollSyncSource = (source: 'editor' | 'preview') => {
@@ -1126,6 +1319,82 @@ function App() {
   useEffect(() => {
     viewModeRef.current = viewMode
   }, [viewMode])
+
+  useEffect(() => {
+    writeStoredSplitEditorRatio(splitEditorRatio)
+  }, [splitEditorRatio])
+
+  useEffect(() => {
+    const workspaceElement = workspaceRef.current
+
+    if (!workspaceElement) {
+      return
+    }
+
+    const updateWorkspaceWidth = () => {
+      setWorkspaceWidth(workspaceElement.getBoundingClientRect().width)
+    }
+
+    updateWorkspaceWidth()
+
+    const resizeObserver = new ResizeObserver(updateWorkspaceWidth)
+    resizeObserver.observe(workspaceElement)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isSplitResizing) {
+      return
+    }
+
+    const previousCursor = document.body.style.cursor
+    const previousUserSelect = document.body.style.userSelect
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+
+    return () => {
+      document.body.style.cursor = previousCursor
+      document.body.style.userSelect = previousUserSelect
+    }
+  }, [isSplitResizing])
+
+  useEffect(() => {
+    if (viewMode === 'split') {
+      return
+    }
+
+    const pointerId = splitResizePointerIdRef.current
+
+    if (pointerId !== null) {
+      releaseSplitResizePointer(pointerId)
+    }
+
+    isSplitResizingRef.current = false
+    splitResizePointerIdRef.current = null
+    splitResizePointerOffsetRef.current = 0
+
+    const animationFrameId = window.requestAnimationFrame(() => {
+      setIsSplitResizing(false)
+    })
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId)
+    }
+  }, [viewMode])
+
+  useEffect(() => {
+    return () => {
+      const pointerId = splitResizePointerIdRef.current
+
+      if (pointerId !== null) {
+        releaseSplitResizePointer(pointerId)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     window.setDraftViewMode = (mode) => {
@@ -1416,7 +1685,7 @@ function App() {
     }
     // Layout resync reads current editor/session state through refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode])
+  }, [viewMode, clampedSplitEditorRatio])
 
   const previewWordCount = useMemo(() => {
     return countMarkdownWords(markdown)
@@ -1424,7 +1693,12 @@ function App() {
 
   return (
     <main className="app-shell" onContextMenu={(event) => event.preventDefault()}>
-      <section className={`workspace ${viewMode}`}>
+      <section
+        ref={workspaceRef}
+        className={`workspace ${viewMode}`}
+        style={workspaceStyle}
+        data-split-resizing={isSplitResizing ? 'true' : 'false'}
+      >
         <div
           className="editor-pane"
           aria-label="Markdown Editor"
@@ -1512,6 +1786,18 @@ function App() {
             </div>
           </div>
         </div>
+
+        <div
+          ref={splitResizerRef}
+          className="workspace-split-resizer"
+          data-dragging={isSplitResizing ? 'true' : 'false'}
+          aria-hidden="true"
+          onPointerDown={handleSplitResizePointerDown}
+          onPointerMove={handleSplitResizePointerMove}
+          onPointerUp={handleSplitResizePointerEnd}
+          onPointerCancel={handleSplitResizePointerEnd}
+          onLostPointerCapture={handleSplitResizeLostPointerCapture}
+        />
 
         <PreviewPane
           markdown={markdown}

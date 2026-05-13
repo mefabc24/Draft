@@ -72,6 +72,8 @@ public sealed class DraftSettings
 
     public bool IsStatusBarVisible { get; set; } = true;
 
+    public string WindowBorderAccentMode { get; set; } = AppSettingsStore.WindowBorderAccentDisabled;
+
     public string ToolbarControlbarPosition { get; set; } = "Top";
 }
 
@@ -87,6 +89,10 @@ public static class AppSettingsStore
     public const string PreviewScrollSyncTwoWay = "TwoWay";
     public const string PreviewScrollSyncFollowEditedSection = "FollowEditedSection";
     public const string DefaultPreviewScrollSyncMode = PreviewScrollSyncTwoWay;
+    public const string WindowBorderAccentDisabled = "Disabled";
+    public const string WindowBorderAccentAlways = "Always";
+    public const string WindowBorderAccentFocusedOnly = "FocusedWindowOnly";
+    public const string WindowBorderAccentUnfocusedOnly = "UnfocusedWindowsOnly";
     public const double DefaultWindowMinimumSizeScale = 1.0;
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
@@ -168,6 +174,9 @@ public static class AppSettingsStore
         settings.DefaultFileExtension = DefaultFileExtension;
         settings.MarkdownTheme = DefaultMarkdownTheme;
         settings.ToolbarControlbarPosition = DefaultToolbarPosition;
+        settings.WindowBorderAccentMode = IsWindowBorderAccentMode(settings.WindowBorderAccentMode)
+            ? settings.WindowBorderAccentMode
+            : WindowBorderAccentDisabled;
         settings.WindowMinimumSizeScale = IsWindowMinimumSizeScale(settings.WindowMinimumSizeScale)
             ? settings.WindowMinimumSizeScale
             : DefaultWindowMinimumSizeScale;
@@ -352,6 +361,14 @@ public static class AppSettingsStore
             or DefaultWindowMinimumSizeScale
             or 1.25
             or 1.5;
+    }
+
+    private static bool IsWindowBorderAccentMode(string value)
+    {
+        return value is WindowBorderAccentDisabled
+            or WindowBorderAccentAlways
+            or WindowBorderAccentFocusedOnly
+            or WindowBorderAccentUnfocusedOnly;
     }
 
     private static bool TryGetStringProperty(JsonElement root, string name, out string? value)

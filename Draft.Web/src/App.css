@@ -10,8 +10,10 @@
   --pane-transition-duration: 240ms;
   --pane-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
   --pane-slide-distance: 32px;
-  --editor-pane-width: 50%;
-  --preview-pane-width: 50%;
+  --split-editor-pane-width: 50%;
+  --split-preview-pane-width: 50%;
+  --editor-pane-width: var(--split-editor-pane-width);
+  --preview-pane-width: var(--split-preview-pane-width);
   flex: 1;
   min-height: 0;
   display: flex;
@@ -48,6 +50,33 @@
   opacity: 1;
 }
 
+.workspace-split-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--editor-pane-width) - 4px);
+  z-index: 3;
+  width: 9px;
+  background: transparent;
+  cursor: col-resize;
+  opacity: 0;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.workspace.split .workspace-split-resizer {
+  pointer-events: auto;
+}
+
+.workspace[data-split-resizing='true'] {
+  cursor: col-resize;
+}
+
+.workspace[data-split-resizing='true'] .editor-pane,
+.workspace[data-split-resizing='true'] .preview-pane {
+  transition: none;
+}
+
 .editor-pane,
 .preview-pane {
   display: flex;
@@ -65,6 +94,11 @@
     opacity 180ms ease,
     transform var(--pane-transition-duration) var(--pane-transition-easing);
   will-change: width, flex-basis, opacity, transform;
+}
+
+.workspace.split .editor-pane,
+.workspace.split .preview-pane {
+  min-width: min(280px, 50%);
 }
 
 .editor-pane {

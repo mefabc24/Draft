@@ -36,6 +36,7 @@ public class MainWindowViewModel : BaseViewModel
     private bool _includeMarkdownSyntaxInCharacterCount;
     private bool _confirmBeforeClosingUnsavedFiles = true;
     private bool _isStatusBarVisible = true;
+    private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _defaultSaveLocation = string.Empty;
 
     public WorkspaceState WorkspaceState
@@ -325,6 +326,19 @@ public class MainWindowViewModel : BaseViewModel
         }
     }
 
+    public string WindowBorderAccentMode
+    {
+        get => _windowBorderAccentMode;
+        private set
+        {
+            if (_windowBorderAccentMode == value)
+                return;
+
+            _windowBorderAccentMode = value;
+            OnPropertyChanged();
+        }
+    }
+
     public string DefaultSaveLocation
     {
         get => _defaultSaveLocation;
@@ -439,6 +453,7 @@ public class MainWindowViewModel : BaseViewModel
         ConfirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles;
         DefaultSaveLocation = settings.DefaultSaveLocation;
         IsStatusBarVisible = settings.IsStatusBarVisible;
+        WindowBorderAccentMode = settings.WindowBorderAccentMode;
 
         // TODO: Wire ToolbarControlbarPosition when alternate control bar layouts exist.
     }

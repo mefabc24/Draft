@@ -17,7 +17,7 @@
             <StackPanel VerticalAlignment="Top">
                 <section:SectionHeader Title="TYPOGRAPHY" />
 
-                <settings:SettingFieldCard Margin="0,0,0,12" Title="Editor font family">
+                <settings:SettingFieldCard Title="Editor font family" Margin="0,0,0,12">
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
@@ -27,8 +27,8 @@
                 </settings:SettingFieldCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Editor font size"
+                    Margin="0,0,0,12"
                     Description="Adjust the text size inside the editor.">
                     <ComboBox
                         Width="160"
@@ -39,8 +39,8 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,32"
                     Title="Line height"
+                    Margin="0,0,0,32"
                     Description="Adjust the vertical spacing between editor lines.">
                     <ComboBox
                         Width="160"
@@ -53,42 +53,34 @@
                 <section:SectionHeader Title="LAYOUT &amp; DISPLAY" />
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Word wrap"
+                    Margin="0,0,0,12"
                     Description="Wrap long lines instead of scrolling horizontally.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.WordWrap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.WordWrap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Show line numbers"
+                    Margin="0,0,0,12"
                     Description="Display line numbers next to the editor content.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.ShowLineNumbers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.ShowLineNumbers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Highlight current line"
+                    Margin="0,0,0,12"
                     Description="Highlight the line where your cursor is currently placed.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.HighlightCurrentLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.HighlightCurrentLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Include Markdown syntax in character count"
+                    Margin="0,0,0,12"
                     Description="Count raw Markdown characters in the status bar character total.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.IncludeMarkdownSyntaxInCharacterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.IncludeMarkdownSyntaxInCharacterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
-                <settings:SettingFieldCard Margin="0,0,0,12" Title="Show whitespace characters">
+                <settings:SettingFieldCard Title="Show whitespace characters" Margin="0,0,0,12">
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
@@ -98,19 +90,17 @@
                 </settings:SettingFieldCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,32"
                     Title="Show indentation guides"
+                    Margin="0,0,0,32"
                     Description="Display vertical guide lines for indentation levels.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.ShowIndentationGuides, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.ShowIndentationGuides, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <section:SectionHeader Title="EDITING BEHAVIOR" />
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Tab size"
+                    Margin="0,0,0,12"
                     Description="Choose how many spaces a tab should represent.">
                     <ComboBox
                         Width="160"
@@ -121,46 +111,38 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Insert spaces instead of tabs"
+                    Margin="0,0,0,12"
                     Description="Insert spaces when pressing Tab instead of using tab characters.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.InsertSpacesInsteadOfTabs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.InsertSpacesInsteadOfTabs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Auto-pair brackets"
-                    Description="Automatically insert closing brackets when typing opening brackets.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.AutoPairBrackets, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
-                </settings:SettingCard>
-
-                <settings:SettingCard
                     Margin="0,0,0,12"
-                    Title="Auto-pair quotes"
-                    Description="Automatically insert closing quotes when typing quotes.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.AutoPairQuotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    Description="Automatically insert closing brackets when typing opening brackets.">
+                    <CheckBox IsChecked="{Binding Settings.AutoPairBrackets, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,32"
+                    Title="Auto-pair quotes"
+                    Margin="0,0,0,12"
+                    Description="Automatically insert closing quotes when typing quotes.">
+                    <CheckBox IsChecked="{Binding Settings.AutoPairQuotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
                     Title="Markdown syntax highlighting"
+                    Margin="0,0,0,32"
                     Description="Highlight Markdown syntax while editing.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.MarkdownSyntaxHighlighting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.MarkdownSyntaxHighlighting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <section:SectionHeader Title="CURSOR" />
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Cursor style"
+                    Margin="0,0,0,12"
                     Description="Choose the visual style of the editor cursor.">
                     <ComboBox
                         Width="160"
@@ -171,12 +153,10 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Cursor blinking"
+                    Margin="0,0,0,12"
                     Description="Animate the cursor with a blinking effect.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.CursorBlinking, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.CursorBlinking, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
             </StackPanel>
         </ScrollViewer>

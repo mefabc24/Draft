@@ -515,6 +515,7 @@ public partial class MainWindow : Window
             ScrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection,
             AppTheme = settings.AppTheme,
             IsStatusBarVisible = settings.IsStatusBarVisible,
+            WindowBorderAccentMode = settings.WindowBorderAccentMode,
             ToolbarControlbarPosition = settings.ToolbarControlbarPosition,
         };
     }

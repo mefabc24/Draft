@@ -28,13 +28,30 @@
         <Border x:Name="WindowFrameBorder" Background="{StaticResource Brush.WindowBG}">
             <Border.Style>
                 <Style TargetType="Border">
-                    <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.MainWindow.Active}" />
                     <Setter Property="BorderThickness" Value="1" />
                     <Setter Property="CornerRadius" Value="8" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
-                            <Setter Property="BorderBrush" Value="#3D3D3D" />
+                            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.MainWindow.Inactive}" />
                         </DataTrigger>
+                        <DataTrigger Binding="{Binding WindowBorderAccentMode}" Value="Always">
+                            <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding WindowBorderAccentMode}" Value="FocusedWindowOnly" />
+                                <Condition Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding WindowBorderAccentMode}" Value="UnfocusedWindowsOnly" />
+                                <Condition Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                        </MultiDataTrigger>
                         <DataTrigger Binding="{Binding IsWindowSnapped, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
                             <Setter Property="CornerRadius" Value="0" />
                         </DataTrigger>
