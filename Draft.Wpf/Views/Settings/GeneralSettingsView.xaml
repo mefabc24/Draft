@@ -66,6 +66,17 @@
                         Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
+                <settings:SettingFieldCard
+                    Margin="0,0,0,12"
+                    Title="Window border accent">
+                    <ComboBox
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding Settings.WindowBorderAccentModeOptions}"
+                        SelectedItem="{Binding Settings.WindowBorderAccentMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingFieldCard>
+
                 <settings:SettingCard
                     Margin="0,0,0,12"
                     Title="Default startup mode"
@@ -93,17 +104,16 @@
 
                 <section:SectionHeader Title="WORKSPACE BEHAVIOR" />
 
-                <settings:SettingCard
+                <settings:SettingFieldCard
                     Margin="0,0,0,32"
-                    Title="Scroll sync mode"
-                    Description="Choose how the editor and preview scroll together.">
+                    Title="Scroll sync mode">
                     <ComboBox
-                        Width="200"
                         Height="36"
+                        HorizontalAlignment="Stretch"
                         ItemsSource="{Binding Settings.PreviewScrollSyncModeOptions}"
                         SelectedItem="{Binding Settings.PreviewScrollSyncMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />
-                </settings:SettingCard>
+                </settings:SettingFieldCard>
 
                 <section:SectionHeader Title="FILE MANAGEMENT" />
 

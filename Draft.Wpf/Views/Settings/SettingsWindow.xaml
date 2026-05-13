@@ -59,7 +59,7 @@
             Background="{StaticResource Brush.Island}">
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.SettingsWindow.Active}" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="CornerRadius" Value="8" />
                 <Setter Property="Effect">
@@ -74,8 +74,25 @@
                 </Setter>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
-                        <Setter Property="BorderBrush" Value="#3D3D3D" />
+                        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.SettingsWindow.Inactive}" />
                     </DataTrigger>
+                    <DataTrigger Binding="{Binding AppliedWindowBorderAccentMode}" Value="Always">
+                        <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                    </DataTrigger>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding AppliedWindowBorderAccentMode}" Value="FocusedWindowOnly" />
+                            <Condition Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                    </MultiDataTrigger>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding AppliedWindowBorderAccentMode}" Value="UnfocusedWindowsOnly" />
+                            <Condition Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                    </MultiDataTrigger>
                     <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
                         <Setter Property="BorderBrush" Value="Transparent" />
                         <Setter Property="BorderThickness" Value="0" />
