@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:section="clr-namespace:Draft.Controls.Settings"
     xmlns:settings="clr-namespace:Draft.Wpf.Controls.Settings"
-    d:DesignHeight="500"
+    d:DesignHeight="2000"
     d:DesignWidth="540"
     mc:Ignorable="d">
     <Border Background="Transparent">
@@ -17,7 +17,7 @@
             <StackPanel VerticalAlignment="Top">
                 <section:SectionHeader Title="RENDERING" />
 
-                <settings:SettingFieldCard Margin="0,0,0,32" Title="Markdown theme">
+                <settings:SettingFieldCard Title="Markdown theme" Margin="0,0,0,32">
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
@@ -30,21 +30,17 @@
                 <section:SectionHeader Title="LINKS &amp; SECURITY" />
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Open links in browser"
+                    Margin="0,0,0,12"
                     Description="Open clicked links in your default external browser.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.OpenLinksInBrowser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.OpenLinksInBrowser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,32"
                     Title="Confirm before opening external links"
+                    Margin="0,0,0,32"
                     Description="Ask for confirmation before opening links outside Draft.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.ConfirmBeforeOpeningExternalLinks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.ConfirmBeforeOpeningExternalLinks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
             </StackPanel>

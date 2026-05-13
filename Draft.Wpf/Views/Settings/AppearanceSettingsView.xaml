@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:section="clr-namespace:Draft.Controls.Settings"
     xmlns:settings="clr-namespace:Draft.Wpf.Controls.Settings"
-    d:DesignHeight="500"
+    d:DesignHeight="2000"
     d:DesignWidth="540"
     mc:Ignorable="d">
     <Border Background="Transparent">
@@ -18,8 +18,8 @@
                 <section:SectionHeader Title="THEME" />
 
                 <settings:SettingCard
-                    Margin="0,0,0,32"
                     Title="App theme"
+                    Margin="0,0,0,32"
                     Description="Choose whether Draft uses dark mode, light mode, or follows the system setting.">
                     <ComboBox
                         Width="160"
@@ -33,17 +33,15 @@
                 <section:SectionHeader Title="LAYOUT" />
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Status bar visibility"
+                    Margin="0,0,0,12"
                     Description="Show or hide the status bar at the bottom of the app.">
-                    <CheckBox
-                        IsChecked="{Binding Settings.IsStatusBarVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsCheckBox}" />
+                    <CheckBox IsChecked="{Binding Settings.IsStatusBarVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Margin="0,0,0,12"
                     Title="Toolbar position"
+                    Margin="0,0,0,12"
                     Description="Choose where the main controls should be placed.">
                     <ComboBox
                         Width="160"

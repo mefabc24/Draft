@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:section="clr-namespace:Draft.Controls.Settings"
     xmlns:settings="clr-namespace:Draft.Wpf.Controls.Settings"
-    d:DesignHeight="500"
+    d:DesignHeight="2000"
     d:DesignWidth="540"
     mc:Ignorable="d">
     <Border Background="Transparent">
@@ -16,11 +16,11 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <section:SectionHeader Title="DRAFT"/>
+                <section:SectionHeader Title="DRAFT" />
 
                 <settings:SettingCard Title="A focused Markdown editor for writing, previewing, and saving clean Markdown documents in a calm desktop workspace." Margin="0,0,0,32" />
 
-                <section:SectionHeader Title="VERSION &amp; UPDATES"/>
+                <section:SectionHeader Title="VERSION &amp; UPDATES" />
                 <settings:SettingCard
                     Title="Version"
                     Margin="0,0,0,12"
