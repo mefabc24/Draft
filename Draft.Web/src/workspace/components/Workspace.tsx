@@ -1,0 +1,358 @@
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
+import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import FloatingMarkdownToolbar from '../../toolbar/components/FloatingMarkdownToolbar'
+import MarkdownEditorPane from '../../editor/components/MarkdownEditorPane'
+import PaneHeader from './PaneHeader'
+import PreviewPane from '../../preview/components/PreviewPane'
+import WorkspaceSplitResizer from './WorkspaceSplitResizer'
+import { getEditorTheme, getPreviewTheme, getPreviewThemeStyle } from '../../themes'
+import { useEditorScrollbar } from '../../editor/hooks/useEditorScrollbar'
+import { useMonacoMarkdownEditor } from '../../editor/hooks/useMonacoMarkdownEditor'
+import { countMarkdownWords } from '../../markdown'
+import { DEFAULT_EDITOR_SETTINGS } from '../../settings/defaultEditorSettings'
+import { parseSettingsChangedMessage } from '../../settings/settingsMessageParser'
+import type {
+  DraftEditorSettings,
+  FloatingMarkdownToolbarMode,
+} from '../../settings/settingsTypes'
+import {
+  addWebViewMessageListener,
+  setDraftViewModeHandler,
+} from '../../app/webview/draftWebViewBridge'
+import {
+  DEFAULT_FILE_NAME,
+  parseGoToPositionMessage,
+  parseLoadDocumentMessage,
+  parseWebViewRecord,
+  parseWorkspaceModeMessage,
+  postCursorPositionChanged as postCursorPositionChangedMessage,
+  postDocumentChanged,
+  postWorkspaceMode,
+  type GoToPositionMessage,
+  type LoadDocumentMessage,
+} from '../../app/webview/draftWebViewMessages'
+import type { WebViewMessageEvent } from '../../app/webview/webViewTypes'
+import { usePreviewScrollSync } from '../hooks/usePreviewScrollSync'
+import { useSplitSizing } from '../hooks/useSplitSizing'
+import { isViewMode, type ViewMode } from '../workspaceTypes'
+
+function getSelectedCharacterCount(editor: monaco.editor.IStandaloneCodeEditor) {
+  const model = editor.getModel()
+  const selections = editor.getSelections()
+
+  if (!model || !selections || selections.length === 0) {
+    return 0
+  }
+
+  return selections.reduce((total, selection) => {
+    const isEmptySelection =
+      selection.selectionStartLineNumber === selection.positionLineNumber &&
+      selection.selectionStartColumn === selection.positionColumn
+
+    if (isEmptySelection) {
+      return total
+    }
+
+    return total + model.getValueInRange(selection).length
+  }, 0)
+}
+
+function postCursorPositionChanged(editor: monaco.editor.IStandaloneCodeEditor) {
+  const position = editor.getPosition()
+
+  postCursorPositionChangedMessage({
+    line: position?.lineNumber ?? 1,
+    column: position?.column ?? 1,
+    selectedCharacterCount: getSelectedCharacterCount(editor),
+  })
+}
+
+function Workspace() {
+  const [viewMode, setViewMode] = useState<ViewMode>('split')
+  const [markdown, setMarkdown] = useState('')
+  const [fileName, setFileName] = useState(DEFAULT_FILE_NAME)
+  const [editorInstance, setEditorInstance] =
+    useState<monaco.editor.IStandaloneCodeEditor | null>(null)
+  const [floatingMarkdownToolbarMode, setFloatingMarkdownToolbarMode] =
+    useState<FloatingMarkdownToolbarMode>(
+      DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarMode,
+    )
+  const [activeEditorThemeId, setActiveEditorThemeId] = useState(
+    DEFAULT_EDITOR_SETTINGS.activeEditorThemeId,
+  )
+  const [activePreviewThemeId, setActivePreviewThemeId] = useState(
+    DEFAULT_EDITOR_SETTINGS.activePreviewThemeId,
+  )
+  const initialMarkdownRef = useRef(markdown)
+  const hasReceivedDocumentFromHostRef = useRef(false)
+  const isApplyingDocumentFromHostRef = useRef(false)
+  const workspaceRef = useRef<HTMLElement | null>(null)
+  const editorBodyRef = useRef<HTMLDivElement | null>(null)
+  const editorHostRef = useRef<HTMLDivElement | null>(null)
+  const previewContentRef = useRef<HTMLDivElement | null>(null)
+  const previewScrollRef = useRef<HTMLDivElement | null>(null)
+  const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(
+    null,
+  )
+  const draftEditorSettingsRef = useRef<DraftEditorSettings>(DEFAULT_EDITOR_SETTINGS)
+  const viewModeRef = useRef<ViewMode>(viewMode)
+  const {
+    clampedSplitEditorRatio,
+    isSplitResizing,
+    splitResizerProps,
+    splitResizerRef,
+  } = useSplitSizing({ viewMode, workspaceRef })
+  const {
+    scrollbarProps: editorScrollbarProps,
+    scrollbarRef: editorScrollbarRef,
+    syncScrollbarPosition: syncEditorScrollbarPosition,
+    thumbProps: editorThumbProps,
+    thumbRef: editorThumbRef,
+  } = useEditorScrollbar(editorInstance, editorInstanceRef)
+  const {
+    handlePreviewScroll,
+    scheduleFollowEditedSection,
+    syncPreviewScrollFromEditor,
+  } = usePreviewScrollSync({
+    editorRef: editorInstanceRef,
+    previewScrollRef,
+    settingsRef: draftEditorSettingsRef,
+    viewModeRef,
+  })
+  const {
+    applyEditorSettings,
+    resyncEditorLayout,
+  } = useMonacoMarkdownEditor({
+    editorHostRef,
+    editorRef: editorInstanceRef,
+    hasReceivedDocumentFromHostRef,
+    initialMarkdownRef,
+    isApplyingDocumentFromHostRef,
+    onCursorPositionChanged: postCursorPositionChanged,
+    onDocumentChanged: postDocumentChanged,
+    onFollowEditedSection: scheduleFollowEditedSection,
+    onMarkdownChange: setMarkdown,
+    onSyncEditorScrollbar: syncEditorScrollbarPosition,
+    onSyncPreviewScrollFromEditor: syncPreviewScrollFromEditor,
+    setEditorInstance,
+    settingsRef: draftEditorSettingsRef,
+  })
+  const activeEditorTheme = useMemo(
+    () => getEditorTheme(activeEditorThemeId),
+    [activeEditorThemeId],
+  )
+  const workspaceStyle = useMemo(
+    () =>
+      ({
+        ...activeEditorTheme.chromeVariables,
+        '--split-editor-pane-width': `${clampedSplitEditorRatio * 100}%`,
+        '--split-preview-pane-width': `${(1 - clampedSplitEditorRatio) * 100}%`,
+      }) as CSSProperties,
+    [activeEditorTheme, clampedSplitEditorRatio],
+  )
+  const previewThemeStyle = useMemo(
+    () => getPreviewThemeStyle(getPreviewTheme(activePreviewThemeId)),
+    [activePreviewThemeId],
+  )
+
+  const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
+    draftEditorSettingsRef.current = settings
+    setFloatingMarkdownToolbarMode(settings.floatingMarkdownToolbarMode)
+    setActiveEditorThemeId(settings.activeEditorThemeId)
+    setActivePreviewThemeId(settings.activePreviewThemeId)
+    applyEditorSettings(settings)
+  }
+
+  const applyDocumentFromHost = (message: LoadDocumentMessage) => {
+    const editor = editorInstanceRef.current
+
+    hasReceivedDocumentFromHostRef.current = true
+    isApplyingDocumentFromHostRef.current = true
+    initialMarkdownRef.current = message.content
+    setFileName(message.fileName)
+    setMarkdown(message.content)
+
+    if (editor) {
+      try {
+        if (editor.getValue() !== message.content) {
+          editor.setValue(message.content)
+        }
+      } finally {
+        isApplyingDocumentFromHostRef.current = false
+      }
+    } else {
+      isApplyingDocumentFromHostRef.current = false
+    }
+  }
+
+  const applyGoToPositionFromHost = (message: GoToPositionMessage) => {
+    const editor = editorInstanceRef.current
+    const model = editor?.getModel()
+
+    if (!editor || !model) {
+      return
+    }
+
+    const lineNumber = Math.min(
+      Math.max(Math.trunc(message.line), 1),
+      model.getLineCount(),
+    )
+    const column = Math.min(
+      Math.max(Math.trunc(message.column), 1),
+      model.getLineMaxColumn(lineNumber),
+    )
+    const position = { lineNumber, column }
+
+    editor.setPosition(position)
+    editor.revealPositionInCenterIfOutsideViewport(position)
+    editor.focus()
+    postCursorPositionChanged(editor)
+    scheduleFollowEditedSection()
+  }
+
+  useEffect(() => {
+    viewModeRef.current = viewMode
+  }, [viewMode])
+
+  useEffect(() => {
+    return setDraftViewModeHandler((mode) => {
+      if (isViewMode(mode)) {
+        setViewMode(mode)
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    const handleWebViewMessage = (event: WebViewMessageEvent) => {
+      const record = parseWebViewRecord(event.data)
+
+      if (!record) {
+        return
+      }
+
+      const settingsMessage = parseSettingsChangedMessage(record)
+
+      if (settingsMessage) {
+        applyDraftEditorSettings(settingsMessage)
+        return
+      }
+
+      const goToPositionMessage = parseGoToPositionMessage(record)
+
+      if (goToPositionMessage) {
+        applyGoToPositionFromHost(goToPositionMessage)
+        return
+      }
+
+      const workspaceMessage = parseWorkspaceModeMessage(record)
+
+      if (workspaceMessage) {
+        setViewMode(workspaceMessage.mode)
+        return
+      }
+
+      const loadDocumentMessage = parseLoadDocumentMessage(record)
+
+      if (loadDocumentMessage) {
+        applyDocumentFromHost(loadDocumentMessage)
+      }
+    }
+
+    return addWebViewMessageListener(handleWebViewMessage)
+    // WebView messages read current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    postWorkspaceMode(viewMode)
+  }, [viewMode])
+
+  useEffect(() => {
+    window.requestAnimationFrame(() => {
+      if (draftEditorSettingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
+        scheduleFollowEditedSection()
+        return
+      }
+
+      syncPreviewScrollFromEditor()
+    })
+    // Scroll syncing reads current editor/session state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [markdown])
+
+  useEffect(() => {
+    return resyncEditorLayout()
+  }, [clampedSplitEditorRatio, resyncEditorLayout, viewMode])
+
+  const previewWordCount = useMemo(() => {
+    return countMarkdownWords(markdown)
+  }, [markdown])
+
+  return (
+    <main className="app-shell" onContextMenu={(event) => event.preventDefault()}>
+      <section
+        ref={workspaceRef}
+        className={`workspace ${viewMode}`}
+        style={workspaceStyle}
+        data-split-resizing={isSplitResizing ? 'true' : 'false'}
+      >
+        <MarkdownEditorPane
+          ariaHidden={viewMode === 'preview'}
+          editorBodyRef={editorBodyRef}
+          editorHostRef={editorHostRef}
+          header={(
+            <PaneHeader
+              leftLabel={fileName}
+              rightItems={['UTF-8', 'Markdown']}
+            />
+          )}
+          scrollbarProps={editorScrollbarProps}
+          scrollbarRef={editorScrollbarRef}
+          thumbProps={editorThumbProps}
+          thumbRef={editorThumbRef}
+        />
+
+        <WorkspaceSplitResizer
+          isResizing={isSplitResizing}
+          resizerProps={splitResizerProps}
+          resizerRef={splitResizerRef}
+        />
+
+        <PreviewPane
+          markdown={markdown}
+          header={(
+            <PaneHeader
+              leftLabel="Live Preview"
+              rightItems={[`${previewWordCount} words`]}
+            />
+          )}
+          ariaHidden={viewMode === 'editor'}
+          previewThemeStyle={previewThemeStyle}
+          previewContentElementRef={previewContentRef}
+          previewScrollElementRef={previewScrollRef}
+          onPreviewScroll={handlePreviewScroll}
+        />
+        <FloatingMarkdownToolbar
+          editor={editorInstance}
+          editorBodyRef={editorBodyRef}
+          onRequestEditorMode={() => {
+            setViewMode('editor')
+          }}
+          previewContentRef={previewContentRef}
+          previewScrollElementRef={previewScrollRef}
+          toolbarMode={floatingMarkdownToolbarMode}
+          viewMode={viewMode}
+          workspaceRef={workspaceRef}
+        />
+      </section>
+    </main>
+  )
+}
+
+export default Workspace

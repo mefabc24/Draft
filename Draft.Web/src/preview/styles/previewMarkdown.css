@@ -1,0 +1,125 @@
+.preview-content {
+  min-height: 100%;
+  line-height: 1.7;
+  color: var(--preview-foreground);
+  font-family: var(--font-preview, 'Manrope', 'Segoe UI', Arial, sans-serif);
+}
+
+.preview-source-text {
+  display: inline;
+}
+
+/* Headings */
+.preview-content h1,
+.preview-content h2,
+.preview-content h3 {
+  color: var(--preview-heading-foreground);
+  margin: 24px 0 12px;
+}
+
+.preview-content h1 {
+  font-size: 28px;
+}
+
+.preview-content h2 {
+  font-size: 22px;
+}
+
+.preview-content h3 {
+  font-size: 18px;
+}
+
+/* Paragraphs */
+.preview-content p {
+  margin: 0 0 14px;
+}
+
+/* Inline code */
+.preview-content :not(pre) > code {
+  background: var(--preview-inline-code-background);
+  border: 1px solid var(--preview-inline-code-border);
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: var(--preview-inline-code-foreground);
+  font-family: var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace);
+}
+
+/* Code blocks */
+.preview-content pre {
+  background: var(--preview-code-block-background);
+  border: 1px solid var(--preview-code-block-border);
+  border-radius: 10px;
+  padding: 14px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.preview-content pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--preview-code-block-foreground);
+  font-family: var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace);
+}
+
+/* Blockquote */
+.preview-content blockquote {
+  margin: 16px 0;
+  padding: 8px 16px;
+  border-left: 4px solid var(--preview-blockquote-border);
+  background: var(--preview-blockquote-background);
+  color: var(--preview-blockquote-foreground);
+}
+
+/* Tables */
+.preview-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+.preview-content th,
+.preview-content td {
+  border: 1px solid var(--preview-table-border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.preview-content th {
+  background: var(--preview-table-header-background);
+  color: var(--preview-table-header-foreground);
+  font-weight: 600;
+}
+
+.preview-content td {
+  background: var(--preview-table-cell-background);
+}
+
+/* Lists */
+.preview-content ul,
+.preview-content ol {
+  margin: 12px 0 16px;
+  padding-left: 24px;
+}
+
+.preview-content li {
+  margin: 4px 0;
+}
+
+/* Links */
+.preview-content a {
+  color: var(--preview-link-foreground);
+  text-decoration: none;
+}
+
+.preview-content a:hover {
+  text-decoration: underline;
+}
+
+/* Horizontal rule */
+.preview-content hr {
+  border: 0;
+  border-top: 1px solid var(--preview-rule-border);
+  margin: 24px 0;
+}

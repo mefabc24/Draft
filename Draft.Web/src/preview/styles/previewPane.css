@@ -1,0 +1,72 @@
+.preview-pane {
+  --preview-scrollbar-width: 6px;
+  --preview-scrollbar-offset: 4px;
+  --preview-scrollbar-track-border: transparent;
+  background: var(--preview-background);
+  font-family: var(--font-preview, 'Manrope', 'Segoe UI', Arial, sans-serif);
+  overflow: hidden;
+}
+
+.preview-body {
+  overflow: hidden;
+}
+
+.preview-scroll {
+  height: 100%;
+  overflow: auto;
+  padding:
+    24px
+    calc(24px + var(--preview-scrollbar-width) + var(--preview-scrollbar-offset))
+    24px
+    24px;
+  line-height: 1.55;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.preview-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.preview-content {
+  min-height: 100%;
+}
+
+.preview-scrollbar {
+  position: absolute;
+  top: 8px;
+  right: var(--preview-scrollbar-offset);
+  bottom: 8px;
+  width: var(--preview-scrollbar-width);
+  overflow: hidden;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--preview-scrollbar-track);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.preview-scrollbar[data-scrollable='false'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preview-pane:hover .preview-scrollbar[data-scrollable='true'],
+.preview-scrollbar[data-dragging='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.preview-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 56px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--preview-scrollbar-thumb);
+  touch-action: none;
+}
