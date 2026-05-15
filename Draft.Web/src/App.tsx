@@ -122,7 +122,7 @@ function countMarkdownWords(content: string) {
 
 const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
   editorFontFamily: 'JetBrains Mono',
-  editorFontSize: 18,
+  editorFontSize: 16,
   lineHeight: 1.6,
   wordWrap: true,
   showLineNumbers: true,

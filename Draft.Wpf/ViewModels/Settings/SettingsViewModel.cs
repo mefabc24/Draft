@@ -30,7 +30,7 @@ public class SettingsViewModel : BaseViewModel
     private string _defaultFileExtension = AppSettingsStore.DefaultFileExtension;
     private bool _associateTxtFilesWithDraft;
     private string _editorFontFamily = "JetBrains Mono";
-    private int _editorFontSize = 18;
+    private int _editorFontSize = 16;
     private double _lineHeight = 1.6;
     private bool _wordWrap = true;
     private bool _showLineNumbers = true;
@@ -338,7 +338,7 @@ public class SettingsViewModel : BaseViewModel
         get => _editorFontSize;
         set => SetSetting(
             ref _editorFontSize,
-            EnsureOption(EditorFontSizeOptions, value, 18));
+            EnsureOption(EditorFontSizeOptions, value, 16));
     }
 
     public double LineHeight
@@ -541,7 +541,7 @@ public class SettingsViewModel : BaseViewModel
             : AppSettingsStore.DefaultFileExtension;
         _associateTxtFilesWithDraft = settings.AssociateTxtFilesWithDraft;
         _editorFontFamily = EnsureOption(EditorFontFamilyOptions, settings.EditorFontFamily, "JetBrains Mono");
-        _editorFontSize = EnsureOption(EditorFontSizeOptions, settings.EditorFontSize, 18);
+        _editorFontSize = EnsureOption(EditorFontSizeOptions, settings.EditorFontSize, 16);
         _lineHeight = EnsureOption(LineHeightOptions, settings.LineHeight, 1.6);
         _wordWrap = settings.WordWrap;
         _showLineNumbers = settings.ShowLineNumbers;

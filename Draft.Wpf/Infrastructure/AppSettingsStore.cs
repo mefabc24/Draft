@@ -30,7 +30,7 @@ public sealed class DraftSettings
 
     public string EditorFontFamily { get; set; } = "JetBrains Mono";
 
-    public int EditorFontSize { get; set; } = 18;
+    public int EditorFontSize { get; set; } = 16;
 
     public double LineHeight { get; set; } = 1.6;
 
