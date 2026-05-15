@@ -8,6 +8,7 @@ import {
 } from 'react'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import './App.css'
+import FloatingMarkdownToolbar from './components/editor/FloatingMarkdownToolbar/FloatingMarkdownToolbar'
 import PaneHeader from './PaneHeader'
 import PreviewPane from './PreviewPane'
 import {
@@ -861,11 +862,14 @@ function App() {
   )
   const [workspaceWidth, setWorkspaceWidth] = useState(0)
   const [isSplitResizing, setIsSplitResizing] = useState(false)
+  const [editorInstance, setEditorInstance] =
+    useState<monaco.editor.IStandaloneCodeEditor | null>(null)
   const initialMarkdownRef = useRef(markdown)
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
   const workspaceRef = useRef<HTMLElement | null>(null)
   const splitResizerRef = useRef<HTMLDivElement | null>(null)
+  const editorBodyRef = useRef<HTMLDivElement | null>(null)
   const editorHostRef = useRef<HTMLDivElement | null>(null)
   const editorScrollbarRef = useRef<HTMLDivElement | null>(null)
   const editorThumbRef = useRef<HTMLDivElement | null>(null)
@@ -1589,6 +1593,7 @@ function App() {
     })
 
     editorInstanceRef.current = editor
+    setEditorInstance(editor)
     postCursorPositionChanged(editor)
 
     const syncEditorFontMetrics = () => {
@@ -1639,6 +1644,7 @@ function App() {
       sub.dispose()
       editor.dispose()
       editorInstanceRef.current = null
+      setEditorInstance(null)
       currentLineDecorationsRef.current = null
     }
     // Monaco subscriptions read current editor/session state through refs.
@@ -1708,8 +1714,12 @@ function App() {
             leftLabel={fileName}
             rightItems={['UTF-8', 'Markdown']}
           />
-          <div className="pane-body editor-body">
+          <div ref={editorBodyRef} className="pane-body editor-body">
             <div ref={editorHostRef} className="editor-host" />
+            <FloatingMarkdownToolbar
+              editor={editorInstance}
+              editorBodyRef={editorBodyRef}
+            />
             <div
               ref={editorScrollbarRef}
               className="editor-scrollbar"
