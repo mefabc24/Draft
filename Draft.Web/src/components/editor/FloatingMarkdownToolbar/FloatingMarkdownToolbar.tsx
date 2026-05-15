@@ -817,7 +817,7 @@ function toggleLinkSelection(editor: monaco.editor.IStandaloneCodeEditor) {
     edits.push(
       {
         range: createRangeFromOffsets(model, endOffset, endOffset),
-        text: '](url)',
+        text: ']()',
         forceMoveMarkers: true,
       },
       {
@@ -827,8 +827,8 @@ function toggleLinkSelection(editor: monaco.editor.IStandaloneCodeEditor) {
       },
     )
     nextSelectionOffsets.push({
-      endOffset: endOffset + 1,
-      startOffset: startOffset + 1,
+      endOffset: endOffset + 3,
+      startOffset: endOffset + 3,
     })
   }
 
