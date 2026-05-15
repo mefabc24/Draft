@@ -66,6 +66,8 @@ public sealed class DraftSettings
 
     public string PreviewScrollSyncMode { get; set; } = AppSettingsStore.DefaultPreviewScrollSyncMode;
 
+    public string FloatingMarkdownToolbarMode { get; set; } = AppSettingsStore.DefaultFloatingMarkdownToolbarMode;
+
     public bool ScrollPreviewToEditedSection { get; set; } = false;
 
     public string AppTheme { get; set; } = "Dark";
@@ -89,6 +91,11 @@ public static class AppSettingsStore
     public const string PreviewScrollSyncTwoWay = "TwoWay";
     public const string PreviewScrollSyncFollowEditedSection = "FollowEditedSection";
     public const string DefaultPreviewScrollSyncMode = PreviewScrollSyncTwoWay;
+    public const string FloatingMarkdownToolbarDisabled = "Disabled";
+    public const string FloatingMarkdownToolbarEditor = "Editor";
+    public const string FloatingMarkdownToolbarPreview = "Preview";
+    public const string FloatingMarkdownToolbarEditorAndPreview = "EditorAndPreview";
+    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditorAndPreview;
     public const string WindowBorderAccentDisabled = "Disabled";
     public const string WindowBorderAccentAlways = "Always";
     public const string WindowBorderAccentFocusedOnly = "FocusedWindowOnly";
@@ -199,6 +206,10 @@ public static class AppSettingsStore
             settings.PreviewScrollSyncMode = PreviewScrollSyncFollowEditedSection;
             settings.ScrollPreviewToEditedSection = false;
         }
+
+        settings.FloatingMarkdownToolbarMode = IsFloatingMarkdownToolbarMode(settings.FloatingMarkdownToolbarMode)
+            ? settings.FloatingMarkdownToolbarMode
+            : DefaultFloatingMarkdownToolbarMode;
 
         TryEnsureDefaultSaveLocationDirectory(settings.DefaultSaveLocation);
 
@@ -352,6 +363,14 @@ public static class AppSettingsStore
             or PreviewScrollSyncPreviewToEditor
             or PreviewScrollSyncTwoWay
             or PreviewScrollSyncFollowEditedSection;
+    }
+
+    private static bool IsFloatingMarkdownToolbarMode(string value)
+    {
+        return value is FloatingMarkdownToolbarDisabled
+            or FloatingMarkdownToolbarEditor
+            or FloatingMarkdownToolbarPreview
+            or FloatingMarkdownToolbarEditorAndPreview;
     }
 
     private static bool IsWindowMinimumSizeScale(double value)

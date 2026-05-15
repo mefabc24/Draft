@@ -48,6 +48,7 @@ public class SettingsViewModel : BaseViewModel
     private bool _openLinksInBrowser = true;
     private bool _confirmBeforeOpeningExternalLinks = true;
     private string _previewScrollSyncMode = AppSettingsStore.DefaultPreviewScrollSyncMode;
+    private string _floatingMarkdownToolbarMode = AppSettingsStore.DefaultFloatingMarkdownToolbarMode;
     private string _appTheme = "Dark";
     private bool _isStatusBarVisible = true;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
@@ -119,6 +120,9 @@ public class SettingsViewModel : BaseViewModel
             "Preview controls editor",
             "Follow edited section",
         };
+
+    public IReadOnlyList<string> FloatingMarkdownToolbarModeOptions { get; } =
+        new[] { "Disabled", "Editor", "Preview", "Always" };
 
     public IReadOnlyList<string> AppThemeOptions { get; } =
         new[] { "Dark" };
@@ -455,6 +459,14 @@ public class SettingsViewModel : BaseViewModel
             GetPreviewScrollSyncValue(value));
     }
 
+    public string FloatingMarkdownToolbarMode
+    {
+        get => GetFloatingMarkdownToolbarModeDisplayName(_floatingMarkdownToolbarMode);
+        set => SetSetting(
+            ref _floatingMarkdownToolbarMode,
+            GetFloatingMarkdownToolbarModeValue(value));
+    }
+
     public string AppTheme
     {
         get => _appTheme;
@@ -565,6 +577,10 @@ public class SettingsViewModel : BaseViewModel
             GetPreviewScrollSyncValues(),
             settings.PreviewScrollSyncMode,
             AppSettingsStore.DefaultPreviewScrollSyncMode);
+        _floatingMarkdownToolbarMode = EnsureOptionValue(
+            GetFloatingMarkdownToolbarModeValues(),
+            settings.FloatingMarkdownToolbarMode,
+            AppSettingsStore.DefaultFloatingMarkdownToolbarMode);
         _appTheme = EnsureOption(AppThemeOptions, settings.AppTheme, "Dark");
         _isStatusBarVisible = settings.IsStatusBarVisible;
         _windowBorderAccentMode = EnsureOptionValue(
@@ -670,6 +686,7 @@ public class SettingsViewModel : BaseViewModel
             OpenLinksInBrowser = OpenLinksInBrowser,
             ConfirmBeforeOpeningExternalLinks = ConfirmBeforeOpeningExternalLinks,
             PreviewScrollSyncMode = _previewScrollSyncMode,
+            FloatingMarkdownToolbarMode = _floatingMarkdownToolbarMode,
             ScrollPreviewToEditedSection = false,
             AppTheme = AppTheme,
             IsStatusBarVisible = IsStatusBarVisible,
@@ -700,6 +717,17 @@ public class SettingsViewModel : BaseViewModel
             AppSettingsStore.PreviewScrollSyncEditorToPreview,
             AppSettingsStore.PreviewScrollSyncPreviewToEditor,
             AppSettingsStore.PreviewScrollSyncFollowEditedSection,
+        };
+    }
+
+    private static IReadOnlyList<string> GetFloatingMarkdownToolbarModeValues()
+    {
+        return new[]
+        {
+            AppSettingsStore.FloatingMarkdownToolbarDisabled,
+            AppSettingsStore.FloatingMarkdownToolbarEditor,
+            AppSettingsStore.FloatingMarkdownToolbarPreview,
+            AppSettingsStore.FloatingMarkdownToolbarEditorAndPreview,
         };
     }
 
@@ -762,6 +790,28 @@ public class SettingsViewModel : BaseViewModel
         };
     }
 
+    private static string GetFloatingMarkdownToolbarModeValue(string displayName)
+    {
+        return displayName switch
+        {
+            "Editor" => AppSettingsStore.FloatingMarkdownToolbarEditor,
+            "Preview" => AppSettingsStore.FloatingMarkdownToolbarPreview,
+            "Always" => AppSettingsStore.FloatingMarkdownToolbarEditorAndPreview,
+            _ => AppSettingsStore.FloatingMarkdownToolbarDisabled,
+        };
+    }
+
+    private static string GetFloatingMarkdownToolbarModeDisplayName(string value)
+    {
+        return value switch
+        {
+            AppSettingsStore.FloatingMarkdownToolbarEditor => "Editor",
+            AppSettingsStore.FloatingMarkdownToolbarPreview => "Preview",
+            AppSettingsStore.FloatingMarkdownToolbarEditorAndPreview => "Always",
+            _ => "Disabled",
+        };
+    }
+
     private static string GetDefaultFileExtensionValue(string displayName)
     {
         return displayName == AppSettingsStore.DefaultFileExtensionDisplay
@@ -810,6 +860,7 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(OpenLinksInBrowser));
         OnPropertyChanged(nameof(ConfirmBeforeOpeningExternalLinks));
         OnPropertyChanged(nameof(PreviewScrollSyncMode));
+        OnPropertyChanged(nameof(FloatingMarkdownToolbarMode));
         OnPropertyChanged(nameof(AppTheme));
         OnPropertyChanged(nameof(IsStatusBarVisible));
         OnPropertyChanged(nameof(WindowBorderAccentMode));

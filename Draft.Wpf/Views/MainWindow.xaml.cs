@@ -512,6 +512,7 @@ public partial class MainWindow : Window
             OpenLinksInBrowser = settings.OpenLinksInBrowser,
             ConfirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks,
             PreviewScrollSyncMode = settings.PreviewScrollSyncMode,
+            FloatingMarkdownToolbarMode = settings.FloatingMarkdownToolbarMode,
             ScrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection,
             AppTheme = settings.AppTheme,
             IsStatusBarVisible = settings.IsStatusBarVisible,
@@ -567,7 +568,8 @@ public partial class MainWindow : Window
             _settings.MarkdownSyntaxHighlighting,
             _settings.CursorStyle,
             _settings.CursorBlinking,
-            _settings.PreviewScrollSyncMode),
+            _settings.PreviewScrollSyncMode,
+            _settings.FloatingMarkdownToolbarMode),
             JsonOptions);
 
         WorkspaceWebView.CoreWebView2?.PostWebMessageAsString(message);
@@ -836,5 +838,6 @@ public partial class MainWindow : Window
         bool MarkdownSyntaxHighlighting,
         string CursorStyle,
         bool CursorBlinking,
-        string PreviewScrollSyncMode);
+        string PreviewScrollSyncMode,
+        string FloatingMarkdownToolbarMode);
 }

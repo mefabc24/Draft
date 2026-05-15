@@ -94,12 +94,21 @@
 
                 <section:SectionHeader Title="WORKSPACE BEHAVIOR" />
 
-                <settings:SettingFieldCard Title="Scroll sync mode" Margin="0,0,0,32">
+                <settings:SettingFieldCard Title="Scroll sync mode" Margin="0,0,0,12">
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
                         ItemsSource="{Binding Settings.PreviewScrollSyncModeOptions}"
                         SelectedItem="{Binding Settings.PreviewScrollSyncMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingFieldCard>
+
+                <settings:SettingFieldCard Title="Floating Markdown toolbar" Margin="0,0,0,32">
+                    <ComboBox
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding Settings.FloatingMarkdownToolbarModeOptions}"
+                        SelectedItem="{Binding Settings.FloatingMarkdownToolbarMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingFieldCard>
 

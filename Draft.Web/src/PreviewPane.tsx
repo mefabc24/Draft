@@ -10,6 +10,10 @@ type SourceMappedNode = {
   position?: {
     start?: {
       line?: number
+      offset?: number
+    }
+    end?: {
+      offset?: number
     }
   }
 }
@@ -19,13 +23,81 @@ type PreviewPaneProps = {
   headerLeft: string
   headerRight: string[]
   ariaHidden?: boolean
+  previewContentElementRef?: MutableRefObject<HTMLDivElement | null>
   previewScrollElementRef?: MutableRefObject<HTMLDivElement | null>
   onPreviewScroll?: () => void
+}
+
+type HastNode = {
+  children?: HastNode[]
+  position?: {
+    start?: {
+      offset?: number
+    }
+    end?: {
+      offset?: number
+    }
+  }
+  properties?: Record<string, unknown>
+  tagName?: string
+  type: string
+  value?: string
 }
 
 function getSourceLine(node: SourceMappedNode | undefined) {
   const line = node?.position?.start?.line
   return typeof line === 'number' && Number.isFinite(line) ? line : undefined
+}
+
+function getSourceOffset(value: unknown) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function shouldSkipSourceTextMapping(node: HastNode) {
+  return node.type === 'element' && node.tagName === 'pre'
+}
+
+function wrapSourceMappedTextNodes(node: HastNode) {
+  if (!node.children || shouldSkipSourceTextMapping(node)) {
+    return
+  }
+
+  node.children = node.children.map((child) => {
+    if (child.type !== 'text') {
+      wrapSourceMappedTextNodes(child)
+      return child
+    }
+
+    const startOffset = getSourceOffset(child.position?.start?.offset)
+    const endOffset = getSourceOffset(child.position?.end?.offset)
+
+    if (
+      startOffset === null ||
+      endOffset === null ||
+      startOffset >= endOffset ||
+      typeof child.value !== 'string'
+    ) {
+      return child
+    }
+
+    return {
+      type: 'element',
+      tagName: 'span',
+      properties: {
+        'data-source-end': String(endOffset),
+        'data-source-start': String(startOffset),
+        className: ['preview-source-text'],
+      },
+      children: [child],
+      position: child.position,
+    } satisfies HastNode
+  })
+}
+
+function rehypeSourceTextSpans() {
+  return (tree: HastNode) => {
+    wrapSourceMappedTextNodes(tree)
+  }
 }
 
 const previewComponents: Components = {
@@ -72,6 +144,7 @@ function PreviewPane({
   headerLeft,
   headerRight,
   ariaHidden = false,
+  previewContentElementRef,
   previewScrollElementRef,
   onPreviewScroll,
 }: PreviewPaneProps) {
@@ -93,6 +166,13 @@ function PreviewPane({
       previewScrollElementRef.current = element
     }
   }
+  const setPreviewContentElement = (element: HTMLDivElement | null) => {
+    previewContentRef.current = element
+
+    if (previewContentElementRef) {
+      previewContentElementRef.current = element
+    }
+  }
 
   return (
     <article
@@ -108,8 +188,12 @@ function PreviewPane({
           className="preview-scroll"
           onScroll={onPreviewScroll}
         >
-          <div ref={previewContentRef} className="preview-content">
-            <ReactMarkdown components={previewComponents} remarkPlugins={[remarkGfm]}>
+          <div ref={setPreviewContentElement} className="preview-content">
+            <ReactMarkdown
+              components={previewComponents}
+              rehypePlugins={[rehypeSourceTextSpans]}
+              remarkPlugins={[remarkGfm]}
+            >
               {markdown}
             </ReactMarkdown>
           </div>

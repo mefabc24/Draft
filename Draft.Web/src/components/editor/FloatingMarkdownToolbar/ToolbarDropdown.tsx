@@ -55,10 +55,10 @@ function isDropdownItem(entry: ToolbarDropdownMenuEntry): entry is ToolbarDropdo
 }
 
 function getDropdownBoundaryRect(trigger: HTMLElement) {
-  const editorBody = trigger.closest('.editor-body')
+  const boundaryElement = trigger.closest('.workspace') ?? trigger.closest('.editor-body')
 
   return (
-    editorBody?.getBoundingClientRect() ?? {
+    boundaryElement?.getBoundingClientRect() ?? {
       bottom: window.innerHeight,
       left: 0,
       right: window.innerWidth,

@@ -32,6 +32,13 @@ type HeadingValue =
 type ListValue = 'none' | 'bullet' | 'numbered' | 'checklist'
 type DropdownId = 'heading' | 'list'
 type InlineFormat = 'bold' | 'italic' | 'strikethrough' | 'code' | 'link'
+type ViewMode = 'editor' | 'split' | 'preview'
+type FloatingMarkdownToolbarMode =
+  | 'Disabled'
+  | 'Editor'
+  | 'Preview'
+  | 'EditorAndPreview'
+type ToolbarSelectionSource = 'editor' | 'preview'
 type ToolbarIconName =
   | 'blockquote'
   | 'bold'
@@ -59,6 +66,12 @@ type VisibleSelectionPosition = {
 type FloatingMarkdownToolbarProps = {
   editor: monaco.editor.IStandaloneCodeEditor | null
   editorBodyRef: RefObject<HTMLDivElement | null>
+  onRequestEditorMode: () => void
+  previewContentRef: RefObject<HTMLDivElement | null>
+  previewScrollElementRef: RefObject<HTMLDivElement | null>
+  toolbarMode: FloatingMarkdownToolbarMode
+  viewMode: ViewMode
+  workspaceRef: RefObject<HTMLElement | null>
 }
 type InlineWrapperContext = {
   closeEndOffset: number
@@ -78,6 +91,16 @@ type FencedCodeBlockContext =
 type SelectionOffsetRange = {
   endOffset: number
   startOffset: number
+}
+type PreviewSelectionSnapshot = {
+  anchorRect: DOMRect
+  endOffset: number
+  selection: monaco.Selection
+  sourceKey: string
+  startOffset: number
+}
+type MarkdownCommandOptions = {
+  focusEditor?: boolean
 }
 type ToolbarTooltipPosition = {
   arrowLeft: number
@@ -227,9 +250,10 @@ function isEmptySelection(selection: monaco.Selection) {
   )
 }
 
-function getPrimarySelection(editor: monaco.editor.IStandaloneCodeEditor) {
-  const selections = editor.getSelections()
-
+function getPrimarySelection(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  selections = editor.getSelections(),
+) {
   return selections?.find((selection) => !isEmptySelection(selection)) ?? null
 }
 
@@ -299,6 +323,305 @@ function getSelectionOffsets(
     endOffset: model.getOffsetAt(selection.getEndPosition()),
     startOffset: model.getOffsetAt(selection.getStartPosition()),
   }
+}
+
+function getSourceSpanOffset(
+  element: HTMLElement,
+  boundary: 'end' | 'start',
+) {
+  const value =
+    boundary === 'start'
+      ? Number(element.dataset.sourceStart)
+      : Number(element.dataset.sourceEnd)
+
+  return Number.isFinite(value) ? value : null
+}
+
+function isInsidePreviewCodeElement(
+  node: Node,
+  previewContentElement: HTMLDivElement,
+) {
+  const element =
+    node instanceof Element ? node : node.parentElement
+  const codeElement = element?.closest('pre')
+
+  return !!codeElement && previewContentElement.contains(codeElement)
+}
+
+function findClosestSourceSpan(
+  node: Node,
+  previewContentElement: HTMLDivElement,
+) {
+  const element =
+    node instanceof Element ? node : node.parentElement
+  const sourceSpan = element?.closest<HTMLElement>(
+    '[data-source-start][data-source-end]',
+  )
+
+  return sourceSpan && previewContentElement.contains(sourceSpan)
+    ? sourceSpan
+    : null
+}
+
+function findFirstSourceSpan(node: Node | null): HTMLElement | null {
+  if (!node) {
+    return null
+  }
+
+  if (
+    node instanceof HTMLElement &&
+    node.matches('[data-source-start][data-source-end]')
+  ) {
+    return node
+  }
+
+  if (node instanceof Element || node instanceof DocumentFragment) {
+    return node.querySelector<HTMLElement>(
+      '[data-source-start][data-source-end]',
+    )
+  }
+
+  return findClosestSourceSpanFromTextNode(node)
+}
+
+function findLastSourceSpan(node: Node | null): HTMLElement | null {
+  if (!node) {
+    return null
+  }
+
+  if (
+    node instanceof HTMLElement &&
+    node.matches('[data-source-start][data-source-end]')
+  ) {
+    return node
+  }
+
+  if (node instanceof Element || node instanceof DocumentFragment) {
+    const sourceSpans = node.querySelectorAll<HTMLElement>(
+      '[data-source-start][data-source-end]',
+    )
+
+    return sourceSpans[sourceSpans.length - 1] ?? null
+  }
+
+  return findClosestSourceSpanFromTextNode(node)
+}
+
+function findClosestSourceSpanFromTextNode(node: Node) {
+  return node.parentElement?.closest<HTMLElement>(
+    '[data-source-start][data-source-end]',
+  ) ?? null
+}
+
+function getPreviewBoundarySourceOffset(
+  container: Node,
+  offset: number,
+  previewContentElement: HTMLDivElement,
+  boundary: 'end' | 'start',
+) {
+  if (isInsidePreviewCodeElement(container, previewContentElement)) {
+    return null
+  }
+
+  if (container.nodeType === Node.TEXT_NODE) {
+    const sourceSpan = findClosestSourceSpan(container, previewContentElement)
+    const sourceStart = sourceSpan
+      ? getSourceSpanOffset(sourceSpan, 'start')
+      : null
+    const textLength = container.textContent?.length ?? 0
+
+    return sourceStart === null
+      ? null
+      : sourceStart + clamp(offset, 0, textLength)
+  }
+
+  if (!(container instanceof Element || container instanceof DocumentFragment)) {
+    return null
+  }
+
+  const childNodes = container.childNodes
+  const previousNode = offset > 0 ? childNodes[offset - 1] : null
+  const nextNode = childNodes[offset] ?? null
+  const primarySpan =
+    boundary === 'start'
+      ? findFirstSourceSpan(nextNode)
+      : findLastSourceSpan(previousNode)
+  const primaryOffset = primarySpan
+    ? getSourceSpanOffset(primarySpan, boundary)
+    : null
+
+  if (primaryOffset !== null) {
+    return primaryOffset
+  }
+
+  const fallbackSpan =
+    boundary === 'start'
+      ? findLastSourceSpan(previousNode)
+      : findFirstSourceSpan(nextNode)
+
+  return fallbackSpan
+    ? getSourceSpanOffset(fallbackSpan, boundary === 'start' ? 'end' : 'start')
+    : null
+}
+
+function getPreviewSelectionRect(range: Range) {
+  const rects = Array.from(range.getClientRects())
+  const visibleRect = rects.find(
+    (rect) => rect.width > 0 && rect.height > 0,
+  )
+  const rect = visibleRect ?? range.getBoundingClientRect()
+
+  return rect.width > 0 && rect.height > 0 ? rect : null
+}
+
+function getPreviewSelectionSnapshot(
+  model: monaco.editor.ITextModel,
+  previewContentElement: HTMLDivElement,
+  viewMode: ViewMode,
+): PreviewSelectionSnapshot | null {
+  if (viewMode === 'editor') {
+    return null
+  }
+
+  const domSelection = window.getSelection()
+
+  if (!domSelection || domSelection.rangeCount !== 1 || domSelection.isCollapsed) {
+    return null
+  }
+
+  const range = domSelection.getRangeAt(0)
+
+  if (
+    !previewContentElement.contains(range.startContainer) ||
+    !previewContentElement.contains(range.endContainer) ||
+    isInsidePreviewCodeElement(range.commonAncestorContainer, previewContentElement)
+  ) {
+    return null
+  }
+
+  const startOffset = getPreviewBoundarySourceOffset(
+    range.startContainer,
+    range.startOffset,
+    previewContentElement,
+    'start',
+  )
+  const endOffset = getPreviewBoundarySourceOffset(
+    range.endContainer,
+    range.endOffset,
+    previewContentElement,
+    'end',
+  )
+  const anchorRect = getPreviewSelectionRect(range)
+
+  if (
+    startOffset === null ||
+    endOffset === null ||
+    startOffset >= endOffset ||
+    !anchorRect
+  ) {
+    return null
+  }
+
+  const selection = createSelectionFromOffsets(model, startOffset, endOffset)
+
+  if (!isSelectionAllowedForToolbar(model, selection)) {
+    return null
+  }
+
+  return {
+    anchorRect,
+    endOffset,
+    selection,
+    sourceKey: `preview:${startOffset}:${endOffset}`,
+    startOffset,
+  }
+}
+
+function findPreviewSourceSpanForOffset(
+  previewContentElement: HTMLDivElement,
+  sourceOffset: number,
+  boundary: 'end' | 'start',
+) {
+  const spans = previewContentElement.querySelectorAll<HTMLElement>(
+    '[data-source-start][data-source-end]',
+  )
+
+  for (const span of spans) {
+    const sourceStart = getSourceSpanOffset(span, 'start')
+    const sourceEnd = getSourceSpanOffset(span, 'end')
+
+    if (sourceStart === null || sourceEnd === null) {
+      continue
+    }
+
+    const isMatch =
+      boundary === 'start'
+        ? sourceOffset >= sourceStart && sourceOffset < sourceEnd
+        : sourceOffset > sourceStart && sourceOffset <= sourceEnd
+
+    if (isMatch) {
+      return span
+    }
+  }
+
+  return null
+}
+
+function setPreviewDomSelectionFromOffsets(
+  previewContentElement: HTMLDivElement,
+  startOffset: number,
+  endOffset: number,
+) {
+  const startSpan = findPreviewSourceSpanForOffset(
+    previewContentElement,
+    startOffset,
+    'start',
+  )
+  const endSpan = findPreviewSourceSpanForOffset(
+    previewContentElement,
+    endOffset,
+    'end',
+  )
+  const startNode = startSpan?.firstChild
+  const endNode = endSpan?.firstChild
+
+  if (
+    !startSpan ||
+    !endSpan ||
+    !startNode ||
+    !endNode ||
+    startNode.nodeType !== Node.TEXT_NODE ||
+    endNode.nodeType !== Node.TEXT_NODE
+  ) {
+    return false
+  }
+
+  const startSourceOffset = getSourceSpanOffset(startSpan, 'start')
+  const endSourceOffset = getSourceSpanOffset(endSpan, 'start')
+
+  if (startSourceOffset === null || endSourceOffset === null) {
+    return false
+  }
+
+  const range = document.createRange()
+  range.setStart(
+    startNode,
+    clamp(startOffset - startSourceOffset, 0, startNode.textContent?.length ?? 0),
+  )
+  range.setEnd(
+    endNode,
+    clamp(endOffset - endSourceOffset, 0, endNode.textContent?.length ?? 0),
+  )
+
+  const domSelection = window.getSelection()
+
+  if (!domSelection) {
+    return false
+  }
+
+  domSelection.removeAllRanges()
+  domSelection.addRange(range)
+  return true
 }
 
 function getFencedCodeBlockContext(
@@ -423,6 +746,7 @@ function executeEditorEdits(
   editor: monaco.editor.IStandaloneCodeEditor,
   edits: monaco.editor.IIdentifiedSingleEditOperation[],
   nextSelectionOffsets?: SelectionOffsetRange[],
+  options: MarkdownCommandOptions = {},
 ) {
   if (edits.length === 0) {
     return
@@ -440,12 +764,15 @@ function executeEditorEdits(
       )
     }
   }
-  editor.focus()
+  if (options.focusEditor ?? true) {
+    editor.focus()
+  }
 }
 
 function replaceSelectedLines(
   editor: monaco.editor.IStandaloneCodeEditor,
   transformLine: (line: string, index: number) => string,
+  options?: MarkdownCommandOptions,
 ) {
   const model = editor.getModel()
   const selections = editor.getSelections()
@@ -477,7 +804,7 @@ function replaceSelectedLines(
     ]
   })
 
-  executeEditorEdits(editor, edits)
+  executeEditorEdits(editor, edits, undefined, options)
 }
 
 function removeHeadingPrefix(line: string) {
@@ -525,47 +852,55 @@ function addListPrefix(line: string, prefix: string) {
 function applyHeadingStyle(
   editor: monaco.editor.IStandaloneCodeEditor,
   value: HeadingValue,
+  options?: MarkdownCommandOptions,
 ) {
   if (value === 'codeblock') {
-    toggleCodeBlock(editor)
+    toggleCodeBlock(editor, options)
     return
   }
 
   if (value === 'blockquote') {
-    replaceSelectedLines(editor, addBlockquotePrefix)
+    replaceSelectedLines(editor, addBlockquotePrefix, options)
     return
   }
 
   if (value === 'normal') {
     replaceSelectedLines(editor, (line) =>
       removeBlockquotePrefix(removeHeadingPrefix(line)),
+      options,
     )
     return
   }
 
   const level = Number(value.replace('h', ''))
-  replaceSelectedLines(editor, (line) => addHeadingPrefix(line, level))
+  replaceSelectedLines(editor, (line) => addHeadingPrefix(line, level), options)
 }
 
 function applyListStyle(
   editor: monaco.editor.IStandaloneCodeEditor,
   value: ListValue,
+  options?: MarkdownCommandOptions,
 ) {
   switch (value) {
     case 'bullet':
-      replaceSelectedLines(editor, (line) => addListPrefix(line, '- '))
+      replaceSelectedLines(editor, (line) => addListPrefix(line, '- '), options)
       return
     case 'numbered':
       replaceSelectedLines(editor, (line, index) =>
         addListPrefix(line, `${index + 1}. `),
+        options,
       )
       return
     case 'checklist':
-      replaceSelectedLines(editor, (line) => addListPrefix(line, '- [ ] '))
+      replaceSelectedLines(
+        editor,
+        (line) => addListPrefix(line, '- [ ] '),
+        options,
+      )
       return
     case 'none':
     default:
-      replaceSelectedLines(editor, removeListPrefix)
+      replaceSelectedLines(editor, removeListPrefix, options)
   }
 }
 
@@ -655,6 +990,7 @@ function toggleWrappedSelection(
   editor: monaco.editor.IStandaloneCodeEditor,
   prefix: string,
   suffix = prefix,
+  options?: MarkdownCommandOptions,
 ) {
   const model = editor.getModel()
   const selections = editor.getSelections()
@@ -746,10 +1082,13 @@ function toggleWrappedSelection(
     })
   }
 
-  executeEditorEdits(editor, edits, nextSelectionOffsets)
+  executeEditorEdits(editor, edits, nextSelectionOffsets, options)
 }
 
-function toggleLinkSelection(editor: monaco.editor.IStandaloneCodeEditor) {
+function toggleLinkSelection(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  options?: MarkdownCommandOptions,
+) {
   const model = editor.getModel()
   const selections = editor.getSelections()
 
@@ -832,10 +1171,13 @@ function toggleLinkSelection(editor: monaco.editor.IStandaloneCodeEditor) {
     })
   }
 
-  executeEditorEdits(editor, edits, nextSelectionOffsets)
+  executeEditorEdits(editor, edits, nextSelectionOffsets, options)
 }
 
-function toggleCodeBlock(editor: monaco.editor.IStandaloneCodeEditor) {
+function toggleCodeBlock(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  options?: MarkdownCommandOptions,
+) {
   const model = editor.getModel()
   const selections = editor.getSelections()
 
@@ -859,12 +1201,15 @@ function toggleCodeBlock(editor: monaco.editor.IStandaloneCodeEditor) {
     return [{ range: selection, text, forceMoveMarkers: true }]
   })
 
-  executeEditorEdits(editor, edits)
+  executeEditorEdits(editor, edits, undefined, options)
 }
 
-function detectInlineFormats(editor: monaco.editor.IStandaloneCodeEditor) {
+function detectInlineFormats(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  selections?: monaco.Selection[],
+) {
   const model = editor.getModel()
-  const selection = getPrimarySelection(editor)
+  const selection = getPrimarySelection(editor, selections)
 
   if (!model || !selection) {
     return EMPTY_ACTIVE_FORMATS
@@ -898,9 +1243,10 @@ function detectInlineFormats(editor: monaco.editor.IStandaloneCodeEditor) {
 
 function detectHeadingValue(
   editor: monaco.editor.IStandaloneCodeEditor,
+  selections?: monaco.Selection[],
 ): HeadingValue {
   const model = editor.getModel()
-  const selection = getPrimarySelection(editor)
+  const selection = getPrimarySelection(editor, selections)
 
   if (!model || !selection) {
     return 'normal'
@@ -933,9 +1279,12 @@ function detectHeadingValue(
   return 'normal'
 }
 
-function detectListValue(editor: monaco.editor.IStandaloneCodeEditor): ListValue {
+function detectListValue(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  selections?: monaco.Selection[],
+): ListValue {
   const model = editor.getModel()
-  const selection = getPrimarySelection(editor)
+  const selection = getPrimarySelection(editor, selections)
 
   if (!model || !selection) {
     return 'none'
@@ -972,9 +1321,10 @@ function canRunMarkdownToolbarCommand(
   )
 }
 
-function getToolbarPosition(
+function getEditorToolbarPosition(
   editor: monaco.editor.IStandaloneCodeEditor,
-  container: HTMLDivElement,
+  container: HTMLElement,
+  editorBody: HTMLDivElement,
   toolbar: HTMLDivElement | null,
 ) {
   const selection = getPrimarySelection(editor)
@@ -995,6 +1345,10 @@ function getToolbarPosition(
     return null
   }
 
+  const containerRect = container.getBoundingClientRect()
+  const editorBodyRect = editorBody.getBoundingClientRect()
+  const editorOffsetLeft = editorBodyRect.left - containerRect.left
+  const editorOffsetTop = editorBodyRect.top - containerRect.top
   const toolbarWidth = toolbar?.offsetWidth ?? TOOLBAR_ESTIMATED_WIDTH
   const toolbarHeight = toolbar?.offsetHeight ?? TOOLBAR_ESTIMATED_HEIGHT
   const sameLine = startPosition.lineNumber === endPosition.lineNumber
@@ -1012,12 +1366,14 @@ function getToolbarPosition(
   const maxLeft = container.clientWidth - toolbarWidth - TOOLBAR_EDGE_PADDING
   const maxTop = container.clientHeight - toolbarHeight - TOOLBAR_EDGE_PADDING
   const left = clamp(
-    centerX - toolbarWidth / 2,
+    editorOffsetLeft + centerX - toolbarWidth / 2,
     TOOLBAR_EDGE_PADDING,
     maxLeft,
   )
-  const preferredTop = selectionTop - toolbarHeight - TOOLBAR_SELECTION_OFFSET
-  const fallbackTop = selectionBottom + TOOLBAR_SELECTION_OFFSET
+  const preferredTop =
+    editorOffsetTop + selectionTop - toolbarHeight - TOOLBAR_SELECTION_OFFSET
+  const fallbackTop =
+    editorOffsetTop + selectionBottom + TOOLBAR_SELECTION_OFFSET
   const top = clamp(
     preferredTop >= TOOLBAR_EDGE_PADDING ? preferredTop : fallbackTop,
     TOOLBAR_EDGE_PADDING,
@@ -1027,9 +1383,36 @@ function getToolbarPosition(
   return { left, top }
 }
 
+function getPreviewToolbarPosition(
+  container: HTMLElement,
+  selectionRect: DOMRect,
+  toolbar: HTMLDivElement | null,
+) {
+  const containerRect = container.getBoundingClientRect()
+  const toolbarWidth = toolbar?.offsetWidth ?? TOOLBAR_ESTIMATED_WIDTH
+  const toolbarHeight = toolbar?.offsetHeight ?? TOOLBAR_ESTIMATED_HEIGHT
+  const centerX =
+    selectionRect.left - containerRect.left + selectionRect.width / 2
+  const selectionTop = selectionRect.top - containerRect.top
+  const selectionBottom = selectionRect.bottom - containerRect.top
+  const maxLeft = container.clientWidth - toolbarWidth - TOOLBAR_EDGE_PADDING
+  const maxTop = container.clientHeight - toolbarHeight - TOOLBAR_EDGE_PADDING
+  const preferredTop = selectionTop - toolbarHeight - TOOLBAR_SELECTION_OFFSET
+  const fallbackTop = selectionBottom + TOOLBAR_SELECTION_OFFSET
+
+  return {
+    left: clamp(centerX - toolbarWidth / 2, TOOLBAR_EDGE_PADDING, maxLeft),
+    top: clamp(
+      preferredTop >= TOOLBAR_EDGE_PADDING ? preferredTop : fallbackTop,
+      TOOLBAR_EDGE_PADDING,
+      maxTop,
+    ),
+  }
+}
+
 function getToolbarTooltipPosition(
   toolbar: HTMLDivElement,
-  container: HTMLDivElement,
+  container: HTMLElement,
   target: HTMLElement,
   tooltip: HTMLDivElement,
 ): ToolbarTooltipPosition {
@@ -1082,9 +1465,23 @@ function ToolbarAssetIcon({ name }: { name: ToolbarIconName }) {
   )
 }
 
+function isFloatingToolbarEnabledInEditor(mode: FloatingMarkdownToolbarMode) {
+  return mode === 'Editor' || mode === 'EditorAndPreview'
+}
+
+function isFloatingToolbarEnabledInPreview(mode: FloatingMarkdownToolbarMode) {
+  return mode === 'Preview' || mode === 'EditorAndPreview'
+}
+
 function FloatingMarkdownToolbar({
   editor,
   editorBodyRef,
+  onRequestEditorMode,
+  previewContentRef,
+  previewScrollElementRef,
+  toolbarMode,
+  viewMode,
+  workspaceRef,
 }: FloatingMarkdownToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null)
   const tooltipRef = useRef<HTMLDivElement | null>(null)
@@ -1093,7 +1490,9 @@ function FloatingMarkdownToolbar({
   const tooltipFrameRef = useRef<number | null>(null)
   const openDropdownRef = useRef<DropdownId | null>(null)
   const savedModelRef = useRef<monaco.editor.ITextModel | null>(null)
+  const savedPreviewSelectionRef = useRef<PreviewSelectionSnapshot | null>(null)
   const savedSelectionsRef = useRef<monaco.Selection[] | null>(null)
+  const savedSelectionSourceRef = useRef<ToolbarSelectionSource | null>(null)
   const dismissedSelectionKeyRef = useRef<string | null>(null)
   const toolbarInteractionRef = useRef(false)
   const toolbarInteractionTimeoutRef = useRef<number | null>(null)
@@ -1115,14 +1514,16 @@ function FloatingMarkdownToolbar({
 
   const clearSavedSelection = useCallback(() => {
     savedModelRef.current = null
+    savedPreviewSelectionRef.current = null
     savedSelectionsRef.current = null
+    savedSelectionSourceRef.current = null
   }, [])
 
   const updateToolbarTooltipPosition = useCallback(() => {
     const toolbar = toolbarRef.current
     const tooltip = tooltipRef.current
     const target = tooltipTargetRef.current
-    const container = editorBodyRef.current
+    const container = workspaceRef.current
 
     if (!toolbar || !tooltip || !target || !container) {
       return
@@ -1144,7 +1545,7 @@ function FloatingMarkdownToolbar({
           }
         : currentTooltip,
     )
-  }, [editorBodyRef])
+  }, [workspaceRef])
 
   const scheduleToolbarTooltipPosition = useCallback(() => {
     if (tooltipFrameRef.current !== null) {
@@ -1214,7 +1615,7 @@ function FloatingMarkdownToolbar({
     }, 250)
   }, [])
 
-  const restoreSavedSelection = useCallback(() => {
+  const restoreSavedSelection = useCallback((options: { focusEditor?: boolean } = {}) => {
     if (!editor) {
       return false
     }
@@ -1234,15 +1635,38 @@ function FloatingMarkdownToolbar({
     }
 
     editor.setSelections(cloneSelections(savedSelections))
-    editor.focus()
+    if (options.focusEditor ?? true) {
+      editor.focus()
+    }
     return true
   }, [clearSavedSelection, editor])
 
   const updateToolbar = useCallback(() => {
     const model = editor?.getModel()
-    const currentSelections = editor ? getNonEmptySelections(editor) : []
+    const workspaceElement = workspaceRef.current
+    const editorBodyElement = editorBodyRef.current
+    const previewContentElement = previewContentRef.current
+    const editorAllowed = isFloatingToolbarEnabledInEditor(toolbarMode)
+    const previewAllowed = isFloatingToolbarEnabledInPreview(toolbarMode)
+    const currentEditorSelections =
+      editor && editorAllowed ? getNonEmptySelections(editor) : []
+    const rawPreviewSelection =
+      model && previewContentElement
+        ? getPreviewSelectionSnapshot(model, previewContentElement, viewMode)
+        : null
+    const editorHasSelection =
+      editorAllowed && currentEditorSelections.length > 0
+    const preferEditorSelection = editorHasSelection && !!editor?.hasTextFocus()
+    const previewSelection =
+      !preferEditorSelection && previewAllowed ? rawPreviewSelection : null
 
-    if (!editor || !editorBodyRef.current || !model) {
+    if (
+      !editor ||
+      !workspaceElement ||
+      !editorBodyElement ||
+      !model ||
+      toolbarMode === 'Disabled'
+    ) {
       clearSavedSelection()
       setActiveTooltip(null)
       setPosition(null)
@@ -1250,12 +1674,35 @@ function FloatingMarkdownToolbar({
       return
     }
 
-    if (currentSelections.length === 0) {
+    if (rawPreviewSelection && !previewAllowed && !preferEditorSelection) {
+      clearSavedSelection()
+      setActiveTooltip(null)
+      setPosition(null)
+      setOpenDropdown(null)
+      return
+    }
+
+    if (!previewSelection && currentEditorSelections.length === 0) {
       if (toolbarInteractionRef.current && savedSelectionsRef.current) {
         return
       }
 
       clearSavedSelection()
+      setActiveTooltip(null)
+      setPosition(null)
+      setOpenDropdown(null)
+      return
+    }
+
+    const source: ToolbarSelectionSource = previewSelection ? 'preview' : 'editor'
+    const currentSelections = previewSelection
+      ? [previewSelection.selection]
+      : currentEditorSelections
+    const selectionKey = previewSelection
+      ? previewSelection.sourceKey
+      : `editor:${getSelectionKey(currentSelections)}`
+
+    if (dismissedSelectionKeyRef.current === selectionKey) {
       setActiveTooltip(null)
       setPosition(null)
       setOpenDropdown(null)
@@ -1274,20 +1721,14 @@ function FloatingMarkdownToolbar({
       return
     }
 
-    const selectionKey = getSelectionKey(currentSelections)
-
-    if (dismissedSelectionKeyRef.current === selectionKey) {
-      setActiveTooltip(null)
-      setPosition(null)
-      setOpenDropdown(null)
-      return
-    }
-
     dismissedSelectionKeyRef.current = null
     savedModelRef.current = model
+    savedPreviewSelectionRef.current = previewSelection
     savedSelectionsRef.current = cloneSelections(currentSelections)
+    savedSelectionSourceRef.current = source
 
     if (
+      source === 'editor' &&
       !editor.hasTextFocus() &&
       openDropdownRef.current === null &&
       !toolbarInteractionRef.current
@@ -1297,15 +1738,23 @@ function FloatingMarkdownToolbar({
       return
     }
 
-    const nextPosition = getToolbarPosition(
-      editor,
-      editorBodyRef.current,
-      toolbarRef.current,
-    )
+    const nextPosition =
+      source === 'preview' && previewSelection
+        ? getPreviewToolbarPosition(
+            workspaceElement,
+            previewSelection.anchorRect,
+            toolbarRef.current,
+          )
+        : getEditorToolbarPosition(
+            editor,
+            workspaceElement,
+            editorBodyElement,
+            toolbarRef.current,
+          )
 
-    setActiveFormats(detectInlineFormats(editor))
-    setHeadingValue(detectHeadingValue(editor))
-    setListValue(detectListValue(editor))
+    setActiveFormats(detectInlineFormats(editor, currentSelections))
+    setHeadingValue(detectHeadingValue(editor, currentSelections))
+    setListValue(detectListValue(editor, currentSelections))
     setPosition((currentPosition) => {
       if (
         currentPosition &&
@@ -1318,11 +1767,57 @@ function FloatingMarkdownToolbar({
 
       return nextPosition
     })
-  }, [clearSavedSelection, editor, editorBodyRef])
+  }, [
+    clearSavedSelection,
+    editor,
+    editorBodyRef,
+    previewContentRef,
+    toolbarMode,
+    viewMode,
+    workspaceRef,
+  ])
 
   const updateToolbarSoon = useCallback(() => {
     window.requestAnimationFrame(updateToolbar)
   }, [updateToolbar])
+
+  const restorePreviewSelectionSoon = useCallback(
+    (selections: monaco.Selection[]) => {
+      const model = editor?.getModel()
+      const previewContentElement = previewContentRef.current
+      const selection = selections.find((item) => !isEmptySelection(item)) ?? null
+
+      if (!model || !previewContentElement || !selection) {
+        return
+      }
+
+      const { endOffset, startOffset } = getSelectionOffsets(model, selection)
+
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          const nextPreviewContentElement = previewContentRef.current
+
+          if (
+            !nextPreviewContentElement ||
+            !setPreviewDomSelectionFromOffsets(
+              nextPreviewContentElement,
+              startOffset,
+              endOffset,
+            )
+          ) {
+            clearSavedSelection()
+            setActiveTooltip(null)
+            setOpenDropdown(null)
+            setPosition(null)
+            return
+          }
+
+          updateToolbar()
+        })
+      })
+    },
+    [clearSavedSelection, editor, previewContentRef, updateToolbar],
+  )
 
   useEffect(() => {
     if (!editor) {
@@ -1337,8 +1832,12 @@ function FloatingMarkdownToolbar({
     const blurDisposable = editor.onDidBlurEditorWidget(() => {
       window.setTimeout(updateToolbar, 0)
     })
+    const previewScrollElement = previewScrollElementRef.current
 
+    document.addEventListener('selectionchange', updateToolbar)
+    document.addEventListener('keyup', updateToolbar, true)
     window.addEventListener('resize', updateToolbar)
+    previewScrollElement?.addEventListener('scroll', updateToolbar)
     const initialFrameId = window.requestAnimationFrame(updateToolbar)
 
     return () => {
@@ -1349,9 +1848,12 @@ function FloatingMarkdownToolbar({
       contentSizeDisposable.dispose()
       focusDisposable.dispose()
       blurDisposable.dispose()
+      document.removeEventListener('selectionchange', updateToolbar)
+      document.removeEventListener('keyup', updateToolbar, true)
       window.removeEventListener('resize', updateToolbar)
+      previewScrollElement?.removeEventListener('scroll', updateToolbar)
     }
-  }, [editor, updateToolbar])
+  }, [editor, previewScrollElementRef, updateToolbar])
 
   useEffect(() => {
     return () => {
@@ -1418,6 +1920,7 @@ function FloatingMarkdownToolbar({
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target
       const editorNode = editor.getDomNode()
+      const previewContentElement = previewContentRef.current
 
       if (!(target instanceof Node)) {
         return
@@ -1425,7 +1928,8 @@ function FloatingMarkdownToolbar({
 
       if (
         toolbarRef.current?.contains(target) ||
-        editorNode?.contains(target)
+        editorNode?.contains(target) ||
+        previewContentElement?.contains(target)
       ) {
         return
       }
@@ -1441,13 +1945,21 @@ function FloatingMarkdownToolbar({
       if (event.key === 'Escape') {
         const currentSelections = getNonEmptySelections(editor)
         const savedSelections = savedSelectionsRef.current
+        const savedSource = savedSelectionSourceRef.current
+        const savedPreviewSelection = savedPreviewSelectionRef.current
 
         dismissedSelectionKeyRef.current =
-          currentSelections.length > 0
-            ? getSelectionKey(currentSelections)
-            : savedSelections
-              ? getSelectionKey(savedSelections)
-              : null
+          savedSource === 'preview' && savedPreviewSelection
+            ? savedPreviewSelection.sourceKey
+            : currentSelections.length > 0
+              ? `editor:${getSelectionKey(currentSelections)}`
+              : savedSelections
+                ? `editor:${getSelectionKey(savedSelections)}`
+                : null
+        if (savedSource === 'preview') {
+          window.getSelection()?.removeAllRanges()
+        }
+        clearSavedSelection()
         toolbarInteractionRef.current = false
         setActiveTooltip(null)
         setOpenDropdown(null)
@@ -1462,7 +1974,7 @@ function FloatingMarkdownToolbar({
       document.removeEventListener('pointerdown', handlePointerDown, true)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [clearSavedSelection, editor])
+  }, [clearSavedSelection, editor, previewContentRef])
 
   const toolbarStyle = useMemo(
     () =>
@@ -1477,18 +1989,30 @@ function FloatingMarkdownToolbar({
 
   const runEditorCommand = useCallback(
     (
-      command: (activeEditor: monaco.editor.IStandaloneCodeEditor) => void,
-      options: { restoreSavedSelection?: boolean } = {},
+      command: (
+        activeEditor: monaco.editor.IStandaloneCodeEditor,
+        commandOptions: MarkdownCommandOptions,
+      ) => void,
+      options: {
+        focusEditor?: boolean
+        restoreSavedSelection?: boolean
+        switchPreviewLinkToEditor?: boolean
+      } = {},
     ) => {
       if (!editor) {
         return
       }
 
+      const source = savedSelectionSourceRef.current ?? 'editor'
+      const focusEditor = options.focusEditor ?? source === 'editor'
       const shouldRestoreSelection = options.restoreSavedSelection ?? true
 
       hideToolbarTooltip()
 
-      if (shouldRestoreSelection && !restoreSavedSelection()) {
+      if (
+        shouldRestoreSelection &&
+        !restoreSavedSelection({ focusEditor })
+      ) {
         setOpenDropdown(null)
         setPosition(null)
         return
@@ -1501,11 +2025,59 @@ function FloatingMarkdownToolbar({
       }
 
       dismissedSelectionKeyRef.current = null
-      command(editor)
+      command(editor, { focusEditor })
+      const nextSelections = editor.getSelections() ?? []
+      const shouldSwitchPreviewToEditor =
+        source === 'preview' &&
+        !!options.switchPreviewLinkToEditor &&
+        nextSelections.every(isEmptySelection)
       setOpenDropdown(null)
+
+      if (shouldSwitchPreviewToEditor) {
+        window.getSelection()?.removeAllRanges()
+        savedSelectionSourceRef.current = 'editor'
+        savedPreviewSelectionRef.current = null
+        savedSelectionsRef.current = cloneSelections(nextSelections)
+        if (viewMode === 'preview') {
+          onRequestEditorMode()
+        }
+        window.requestAnimationFrame(() => {
+          editor.focus()
+          updateToolbar()
+        })
+        return
+      }
+
+      if (source === 'preview') {
+        const nextNonEmptySelections = nextSelections.filter(
+          (selection) => !isEmptySelection(selection),
+        )
+
+        if (nextNonEmptySelections.length === 0) {
+          clearSavedSelection()
+          setPosition(null)
+          return
+        }
+
+        savedSelectionSourceRef.current = 'preview'
+        savedSelectionsRef.current = cloneSelections(nextNonEmptySelections)
+        restorePreviewSelectionSoon(nextNonEmptySelections)
+        return
+      }
+
       updateToolbarSoon()
     },
-    [editor, hideToolbarTooltip, restoreSavedSelection, updateToolbarSoon],
+    [
+      clearSavedSelection,
+      editor,
+      hideToolbarTooltip,
+      onRequestEditorMode,
+      restorePreviewSelectionSoon,
+      restoreSavedSelection,
+      updateToolbar,
+      updateToolbarSoon,
+      viewMode,
+    ],
   )
 
   useEffect(() => {
@@ -1514,9 +2086,15 @@ function FloatingMarkdownToolbar({
     }
 
     const runKeyboardCommand = (
-      command: (activeEditor: monaco.editor.IStandaloneCodeEditor) => void,
+      command: (
+        activeEditor: monaco.editor.IStandaloneCodeEditor,
+        commandOptions: MarkdownCommandOptions,
+      ) => void,
     ) => {
-      runEditorCommand(command, { restoreSavedSelection: false })
+      runEditorCommand(command, {
+        focusEditor: true,
+        restoreSavedSelection: false,
+      })
     }
 
     const actions = [
@@ -1525,8 +2103,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Toggle Bold',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            toggleWrappedSelection(activeEditor, '**')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '**', '**', commandOptions)
           })
         },
       }),
@@ -1535,8 +2113,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Toggle Italic',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            toggleWrappedSelection(activeEditor, '*')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
           })
         },
       }),
@@ -1545,8 +2123,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Toggle Inline Code',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            toggleWrappedSelection(activeEditor, '`')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
           })
         },
       }),
@@ -1557,8 +2135,8 @@ function FloatingMarkdownToolbar({
           monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyX,
         ],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            toggleWrappedSelection(activeEditor, '~~')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '~~', '~~', commandOptions)
           })
         },
       }),
@@ -1575,8 +2153,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Heading 1',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit1],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            applyHeadingStyle(activeEditor, 'h1')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            applyHeadingStyle(activeEditor, 'h1', commandOptions)
           })
         },
       }),
@@ -1585,8 +2163,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Heading 2',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit2],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            applyHeadingStyle(activeEditor, 'h2')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            applyHeadingStyle(activeEditor, 'h2', commandOptions)
           })
         },
       }),
@@ -1595,8 +2173,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Heading 3',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit3],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            applyHeadingStyle(activeEditor, 'h3')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            applyHeadingStyle(activeEditor, 'h3', commandOptions)
           })
         },
       }),
@@ -1605,8 +2183,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Heading 4',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit4],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            applyHeadingStyle(activeEditor, 'h4')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            applyHeadingStyle(activeEditor, 'h4', commandOptions)
           })
         },
       }),
@@ -1615,8 +2193,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Heading 5',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit5],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            applyHeadingStyle(activeEditor, 'h5')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            applyHeadingStyle(activeEditor, 'h5', commandOptions)
           })
         },
       }),
@@ -1625,8 +2203,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Heading 6',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit6],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            applyHeadingStyle(activeEditor, 'h6')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            applyHeadingStyle(activeEditor, 'h6', commandOptions)
           })
         },
       }),
@@ -1635,8 +2213,8 @@ function FloatingMarkdownToolbar({
         label: 'Markdown: Normal Text',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN],
         run: () => {
-          runKeyboardCommand((activeEditor) => {
-            applyHeadingStyle(activeEditor, 'normal')
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            applyHeadingStyle(activeEditor, 'normal', commandOptions)
           })
         },
       }),
@@ -1649,10 +2227,88 @@ function FloatingMarkdownToolbar({
     }
   }, [editor, runEditorCommand])
 
+  useEffect(() => {
+    if (!editor) {
+      return
+    }
+
+    const handlePreviewKeyDown = (event: KeyboardEvent) => {
+      if (
+        savedSelectionSourceRef.current !== 'preview' ||
+        !(event.ctrlKey || event.metaKey) ||
+        event.altKey
+      ) {
+        return
+      }
+
+      const key = event.key.toLowerCase()
+      const code = event.code
+      let command:
+        | ((
+            activeEditor: monaco.editor.IStandaloneCodeEditor,
+            commandOptions: MarkdownCommandOptions,
+          ) => void)
+        | null = null
+      let options: {
+        focusEditor?: boolean
+        switchPreviewLinkToEditor?: boolean
+      } = { focusEditor: false }
+
+      if (!event.shiftKey && key === 'b') {
+        command = (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '**', '**', commandOptions)
+        }
+      } else if (!event.shiftKey && key === 'i') {
+        command = (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
+        }
+      } else if (!event.shiftKey && key === 'e') {
+        command = (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
+        }
+      } else if (event.shiftKey && key === 'x') {
+        command = (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '~~', '~~', commandOptions)
+        }
+      } else if (!event.shiftKey && key === 'k') {
+        command = toggleLinkSelection
+        options = {
+          focusEditor: true,
+          switchPreviewLinkToEditor: true,
+        }
+      } else if (!event.shiftKey && key === 'n') {
+        command = (activeEditor, commandOptions) => {
+          applyHeadingStyle(activeEditor, 'normal', commandOptions)
+        }
+      } else if (!event.shiftKey && /^Digit[1-6]$/u.test(code)) {
+        command = (activeEditor, commandOptions) => {
+          applyHeadingStyle(
+            activeEditor,
+            `h${code.replace('Digit', '')}` as HeadingValue,
+            commandOptions,
+          )
+        }
+      }
+
+      if (!command) {
+        return
+      }
+
+      event.preventDefault()
+      runEditorCommand(command, options)
+    }
+
+    document.addEventListener('keydown', handlePreviewKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handlePreviewKeyDown)
+    }
+  }, [editor, runEditorCommand])
+
   const handleHeadingSelect = useCallback(
     (value: string) => {
-      runEditorCommand((activeEditor) => {
-        applyHeadingStyle(activeEditor, value as HeadingValue)
+      runEditorCommand((activeEditor, commandOptions) => {
+        applyHeadingStyle(activeEditor, value as HeadingValue, commandOptions)
       })
     },
     [runEditorCommand],
@@ -1691,8 +2347,8 @@ function FloatingMarkdownToolbar({
 
   const handleListSelect = useCallback(
     (value: string) => {
-      runEditorCommand((activeEditor) => {
-        applyListStyle(activeEditor, value as ListValue)
+      runEditorCommand((activeEditor, commandOptions) => {
+        applyListStyle(activeEditor, value as ListValue, commandOptions)
       })
     },
     [runEditorCommand],
@@ -1742,8 +2398,8 @@ function FloatingMarkdownToolbar({
         active={activeFormats.bold}
         onTooltipHide={hideToolbarTooltip}
         onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor) => {
-          toggleWrappedSelection(activeEditor, '**')
+        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '**', '**', commandOptions)
         })}
         tooltip={inlineTooltips.bold}
       >
@@ -1754,8 +2410,8 @@ function FloatingMarkdownToolbar({
         active={activeFormats.italic}
         onTooltipHide={hideToolbarTooltip}
         onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor) => {
-          toggleWrappedSelection(activeEditor, '*')
+        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
         })}
         tooltip={inlineTooltips.italic}
       >
@@ -1766,8 +2422,8 @@ function FloatingMarkdownToolbar({
         active={activeFormats.strikethrough}
         onTooltipHide={hideToolbarTooltip}
         onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor) => {
-          toggleWrappedSelection(activeEditor, '~~')
+        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '~~', '~~', commandOptions)
         })}
         tooltip={inlineTooltips.strikethrough}
       >
@@ -1778,8 +2434,8 @@ function FloatingMarkdownToolbar({
         active={activeFormats.code}
         onTooltipHide={hideToolbarTooltip}
         onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor) => {
-          toggleWrappedSelection(activeEditor, '`')
+        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
         })}
         tooltip={inlineTooltips.code}
       >
@@ -1790,7 +2446,10 @@ function FloatingMarkdownToolbar({
         active={activeFormats.link}
         onTooltipHide={hideToolbarTooltip}
         onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand(toggleLinkSelection)}
+        onClick={() => runEditorCommand(toggleLinkSelection, {
+          focusEditor: true,
+          switchPreviewLinkToEditor: true,
+        })}
         tooltip={inlineTooltips.link}
       >
         <ToolbarAssetIcon name="link" />

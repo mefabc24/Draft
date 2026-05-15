@@ -5,6 +5,10 @@
   font-family: 'Manrope', 'Segoe UI', Arial, sans-serif;
 }
 
+.preview-source-text {
+  display: inline;
+}
+
 /* Headings */
 .preview-content h1,
 .preview-content h2,

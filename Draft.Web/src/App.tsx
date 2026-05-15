@@ -35,6 +35,11 @@ type GoToPositionMessage = {
 }
 type ShowWhitespaceCharacters = 'Always' | 'Never' | 'Highlighted Only'
 type CursorStyle = 'Line' | 'Block' | 'Underline'
+type FloatingMarkdownToolbarMode =
+  | 'Disabled'
+  | 'Editor'
+  | 'Preview'
+  | 'EditorAndPreview'
 type PreviewScrollSyncMode =
   | 'Off'
   | 'EditorToPreview'
@@ -58,6 +63,7 @@ type DraftEditorSettings = {
   cursorStyle: CursorStyle
   cursorBlinking: boolean
   previewScrollSyncMode: PreviewScrollSyncMode
+  floatingMarkdownToolbarMode: FloatingMarkdownToolbarMode
 }
 type SettingsChangedMessage = {
   type: 'settingsChanged'
@@ -137,6 +143,7 @@ const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
   cursorStyle: 'Line',
   cursorBlinking: true,
   previewScrollSyncMode: 'TwoWay',
+  floatingMarkdownToolbarMode: 'EditorAndPreview',
 }
 
 const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
@@ -540,6 +547,27 @@ function readPreviewScrollSyncMode(
   return DEFAULT_EDITOR_SETTINGS.previewScrollSyncMode
 }
 
+function readFloatingMarkdownToolbarMode(
+  record: Record<string, unknown>,
+): FloatingMarkdownToolbarMode {
+  const value = readRecordValue(record, 'floatingMarkdownToolbarMode')
+
+  if (
+    value === 'Disabled' ||
+    value === 'Editor' ||
+    value === 'Preview' ||
+    value === 'EditorAndPreview'
+  ) {
+    return value
+  }
+
+  if (value === 'Always' || value === 'Editor & Preview') {
+    return 'EditorAndPreview'
+  }
+
+  return DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarMode
+}
+
 function parseSettingsChangedMessage(
   record: Record<string, unknown>,
 ): SettingsChangedMessage | null {
@@ -611,6 +639,7 @@ function parseSettingsChangedMessage(
       DEFAULT_EDITOR_SETTINGS.cursorBlinking,
     ),
     previewScrollSyncMode: readPreviewScrollSyncMode(record),
+    floatingMarkdownToolbarMode: readFloatingMarkdownToolbarMode(record),
   }
 }
 
@@ -864,6 +893,10 @@ function App() {
   const [isSplitResizing, setIsSplitResizing] = useState(false)
   const [editorInstance, setEditorInstance] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null)
+  const [floatingMarkdownToolbarMode, setFloatingMarkdownToolbarMode] =
+    useState<FloatingMarkdownToolbarMode>(
+      DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarMode,
+    )
   const initialMarkdownRef = useRef(markdown)
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
@@ -873,6 +906,7 @@ function App() {
   const editorHostRef = useRef<HTMLDivElement | null>(null)
   const editorScrollbarRef = useRef<HTMLDivElement | null>(null)
   const editorThumbRef = useRef<HTMLDivElement | null>(null)
+  const previewContentRef = useRef<HTMLDivElement | null>(null)
   const previewScrollRef = useRef<HTMLDivElement | null>(null)
   const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(
     null,
@@ -1224,6 +1258,7 @@ function App() {
 
   const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
     draftEditorSettingsRef.current = settings
+    setFloatingMarkdownToolbarMode(settings.floatingMarkdownToolbarMode)
 
     const editor = editorInstanceRef.current
 
@@ -1716,10 +1751,6 @@ function App() {
           />
           <div ref={editorBodyRef} className="pane-body editor-body">
             <div ref={editorHostRef} className="editor-host" />
-            <FloatingMarkdownToolbar
-              editor={editorInstance}
-              editorBodyRef={editorBodyRef}
-            />
             <div
               ref={editorScrollbarRef}
               className="editor-scrollbar"
@@ -1814,8 +1845,21 @@ function App() {
           headerLeft="Live Preview"
           headerRight={[`${previewWordCount} words`]}
           ariaHidden={viewMode === 'editor'}
+          previewContentElementRef={previewContentRef}
           previewScrollElementRef={previewScrollRef}
           onPreviewScroll={handlePreviewScroll}
+        />
+        <FloatingMarkdownToolbar
+          editor={editorInstance}
+          editorBodyRef={editorBodyRef}
+          onRequestEditorMode={() => {
+            setViewMode('editor')
+          }}
+          previewContentRef={previewContentRef}
+          previewScrollElementRef={previewScrollRef}
+          toolbarMode={floatingMarkdownToolbarMode}
+          viewMode={viewMode}
+          workspaceRef={workspaceRef}
         />
       </section>
     </main>
