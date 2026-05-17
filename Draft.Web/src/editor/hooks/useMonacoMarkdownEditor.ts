@@ -39,6 +39,16 @@ function remeasureEditor(editor: monaco.editor.IStandaloneCodeEditor) {
   })
 }
 
+function isEditableKeyboardTarget(target: EventTarget | null) {
+  if (!(target instanceof Element)) {
+    return false
+  }
+
+  return (
+    target.closest('input, textarea, select, [contenteditable="true"]') !== null
+  )
+}
+
 export function useMonacoMarkdownEditor({
   editorHostRef,
   editorRef,
@@ -237,6 +247,29 @@ export function useMonacoMarkdownEditor({
         onSyncPreviewScrollFromEditor()
       }
     })
+    const handleGlobalUndoRedo = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        editor.hasTextFocus() ||
+        isEditableKeyboardTarget(event.target) ||
+        event.altKey ||
+        !(event.ctrlKey || event.metaKey)
+      ) {
+        return
+      }
+
+      const key = event.key.toLowerCase()
+      const isUndo = key === 'z' && !event.shiftKey
+      const isRedo = key === 'y' || (key === 'z' && event.shiftKey)
+
+      if (!isUndo && !isRedo) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      editor.trigger('draft.globalUndoRedo', isUndo ? 'undo' : 'redo', null)
+    }
 
     editorRef.current = editor
     setEditorInstance(editor)
@@ -257,8 +290,10 @@ export function useMonacoMarkdownEditor({
       .then(syncEditorFontMetrics)
     void document.fonts.ready.then(syncEditorFontMetrics)
     document.fonts.addEventListener('loadingdone', syncEditorFontMetrics)
+    document.addEventListener('keydown', handleGlobalUndoRedo, true)
 
     return () => {
+      document.removeEventListener('keydown', handleGlobalUndoRedo, true)
       document.fonts.removeEventListener('loadingdone', syncEditorFontMetrics)
       contentSizeSub.dispose()
       layoutSub.dispose()
