@@ -4,7 +4,10 @@ export { toggleFencedCodeBlockText } from './commands/codeBlockFormatting'
 export { getToggleWrappedEdits, getInlineWrapperContext, isSelectedTextWrapped } from './commands/inlineFormatting'
 export { getToggleLinkEdits, isLinkSelectionActive, isSelectedLinkLabel } from './commands/linkFormatting'
 export { addListPrefix, removeListPrefix } from './commands/listFormatting'
-export { getEditableMarkdownSourceRange } from './commands/sourceRangeEditing'
+export {
+  getEditableMarkdownSourceRange,
+  getPreviewSelectionRangeForEditedMarkdown,
+} from './commands/sourceRangeEditing'
 export { detectActiveHeadingValue, detectActiveListValue } from './detection/activeBlockState'
 export { detectActiveInlineFormats, EMPTY_ACTIVE_FORMATS } from './detection/activeInlineFormats'
 export { getFencedCodeBlockContextFromLines } from './detection/fencedCodeBlocks'

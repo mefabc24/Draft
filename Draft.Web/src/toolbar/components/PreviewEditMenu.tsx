@@ -287,11 +287,7 @@ function PreviewEditMenu({
       return
     }
 
-    if (
-      event.key === 'Enter' &&
-      (event.ctrlKey || event.metaKey) &&
-      !event.shiftKey
-    ) {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       handleConfirm()
     }

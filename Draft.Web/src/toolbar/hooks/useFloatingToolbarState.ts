@@ -11,6 +11,7 @@ import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import {
   canRunMarkdownToolbarCommand,
   cloneSelections,
+  createSelectionFromOffsets,
   detectHeadingValue,
   detectInlineFormats,
   detectListValue,
@@ -30,7 +31,10 @@ import type {
   HeadingValue,
   ListValue,
 } from '../../markdown'
-import { getEditableMarkdownSourceRange } from '../../markdown'
+import {
+  getEditableMarkdownSourceRange,
+  getPreviewSelectionRangeForEditedMarkdown,
+} from '../../markdown'
 import type { FloatingMarkdownToolbarMode } from '../../settings/settingsTypes'
 import type { ViewMode } from '../../workspace/workspaceTypes'
 import {
@@ -700,20 +704,53 @@ export function useFloatingToolbarState({
           startOffset: session.startOffset,
         },
         text,
-        { focusEditor: false },
+        { focusEditor: false, selectReplacement: false },
       )
 
-      window.getSelection()?.removeAllRanges()
-      toolbarInteractionRef.current = false
+      const nextPreviewSelectionRange = getPreviewSelectionRangeForEditedMarkdown(
+        session.startOffset,
+        text,
+      )
+
+      setPreviewEditSession(null)
+      setOpenDropdown(null)
       clearSavedSelection()
       clearToolbarTooltip()
-      setOpenDropdown(null)
-      setPosition(null)
+
+      if (!nextPreviewSelectionRange) {
+        window.getSelection()?.removeAllRanges()
+        toolbarInteractionRef.current = false
+        setPosition(null)
+        return
+      }
+
+      const nextPreviewSelection = createSelectionFromOffsets(
+        model,
+        nextPreviewSelectionRange.startOffset,
+        nextPreviewSelectionRange.endOffset,
+      )
+
+      toolbarInteractionRef.current = true
+      savedModelRef.current = model
+      savedSelectionsRef.current = cloneSelections([nextPreviewSelection])
+      savedSelectionSourceRef.current = 'preview'
+      setSelectionSource('preview')
+      setPreviewEditRange({
+        ...nextPreviewSelectionRange,
+        text: model
+          .getValue()
+          .slice(
+            nextPreviewSelectionRange.startOffset,
+            nextPreviewSelectionRange.endOffset,
+          ),
+      })
+      restorePreviewSelectionSoon([nextPreviewSelection])
     },
     [
       clearSavedSelection,
       clearToolbarTooltip,
       editor,
+      restorePreviewSelectionSoon,
       setPosition,
       setPreviewEditSession,
       updateToolbarSoon,

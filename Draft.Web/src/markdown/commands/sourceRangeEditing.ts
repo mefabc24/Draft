@@ -86,3 +86,62 @@ export function getEditableMarkdownSourceRange(
     text: value.slice(range.startOffset, range.endOffset),
   }
 }
+
+function getVisibleMarkdownTextRange(
+  value: string,
+  baseOffset = 0,
+): MarkdownSelectionOffsetRange | null {
+  if (value.length === 0) {
+    return null
+  }
+
+  const linkLabelEndOffset = value.indexOf('](')
+
+  if (
+    value.startsWith('[') &&
+    linkLabelEndOffset > 1 &&
+    value.endsWith(')')
+  ) {
+    return getVisibleMarkdownTextRange(
+      value.slice(1, linkLabelEndOffset),
+      baseOffset + 1,
+    )
+  }
+
+  for (const wrapper of EDITABLE_INLINE_WRAPPERS) {
+    if (
+      value.startsWith(wrapper.prefix) &&
+      value.endsWith(wrapper.suffix) &&
+      value.length > wrapper.prefix.length + wrapper.suffix.length
+    ) {
+      return getVisibleMarkdownTextRange(
+        value.slice(
+          wrapper.prefix.length,
+          value.length - wrapper.suffix.length,
+        ),
+        baseOffset + wrapper.prefix.length,
+      )
+    }
+  }
+
+  return {
+    endOffset: baseOffset + value.length,
+    startOffset: baseOffset,
+  }
+}
+
+export function getPreviewSelectionRangeForEditedMarkdown(
+  startOffset: number,
+  text: string,
+): MarkdownSelectionOffsetRange | null {
+  const visibleRange = getVisibleMarkdownTextRange(text)
+
+  if (!visibleRange || visibleRange.startOffset >= visibleRange.endOffset) {
+    return null
+  }
+
+  return {
+    endOffset: startOffset + visibleRange.endOffset,
+    startOffset: startOffset + visibleRange.startOffset,
+  }
+}

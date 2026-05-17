@@ -260,7 +260,7 @@ export function useMonacoMarkdownEditor({
 
       const key = event.key.toLowerCase()
       const isUndo = key === 'z' && !event.shiftKey
-      const isRedo = key === 'y' || (key === 'z' && event.shiftKey)
+      const isRedo = key === 'z' && event.shiftKey
 
       if (!isUndo && !isRedo) {
         return

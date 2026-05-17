@@ -293,7 +293,7 @@ export function replaceMarkdownSourceRange(
   editor: monaco.editor.IStandaloneCodeEditor,
   selection: MarkdownSelectionOffsetRange,
   text: string,
-  options?: MarkdownCommandOptions,
+  options: MarkdownCommandOptions & { selectReplacement?: boolean } = {},
 ) {
   const model = editor.getModel()
 
@@ -308,11 +308,15 @@ export function replaceMarkdownSourceRange(
 
   executeEditorEdits(editor, [edit], undefined, options)
 
-  const nextSelection = createSelectionFromOffsets(
-    model,
-    selection.startOffset,
-    selection.startOffset + text.length,
-  )
+  const replacementEndOffset = selection.startOffset + text.length
+  const nextSelection =
+    options.selectReplacement === false
+      ? createSelectionFromOffsets(model, replacementEndOffset, replacementEndOffset)
+      : createSelectionFromOffsets(
+          model,
+          selection.startOffset,
+          replacementEndOffset,
+        )
 
   editor.setSelection(nextSelection)
   return nextSelection
