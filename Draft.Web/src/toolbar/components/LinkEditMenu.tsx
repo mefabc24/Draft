@@ -1,7 +1,6 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -9,28 +8,36 @@ import {
   type RefObject,
 } from 'react'
 import { clamp } from '../../shared/utils/clamp'
+import { isValidHttpUrl } from '../../shared/validation/urlValidation'
 import type { ToolbarTooltipContent } from './ToolbarTooltip'
 import ToolbarButton from './ToolbarButton'
 import ToolbarIcon from './ToolbarIcon'
 import '../styles/previewEditMenu.css'
+import '../styles/linkEditMenu.css'
 
-type PreviewEditMenuProps = {
+type LinkEditInitialState = {
+  label: string
+  url: string
+}
+
+type LinkEditMenuProps = {
+  active: boolean
+  initialState: LinkEditInitialState
   onCancel: () => void
   onClose: () => void
-  onConfirm: (value: string) => void
-  onOpen: () => string | null
+  onConfirm: (label: string, url: string) => void
+  onOpen: () => LinkEditInitialState | null
   onTooltipHide?: () => void
   onTooltipShow?: (
     target: HTMLButtonElement,
     tooltip: ToolbarTooltipContent,
   ) => void
   open: boolean
-  sourceText: string
   toolbarRef: RefObject<HTMLDivElement | null>
   workspaceRef: RefObject<HTMLElement | null>
 }
 
-type PreviewEditMenuGeometry = {
+type LinkEditMenuGeometry = {
   left: number
   placement: 'bottom' | 'top'
   top: number
@@ -38,13 +45,6 @@ type PreviewEditMenuGeometry = {
 
 const MENU_EDGE_PADDING = 8
 const MENU_GAP = 12
-const TEXTBOX_MAX_ROWS = 10
-
-function readPixelValue(value: string) {
-  const parsedValue = Number.parseFloat(value)
-
-  return Number.isFinite(parsedValue) ? parsedValue : 0
-}
 
 function getMenuBoundaryRect(toolbar: HTMLElement) {
   const boundaryElement = toolbar.closest('.workspace') ?? toolbar.closest('.editor-body')
@@ -59,7 +59,35 @@ function getMenuBoundaryRect(toolbar: HTMLElement) {
   )
 }
 
-function PreviewEditMenu({
+function LinkFieldIcon({ type }: { type: 'link' | 'text' }) {
+  return (
+    <img
+      className="link-edit-field-icon"
+      src={`${import.meta.env.BASE_URL}icons/${
+        type === 'text' ? 'Text.svg' : 'Link.svg'
+      }`}
+      alt=""
+      aria-hidden="true"
+    />
+  )
+}
+
+function ValidationIcon({ valid }: { valid: boolean }) {
+  return (
+    <img
+      className={`link-edit-validation-icon ${valid ? 'is-valid' : 'is-invalid'}`}
+      src={`${import.meta.env.BASE_URL}icons/${
+        valid ? 'Success.svg' : 'Failed.svg'
+      }`}
+      alt=""
+      aria-hidden="true"
+    />
+  )
+}
+
+function LinkEditMenu({
+  active,
+  initialState,
   onCancel,
   onClose,
   onConfirm,
@@ -67,19 +95,22 @@ function PreviewEditMenu({
   onTooltipHide,
   onTooltipShow,
   open,
-  sourceText,
   toolbarRef,
   workspaceRef,
-}: PreviewEditMenuProps) {
+}: LinkEditMenuProps) {
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
-  const [value, setValue] = useState(sourceText)
-  const [menuGeometry, setMenuGeometry] = useState<PreviewEditMenuGeometry>({
+  const textInputRef = useRef<HTMLInputElement | null>(null)
+  const [label, setLabel] = useState(initialState.label)
+  const [url, setUrl] = useState(initialState.url)
+  const [urlTouched, setUrlTouched] = useState(initialState.url.length > 0)
+  const [menuGeometry, setMenuGeometry] = useState<LinkEditMenuGeometry>({
     left: 0,
     placement: 'bottom',
     top: 0,
   })
+  const urlIsValid = isValidHttpUrl(url)
+  const confirmDisabled = label.trim().length === 0 || !urlIsValid
 
   const updateMenuGeometry = useCallback(() => {
     const menu = menuRef.current
@@ -129,110 +160,35 @@ function PreviewEditMenu({
     })
   }, [toolbarRef, workspaceRef])
 
-  const resizeTextarea = useCallback(() => {
-    const textarea = textareaRef.current
-    const menu = menuRef.current
-
-    if (!textarea || !menu) {
-      return
-    }
-
-    const textareaStyle = window.getComputedStyle(textarea)
-    const menuStyle = window.getComputedStyle(menu)
-    const lineHeight = readPixelValue(textareaStyle.lineHeight) || 20
-    const textareaChrome =
-      readPixelValue(textareaStyle.paddingTop) +
-      readPixelValue(textareaStyle.paddingBottom) +
-      readPixelValue(textareaStyle.borderTopWidth) +
-      readPixelValue(textareaStyle.borderBottomWidth)
-    const singleLineHeight = lineHeight + textareaChrome
-    const maxRowsHeight = lineHeight * TEXTBOX_MAX_ROWS + textareaChrome
-    let availableTextboxHeight = maxRowsHeight
-    const trigger = triggerRef.current
-    const toolbar = toolbarRef.current
-
-    if (trigger && toolbar) {
-      const boundaryRect =
-        workspaceRef.current?.getBoundingClientRect() ??
-        getMenuBoundaryRect(toolbar)
-      const triggerRect = trigger.getBoundingClientRect()
-      const actionsHeight =
-        menu.querySelector<HTMLElement>('.preview-edit-actions')?.offsetHeight ??
-        0
-      const menuChrome =
-        readPixelValue(menuStyle.paddingTop) +
-        readPixelValue(menuStyle.paddingBottom) +
-        readPixelValue(menuStyle.borderTopWidth) +
-        readPixelValue(menuStyle.borderBottomWidth) +
-        readPixelValue(menuStyle.rowGap)
-      const availableBelow =
-        boundaryRect.bottom - triggerRect.bottom - MENU_GAP - MENU_EDGE_PADDING
-      const availableAbove =
-        triggerRect.top - boundaryRect.top - MENU_GAP - MENU_EDGE_PADDING
-      const availableMenuHeight = Math.max(availableBelow, availableAbove)
-
-      availableTextboxHeight = Math.max(
-        singleLineHeight,
-        availableMenuHeight - actionsHeight - menuChrome,
-      )
-    }
-
-    const maxHeight = Math.max(
-      singleLineHeight,
-      Math.min(maxRowsHeight, availableTextboxHeight),
-    )
-
-    textarea.style.height = 'auto'
-    textarea.style.maxHeight = `${maxHeight}px`
-
-    const nextHeight = Math.min(textarea.scrollHeight, maxHeight)
-
-    textarea.style.height = `${nextHeight}px`
-    textarea.style.overflowY =
-      textarea.scrollHeight > maxHeight + 0.5 ? 'auto' : 'hidden'
-
-    updateMenuGeometry()
-  }, [toolbarRef, updateMenuGeometry, workspaceRef])
-
-  useLayoutEffect(() => {
-    if (!open) {
-      return
-    }
-
-    resizeTextarea()
-  }, [open, resizeTextarea, value])
-
   useEffect(() => {
     if (!open) {
       return
     }
 
     const frameId = window.requestAnimationFrame(() => {
-      resizeTextarea()
-      const textarea = textareaRef.current
-
-      textarea?.focus()
-      textarea?.setSelectionRange(0, textarea.value.length)
+      updateMenuGeometry()
+      textInputRef.current?.focus()
+      textInputRef.current?.select()
     })
 
     return () => {
       window.cancelAnimationFrame(frameId)
     }
-  }, [open, resizeTextarea])
+  }, [open, updateMenuGeometry])
 
   useEffect(() => {
     if (!open) {
       return
     }
 
-    window.addEventListener('resize', resizeTextarea)
+    window.addEventListener('resize', updateMenuGeometry)
     window.addEventListener('scroll', updateMenuGeometry, true)
 
     return () => {
-      window.removeEventListener('resize', resizeTextarea)
+      window.removeEventListener('resize', updateMenuGeometry)
       window.removeEventListener('scroll', updateMenuGeometry, true)
     }
-  }, [open, resizeTextarea, updateMenuGeometry])
+  }, [open, updateMenuGeometry])
 
   useEffect(() => {
     if (!open) {
@@ -263,20 +219,19 @@ function PreviewEditMenu({
     }
   }, [onClose, open, toolbarRef])
 
-  const menuStyle = {
-    left: `${menuGeometry.left}px`,
-    top: `${menuGeometry.top}px`,
-  } satisfies CSSProperties
+  const handleOpen = useCallback(() => {
+    const nextState = onOpen() ?? initialState
+
+    setLabel(nextState.label)
+    setUrl(nextState.url)
+    setUrlTouched(nextState.url.length > 0)
+  }, [initialState, onOpen])
 
   const handleConfirm = useCallback(() => {
-    onConfirm(value)
-  }, [onConfirm, value])
-
-  const handleOpen = useCallback(() => {
-    const nextSourceText = onOpen()
-
-    setValue(nextSourceText ?? sourceText)
-  }, [onOpen, sourceText])
+    if (!confirmDisabled) {
+      onConfirm(label, url)
+    }
+  }, [confirmDisabled, label, onConfirm, url])
 
   const handleKeyDown = (event: ReactKeyboardEvent) => {
     event.stopPropagation()
@@ -287,50 +242,77 @@ function PreviewEditMenu({
       return
     }
 
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === 'Enter') {
       event.preventDefault()
       handleConfirm()
     }
   }
 
+  const menuStyle = {
+    left: `${menuGeometry.left}px`,
+    top: `${menuGeometry.top}px`,
+  } satisfies CSSProperties
+  const showUrlValidation = urlTouched && url.length > 0
+
   return (
     <>
       <ToolbarButton
         ref={triggerRef}
-        active={open}
+        active={active || open}
         ariaExpanded={open}
         ariaHasPopup="dialog"
-        ariaLabel="Edit selected Markdown"
+        ariaLabel="Edit link"
         onClick={handleOpen}
         onTooltipHide={onTooltipHide}
         onTooltipShow={onTooltipShow}
-        tooltip={{ label: 'Edit' }}
+        tooltip={{ label: 'Link', shortcut: 'CTRL + K' }}
       >
-        <ToolbarIcon name="edit" />
+        <ToolbarIcon name="link" />
       </ToolbarButton>
 
       {open ? (
         <div
           ref={menuRef}
-          className={`preview-edit-menu place-${menuGeometry.placement}`}
+          className={`preview-edit-menu link-edit-menu place-${menuGeometry.placement}`}
           data-toolbar-popup="true"
-          data-preview-edit-menu="true"
           role="dialog"
-          aria-label="Edit selected Markdown source"
+          aria-label="Edit Markdown link"
           style={menuStyle}
           onKeyDown={handleKeyDown}
         >
-          <textarea
-            ref={textareaRef}
-            className="preview-edit-textbox"
-            value={value}
-            rows={1}
-            spellCheck={false}
-            onChange={(event) => {
-              setValue(event.target.value)
-            }}
-            onKeyDown={handleKeyDown}
-          />
+          <label className="link-edit-field">
+            <LinkFieldIcon type="text" />
+            <input
+              ref={textInputRef}
+              className="link-edit-input"
+              value={label}
+              spellCheck={false}
+              aria-label="Link text"
+              onChange={(event) => {
+                setLabel(event.target.value)
+              }}
+              onKeyDown={handleKeyDown}
+            />
+          </label>
+          <label className="link-edit-field">
+            <LinkFieldIcon type="link" />
+            <input
+              className="link-edit-input"
+              value={url}
+              spellCheck={false}
+              placeholder="https://example.com"
+              aria-label="Link URL"
+              onBlur={() => {
+                setUrlTouched(true)
+              }}
+              onChange={(event) => {
+                setUrl(event.target.value)
+                setUrlTouched(true)
+              }}
+              onKeyDown={handleKeyDown}
+            />
+            {showUrlValidation ? <ValidationIcon valid={urlIsValid} /> : null}
+          </label>
           <div className="preview-edit-actions">
             <button
               type="button"
@@ -342,6 +324,7 @@ function PreviewEditMenu({
             <button
               type="button"
               className="preview-edit-action preview-edit-action-primary"
+              disabled={confirmDisabled}
               onClick={handleConfirm}
             >
               Confirm
@@ -353,4 +336,4 @@ function PreviewEditMenu({
   )
 }
 
-export default PreviewEditMenu
+export default LinkEditMenu

@@ -32,6 +32,10 @@
   overflow-y: hidden;
 }
 
+.preview-edit-textbox:focus-within {
+  border-color: var(--markdown-toolbar-primary);
+}
+
 .preview-edit-textbox::-webkit-scrollbar {
   width: 6px;
 }

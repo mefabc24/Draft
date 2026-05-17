@@ -29,10 +29,13 @@ import type {
   ActiveFormats,
   EditableMarkdownSourceRange,
   HeadingValue,
+  MarkdownLinkContext,
   ListValue,
 } from '../../markdown'
 import {
+  createMarkdownLinkText,
   getEditableMarkdownSourceRange,
+  getLinkEditState,
   getPreviewSelectionRangeForEditedMarkdown,
 } from '../../markdown'
 import type { FloatingMarkdownToolbarMode } from '../../settings/settingsTypes'
@@ -77,6 +80,16 @@ type PreviewEditSession = EditableMarkdownSourceRange & {
   sourceKey: string
 }
 
+type LinkEditSession = MarkdownLinkContext & {
+  source: ToolbarSelectionSource
+  sourceKey: string
+}
+
+type LinkEditInitialState = {
+  label: string
+  url: string
+}
+
 export function useFloatingToolbarState({
   clearToolbarTooltip,
   editor,
@@ -98,6 +111,7 @@ export function useFloatingToolbarState({
   const savedSelectionsRef = useRef<monaco.Selection[] | null>(null)
   const savedSelectionSourceRef = useRef<ToolbarSelectionSource | null>(null)
   const previewEditSessionRef = useRef<PreviewEditSession | null>(null)
+  const linkEditSessionRef = useRef<LinkEditSession | null>(null)
   const dismissedSelectionKeyRef = useRef<string | null>(null)
   const toolbarInteractionRef = useRef(false)
   const toolbarInteractionTimeoutRef = useRef<number | null>(null)
@@ -110,6 +124,10 @@ export function useFloatingToolbarState({
     useState<EditableMarkdownSourceRange | null>(null)
   const [previewEditSession, setPreviewEditSessionState] =
     useState<PreviewEditSession | null>(null)
+  const [linkEditRange, setLinkEditRange] =
+    useState<MarkdownLinkContext | null>(null)
+  const [linkEditSession, setLinkEditSessionState] =
+    useState<LinkEditSession | null>(null)
   const [activeFormats, setActiveFormats] =
     useState<ActiveFormats>(EMPTY_ACTIVE_FORMATS)
 
@@ -125,6 +143,11 @@ export function useFloatingToolbarState({
     [],
   )
 
+  const setLinkEditSession = useCallback((session: LinkEditSession | null) => {
+    linkEditSessionRef.current = session
+    setLinkEditSessionState(session)
+  }, [])
+
   const clearSavedSelection = useCallback(() => {
     savedModelRef.current = null
     savedPreviewSelectionRef.current = null
@@ -133,7 +156,9 @@ export function useFloatingToolbarState({
     setSelectionSource(null)
     setPreviewEditRange(null)
     setPreviewEditSession(null)
-  }, [setPreviewEditSession])
+    setLinkEditRange(null)
+    setLinkEditSession(null)
+  }, [setLinkEditSession, setPreviewEditSession])
 
   const markToolbarInteraction = useCallback(() => {
     toolbarInteractionRef.current = true
@@ -215,7 +240,7 @@ export function useFloatingToolbarState({
     }
 
     if (!previewSelection && currentEditorSelections.length === 0) {
-      if (previewEditSessionRef.current) {
+      if (previewEditSessionRef.current || linkEditSessionRef.current) {
         clearToolbarTooltip()
         setOpenDropdown(null)
         return
@@ -282,8 +307,18 @@ export function useFloatingToolbarState({
             startOffset: previewSelection.editableStartOffset,
           })
         : null
+    const primarySelection = currentSelections.find(
+      (selection) => !isEmptySelection(selection),
+    )
+    const nextLinkEditRange = primarySelection
+      ? getLinkEditState(
+          model.getValue(),
+          getSelectionOffsets(model, primarySelection),
+        )
+      : null
 
     setPreviewEditRange(nextPreviewEditRange)
+    setLinkEditRange(nextLinkEditRange)
 
     if (
       source !== 'preview' ||
@@ -291,6 +326,12 @@ export function useFloatingToolbarState({
       previewEditSessionRef.current?.sourceKey !== selectionKey
     ) {
       setPreviewEditSession(null)
+    }
+    if (
+      !nextLinkEditRange ||
+      linkEditSessionRef.current?.sourceKey !== selectionKey
+    ) {
+      setLinkEditSession(null)
     }
 
     if (
@@ -339,6 +380,7 @@ export function useFloatingToolbarState({
     editor,
     editorBodyRef,
     previewContentRef,
+    setLinkEditSession,
     setPreviewEditSession,
     setPosition,
     toolbarMode,
@@ -542,6 +584,7 @@ export function useFloatingToolbarState({
 
       hideToolbarTooltip()
       setPreviewEditSession(null)
+      setLinkEditSession(null)
 
       if (
         shouldRestoreSelection &&
@@ -608,6 +651,7 @@ export function useFloatingToolbarState({
       onRequestEditorMode,
       restorePreviewSelectionSoon,
       restoreSavedSelection,
+      setLinkEditSession,
       setPreviewEditSession,
       setPosition,
       updateToolbar,
@@ -640,6 +684,7 @@ export function useFloatingToolbarState({
     markToolbarInteraction()
     hideToolbarTooltip()
     setOpenDropdown(null)
+    setLinkEditSession(null)
     setPreviewEditRange(editableRange)
     setSelectionSource('preview')
     setPreviewEditSession({
@@ -650,6 +695,7 @@ export function useFloatingToolbarState({
   }, [
     hideToolbarTooltip,
     markToolbarInteraction,
+    setLinkEditSession,
     setPreviewEditSession,
   ])
 
@@ -757,6 +803,148 @@ export function useFloatingToolbarState({
     ],
   )
 
+  const openLinkEditMenu = useCallback((): LinkEditInitialState | null => {
+    const model = savedModelRef.current
+    const savedSelections = savedSelectionsRef.current
+    const selection = savedSelections?.find(
+      (item) => !isEmptySelection(item),
+    )
+    const source = savedSelectionSourceRef.current
+    const sourceKey =
+      source === 'preview' && savedPreviewSelectionRef.current
+        ? savedPreviewSelectionRef.current.sourceKey
+        : savedSelections
+          ? `editor:${getSelectionKey(savedSelections)}`
+          : null
+
+    if (!model || !selection || !source || !sourceKey) {
+      return null
+    }
+
+    const linkState = getLinkEditState(
+      model.getValue(),
+      getSelectionOffsets(model, selection),
+    )
+
+    markToolbarInteraction()
+    hideToolbarTooltip()
+    setOpenDropdown(null)
+    setPreviewEditSession(null)
+    setLinkEditRange(linkState)
+    setLinkEditSession({
+      ...linkState,
+      source,
+      sourceKey,
+    })
+
+    return {
+      label: linkState.label,
+      url: linkState.url,
+    }
+  }, [
+    hideToolbarTooltip,
+    markToolbarInteraction,
+    setLinkEditSession,
+    setPreviewEditSession,
+  ])
+
+  const closeLinkEditMenu = useCallback(() => {
+    setLinkEditSession(null)
+  }, [setLinkEditSession])
+
+  const cancelLinkEditMenu = useCallback(() => {
+    const savedSelections = savedSelectionsRef.current
+      ? cloneSelections(savedSelectionsRef.current)
+      : null
+    const savedSource = savedSelectionSourceRef.current
+
+    markToolbarInteraction()
+    setLinkEditSession(null)
+
+    if (savedSource === 'preview' && savedSelections) {
+      restorePreviewSelectionSoon(savedSelections)
+    }
+  }, [markToolbarInteraction, restorePreviewSelectionSoon, setLinkEditSession])
+
+  const confirmLinkEditMenu = useCallback(
+    (label: string, url: string) => {
+      const session = linkEditSessionRef.current
+      const model = editor?.getModel()
+
+      if (!editor || !model || !session) {
+        setLinkEditSession(null)
+        return
+      }
+
+      const currentValue = model.getValue()
+      const sourceSegmentIsCurrent =
+        session.endOffset <= currentValue.length &&
+        currentValue.slice(session.startOffset, session.endOffset) ===
+          session.sourceText
+
+      if (!sourceSegmentIsCurrent) {
+        setLinkEditSession(null)
+        updateToolbarSoon()
+        return
+      }
+
+      const nextLinkText = createMarkdownLinkText(label, url)
+
+      replaceMarkdownSourceRange(
+        editor,
+        {
+          endOffset: session.endOffset,
+          startOffset: session.startOffset,
+        },
+        nextLinkText,
+        {
+          focusEditor: session.source === 'editor',
+          selectReplacement: false,
+        },
+      )
+
+      const labelSelection = createSelectionFromOffsets(
+        model,
+        session.startOffset + 1,
+        session.startOffset + 1 + label.length,
+      )
+
+      setLinkEditSession(null)
+      setOpenDropdown(null)
+      clearSavedSelection()
+      clearToolbarTooltip()
+
+      if (session.source === 'preview') {
+        toolbarInteractionRef.current = true
+        savedModelRef.current = model
+        savedSelectionsRef.current = cloneSelections([labelSelection])
+        savedSelectionSourceRef.current = 'preview'
+        setSelectionSource('preview')
+        setLinkEditRange({
+          endOffset: session.startOffset + nextLinkText.length,
+          label,
+          sourceText: nextLinkText,
+          startOffset: session.startOffset,
+          url,
+        })
+        restorePreviewSelectionSoon([labelSelection])
+        return
+      }
+
+      editor.setSelection(labelSelection)
+      editor.focus()
+      updateToolbarSoon()
+    },
+    [
+      clearSavedSelection,
+      clearToolbarTooltip,
+      editor,
+      restorePreviewSelectionSoon,
+      setLinkEditSession,
+      updateToolbarSoon,
+    ],
+  )
+
   useToolbarKeyboardCommands({
     editor,
     runEditorCommand,
@@ -768,6 +956,11 @@ export function useFloatingToolbarState({
     (previewEditRange !== null || previewEditSession !== null)
   const previewEditSourceText =
     previewEditSession?.text ?? previewEditRange?.text ?? ''
+  const linkEditAvailable = linkEditRange !== null || linkEditSession !== null
+  const linkEditInitialState = {
+    label: linkEditSession?.label ?? linkEditRange?.label ?? '',
+    url: linkEditSession?.url ?? linkEditRange?.url ?? '',
+  }
 
   return {
     activeFormats,
@@ -783,6 +976,15 @@ export function useFloatingToolbarState({
       open: previewEditSession !== null,
       openMenu: openPreviewEditMenu,
       sourceText: previewEditSourceText,
+    },
+    linkEdit: {
+      available: linkEditAvailable,
+      cancel: cancelLinkEditMenu,
+      close: closeLinkEditMenu,
+      confirm: confirmLinkEditMenu,
+      initialState: linkEditInitialState,
+      open: linkEditSession !== null,
+      openMenu: openLinkEditMenu,
     },
     runEditorCommand,
     setOpenDropdown,

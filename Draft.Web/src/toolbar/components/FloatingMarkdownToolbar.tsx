@@ -8,7 +8,6 @@ import {
 import {
   applyHeadingStyle,
   applyListStyle,
-  toggleLinkSelection,
   toggleWrappedSelection,
 } from '../../editor/monaco/markdownCommandAdapter'
 import type { HeadingValue, ListValue } from '../../markdown'
@@ -27,6 +26,7 @@ import type {
   FloatingMarkdownToolbarProps,
   ToolbarPosition,
 } from '../toolbarTypes'
+import LinkEditMenu from './LinkEditMenu'
 import PreviewEditMenu from './PreviewEditMenu'
 import ToolbarButton from './ToolbarButton'
 import ToolbarDropdown from './ToolbarDropdown'
@@ -34,7 +34,7 @@ import ToolbarIcon from './ToolbarIcon'
 import ToolbarTooltip from './ToolbarTooltip'
 import '../styles/floatingMarkdownToolbar.css'
 
-function isPreviewEditMenuTarget(target: EventTarget | null) {
+function isToolbarPopupTarget(target: EventTarget | null) {
   const element =
     target instanceof Element
       ? target
@@ -42,7 +42,7 @@ function isPreviewEditMenuTarget(target: EventTarget | null) {
         ? target.parentElement
         : null
 
-  return !!element?.closest('[data-preview-edit-menu]')
+  return !!element?.closest('[data-toolbar-popup]')
 }
 
 function FloatingMarkdownToolbar({
@@ -72,6 +72,7 @@ function FloatingMarkdownToolbar({
     activeFormats,
     headingValue,
     listValue,
+    linkEdit,
     markToolbarInteraction,
     openDropdown,
     previewEdit,
@@ -93,6 +94,7 @@ function FloatingMarkdownToolbar({
     workspaceRef,
   })
   const closePreviewEditMenu = previewEdit.close
+  const closeLinkEditMenu = linkEdit.close
   const toolbarStyle = useMemo(
     () =>
       position
@@ -115,17 +117,19 @@ function FloatingMarkdownToolbar({
     (open: boolean) => {
       hideToolbarTooltip()
       closePreviewEditMenu()
+      closeLinkEditMenu()
       setOpenDropdown(open ? 'heading' : null)
     },
-    [closePreviewEditMenu, hideToolbarTooltip, setOpenDropdown],
+    [closeLinkEditMenu, closePreviewEditMenu, hideToolbarTooltip, setOpenDropdown],
   )
   const handleListOpenChange = useCallback(
     (open: boolean) => {
       hideToolbarTooltip()
       closePreviewEditMenu()
+      closeLinkEditMenu()
       setOpenDropdown(open ? 'list' : null)
     },
-    [closePreviewEditMenu, hideToolbarTooltip, setOpenDropdown],
+    [closeLinkEditMenu, closePreviewEditMenu, hideToolbarTooltip, setOpenDropdown],
   )
   const headingTooltip = useMemo(
     () => ({
@@ -163,14 +167,14 @@ function FloatingMarkdownToolbar({
       onPointerDownCapture={(event) => {
         markToolbarInteraction()
         hideToolbarTooltip()
-        if (!isPreviewEditMenuTarget(event.target)) {
+        if (!isToolbarPopupTarget(event.target)) {
           event.preventDefault()
         }
       }}
       onMouseDownCapture={(event) => {
         markToolbarInteraction()
         hideToolbarTooltip()
-        if (!isPreviewEditMenuTarget(event.target)) {
+        if (!isToolbarPopupTarget(event.target)) {
           event.preventDefault()
         }
       }}
@@ -240,19 +244,19 @@ function FloatingMarkdownToolbar({
       >
         <ToolbarIcon name="code" />
       </ToolbarButton>
-      <ToolbarButton
-        ariaLabel="Link"
+      <LinkEditMenu
         active={activeFormats.link}
+        initialState={linkEdit.initialState}
+        open={linkEdit.open}
+        toolbarRef={toolbarRef}
+        workspaceRef={workspaceRef}
+        onCancel={linkEdit.cancel}
+        onClose={linkEdit.close}
+        onConfirm={linkEdit.confirm}
+        onOpen={linkEdit.openMenu}
         onTooltipHide={hideToolbarTooltip}
         onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand(toggleLinkSelection, {
-          focusEditor: true,
-          switchPreviewLinkToEditor: true,
-        })}
-        tooltip={inlineTooltips.link}
-      >
-        <ToolbarIcon name="link" />
-      </ToolbarButton>
+      />
       {previewEdit.available ? (
         <PreviewEditMenu
           open={previewEdit.open}
