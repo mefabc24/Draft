@@ -3,6 +3,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { DraftEditorSettings } from '../../settings/settingsTypes'
 import { getEditorTheme, registerEditorThemes } from '../../themes'
 import { syncCurrentLineDecorations } from '../monaco/currentLineDecorations'
+import { duplicateCurrentLine } from '../monaco/duplicateLine'
 import {
   EDITOR_PADDING,
   EDITOR_SCROLL_SENSITIVITY,
@@ -174,6 +175,12 @@ export function useMonacoMarkdownEditor({
 
     syncPersistentCurrentLine()
 
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
+      () => {
+        duplicateCurrentLine(editor)
+      },
+    )
     editor.addCommand(
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.LeftArrow,
       () => {
