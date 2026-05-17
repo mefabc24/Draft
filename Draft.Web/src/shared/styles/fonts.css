@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url('../../../public/jetbrains-mono.ttf') format('truetype');
+  src: url('../../../public/fonts/jetbrains-mono.ttf') format('truetype');
   font-weight: 100 800;
   font-style: normal;
   font-display: swap;
@@ -8,7 +8,7 @@
 
 @font-face {
   font-family: 'Manrope';
-  src: url('../../../public/manrope.ttf') format('truetype');
+  src: url('../../../public/fonts/manrope.ttf') format('truetype');
   font-weight: 100 800;
   font-style: normal;
   font-display: swap;
