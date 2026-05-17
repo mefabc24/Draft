@@ -1,8 +1,10 @@
-import type { ReactNode } from 'react'
+import { forwardRef, type ReactNode } from 'react'
 import type { ToolbarTooltipContent } from './ToolbarTooltip'
 
 type ToolbarButtonProps = {
   active?: boolean
+  ariaExpanded?: boolean
+  ariaHasPopup?: 'dialog' | 'menu'
   ariaLabel: string
   children: ReactNode
   onClick: () => void
@@ -14,20 +16,25 @@ type ToolbarButtonProps = {
   tooltip?: ToolbarTooltipContent
 }
 
-function ToolbarButton({
+const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(function ToolbarButton({
   active = false,
+  ariaExpanded,
+  ariaHasPopup,
   ariaLabel,
   children,
   onClick,
   onTooltipHide,
   onTooltipShow,
   tooltip,
-}: ToolbarButtonProps) {
+}, ref) {
   return (
     <button
+      ref={ref}
       type="button"
       className={`markdown-toolbar-button${active ? ' is-active' : ''}`}
       aria-label={ariaLabel}
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaHasPopup}
       aria-pressed={active}
       onBlur={onTooltipHide}
       onClick={() => {
@@ -50,6 +57,6 @@ function ToolbarButton({
       {children}
     </button>
   )
-}
+})
 
 export default ToolbarButton

@@ -289,6 +289,35 @@ export function toggleCodeBlock(
   executeEditorEdits(editor, edits, undefined, options)
 }
 
+export function replaceMarkdownSourceRange(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  selection: MarkdownSelectionOffsetRange,
+  text: string,
+  options?: MarkdownCommandOptions,
+) {
+  const model = editor.getModel()
+
+  if (!model) {
+    return null
+  }
+
+  const edit = createMonacoEditFromMarkdownEdit(model, {
+    ...selection,
+    text,
+  })
+
+  executeEditorEdits(editor, [edit], undefined, options)
+
+  const nextSelection = createSelectionFromOffsets(
+    model,
+    selection.startOffset,
+    selection.startOffset + text.length,
+  )
+
+  editor.setSelection(nextSelection)
+  return nextSelection
+}
+
 export function detectInlineFormats(
   editor: monaco.editor.IStandaloneCodeEditor,
   selections?: monaco.Selection[],

@@ -20,6 +20,18 @@ function getSourceSpanOffset(
   return Number.isFinite(value) ? value : null
 }
 
+function getMarkdownSourceElementOffset(
+  element: HTMLElement,
+  boundary: 'end' | 'start',
+) {
+  const value =
+    boundary === 'start'
+      ? Number(element.dataset.sourceMarkdownStart)
+      : Number(element.dataset.sourceMarkdownEnd)
+
+  return Number.isFinite(value) ? value : null
+}
+
 function isInsidePreviewCodeElement(
   node: Node,
   previewContentElement: HTMLDivElement,
@@ -157,6 +169,60 @@ function getPreviewSelectionRect(range: Range) {
   return rect.width > 0 && rect.height > 0 ? rect : null
 }
 
+function getSelectedText(value: string) {
+  return value.replace(/\r\n/g, '\n')
+}
+
+function getWholeMarkdownElementRange(
+  range: Range,
+  previewContentElement: HTMLDivElement,
+) {
+  const startElement =
+    range.startContainer instanceof Element
+      ? range.startContainer
+      : range.startContainer.parentElement
+  const selectedText = getSelectedText(range.toString())
+
+  if (!startElement || selectedText.length === 0) {
+    return null
+  }
+
+  let bestRange: { endOffset: number; startOffset: number } | null = null
+
+  for (
+    let element: Element | null = startElement;
+    element && previewContentElement.contains(element);
+    element = element.parentElement
+  ) {
+    if (
+      !(element instanceof HTMLElement) ||
+      !element.matches(
+        '[data-source-markdown-start][data-source-markdown-end]',
+      ) ||
+      !element.contains(range.startContainer) ||
+      !element.contains(range.endContainer) ||
+      getSelectedText(element.textContent ?? '') !== selectedText
+    ) {
+      continue
+    }
+
+    const startOffset = getMarkdownSourceElementOffset(element, 'start')
+    const endOffset = getMarkdownSourceElementOffset(element, 'end')
+
+    if (
+      startOffset === null ||
+      endOffset === null ||
+      startOffset >= endOffset
+    ) {
+      continue
+    }
+
+    bestRange = { endOffset, startOffset }
+  }
+
+  return bestRange
+}
+
 export function getPreviewSelectionSnapshot(
   model: monaco.editor.ITextModel,
   previewContentElement: HTMLDivElement,
@@ -195,6 +261,10 @@ export function getPreviewSelectionSnapshot(
     'end',
   )
   const anchorRect = getPreviewSelectionRect(range)
+  const wholeMarkdownElementRange = getWholeMarkdownElementRange(
+    range,
+    previewContentElement,
+  )
 
   if (
     startOffset === null ||
@@ -213,6 +283,8 @@ export function getPreviewSelectionSnapshot(
 
   return {
     anchorRect,
+    editableEndOffset: wholeMarkdownElementRange?.endOffset ?? endOffset,
+    editableStartOffset: wholeMarkdownElementRange?.startOffset ?? startOffset,
     endOffset,
     selection,
     sourceKey: `preview:${startOffset}:${endOffset}`,

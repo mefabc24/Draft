@@ -33,6 +33,8 @@ export type FloatingMarkdownToolbarProps = {
 
 export type PreviewSelectionSnapshot = {
   anchorRect: DOMRect
+  editableEndOffset: number
+  editableStartOffset: number
   endOffset: number
   selection: monaco.Selection
   sourceKey: string

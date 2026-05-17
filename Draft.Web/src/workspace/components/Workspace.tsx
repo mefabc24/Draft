@@ -102,6 +102,7 @@ function Workspace() {
   )
   const draftEditorSettingsRef = useRef<DraftEditorSettings>(DEFAULT_EDITOR_SETTINGS)
   const viewModeRef = useRef<ViewMode>(viewMode)
+  const suppressNextWorkspaceModePostRef = useRef(false)
   const {
     clampedSplitEditorRatio,
     isSplitResizing,
@@ -222,7 +223,8 @@ function Workspace() {
 
   useEffect(() => {
     return setDraftViewModeHandler((mode) => {
-      if (isViewMode(mode)) {
+      if (isViewMode(mode) && mode !== viewModeRef.current) {
+        suppressNextWorkspaceModePostRef.current = true
         setViewMode(mode)
       }
     })
@@ -253,7 +255,10 @@ function Workspace() {
       const workspaceMessage = parseWorkspaceModeMessage(record)
 
       if (workspaceMessage) {
-        setViewMode(workspaceMessage.mode)
+        if (workspaceMessage.mode !== viewModeRef.current) {
+          suppressNextWorkspaceModePostRef.current = true
+          setViewMode(workspaceMessage.mode)
+        }
         return
       }
 
@@ -270,6 +275,11 @@ function Workspace() {
   }, [])
 
   useEffect(() => {
+    if (suppressNextWorkspaceModePostRef.current) {
+      suppressNextWorkspaceModePostRef.current = false
+      return
+    }
+
     postWorkspaceMode(viewMode)
   }, [viewMode])
 
@@ -342,7 +352,9 @@ function Workspace() {
           editor={editorInstance}
           editorBodyRef={editorBodyRef}
           onRequestEditorMode={() => {
-            setViewMode('editor')
+            setViewMode((currentViewMode) =>
+              currentViewMode === 'preview' ? 'editor' : currentViewMode,
+            )
           }}
           previewContentRef={previewContentRef}
           previewScrollElementRef={previewScrollRef}

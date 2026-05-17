@@ -27,11 +27,23 @@ import type {
   FloatingMarkdownToolbarProps,
   ToolbarPosition,
 } from '../toolbarTypes'
+import PreviewEditMenu from './PreviewEditMenu'
 import ToolbarButton from './ToolbarButton'
 import ToolbarDropdown from './ToolbarDropdown'
 import ToolbarIcon from './ToolbarIcon'
 import ToolbarTooltip from './ToolbarTooltip'
 import '../styles/floatingMarkdownToolbar.css'
+
+function isPreviewEditMenuTarget(target: EventTarget | null) {
+  const element =
+    target instanceof Element
+      ? target
+      : target instanceof Node
+        ? target.parentElement
+        : null
+
+  return !!element?.closest('[data-preview-edit-menu]')
+}
 
 function FloatingMarkdownToolbar({
   editor,
@@ -62,6 +74,7 @@ function FloatingMarkdownToolbar({
     listValue,
     markToolbarInteraction,
     openDropdown,
+    previewEdit,
     runEditorCommand,
     setOpenDropdown,
   } = useFloatingToolbarState({
@@ -79,6 +92,7 @@ function FloatingMarkdownToolbar({
     viewMode,
     workspaceRef,
   })
+  const closePreviewEditMenu = previewEdit.close
   const toolbarStyle = useMemo(
     () =>
       position
@@ -100,16 +114,18 @@ function FloatingMarkdownToolbar({
   const handleHeadingOpenChange = useCallback(
     (open: boolean) => {
       hideToolbarTooltip()
+      closePreviewEditMenu()
       setOpenDropdown(open ? 'heading' : null)
     },
-    [hideToolbarTooltip, setOpenDropdown],
+    [closePreviewEditMenu, hideToolbarTooltip, setOpenDropdown],
   )
   const handleListOpenChange = useCallback(
     (open: boolean) => {
       hideToolbarTooltip()
+      closePreviewEditMenu()
       setOpenDropdown(open ? 'list' : null)
     },
-    [hideToolbarTooltip, setOpenDropdown],
+    [closePreviewEditMenu, hideToolbarTooltip, setOpenDropdown],
   )
   const headingTooltip = useMemo(
     () => ({
@@ -147,12 +163,16 @@ function FloatingMarkdownToolbar({
       onPointerDownCapture={(event) => {
         markToolbarInteraction()
         hideToolbarTooltip()
-        event.preventDefault()
+        if (!isPreviewEditMenuTarget(event.target)) {
+          event.preventDefault()
+        }
       }}
       onMouseDownCapture={(event) => {
         markToolbarInteraction()
         hideToolbarTooltip()
-        event.preventDefault()
+        if (!isPreviewEditMenuTarget(event.target)) {
+          event.preventDefault()
+        }
       }}
     >
       <ToolbarDropdown
@@ -233,6 +253,20 @@ function FloatingMarkdownToolbar({
       >
         <ToolbarIcon name="link" />
       </ToolbarButton>
+      {previewEdit.available ? (
+        <PreviewEditMenu
+          open={previewEdit.open}
+          sourceText={previewEdit.sourceText}
+          toolbarRef={toolbarRef}
+          workspaceRef={workspaceRef}
+          onCancel={previewEdit.cancel}
+          onClose={previewEdit.close}
+          onConfirm={previewEdit.confirm}
+          onOpen={previewEdit.openMenu}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+        />
+      ) : null}
 
       <div className="markdown-toolbar-divider" aria-hidden="true" />
 

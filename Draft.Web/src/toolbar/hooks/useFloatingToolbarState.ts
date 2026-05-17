@@ -21,13 +21,16 @@ import {
   isEmptySelection,
   isSelectionAllowedForToolbar,
   isSelectionValidForModel,
+  replaceMarkdownSourceRange,
   type MarkdownEditorCommand,
 } from '../../editor/monaco/markdownCommandAdapter'
 import type {
   ActiveFormats,
+  EditableMarkdownSourceRange,
   HeadingValue,
   ListValue,
 } from '../../markdown'
+import { getEditableMarkdownSourceRange } from '../../markdown'
 import type { FloatingMarkdownToolbarMode } from '../../settings/settingsTypes'
 import type { ViewMode } from '../../workspace/workspaceTypes'
 import {
@@ -66,6 +69,10 @@ type UseFloatingToolbarStateOptions = {
   workspaceRef: RefObject<HTMLElement | null>
 }
 
+type PreviewEditSession = EditableMarkdownSourceRange & {
+  sourceKey: string
+}
+
 export function useFloatingToolbarState({
   clearToolbarTooltip,
   editor,
@@ -86,12 +93,19 @@ export function useFloatingToolbarState({
   const savedPreviewSelectionRef = useRef<PreviewSelectionSnapshot | null>(null)
   const savedSelectionsRef = useRef<monaco.Selection[] | null>(null)
   const savedSelectionSourceRef = useRef<ToolbarSelectionSource | null>(null)
+  const previewEditSessionRef = useRef<PreviewEditSession | null>(null)
   const dismissedSelectionKeyRef = useRef<string | null>(null)
   const toolbarInteractionRef = useRef(false)
   const toolbarInteractionTimeoutRef = useRef<number | null>(null)
   const [openDropdown, setOpenDropdown] = useState<DropdownId | null>(null)
   const [headingValue, setHeadingValue] = useState<HeadingValue>('normal')
   const [listValue, setListValue] = useState<ListValue>('none')
+  const [selectionSource, setSelectionSource] =
+    useState<ToolbarSelectionSource | null>(null)
+  const [previewEditRange, setPreviewEditRange] =
+    useState<EditableMarkdownSourceRange | null>(null)
+  const [previewEditSession, setPreviewEditSessionState] =
+    useState<PreviewEditSession | null>(null)
   const [activeFormats, setActiveFormats] =
     useState<ActiveFormats>(EMPTY_ACTIVE_FORMATS)
 
@@ -99,12 +113,23 @@ export function useFloatingToolbarState({
     openDropdownRef.current = openDropdown
   }, [openDropdown])
 
+  const setPreviewEditSession = useCallback(
+    (session: PreviewEditSession | null) => {
+      previewEditSessionRef.current = session
+      setPreviewEditSessionState(session)
+    },
+    [],
+  )
+
   const clearSavedSelection = useCallback(() => {
     savedModelRef.current = null
     savedPreviewSelectionRef.current = null
     savedSelectionsRef.current = null
     savedSelectionSourceRef.current = null
-  }, [])
+    setSelectionSource(null)
+    setPreviewEditRange(null)
+    setPreviewEditSession(null)
+  }, [setPreviewEditSession])
 
   const markToolbarInteraction = useCallback(() => {
     toolbarInteractionRef.current = true
@@ -160,9 +185,8 @@ export function useFloatingToolbarState({
         : null
     const editorHasSelection =
       editorAllowed && currentEditorSelections.length > 0
-    const preferEditorSelection = editorHasSelection && !!editor?.hasTextFocus()
     const previewSelection =
-      !preferEditorSelection && previewAllowed ? rawPreviewSelection : null
+      previewAllowed ? rawPreviewSelection : null
 
     if (
       !editor ||
@@ -178,7 +202,7 @@ export function useFloatingToolbarState({
       return
     }
 
-    if (rawPreviewSelection && !previewAllowed && !preferEditorSelection) {
+    if (rawPreviewSelection && !previewAllowed) {
       clearSavedSelection()
       clearToolbarTooltip()
       setPosition(null)
@@ -187,6 +211,12 @@ export function useFloatingToolbarState({
     }
 
     if (!previewSelection && currentEditorSelections.length === 0) {
+      if (previewEditSessionRef.current) {
+        clearToolbarTooltip()
+        setOpenDropdown(null)
+        return
+      }
+
       if (toolbarInteractionRef.current && savedSelectionsRef.current) {
         return
       }
@@ -230,6 +260,34 @@ export function useFloatingToolbarState({
     savedPreviewSelectionRef.current = previewSelection
     savedSelectionsRef.current = cloneSelections(currentSelections)
     savedSelectionSourceRef.current = source
+    setSelectionSource(source)
+
+    if (source === 'preview' && editorHasSelection) {
+      const currentPosition =
+        editor.getPosition() ?? previewSelection?.selection.getStartPosition()
+
+      if (currentPosition) {
+        editor.setPosition(currentPosition)
+      }
+    }
+
+    const nextPreviewEditRange =
+      source === 'preview' && previewSelection
+        ? getEditableMarkdownSourceRange(model.getValue(), {
+            endOffset: previewSelection.editableEndOffset,
+            startOffset: previewSelection.editableStartOffset,
+          })
+        : null
+
+    setPreviewEditRange(nextPreviewEditRange)
+
+    if (
+      source !== 'preview' ||
+      !nextPreviewEditRange ||
+      previewEditSessionRef.current?.sourceKey !== selectionKey
+    ) {
+      setPreviewEditSession(null)
+    }
 
     if (
       source === 'editor' &&
@@ -277,6 +335,7 @@ export function useFloatingToolbarState({
     editor,
     editorBodyRef,
     previewContentRef,
+    setPreviewEditSession,
     setPosition,
     toolbarMode,
     toolbarRef,
@@ -478,6 +537,7 @@ export function useFloatingToolbarState({
       const shouldRestoreSelection = options.restoreSavedSelection ?? true
 
       hideToolbarTooltip()
+      setPreviewEditSession(null)
 
       if (
         shouldRestoreSelection &&
@@ -544,10 +604,119 @@ export function useFloatingToolbarState({
       onRequestEditorMode,
       restorePreviewSelectionSoon,
       restoreSavedSelection,
+      setPreviewEditSession,
       setPosition,
       updateToolbar,
       updateToolbarSoon,
       viewMode,
+    ],
+  )
+
+  const openPreviewEditMenu = useCallback(() => {
+    const model = savedModelRef.current
+    const previewSelection = savedPreviewSelectionRef.current
+
+    if (
+      !model ||
+      savedSelectionSourceRef.current !== 'preview' ||
+      !previewSelection
+    ) {
+      return null
+    }
+
+    const editableRange = getEditableMarkdownSourceRange(model.getValue(), {
+      endOffset: previewSelection.editableEndOffset,
+      startOffset: previewSelection.editableStartOffset,
+    })
+
+    if (!editableRange) {
+      return null
+    }
+
+    markToolbarInteraction()
+    hideToolbarTooltip()
+    setOpenDropdown(null)
+    setPreviewEditRange(editableRange)
+    setSelectionSource('preview')
+    setPreviewEditSession({
+      ...editableRange,
+      sourceKey: previewSelection.sourceKey,
+    })
+    return editableRange.text
+  }, [
+    hideToolbarTooltip,
+    markToolbarInteraction,
+    setPreviewEditSession,
+  ])
+
+  const closePreviewEditMenu = useCallback(() => {
+    setPreviewEditSession(null)
+  }, [setPreviewEditSession])
+
+  const cancelPreviewEditMenu = useCallback(() => {
+    const savedSelections = savedSelectionsRef.current
+      ? cloneSelections(savedSelectionsRef.current)
+      : null
+    const savedSource = savedSelectionSourceRef.current
+
+    markToolbarInteraction()
+    setPreviewEditSession(null)
+
+    if (savedSource === 'preview' && savedSelections) {
+      restorePreviewSelectionSoon(savedSelections)
+    }
+  }, [
+    markToolbarInteraction,
+    restorePreviewSelectionSoon,
+    setPreviewEditSession,
+  ])
+
+  const confirmPreviewEditMenu = useCallback(
+    (text: string) => {
+      const session = previewEditSessionRef.current
+      const model = editor?.getModel()
+
+      if (!editor || !model || !session) {
+        setPreviewEditSession(null)
+        return
+      }
+
+      const currentValue = model.getValue()
+      const sourceSegmentIsCurrent =
+        session.endOffset <= currentValue.length &&
+        currentValue.slice(session.startOffset, session.endOffset) ===
+          session.text
+
+      if (!sourceSegmentIsCurrent) {
+        setPreviewEditSession(null)
+        updateToolbarSoon()
+        return
+      }
+
+      replaceMarkdownSourceRange(
+        editor,
+        {
+          endOffset: session.endOffset,
+          startOffset: session.startOffset,
+        },
+        text,
+        { focusEditor: false },
+      )
+
+      window.getSelection()?.removeAllRanges()
+      toolbarInteractionRef.current = false
+      clearSavedSelection()
+      clearToolbarTooltip()
+      setOpenDropdown(null)
+      setPosition(null)
+    },
+    [
+      clearSavedSelection,
+      clearToolbarTooltip,
+      editor,
+      setPosition,
+      setPreviewEditSession,
+      updateToolbarSoon,
     ],
   )
 
@@ -557,12 +726,27 @@ export function useFloatingToolbarState({
     savedSelectionSourceRef,
   })
 
+  const previewEditAvailable =
+    selectionSource === 'preview' &&
+    (previewEditRange !== null || previewEditSession !== null)
+  const previewEditSourceText =
+    previewEditSession?.text ?? previewEditRange?.text ?? ''
+
   return {
     activeFormats,
     headingValue,
     listValue,
     markToolbarInteraction,
     openDropdown,
+    previewEdit: {
+      available: previewEditAvailable,
+      close: closePreviewEditMenu,
+      confirm: confirmPreviewEditMenu,
+      cancel: cancelPreviewEditMenu,
+      open: previewEditSession !== null,
+      openMenu: openPreviewEditMenu,
+      sourceText: previewEditSourceText,
+    },
     runEditorCommand,
     setOpenDropdown,
   }

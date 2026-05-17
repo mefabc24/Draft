@@ -4,6 +4,7 @@ export type ToolbarIconName =
   | 'bulletList'
   | 'code'
   | 'codeBlock'
+  | 'edit'
   | 'italic'
   | 'link'
   | 'noneList'
@@ -17,6 +18,7 @@ const toolbarIconPaths: Record<ToolbarIconName, string> = {
   bulletList: 'icons/BulletList.svg',
   code: 'icons/Code.svg',
   codeBlock: 'icons/Code%20Block.svg',
+  edit: 'icons/Edit.svg',
   italic: 'icons/Italic.svg',
   link: 'icons/Link.svg',
   noneList: 'icons/NoList.svg',
