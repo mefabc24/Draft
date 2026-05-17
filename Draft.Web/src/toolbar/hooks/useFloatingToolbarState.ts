@@ -338,7 +338,9 @@ export function useFloatingToolbarState({
       source === 'editor' &&
       !editor.hasTextFocus() &&
       openDropdownRef.current === null &&
-      !toolbarInteractionRef.current
+      !toolbarInteractionRef.current &&
+      !previewEditSessionRef.current &&
+      !linkEditSessionRef.current
     ) {
       clearToolbarTooltip()
       setPosition(null)
@@ -956,7 +958,9 @@ export function useFloatingToolbarState({
     (previewEditRange !== null || previewEditSession !== null)
   const previewEditSourceText =
     previewEditSession?.text ?? previewEditRange?.text ?? ''
-  const linkEditAvailable = linkEditRange !== null || linkEditSession !== null
+  const linkEditAvailable =
+    selectionSource === 'preview' &&
+    (linkEditRange !== null || linkEditSession !== null)
   const linkEditInitialState = {
     label: linkEditSession?.label ?? linkEditRange?.label ?? '',
     url: linkEditSession?.url ?? linkEditRange?.url ?? '',

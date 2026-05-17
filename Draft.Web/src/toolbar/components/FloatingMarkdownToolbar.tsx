@@ -8,6 +8,7 @@ import {
 import {
   applyHeadingStyle,
   applyListStyle,
+  toggleLinkSelection,
   toggleWrappedSelection,
 } from '../../editor/monaco/markdownCommandAdapter'
 import type { HeadingValue, ListValue } from '../../markdown'
@@ -244,19 +245,32 @@ function FloatingMarkdownToolbar({
       >
         <ToolbarIcon name="code" />
       </ToolbarButton>
-      <LinkEditMenu
-        active={activeFormats.link}
-        initialState={linkEdit.initialState}
-        open={linkEdit.open}
-        toolbarRef={toolbarRef}
-        workspaceRef={workspaceRef}
-        onCancel={linkEdit.cancel}
-        onClose={linkEdit.close}
-        onConfirm={linkEdit.confirm}
-        onOpen={linkEdit.openMenu}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-      />
+      {linkEdit.available ? (
+        <LinkEditMenu
+          active={activeFormats.link}
+          initialState={linkEdit.initialState}
+          open={linkEdit.open}
+          toolbarRef={toolbarRef}
+          workspaceRef={workspaceRef}
+          onCancel={linkEdit.cancel}
+          onClose={linkEdit.close}
+          onConfirm={linkEdit.confirm}
+          onOpen={linkEdit.openMenu}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+        />
+      ) : (
+        <ToolbarButton
+          ariaLabel="Link"
+          active={activeFormats.link}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+          onClick={() => runEditorCommand(toggleLinkSelection)}
+          tooltip={inlineTooltips.link}
+        >
+          <ToolbarIcon name="link" />
+        </ToolbarButton>
+      )}
       {previewEdit.available ? (
         <PreviewEditMenu
           open={previewEdit.open}
