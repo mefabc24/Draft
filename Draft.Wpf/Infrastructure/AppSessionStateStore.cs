@@ -19,10 +19,7 @@ public static class AppSessionStateStore
         WriteIndented = true,
     };
 
-    private static readonly string SessionStateFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Draft",
-        "session-state.json");
+    private static readonly string SessionStateFilePath = AppDataPaths.SessionStateFilePath;
 
     public static bool TryLoad(out AppSessionState? sessionState)
     {

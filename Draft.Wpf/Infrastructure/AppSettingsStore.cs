@@ -8,6 +8,8 @@ public sealed class DraftSettings
 {
     public bool ReopenLastWorkspaceOnStartup { get; set; } = false;
 
+    public bool CheckForUpdatesOnStartup { get; set; } = true;
+
     public bool AutosaveEnabled { get; set; } = false;
 
     public string AutosaveInterval { get; set; } = "10s";
@@ -107,10 +109,7 @@ public static class AppSettingsStore
         WriteIndented = true,
     };
 
-    private static readonly string SettingsFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Draft",
-        "settings.json");
+    private static readonly string SettingsFilePath = AppDataPaths.SettingsFilePath;
 
     public static DraftSettings Load()
     {

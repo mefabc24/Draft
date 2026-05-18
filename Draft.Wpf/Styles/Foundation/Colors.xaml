@@ -57,6 +57,7 @@
     <SolidColorBrush x:Key="Brush.Background.Secondary" Color="{StaticResource Color.Background.Secondary}" />
     <SolidColorBrush x:Key="Brush.Background.Input" Color="{StaticResource Color.Background.Input}" />
     <SolidColorBrush x:Key="Brush.Background.InputHover" Color="{StaticResource Color.Background.InputHover}" />
+    <SolidColorBrush x:Key="Brush.Background.InputSubtleHover" Color="#2E3033" />
     <SolidColorBrush x:Key="Brush.Background.Hover" Color="{StaticResource Color.Background.Hover}" />
     <SolidColorBrush x:Key="Brush.Background.SelectedHover" Color="{StaticResource Color.Background.SelectedHover}" />
     <SolidColorBrush x:Key="Brush.Background.WindowControlClose" Color="{StaticResource Color.Background.WindowControlClose}" />

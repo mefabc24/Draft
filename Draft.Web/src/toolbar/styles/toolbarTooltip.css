@@ -1,0 +1,72 @@
+.markdown-toolbar-tooltip {
+  --markdown-toolbar-tooltip-arrow-left: 50%;
+  position: absolute;
+  z-index: 22;
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 28px;
+  padding: 12px;
+  border: 1px solid var(--markdown-toolbar-border);
+  border-radius: var(--markdown-toolbar-radius);
+  background: var(--markdown-toolbar-background);
+  box-shadow: var(--markdown-toolbar-shadow);
+  color: var(--markdown-toolbar-foreground);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  white-space: nowrap;
+}
+
+.markdown-toolbar-tooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.markdown-toolbar-tooltip.is-top {
+  transform: translateY(3px);
+}
+
+.markdown-toolbar-tooltip.is-top.is-visible {
+  transform: translateY(0);
+}
+
+.markdown-toolbar-tooltip-arrow {
+  position: absolute;
+  left: var(--markdown-toolbar-tooltip-arrow-left);
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--markdown-toolbar-border);
+  background: var(--markdown-toolbar-background);
+  pointer-events: none;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.markdown-toolbar-tooltip.is-bottom .markdown-toolbar-tooltip-arrow {
+  top: -7px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.markdown-toolbar-tooltip.is-top .markdown-toolbar-tooltip-arrow {
+  bottom: -7px;
+  border-top: 0;
+  border-left: 0;
+}
+
+.markdown-toolbar-tooltip-label {
+  color: var(--markdown-toolbar-foreground);
+}
+
+.markdown-toolbar-tooltip-shortcut {
+  color: var(--markdown-toolbar-primary);
+  font-family: var(--font-ui);
+  font-weight: 500;
+}

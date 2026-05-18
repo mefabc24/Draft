@@ -102,6 +102,18 @@
                         </StackPanel>
                     </settings:SettingCard>
 
+                    <section:SectionHeader Title="Update Card Demo" />
+
+                    <settings:UpdateSettingCard
+                        Title="Test update card"
+                        Margin="0,0,0,12"
+                        ActionCommand="{Binding RunDemoUpdateActionCommand}"
+                        ActionText="{Binding DemoUpdateActionText}"
+                        Description="Development-only test setting card. It always reports a fake update and never installs anything."
+                        IsActionEnabled="{Binding IsDemoUpdateActionEnabled}"
+                        IsUpdateAvailable="{Binding IsDemoUpdateAvailable}"
+                        StatusText="{Binding DemoUpdateStatus}" />
+
                     <section:SectionHeader Title="Prompt Preview" />
 
                     <settings:SettingCard

@@ -38,8 +38,8 @@
                         <!-- Close Button -->
                         <Button
                             Grid.Column="2"
-                            VerticalAlignment="Top"
                             HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
                             Command="{Binding CancelCommand}"
                             Style="{StaticResource DraftCloseButton}"
                             WindowChrome.IsHitTestVisibleInChrome="True">

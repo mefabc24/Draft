@@ -5,12 +5,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Draft.Dialogs.Prompt.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" d:Width="300">
+    d:Width="300"
+    mc:Ignorable="d">
     <Border
+        Padding="16"
         Background="{StaticResource Brush.Background.Input}"
         BorderBrush="{StaticResource Brush.Border.Input}"
         BorderThickness="1"
-        CornerRadius="4" Padding="16">
+        CornerRadius="4">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -24,7 +26,11 @@
                 Foreground="{StaticResource Brush.Text.Primary}"
                 Text="Enable Autosave" />
 
-            <CheckBox Grid.Column="1" Style="{StaticResource SettingsCheckBox}" IsChecked="False" Background="#555555"/>
+            <CheckBox
+                Grid.Column="1"
+                Background="#555555"
+                IsChecked="False"
+                Style="{StaticResource SettingsCheckBox}" />
         </Grid>
     </Border>
 </UserControl>

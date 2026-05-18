@@ -19,6 +19,7 @@ public class SettingsViewModel : BaseViewModel
     private SettingsPageViewModel _currentSettingsPage;
 
     private bool _reopenLastWorkspaceOnStartup;
+    private bool _checkForUpdatesOnStartup = true;
     private bool _autosaveEnabled;
     private string _autosaveInterval = "10s";
     private bool _saveOnFocusLost;
@@ -236,6 +237,12 @@ public class SettingsViewModel : BaseViewModel
     {
         get => _reopenLastWorkspaceOnStartup;
         set => SetSetting(ref _reopenLastWorkspaceOnStartup, value);
+    }
+
+    public bool CheckForUpdatesOnStartup
+    {
+        get => _checkForUpdatesOnStartup;
+        set => SetSetting(ref _checkForUpdatesOnStartup, value);
     }
 
     public bool AutosaveEnabled
@@ -537,6 +544,7 @@ public class SettingsViewModel : BaseViewModel
         AppSettingsStore.Normalize(settings);
 
         _reopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup;
+        _checkForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
         _autosaveEnabled = settings.AutosaveEnabled;
         _autosaveInterval = EnsureOption(AutosaveIntervalOptions, settings.AutosaveInterval, "10s");
         _saveOnFocusLost = settings.SaveOnFocusLost;
@@ -657,6 +665,7 @@ public class SettingsViewModel : BaseViewModel
         return AppSettingsStore.Normalize(new DraftSettings
         {
             ReopenLastWorkspaceOnStartup = ReopenLastWorkspaceOnStartup,
+            CheckForUpdatesOnStartup = CheckForUpdatesOnStartup,
             AutosaveEnabled = AutosaveEnabled,
             AutosaveInterval = AutosaveInterval,
             SaveOnFocusLost = SaveOnFocusLost,
@@ -829,6 +838,7 @@ public class SettingsViewModel : BaseViewModel
     private void RaiseAllSettingsPropertiesChanged()
     {
         OnPropertyChanged(nameof(ReopenLastWorkspaceOnStartup));
+        OnPropertyChanged(nameof(CheckForUpdatesOnStartup));
         OnPropertyChanged(nameof(AutosaveEnabled));
         OnPropertyChanged(nameof(IsAutosaveIntervalEnabled));
         OnPropertyChanged(nameof(AutosaveInterval));

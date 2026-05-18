@@ -1,0 +1,7 @@
+.app-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  color: var(--app-foreground);
+}

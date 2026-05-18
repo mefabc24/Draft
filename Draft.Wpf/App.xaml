@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="/Styles/Components/DraftCloseButton.xaml" />
                 <ResourceDictionary Source="/Dialogs/Message/Styles/MessageDialogButtons.xaml" />
                 <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
+                <ResourceDictionary Source="/Dialogs/Prompt/RevertSave/Styles/SaveVersionCard.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

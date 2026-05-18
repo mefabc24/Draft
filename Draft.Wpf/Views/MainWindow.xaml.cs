@@ -4,7 +4,10 @@ using Draft.Dialogs.Prompt.AutosavePrompt.Models;
 using Draft.Dialogs.Prompt.AutosavePrompt.Services;
 using Draft.Dialogs.Prompt.GoToPosition.Models;
 using Draft.Dialogs.Prompt.GoToPosition.Services;
+using Draft.Dialogs.Prompt.RevertSave.Models;
+using Draft.Dialogs.Prompt.RevertSave.Services;
 using Draft.Helpers;
+using Draft.Models.Save;
 using Draft.ViewModels;
 using Microsoft.Win32;
 using Microsoft.Web.WebView2.Core;
@@ -42,6 +45,7 @@ public partial class MainWindow : Window
     private readonly IMessageDialogService _messageDialogService = new MessageDialogService();
     private readonly IGoToPositionPromptService _goToPositionPromptService = new GoToPositionPromptService();
     private readonly IAutosavePromptService _autosavePromptService = new AutosavePromptService();
+    private readonly IRevertSavePromptService _revertSavePromptService = new RevertSavePromptService();
     private DraftSettings _settings;
     private bool _isWebViewReady;
     private bool _isSettingsWindowOpen;
@@ -208,6 +212,7 @@ public partial class MainWindow : Window
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
         viewModel.OpenCursorPositionPromptRequested += ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested += ViewModel_OpenAutosavePromptRequested;
+        viewModel.OpenRevertSavePromptRequested += ViewModel_OpenRevertSavePromptRequested;
         viewModel.FileOperationFailed += ViewModel_FileOperationFailed;
     }
 
@@ -220,6 +225,7 @@ public partial class MainWindow : Window
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
         viewModel.OpenCursorPositionPromptRequested -= ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested -= ViewModel_OpenAutosavePromptRequested;
+        viewModel.OpenRevertSavePromptRequested -= ViewModel_OpenRevertSavePromptRequested;
         viewModel.FileOperationFailed -= ViewModel_FileOperationFailed;
     }
 
@@ -281,7 +287,10 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog(this) != true)
             return;
 
-        await ViewModel.SaveDocumentToPathAsync(dialog.FileName, "Unable to save the current file.");
+        await ViewModel.SaveDocumentToPathAsync(
+            dialog.FileName,
+            "Unable to save the current file.",
+            DocumentSaveKind.Manual);
         PostDocumentToWebView();
     }
 
@@ -296,7 +305,12 @@ public partial class MainWindow : Window
 
     private void ViewModel_OpenSettingsRequested(object? sender, EventArgs e)
     {
-        SettingsWindow settingsWindow = new()
+        ShowSettings();
+    }
+
+    public void ShowSettings(SettingsPage initialPage = SettingsPage.General)
+    {
+        SettingsWindow settingsWindow = new(initialPage)
         {
             Owner = this,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -387,6 +401,60 @@ public partial class MainWindow : Window
 
         AppSettingsStore.TrySave(updatedSettings);
         ApplySettings(updatedSettings);
+    }
+
+    private void ViewModel_OpenRevertSavePromptRequested(object? sender, EventArgs e)
+    {
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        if (!viewModel.HasFilePath)
+        {
+            ShowMessageDialog(
+                "Revert Save",
+                "Open or save a file before restoring a saved version.",
+                MessageDialogType.Warning);
+            return;
+        }
+
+        _isPromptWindowOpen = true;
+        RevertSavePromptResult result;
+
+        try
+        {
+            result = _revertSavePromptService.Show(
+                new RevertSavePromptRequest(viewModel.CurrentFilePath),
+                this);
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
+        }
+
+        if (!result.IsConfirmed)
+            return;
+
+        if (result.RestoredContent is null)
+        {
+            ShowMessageDialog(
+                "Revert Save",
+                "The selected saved version could not be restored.",
+                MessageDialogType.Error);
+            return;
+        }
+
+        try
+        {
+            viewModel.RestoreContentFromSnapshot(result.RestoredContent);
+            PostDocumentToWebView();
+        }
+        catch (Exception ex) when (IsFileOperationException(ex))
+        {
+            ShowMessageDialog(
+                "Revert Save",
+                ex.Message,
+                MessageDialogType.Error);
+        }
     }
 
     private bool ConfirmDiscardUnsavedChanges()
