@@ -8,9 +8,7 @@
     d:DesignHeight="88"
     d:DesignWidth="500"
     mc:Ignorable="d">
-    <local:SettingCard
-        Title="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}, FallbackValue='Version'}"
-        Description="{Binding Description, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}, FallbackValue='Version 1.0.0'}">
+    <local:SettingCard Title="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}, FallbackValue='Version'}" Description="{Binding Description, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}, FallbackValue='Version 1.0.0'}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -40,13 +38,13 @@
 
             <Button
                 Grid.Column="1"
-                Width="132"
+                Width="120"
                 Height="36"
                 Command="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}}"
                 Content="{Binding ActionText, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}}"
                 IsEnabled="{Binding IsActionEnabled, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}}">
                 <Button.Style>
-                    <Style BasedOn="{StaticResource SettingsSecondaryButton}" TargetType="Button">
+                    <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsUpdateAvailable, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}}" Value="True">
                                 <Setter Property="Background" Value="{StaticResource Brush.Accent.Primary}" />

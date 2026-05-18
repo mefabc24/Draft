@@ -32,7 +32,8 @@
                         <ColumnDefinition />
                         <ColumnDefinition Width="40" />
                     </Grid.ColumnDefinitions>
-                    <Path Grid.Column="1"
+                    <Path
+                        Grid.Column="1"
                         Width="48"
                         Height="48"
                         HorizontalAlignment="Center"
@@ -118,7 +119,7 @@
             <ItemsControl ItemsSource="{Binding Buttons}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <local:MessageDialogButtonPanel Gap="12" />
+                        <local:MessageDialogButtonPanel Gap="8" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>

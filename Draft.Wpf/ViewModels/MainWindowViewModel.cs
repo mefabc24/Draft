@@ -1,7 +1,9 @@
 using Draft.Helpers;
+using Draft.Models.Save;
+using Draft.Services.Save;
 using System.IO;
 using System.Security;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -19,9 +21,15 @@ public class MainWindowViewModel : BaseViewModel
     private const int MinimumSavingStatusMilliseconds = 1000;
     private WorkspaceState _workspaceState;
     private readonly DispatcherTimer _autosaveTimer = new();
+    private readonly DocumentMetricsService _documentMetricsService;
+    private readonly ManualSaveSnapshotService _manualSaveSnapshotService;
+    private readonly AutosaveSnapshotService _autosaveSnapshotService;
     private string _currentContent = string.Empty;
     private string? _currentFilePath;
     private string _lastSavedContent = string.Empty;
+    private DateTimeOffset _currentDraftUpdatedAtUtc = DateTimeOffset.UtcNow;
+    private DateTimeOffset? _lastSavedAtUtc;
+    private DocumentSaveKind _lastSaveKind = DocumentSaveKind.Manual;
     private int _wordCount;
     private int _characterCount;
     private int _cursorLine = 1;
@@ -86,6 +94,8 @@ public class MainWindowViewModel : BaseViewModel
             OnPropertyChanged(nameof(HasUnsavedWork));
             OnPropertyChanged(nameof(FileSaveStatusDisplay));
             OnPropertyChanged(nameof(SaveStatusDotVisible));
+            OnPropertyChanged(nameof(CanOpenRevertSavePrompt));
+            CommandManager.InvalidateRequerySuggested();
             RefreshAutosaveTimer();
         }
     }
@@ -300,6 +310,14 @@ public class MainWindowViewModel : BaseViewModel
     public bool HasUnsavedWork => IsDirty
         || (!HasFilePath && !string.IsNullOrEmpty(CurrentContent));
 
+    public bool CanOpenRevertSavePrompt => HasFilePath;
+
+    public DateTimeOffset CurrentDraftUpdatedAtUtc => _currentDraftUpdatedAtUtc;
+
+    public DateTimeOffset? LastSavedAtUtc => _lastSavedAtUtc;
+
+    public DocumentSaveKind LastSaveKind => _lastSaveKind;
+
     public bool ConfirmBeforeClosingUnsavedFiles
     {
         get => _confirmBeforeClosingUnsavedFiles;
@@ -402,6 +420,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand OpenAutosavePromptCommand { get; }
 
+    public ICommand OpenRevertSavePromptCommand { get; }
+
     public event EventHandler? OpenFileRequested;
 
     public event EventHandler? SaveFileAsRequested;
@@ -414,10 +434,23 @@ public class MainWindowViewModel : BaseViewModel
 
     public event EventHandler? OpenAutosavePromptRequested;
 
+    public event EventHandler? OpenRevertSavePromptRequested;
+
     public event EventHandler<FileOperationFailedEventArgs>? FileOperationFailed;
 
     public MainWindowViewModel()
+        : this(new DocumentMetricsService(), new ManualSaveSnapshotService(), new AutosaveSnapshotService())
     {
+    }
+
+    public MainWindowViewModel(
+        DocumentMetricsService documentMetricsService,
+        ManualSaveSnapshotService manualSaveSnapshotService,
+        AutosaveSnapshotService autosaveSnapshotService)
+    {
+        _documentMetricsService = documentMetricsService;
+        _manualSaveSnapshotService = manualSaveSnapshotService;
+        _autosaveSnapshotService = autosaveSnapshotService;
         _autosaveTimer.Tick += AutosaveTimer_Tick;
 
         OpenFileCommand = new RelayCommand(() => OpenFileRequested?.Invoke(this, EventArgs.Empty));
@@ -428,6 +461,9 @@ public class MainWindowViewModel : BaseViewModel
             () => OpenCursorPositionPromptRequested?.Invoke(this, EventArgs.Empty));
         OpenAutosavePromptCommand = new RelayCommand(
             () => OpenAutosavePromptRequested?.Invoke(this, EventArgs.Empty));
+        OpenRevertSavePromptCommand = new RelayCommand(
+            () => OpenRevertSavePromptRequested?.Invoke(this, EventArgs.Empty),
+            () => CanOpenRevertSavePrompt);
 
         WorkspaceState = WorkspaceState.Split;
         UpdateTextMetrics();
@@ -464,26 +500,35 @@ public class MainWindowViewModel : BaseViewModel
 
         CurrentFilePath = Path.GetFullPath(path);
         CurrentContent = content;
+        DateTimeOffset loadedAtUtc = GetFileTimestampUtc(CurrentFilePath);
+        SetLastSavedAt(loadedAtUtc);
+        SetCurrentDraftUpdatedAt(loadedAtUtc);
+        SetLastSaveKind(DocumentSaveKind.Manual);
         UpdateTextMetrics();
         ResetDirtyState();
         UpdateCursorPosition(1, 1, 0);
     }
 
-    public Task SaveDocumentToCurrentPathAsync()
+    public Task SaveDocumentToCurrentPathAsync(DocumentSaveKind saveKind = DocumentSaveKind.Manual)
     {
         if (!HasFilePath || CurrentFilePath is null)
             throw new InvalidOperationException("Cannot save without a current file path.");
 
-        return SaveDocumentToPathAsync(CurrentFilePath, "Unable to save the current file.");
+        return SaveDocumentToPathAsync(CurrentFilePath, "Unable to save the current file.", saveKind);
     }
 
-    public async Task SaveDocumentToPathAsync(string path, string failureTitle = "Unable to save the current file.")
+    public async Task SaveDocumentToPathAsync(
+        string path,
+        string failureTitle = "Unable to save the current file.",
+        DocumentSaveKind saveKind = DocumentSaveKind.Manual)
     {
         if (IsSaving)
             return;
 
         DateTime saveStartedAt = DateTime.UtcNow;
         string contentToSave = CurrentContent;
+        ManualSaveSnapshotMetadata? snapshotMetadata = null;
+        AutosaveSnapshotMetadata? autosaveMetadata = null;
 
         IsSaving = true;
 
@@ -491,8 +536,43 @@ public class MainWindowViewModel : BaseViewModel
         {
             await File.WriteAllTextAsync(path, contentToSave);
 
-            CurrentFilePath = Path.GetFullPath(path);
+            string fullPath = Path.GetFullPath(path);
+
+            if (saveKind == DocumentSaveKind.Manual)
+            {
+                try
+                {
+                    snapshotMetadata = await _manualSaveSnapshotService.SaveManualSnapshotAsync(
+                        fullPath,
+                        contentToSave);
+                }
+                catch (Exception ex) when (IsSnapshotOperationException(ex))
+                {
+                    snapshotMetadata = null;
+                }
+            }
+            else
+            {
+                try
+                {
+                    autosaveMetadata = await _autosaveSnapshotService.SaveAutosaveSnapshotAsync(
+                        fullPath,
+                        contentToSave);
+                }
+                catch (Exception ex) when (IsSnapshotOperationException(ex))
+                {
+                    autosaveMetadata = null;
+                }
+            }
+
+            DateTimeOffset savedAtUtc = snapshotMetadata?.UpdatedAtUtc
+                ?? autosaveMetadata?.UpdatedAtUtc
+                ?? DateTimeOffset.UtcNow;
+            CurrentFilePath = fullPath;
             _lastSavedContent = contentToSave;
+            SetLastSavedAt(savedAtUtc);
+            SetCurrentDraftUpdatedAt(savedAtUtc);
+            SetLastSaveKind(saveKind);
             UpdateDirtyState();
         }
         catch (Exception ex) when (IsFileOperationException(ex))
@@ -518,8 +598,18 @@ public class MainWindowViewModel : BaseViewModel
     public void UpdateContentFromWeb(string content)
     {
         CurrentContent = content;
+        SetCurrentDraftUpdatedAt(DateTimeOffset.UtcNow);
         UpdateTextMetrics();
         UpdateDirtyState();
+    }
+
+    public void RestoreContentFromSnapshot(string content)
+    {
+        CurrentContent = content;
+        SetCurrentDraftUpdatedAt(DateTimeOffset.UtcNow);
+        UpdateTextMetrics();
+        UpdateDirtyState();
+        UpdateCursorPosition(1, 1, 0);
     }
 
     public void UpdateCursorPosition(int line, int column, int selectedCharacterCount)
@@ -533,6 +623,9 @@ public class MainWindowViewModel : BaseViewModel
     {
         CurrentFilePath = null;
         CurrentContent = string.Empty;
+        SetLastSavedAt(null);
+        SetCurrentDraftUpdatedAt(DateTimeOffset.UtcNow);
+        SetLastSaveKind(DocumentSaveKind.Manual);
         UpdateTextMetrics();
         UpdateCursorPosition(1, 1, 0);
         ResetDirtyState();
@@ -543,21 +636,21 @@ public class MainWindowViewModel : BaseViewModel
         if (!SaveOnFocusLost || !CanSaveExistingDirtyDocument())
             return;
 
-        await SaveDocumentToPathAsync(CurrentFilePath!, "Unable to save the current file when Draft lost focus.");
+        await SaveDocumentToPathAsync(
+            CurrentFilePath!,
+            "Unable to save the current file when Draft lost focus.",
+            DocumentSaveKind.Automatic);
     }
 
     private async void ExecuteSaveFileCommand()
     {
-        if (HasFilePath && !IsDirty)
-            return;
-
         if (!HasFilePath)
         {
             SaveFileAsRequested?.Invoke(this, EventArgs.Empty);
             return;
         }
 
-        await SaveDocumentToCurrentPathAsync();
+        await SaveDocumentToCurrentPathAsync(DocumentSaveKind.Manual);
     }
 
     private void ResetDirtyState()
@@ -582,7 +675,10 @@ public class MainWindowViewModel : BaseViewModel
         {
             if (CanSaveExistingDirtyDocument())
             {
-                await SaveDocumentToPathAsync(CurrentFilePath!, "Unable to autosave the current file.");
+                await SaveDocumentToPathAsync(
+                    CurrentFilePath!,
+                    "Unable to autosave the current file.",
+                    DocumentSaveKind.Automatic);
             }
         }
         finally
@@ -626,56 +722,51 @@ public class MainWindowViewModel : BaseViewModel
 
     private void UpdateTextMetrics()
     {
-        WordCount = CountWords(CurrentContent);
-        CharacterCount = CountCharacters(CurrentContent, IncludeMarkdownSyntaxInCharacterCount);
+        DocumentMetrics metrics = _documentMetricsService.Calculate(
+            CurrentContent,
+            IncludeMarkdownSyntaxInCharacterCount);
+
+        WordCount = metrics.WordCount;
+        CharacterCount = metrics.CharacterCount;
     }
 
-    private static int CountWords(string content)
+    private void SetCurrentDraftUpdatedAt(DateTimeOffset value)
     {
-        if (string.IsNullOrWhiteSpace(content))
-            return 0;
+        if (_currentDraftUpdatedAtUtc == value)
+            return;
 
-        string plainText = StripMarkdownSyntax(content);
-        return Regex.Matches(plainText, @"[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*").Count;
+        _currentDraftUpdatedAtUtc = value;
+        OnPropertyChanged(nameof(CurrentDraftUpdatedAtUtc));
     }
 
-    private static int CountCharacters(string content, bool includeMarkdownSyntax)
+    private void SetLastSavedAt(DateTimeOffset? value)
     {
-        if (string.IsNullOrEmpty(content))
-            return 0;
+        if (_lastSavedAtUtc == value)
+            return;
 
-        if (includeMarkdownSyntax)
-            return content.Length;
-
-        // TODO: Replace this approximation with rendered Markdown text extraction
-        // if Draft later centralizes Markdown parsing outside the WebView.
-        string plainText = StripMarkdownSyntax(content);
-        plainText = Regex.Replace(plainText, @"(?m)^[ \t]+", string.Empty);
-        plainText = Regex.Replace(plainText, @"(?m)[ \t]+$", string.Empty);
-
-        return plainText.Length;
+        _lastSavedAtUtc = value;
+        OnPropertyChanged(nameof(LastSavedAtUtc));
     }
 
-    private static string StripMarkdownSyntax(string content)
+    private void SetLastSaveKind(DocumentSaveKind value)
     {
-        string text = content;
+        if (_lastSaveKind == value)
+            return;
 
-        text = Regex.Replace(text, @"(?m)^\s{0,3}(?:`{3,}|~{3,}).*$", " ");
-        text = Regex.Replace(text, @"(?m)^\s{0,3}\[[^\]]+\]:\s+\S+.*$", " ");
-        text = Regex.Replace(text, @"!\[([^\]]*)\]\([^)]+\)", "$1");
-        text = Regex.Replace(text, @"\[([^\]]+)\]\([^)]+\)", "$1");
-        text = Regex.Replace(text, @"\[([^\]]+)\]\[[^\]]*\]", "$1");
-        text = Regex.Replace(text, @"(?m)^\s{0,3}#{1,6}\s*", " ");
-        text = Regex.Replace(text, @"(?m)^\s{0,3}>\s?", " ");
-        text = Regex.Replace(text, @"(?m)^\s{0,3}(?:[-+*]|\d+[.)])\s+", " ");
-        text = Regex.Replace(text, @"(?m)^\s{0,3}(?:[-*_]\s*){3,}$", " ");
-        text = Regex.Replace(text, @"(?m)^\s{0,3}(?:=+|-+)\s*$", " ");
-        text = Regex.Replace(text, @"(?m)\[[ xX]\]\s+", " ");
-        text = Regex.Replace(text, @"<[^>\r\n]+>", " ");
-        text = Regex.Replace(text, @"[`*_~|]", " ");
-        text = Regex.Replace(text, @"\\([\\`*_{}\[\]()#+\-.!>])", "$1");
+        _lastSaveKind = value;
+        OnPropertyChanged(nameof(LastSaveKind));
+    }
 
-        return text;
+    private static DateTimeOffset GetFileTimestampUtc(string path)
+    {
+        try
+        {
+            return new DateTimeOffset(File.GetLastWriteTimeUtc(path), TimeSpan.Zero);
+        }
+        catch (Exception ex) when (IsFileOperationException(ex))
+        {
+            return DateTimeOffset.UtcNow;
+        }
     }
 
     private static bool IsFileOperationException(Exception ex)
@@ -687,6 +778,13 @@ public class MainWindowViewModel : BaseViewModel
             or PathTooLongException
             or SecurityException
             or InvalidOperationException;
+    }
+
+    private static bool IsSnapshotOperationException(Exception ex)
+    {
+        return IsFileOperationException(ex)
+            || ex is JsonException
+            || ex is System.Security.Cryptography.CryptographicException;
     }
 }
 

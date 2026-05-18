@@ -7,16 +7,13 @@ namespace Draft.Dialogs.Prompt.AutosavePrompt.ViewModels;
 
 public sealed class AutosavePromptViewModel : BaseViewModel
 {
-    private readonly bool _initialAutosaveEnabled;
     private bool _autosaveEnabled;
-    private bool _hasAppliedOpenedFeedback;
     private string _autosaveInterval = "10s";
 
     public AutosavePromptViewModel(AutosavePromptRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        _initialAutosaveEnabled = request.AutosaveEnabled;
         _autosaveEnabled = request.AutosaveEnabled;
         _autosaveInterval = EnsureAutosaveInterval(request.AutosaveInterval);
 
@@ -53,19 +50,6 @@ public sealed class AutosavePromptViewModel : BaseViewModel
     public ICommand CancelCommand { get; }
 
     public event EventHandler? CloseRequested;
-
-    public void ApplyOpenedFeedback()
-    {
-        if (_hasAppliedOpenedFeedback)
-            return;
-
-        _hasAppliedOpenedFeedback = true;
-
-        if (!_initialAutosaveEnabled)
-        {
-            AutosaveEnabled = true;
-        }
-    }
 
     private void Confirm()
     {

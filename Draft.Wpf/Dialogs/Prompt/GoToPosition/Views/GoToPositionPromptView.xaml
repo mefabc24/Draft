@@ -28,7 +28,7 @@
 
                     <TextBlock
                         FontFamily="{StaticResource Font.Manrope}"
-                        FontSize="20"
+                        FontSize="28"
                         FontWeight="Bold"
                         Foreground="{StaticResource Brush.Text.Primary}"
                         Text="Go to Position" />

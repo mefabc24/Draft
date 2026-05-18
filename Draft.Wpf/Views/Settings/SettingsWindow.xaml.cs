@@ -13,6 +13,11 @@ public partial class SettingsWindow : Window
     public event EventHandler<SettingsAppliedEventArgs>? SettingsApplied;
 
     public SettingsWindow()
+        : this(SettingsPage.General)
+    {
+    }
+
+    public SettingsWindow(SettingsPage initialPage)
     {
         InitializeComponent();
         LocationChanged += SettingsWindow_PositionChanged;
@@ -20,6 +25,7 @@ public partial class SettingsWindow : Window
         StateChanged += SettingsWindow_PositionChanged;
 
         SettingsViewModel viewModel = new();
+        viewModel.SelectSettingsPage(initialPage);
         viewModel.CloseRequested += ViewModel_CloseRequested;
         viewModel.ResetConfirmationRequested += ViewModel_ResetConfirmationRequested;
         viewModel.SettingsApplied += ViewModel_SettingsApplied;

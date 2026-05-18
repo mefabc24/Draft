@@ -35,11 +35,11 @@
                 <section:SectionHeader Title="PROJECT &amp; LINKS" />
                 <settings:SettingCard Title="GitHub" Description="Open the Draft project repository.">
                     <Button
-                        Width="132"
+                        Width="120"
                         Height="36"
                         Click="GitHubButton_Click"
                         Content="Open GitHub"
-                        Style="{StaticResource SettingsSecondaryButton}" />
+                        Style="{StaticResource SettingButton}" />
                 </settings:SettingCard>
             </StackPanel>
         </ScrollViewer>

@@ -1,5 +1,6 @@
 using Draft.Dialogs.Message.Models;
 using Draft.Dialogs.Message.Services;
+using Draft.Views;
 using Draft.ViewModels;
 using System.Windows;
 using System.Windows.Input;
@@ -8,7 +9,7 @@ namespace Draft.Helpers;
 
 public sealed class UpdateCoordinator : BaseViewModel
 {
-    private const string InstallUpdateResultId = "install-update";
+    private const string OpenUpdateSettingsResultId = "open-update-settings";
     private readonly IMessageDialogService _messageDialogService;
     private readonly SemaphoreSlim _operationLock = new(1, 1);
     private readonly UpdateService _updateService;
@@ -76,7 +77,7 @@ public sealed class UpdateCoordinator : BaseViewModel
         await CheckForUpdatesAsync(
             showNoUpdateDialog: true,
             showFailureDialog: true,
-            promptToInstall: true,
+            promptToInstall: false,
             cancellationToken);
     }
 
@@ -98,12 +99,11 @@ public sealed class UpdateCoordinator : BaseViewModel
             UpdateCheckResult result = await _updateService.CheckForUpdatesAsync(cancellationToken);
 
             SetCheckingForUpdates(false);
-            await HandleUpdateCheckResultAsync(
+            HandleUpdateCheckResult(
                 result,
                 showNoUpdateDialog,
                 showFailureDialog,
-                promptToInstall,
-                cancellationToken);
+                promptToInstall);
         }
         catch (OperationCanceledException)
         {
@@ -116,12 +116,11 @@ public sealed class UpdateCoordinator : BaseViewModel
         }
     }
 
-    private async Task HandleUpdateCheckResultAsync(
+    private void HandleUpdateCheckResult(
         UpdateCheckResult result,
         bool showNoUpdateDialog,
         bool showFailureDialog,
-        bool promptToInstall,
-        CancellationToken cancellationToken)
+        bool promptToInstall)
     {
         switch (result.Status)
         {
@@ -155,7 +154,7 @@ public sealed class UpdateCoordinator : BaseViewModel
 
                 if (promptToInstall)
                 {
-                    await PromptToInstallUpdateAsync(result, cancellationToken);
+                    PromptToOpenUpdateSettings(result);
                 }
                 return;
         }
@@ -188,28 +187,45 @@ public sealed class UpdateCoordinator : BaseViewModel
         }
     }
 
-    private async Task PromptToInstallUpdateAsync(
-        UpdateCheckResult result,
-        CancellationToken cancellationToken)
+    private void PromptToOpenUpdateSettings(UpdateCheckResult result)
     {
         MessageDialogResult installResult = _messageDialogService.ShowMessage(
             new MessageDialogRequest(
                 "Update Available",
-                $"Draft {result.Version} is available. Install this update now? Draft will restart to finish installing.",
+                $"Draft {result.Version} is available. Open Settings to install it from About?",
                 MessageDialogType.Info,
                 new[]
                 {
                     MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
-                    MessageDialogButtonDefinition.Primary("Install", new MessageDialogResult(InstallUpdateResultId)),
+                    MessageDialogButtonDefinition.Primary("Open Settings", new MessageDialogResult(OpenUpdateSettingsResultId)),
                 }));
 
-        if (installResult.Id != InstallUpdateResultId)
+        SetAvailableUpdate(result);
+
+        if (installResult.Id != OpenUpdateSettingsResultId)
         {
-            SetAvailableUpdate(result);
             return;
         }
 
-        await InstallUpdateAsync(result, cancellationToken);
+        OpenAboutSettings();
+    }
+
+    private static void OpenAboutSettings()
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.ShowSettings(SettingsPage.About);
+                return;
+            }
+
+            SettingsWindow settingsWindow = new(SettingsPage.About)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            };
+            settingsWindow.ShowDialog();
+        });
     }
 
     private async Task InstallUpdateAsync(

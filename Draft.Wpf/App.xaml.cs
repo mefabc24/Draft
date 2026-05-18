@@ -1,6 +1,7 @@
 using Draft.Dialogs.Message.Models;
 using Draft.Dialogs.Message.Services;
 using Draft.Helpers;
+using Draft.Services.Save;
 using Draft.ViewModels;
 using Draft.Views;
 using System.IO;
@@ -31,6 +32,8 @@ public partial class App : Application
         base.OnStartup(e);
 
         DraftSettings settings = AppSettingsStore.Load();
+        _ = new SnapshotCleanupService().CleanupOldSnapshotsAsync();
+
         if (settings.AssociateTxtFilesWithDraft)
         {
             FileAssociationService.TryApplyTextAssociations(true);

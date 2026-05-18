@@ -109,10 +109,7 @@ public static class AppSettingsStore
         WriteIndented = true,
     };
 
-    private static readonly string SettingsFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Draft",
-        "settings.json");
+    private static readonly string SettingsFilePath = AppDataPaths.SettingsFilePath;
 
     public static DraftSettings Load()
     {
