@@ -90,6 +90,16 @@ type LinkEditInitialState = {
   url: string
 }
 
+function isEditableKeyboardTarget(target: EventTarget | null) {
+  if (!(target instanceof Element)) {
+    return false
+  }
+
+  return (
+    target.closest('input, textarea, select, [contenteditable="true"]') !== null
+  )
+}
+
 export function useFloatingToolbarState({
   clearToolbarTooltip,
   editor,
@@ -700,6 +710,40 @@ export function useFloatingToolbarState({
     setLinkEditSession,
     setPreviewEditSession,
   ])
+
+  useEffect(() => {
+    if (!editor) {
+      return
+    }
+
+    const handlePreviewEditShortcut = (event: KeyboardEvent) => {
+      if (
+        savedSelectionSourceRef.current !== 'preview' ||
+        !(event.ctrlKey || event.metaKey) ||
+        !event.shiftKey ||
+        event.altKey ||
+        event.key.toLowerCase() !== 'e' ||
+        isEditableKeyboardTarget(event.target)
+      ) {
+        return
+      }
+
+      const sourceText = openPreviewEditMenu()
+
+      if (sourceText === null) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    document.addEventListener('keydown', handlePreviewEditShortcut)
+
+    return () => {
+      document.removeEventListener('keydown', handlePreviewEditShortcut)
+    }
+  }, [editor, openPreviewEditMenu])
 
   const closePreviewEditMenu = useCallback(() => {
     setPreviewEditSession(null)

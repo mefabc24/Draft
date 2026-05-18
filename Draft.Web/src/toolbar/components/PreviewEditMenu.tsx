@@ -304,7 +304,7 @@ function PreviewEditMenu({
         onClick={handleOpen}
         onTooltipHide={onTooltipHide}
         onTooltipShow={onTooltipShow}
-        tooltip={{ label: 'Edit' }}
+        tooltip={{ label: 'Edit', shortcut: 'CTRL + SHIFT + E' }}
       >
         <ToolbarIcon name="edit" />
       </ToolbarButton>
