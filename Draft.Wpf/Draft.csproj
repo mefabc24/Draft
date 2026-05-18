@@ -7,9 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
-    <Version>1.4.2</Version>
-    <AssemblyVersion>1.4.2</AssemblyVersion>
-    <FileVersion>1.4.2</FileVersion>
+    <Version>2.0.0-beta</Version>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <FileVersion>2.0.0</FileVersion>
     <StartupObject>Draft.App</StartupObject>
     <DefaultItemExcludes>$(DefaultItemExcludes);.build-check\**;Draft.Wpf\**</DefaultItemExcludes>
     <ApplicationIcon>Assets\Icons\draft.ico</ApplicationIcon>

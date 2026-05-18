@@ -29,6 +29,18 @@ public partial class AboutSettingsView : UserControl
     private static string GetVersionText()
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
+        string? informationalVersion = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion;
+
+        if (!string.IsNullOrWhiteSpace(informationalVersion))
+        {
+            int metadataSeparatorIndex = informationalVersion.IndexOf('+');
+            return metadataSeparatorIndex > 0
+                ? informationalVersion[..metadataSeparatorIndex]
+                : informationalVersion;
+        }
+
         Version? version = assembly.GetName().Version;
         return version is null
             ? "Unknown"

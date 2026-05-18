@@ -259,7 +259,7 @@
                         <RowDefinition Height="auto" />
                     </Grid.RowDefinitions>
 
-                    <Grid Margin="0,0,0,16">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="auto" />
@@ -288,11 +288,10 @@
                         </Button>
                     </Grid>
 
-                    <ContentControl Grid.Row="1" Content="{Binding CurrentSettingsPage}" />
+                    <ContentControl Grid.Row="1" Content="{Binding CurrentSettingsPage}" Margin="0,16"/>
 
                     <Grid Grid.Row="2">
                         <StackPanel
-                            Margin="0,16,0,0"
                             HorizontalAlignment="Right"
                             Orientation="Horizontal">
                             <Button
