@@ -68,6 +68,8 @@ public partial class App : Application
 
         MainWindow = window;
         window.Show();
+
+        _ = UpdateCoordinator.Current.CheckForUpdatesOnLaunchAsync(CancellationToken.None);
     }
 
     private static void ApplyStartupWorkspaceMode(

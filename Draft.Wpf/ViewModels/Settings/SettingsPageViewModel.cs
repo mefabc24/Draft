@@ -1,6 +1,8 @@
+using Draft.Helpers;
+
 namespace Draft.ViewModels;
 
-public abstract class SettingsPageViewModel
+public abstract class SettingsPageViewModel : BaseViewModel
 {
     protected SettingsPageViewModel(string title, SettingsViewModel settings)
     {
