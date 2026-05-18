@@ -8,6 +8,8 @@ public sealed class DraftSettings
 {
     public bool ReopenLastWorkspaceOnStartup { get; set; } = false;
 
+    public bool CheckForUpdatesOnStartup { get; set; } = true;
+
     public bool AutosaveEnabled { get; set; } = false;
 
     public string AutosaveInterval { get; set; } = "10s";

@@ -25,6 +25,13 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    Title="Check for updates on startup"
+                    Margin="0,0,0,12"
+                    Description="Automatically scan for Draft updates in the background whenever the app launches.">
+                    <CheckBox IsChecked="{Binding Settings.CheckForUpdatesOnStartup, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
                     Title="Autosave enabled"
                     Margin="0,0,0,12"
                     Description="Save your changes automatically while you work.">
