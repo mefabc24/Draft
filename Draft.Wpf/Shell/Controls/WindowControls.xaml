@@ -1,0 +1,80 @@
+<UserControl
+    x:Class="Draft.Shell.Controls.WindowControls"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Draft.Shell.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="root"
+    mc:Ignorable="d">
+    <UniformGrid Columns="3" Rows="1">
+        <Button Click="Minimize_Click" Style="{StaticResource WindowControlButton}">
+            <Path
+                Width="12"
+                Height="12"
+                Data="{StaticResource Icon.Minimize}"
+                Stretch="Uniform"
+                Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                StrokeEndLineCap="Round"
+                StrokeStartLineCap="Round"
+                StrokeThickness="2" />
+        </Button>
+        <Button Click="MaxRestore_Click" Style="{StaticResource WindowControlButton}">
+            <Path
+                Width="12"
+                Height="12"
+                Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                Stretch="Uniform">
+
+                <Path.Style>
+                    <Style TargetType="Path">
+                        <Setter Property="Data" Value="{StaticResource Icon.Maximize}" />
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                                <Setter Property="Data" Value="{StaticResource Icon.Restore}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Path.Style>
+            </Path>
+        </Button>
+        <Button Click="Close_Click">
+            <Button.Style>
+                <Style BasedOn="{StaticResource WindowControlButton}" TargetType="Button">
+                    <Setter Property="Tag" Value="Close" />
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                                <Condition Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Normal" />
+                                <Condition Binding="{Binding IsWindowSnapped, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="local:ControlButtonAssist.CornerRadius" Value="0,8,0,0" />
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                                <Condition Binding="{Binding IsWindowSnapped, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="local:ControlButtonAssist.CornerRadius" Value="0" />
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                                <Condition Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="local:ControlButtonAssist.CornerRadius" Value="0" />
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+            <Path
+                Width="12"
+                Height="12"
+                Data="{StaticResource Icon.Close}"
+                Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                Stretch="Uniform" />
+        </Button>
+    </UniformGrid>
+</UserControl>

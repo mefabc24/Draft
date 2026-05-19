@@ -1,0 +1,10 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Settings/Styles/Buttons.xaml" />
+        <ResourceDictionary Source="/Settings/Styles/Navigation.xaml" />
+        <ResourceDictionary Source="/Settings/Styles/CheckBox.xaml" />
+        <ResourceDictionary Source="/Settings/Styles/ComboBox.xaml" />
+        <ResourceDictionary Source="/Settings/Styles/TextBox.xaml" />
+        <ResourceDictionary Source="/Settings/Styles/ScrollViewer.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

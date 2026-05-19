@@ -1,0 +1,120 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="clr-namespace:Draft.Dialogs.Prompts.RevertSave.Models">
+    <Style x:Key="SaveVersionCard" TargetType="RadioButton">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border
+                        x:Name="border"
+                        Padding="16"
+                        Background="#0D0D0D"
+                        BorderBrush="#222222"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,32">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <Path
+                                        x:Name="Icon"
+                                        Width="16"
+                                        Height="16"
+                                        Margin="0,0,8,0"
+                                        Data="{StaticResource Icon.Last}"
+                                        Fill="{StaticResource Brush.Text.Secondary}"
+                                        Stretch="Uniform" />
+                                    <TextBlock
+                                        x:Name="TitleText"
+                                        VerticalAlignment="Center"
+                                        FontFamily="{StaticResource Font.Manrope}"
+                                        FontSize="12"
+                                        FontWeight="Medium"
+                                        Foreground="{StaticResource Brush.Text.Secondary}"
+                                        Text="{Binding Title}" />
+                                </StackPanel>
+
+                                <Border
+                                    x:Name="LatestTag"
+                                    Grid.Column="1"
+                                    Padding="12,4"
+                                    Background="#1AA5C8FF"
+                                    CornerRadius="4"
+                                    Visibility="Hidden">
+                                    <TextBlock
+                                        FontFamily="{StaticResource Font.Manrope}"
+                                        FontSize="11"
+                                        Foreground="{StaticResource Brush.Accent.Primary}"
+                                        Text="Latest" />
+                                </Border>
+                            </Grid>
+
+                            <StackPanel>
+                                <TextBlock
+                                    x:Name="WordCountText"
+                                    FontFamily="{StaticResource Font.SpaceGrotesk}"
+                                    FontSize="14"
+                                    Foreground="{StaticResource Brush.Text.Primary}"
+                                    Text="{Binding WordCountText}" />
+                                <TextBlock
+                                    x:Name="TimestampText"
+                                    FontFamily="{StaticResource Font.Manrope}"
+                                    FontSize="11"
+                                    Foreground="{StaticResource Brush.Text.Secondary}"
+                                    Text="{Binding TimestampText}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding OptionKind}" Value="{x:Static models:RevertSaveOptionKind.LastAutosave}">
+                            <Setter TargetName="Icon" Property="Data" Value="{StaticResource Icon.Sync}" />
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding IsLatest}" Value="True">
+                            <Setter TargetName="LatestTag" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#333538" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="#A5C8FF" />
+                            <Setter TargetName="Icon" Property="Fill" Value="#A5C8FF" />
+                            <Setter TargetName="TitleText" Property="Foreground" Value="#A5C8FF" />
+                        </Trigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border"  Property="Background" Value="#101010" />
+                            <Setter Property="Cursor" Value="Hand" />
+                        </Trigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="border" Property="Background" Value="#2E3033" />
+                            <Setter Property="Cursor" Value="Hand" />
+                        </MultiTrigger>
+
+                        
+
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Opacity" Value="0.52" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
+                            <Setter TargetName="Icon" Property="Fill" Value="{StaticResource Brush.Text.Muted}" />
+                            <Setter TargetName="TitleText" Property="Foreground" Value="{StaticResource Brush.Text.Muted}" />
+                            <Setter TargetName="WordCountText" Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+                            <Setter TargetName="TimestampText" Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

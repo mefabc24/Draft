@@ -1,0 +1,164 @@
+<UserControl
+    x:Class="Draft.Settings.Views.Pages.EditorSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:section="clr-namespace:Draft.Settings.Controls"
+    xmlns:settings="clr-namespace:Draft.Settings.Controls"
+    d:DesignHeight="2000"
+    d:DesignWidth="540"
+    mc:Ignorable="d">
+    <Border Background="Transparent">
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            Style="{StaticResource SettingsScrollViewer}"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel VerticalAlignment="Top">
+                <section:SectionHeader Title="TYPOGRAPHY" />
+
+                <settings:SettingFieldCard Title="Editor font family" Margin="0,0,0,12">
+                    <ComboBox
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding EditorFontFamilyOptions}"
+                        SelectedItem="{Binding Settings.EditorFontFamily, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingFieldCard>
+
+                <settings:SettingCard
+                    Title="Editor font size"
+                    Margin="0,0,0,12"
+                    Description="Adjust the text size inside the editor.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        ItemsSource="{Binding EditorFontSizeOptions}"
+                        SelectedItem="{Binding Settings.EditorFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Line height"
+                    Margin="0,0,0,32"
+                    Description="Adjust the vertical spacing between editor lines.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        ItemsSource="{Binding LineHeightOptions}"
+                        SelectedItem="{Binding Settings.LineHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <section:SectionHeader Title="LAYOUT &amp; DISPLAY" />
+
+                <settings:SettingCard
+                    Title="Word wrap"
+                    Margin="0,0,0,12"
+                    Description="Wrap long lines instead of scrolling horizontally.">
+                    <CheckBox IsChecked="{Binding Settings.WordWrap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Show line numbers"
+                    Margin="0,0,0,12"
+                    Description="Display line numbers next to the editor content.">
+                    <CheckBox IsChecked="{Binding Settings.ShowLineNumbers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Highlight current line"
+                    Margin="0,0,0,12"
+                    Description="Highlight the line where your cursor is currently placed.">
+                    <CheckBox IsChecked="{Binding Settings.HighlightCurrentLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Include Markdown syntax in character count"
+                    Margin="0,0,0,12"
+                    Description="Count raw Markdown characters in the status bar character total.">
+                    <CheckBox IsChecked="{Binding Settings.IncludeMarkdownSyntaxInCharacterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingFieldCard Title="Show whitespace characters" Margin="0,0,0,12">
+                    <ComboBox
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding ShowWhitespaceCharactersOptions}"
+                        SelectedItem="{Binding Settings.ShowWhitespaceCharacters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingFieldCard>
+
+                <settings:SettingCard
+                    Title="Show indentation guides"
+                    Margin="0,0,0,32"
+                    Description="Display vertical guide lines for indentation levels.">
+                    <CheckBox IsChecked="{Binding Settings.ShowIndentationGuides, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <section:SectionHeader Title="EDITING BEHAVIOR" />
+
+                <settings:SettingCard
+                    Title="Tab size"
+                    Margin="0,0,0,12"
+                    Description="Choose how many spaces a tab should represent.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        ItemsSource="{Binding TabSizeOptions}"
+                        SelectedItem="{Binding Settings.TabSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Insert spaces instead of tabs"
+                    Margin="0,0,0,12"
+                    Description="Insert spaces when pressing Tab instead of using tab characters.">
+                    <CheckBox IsChecked="{Binding Settings.InsertSpacesInsteadOfTabs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Auto-pair brackets"
+                    Margin="0,0,0,12"
+                    Description="Automatically insert closing brackets when typing opening brackets.">
+                    <CheckBox IsChecked="{Binding Settings.AutoPairBrackets, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Auto-pair quotes"
+                    Margin="0,0,0,12"
+                    Description="Automatically insert closing quotes when typing quotes.">
+                    <CheckBox IsChecked="{Binding Settings.AutoPairQuotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Markdown syntax highlighting"
+                    Margin="0,0,0,32"
+                    Description="Highlight Markdown syntax while editing.">
+                    <CheckBox IsChecked="{Binding Settings.MarkdownSyntaxHighlighting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <section:SectionHeader Title="CURSOR" />
+
+                <settings:SettingCard
+                    Title="Cursor style"
+                    Margin="0,0,0,12"
+                    Description="Choose the visual style of the editor cursor.">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        ItemsSource="{Binding CursorStyleOptions}"
+                        SelectedItem="{Binding Settings.CursorStyle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="Cursor blinking"
+                    Margin="0,0,0,12"
+                    Description="Animate the cursor with a blinking effect.">
+                    <CheckBox IsChecked="{Binding Settings.CursorBlinking, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

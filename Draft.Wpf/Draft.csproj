@@ -50,10 +50,4 @@
     <Folder Include=".github\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Dialogs\Styles\Dialogs.Buttons">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-  </ItemGroup>
-
 </Project>

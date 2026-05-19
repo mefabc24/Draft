@@ -1,4 +1,3 @@
-using Draft.Helpers;
 using System.Windows;
 
 namespace Draft.Dialogs.Base.Views;
