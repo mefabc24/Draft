@@ -541,6 +541,9 @@ public class MainWindowViewModel : BaseViewModel
 
     private async void ExecuteSaveFileCommand()
     {
+        if (IsSaving || (HasFilePath && !IsDirty))
+            return;
+
         if (!HasFilePath)
         {
             SaveFileAsRequested?.Invoke(this, EventArgs.Empty);
