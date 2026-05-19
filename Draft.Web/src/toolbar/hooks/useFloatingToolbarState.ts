@@ -126,6 +126,10 @@ export function useFloatingToolbarState({
   const isApplyingToolbarCommandRef = useRef(false)
   const toolbarInteractionRef = useRef(false)
   const toolbarInteractionTimeoutRef = useRef<number | null>(null)
+  const editorMouseSelectionRef = useRef(false)
+  const pendingEditorMouseSelectionUpdateRef = useRef(false)
+  const toolbarUpdateFrameRef = useRef<number | null>(null)
+  const restoreEditorFocusOnNextToolbarUpdateRef = useRef(false)
   const [openDropdown, setOpenDropdown] = useState<DropdownId | null>(null)
   const [headingValue, setHeadingValue] = useState<HeadingValue>('normal')
   const [listValue, setListValue] = useState<ListValue>('none')
@@ -406,9 +410,59 @@ export function useFloatingToolbarState({
     workspaceRef,
   ])
 
-  const updateToolbarSoon = useCallback(() => {
-    window.requestAnimationFrame(updateToolbar)
-  }, [updateToolbar])
+  const updateToolbarSoon = useCallback(
+    (options: { restoreEditorFocusAfterMouseSelection?: boolean } = {}) => {
+      if (options.restoreEditorFocusAfterMouseSelection) {
+        restoreEditorFocusOnNextToolbarUpdateRef.current = true
+      }
+
+      if (toolbarUpdateFrameRef.current !== null) {
+        window.cancelAnimationFrame(toolbarUpdateFrameRef.current)
+      }
+
+      toolbarUpdateFrameRef.current = window.requestAnimationFrame(() => {
+        toolbarUpdateFrameRef.current = null
+
+        const shouldRestoreEditorFocus =
+          restoreEditorFocusOnNextToolbarUpdateRef.current
+        restoreEditorFocusOnNextToolbarUpdateRef.current = false
+
+        if (
+          shouldRestoreEditorFocus &&
+          editor &&
+          getNonEmptySelections(editor).length > 0 &&
+          !editor.hasTextFocus() &&
+          openDropdownRef.current === null &&
+          !toolbarInteractionRef.current &&
+          !previewEditSessionRef.current &&
+          !linkEditSessionRef.current
+        ) {
+          editor.focus()
+        }
+
+        updateToolbar()
+      })
+    },
+    [editor, updateToolbar],
+  )
+
+  const finishEditorMouseSelection = useCallback(() => {
+    if (!editorMouseSelectionRef.current) {
+      return
+    }
+
+    const hadPendingSelectionUpdate =
+      pendingEditorMouseSelectionUpdateRef.current
+
+    editorMouseSelectionRef.current = false
+    pendingEditorMouseSelectionUpdateRef.current = false
+    // Monaco completes drag selection/focus bookkeeping on mouseup. Deferring
+    // toolbar state until the next frame keeps the overlay from intercepting
+    // that mouseup and restores text focus only if the drag selection lost it.
+    updateToolbarSoon({
+      restoreEditorFocusAfterMouseSelection: hadPendingSelectionUpdate,
+    })
+  }, [updateToolbarSoon])
 
   const restorePreviewSelectionSoon = useCallback(
     (selections: monaco.Selection[]) => {
@@ -460,41 +514,74 @@ export function useFloatingToolbarState({
       return
     }
 
-    const selectionDisposable = editor.onDidChangeCursorSelection(updateToolbar)
-    const scrollDisposable = editor.onDidScrollChange(updateToolbar)
-    const layoutDisposable = editor.onDidLayoutChange(updateToolbar)
-    const contentSizeDisposable = editor.onDidContentSizeChange(updateToolbar)
-    const focusDisposable = editor.onDidFocusEditorWidget(updateToolbar)
+    const scheduleToolbarUpdate = () => {
+      if (editorMouseSelectionRef.current) {
+        pendingEditorMouseSelectionUpdateRef.current = true
+        return
+      }
+
+      updateToolbarSoon()
+    }
+    const selectionDisposable = editor.onDidChangeCursorSelection(
+      scheduleToolbarUpdate,
+    )
+    const mouseDownDisposable = editor.onMouseDown((event) => {
+      if (!event.event.leftButton) {
+        return
+      }
+
+      editorMouseSelectionRef.current = true
+      pendingEditorMouseSelectionUpdateRef.current = false
+    })
+    const mouseUpDisposable = editor.onMouseUp(finishEditorMouseSelection)
+    const scrollDisposable = editor.onDidScrollChange(scheduleToolbarUpdate)
+    const layoutDisposable = editor.onDidLayoutChange(scheduleToolbarUpdate)
+    const contentSizeDisposable =
+      editor.onDidContentSizeChange(scheduleToolbarUpdate)
+    const focusDisposable = editor.onDidFocusEditorWidget(scheduleToolbarUpdate)
     const blurDisposable = editor.onDidBlurEditorWidget(() => {
-      window.setTimeout(updateToolbar, 0)
+      window.setTimeout(scheduleToolbarUpdate, 0)
     })
     const previewScrollElement = previewScrollElementRef.current
 
-    document.addEventListener('selectionchange', updateToolbar)
-    document.addEventListener('keyup', updateToolbar, true)
-    window.addEventListener('resize', updateToolbar)
-    previewScrollElement?.addEventListener('scroll', updateToolbar)
+    document.addEventListener('selectionchange', scheduleToolbarUpdate)
+    document.addEventListener('keyup', scheduleToolbarUpdate, true)
+    window.addEventListener('mouseup', finishEditorMouseSelection, true)
+    window.addEventListener('resize', scheduleToolbarUpdate)
+    previewScrollElement?.addEventListener('scroll', scheduleToolbarUpdate)
     const initialFrameId = window.requestAnimationFrame(updateToolbar)
 
     return () => {
       window.cancelAnimationFrame(initialFrameId)
       selectionDisposable.dispose()
+      mouseDownDisposable.dispose()
+      mouseUpDisposable.dispose()
       scrollDisposable.dispose()
       layoutDisposable.dispose()
       contentSizeDisposable.dispose()
       focusDisposable.dispose()
       blurDisposable.dispose()
-      document.removeEventListener('selectionchange', updateToolbar)
-      document.removeEventListener('keyup', updateToolbar, true)
-      window.removeEventListener('resize', updateToolbar)
-      previewScrollElement?.removeEventListener('scroll', updateToolbar)
+      document.removeEventListener('selectionchange', scheduleToolbarUpdate)
+      document.removeEventListener('keyup', scheduleToolbarUpdate, true)
+      window.removeEventListener('mouseup', finishEditorMouseSelection, true)
+      window.removeEventListener('resize', scheduleToolbarUpdate)
+      previewScrollElement?.removeEventListener('scroll', scheduleToolbarUpdate)
     }
-  }, [editor, previewScrollElementRef, updateToolbar])
+  }, [
+    editor,
+    finishEditorMouseSelection,
+    previewScrollElementRef,
+    updateToolbar,
+    updateToolbarSoon,
+  ])
 
   useEffect(() => {
     return () => {
       if (toolbarInteractionTimeoutRef.current !== null) {
         window.clearTimeout(toolbarInteractionTimeoutRef.current)
+      }
+      if (toolbarUpdateFrameRef.current !== null) {
+        window.cancelAnimationFrame(toolbarUpdateFrameRef.current)
       }
     }
   }, [])
