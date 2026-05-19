@@ -111,6 +111,10 @@
   padding-left: 24px;
 }
 
+.preview-content ol ol {
+  list-style-type: lower-roman;
+}
+
 .preview-content li {
   margin: 4px 0;
 }
