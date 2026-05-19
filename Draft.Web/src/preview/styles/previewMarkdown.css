@@ -71,6 +71,14 @@
   color: var(--preview-blockquote-foreground);
 }
 
+.preview-content blockquote > :first-child {
+  margin-top: 0;
+}
+
+.preview-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+
 /* Tables */
 .preview-content table {
   width: 100%;
