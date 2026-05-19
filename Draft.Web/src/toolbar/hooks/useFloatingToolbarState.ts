@@ -123,6 +123,7 @@ export function useFloatingToolbarState({
   const previewEditSessionRef = useRef<PreviewEditSession | null>(null)
   const linkEditSessionRef = useRef<LinkEditSession | null>(null)
   const dismissedSelectionKeyRef = useRef<string | null>(null)
+  const isApplyingToolbarCommandRef = useRef(false)
   const toolbarInteractionRef = useRef(false)
   const toolbarInteractionTimeoutRef = useRef<number | null>(null)
   const [openDropdown, setOpenDropdown] = useState<DropdownId | null>(null)
@@ -301,7 +302,11 @@ export function useFloatingToolbarState({
     savedSelectionSourceRef.current = source
     setSelectionSource(source)
 
-    if (source === 'preview' && editorHasSelection) {
+    if (
+      source === 'preview' &&
+      editorHasSelection &&
+      !isApplyingToolbarCommandRef.current
+    ) {
       const currentPosition =
         editor.getPosition() ?? previewSelection?.selection.getStartPosition()
 
@@ -598,63 +603,68 @@ export function useFloatingToolbarState({
       setPreviewEditSession(null)
       setLinkEditSession(null)
 
-      if (
-        shouldRestoreSelection &&
-        !restoreSavedSelection({ focusEditor })
-      ) {
-        setOpenDropdown(null)
-        setPosition(null)
-        return
-      }
-
-      if (!canRunMarkdownToolbarCommand(editor)) {
-        setOpenDropdown(null)
-        setPosition(null)
-        return
-      }
-
-      dismissedSelectionKeyRef.current = null
-      command(editor, { focusEditor })
-      const nextSelections = editor.getSelections() ?? []
-      const shouldSwitchPreviewToEditor =
-        source === 'preview' &&
-        !!options.switchPreviewLinkToEditor &&
-        nextSelections.every(isEmptySelection)
-      setOpenDropdown(null)
-
-      if (shouldSwitchPreviewToEditor) {
-        window.getSelection()?.removeAllRanges()
-        savedSelectionSourceRef.current = 'editor'
-        savedPreviewSelectionRef.current = null
-        savedSelectionsRef.current = cloneSelections(nextSelections)
-        if (viewMode === 'preview') {
-          onRequestEditorMode()
-        }
-        window.requestAnimationFrame(() => {
-          editor.focus()
-          updateToolbar()
-        })
-        return
-      }
-
-      if (source === 'preview') {
-        const nextNonEmptySelections = nextSelections.filter(
-          (selection) => !isEmptySelection(selection),
-        )
-
-        if (nextNonEmptySelections.length === 0) {
-          clearSavedSelection()
+      isApplyingToolbarCommandRef.current = true
+      try {
+        if (
+          shouldRestoreSelection &&
+          !restoreSavedSelection({ focusEditor })
+        ) {
+          setOpenDropdown(null)
           setPosition(null)
           return
         }
 
-        savedSelectionSourceRef.current = 'preview'
-        savedSelectionsRef.current = cloneSelections(nextNonEmptySelections)
-        restorePreviewSelectionSoon(nextNonEmptySelections)
-        return
-      }
+        if (!canRunMarkdownToolbarCommand(editor)) {
+          setOpenDropdown(null)
+          setPosition(null)
+          return
+        }
 
-      updateToolbarSoon()
+        dismissedSelectionKeyRef.current = null
+        command(editor, { focusEditor })
+        const nextSelections = editor.getSelections() ?? []
+        const shouldSwitchPreviewToEditor =
+          source === 'preview' &&
+          !!options.switchPreviewLinkToEditor &&
+          nextSelections.every(isEmptySelection)
+        setOpenDropdown(null)
+
+        if (shouldSwitchPreviewToEditor) {
+          window.getSelection()?.removeAllRanges()
+          savedSelectionSourceRef.current = 'editor'
+          savedPreviewSelectionRef.current = null
+          savedSelectionsRef.current = cloneSelections(nextSelections)
+          if (viewMode === 'preview') {
+            onRequestEditorMode()
+          }
+          window.requestAnimationFrame(() => {
+            editor.focus()
+            updateToolbar()
+          })
+          return
+        }
+
+        if (source === 'preview') {
+          const nextNonEmptySelections = nextSelections.filter(
+            (selection) => !isEmptySelection(selection),
+          )
+
+          if (nextNonEmptySelections.length === 0) {
+            clearSavedSelection()
+            setPosition(null)
+            return
+          }
+
+          savedSelectionSourceRef.current = 'preview'
+          savedSelectionsRef.current = cloneSelections(nextNonEmptySelections)
+          restorePreviewSelectionSoon(nextNonEmptySelections)
+          return
+        }
+
+        updateToolbarSoon()
+      } finally {
+        isApplyingToolbarCommandRef.current = false
+      }
     },
     [
       clearSavedSelection,
