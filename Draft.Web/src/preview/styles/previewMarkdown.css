@@ -115,6 +115,14 @@
   margin: 4px 0;
 }
 
+.preview-content li.task-list-item {
+  list-style: none;
+}
+
+.preview-content li.task-list-item > input[type='checkbox'] {
+  margin: 0 8px 0 -20px;
+}
+
 /* Links */
 .preview-content a {
   color: var(--preview-link-foreground);
