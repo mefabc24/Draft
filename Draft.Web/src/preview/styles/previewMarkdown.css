@@ -34,6 +34,27 @@
   margin: 0 0 14px;
 }
 
+/* Images */
+.preview-content img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 960px);
+  max-height: min(640px, calc(100vh - 128px));
+  object-fit: contain;
+  margin: 16px 0;
+}
+
+.preview-content p > img:only-child {
+  margin: 0;
+}
+
+@supports (height: 100cqh) {
+  .preview-content img {
+    max-height: min(640px, calc(100cqh - 16px));
+  }
+}
+
 /* Inline code */
 .preview-content :not(pre) > code {
   background: var(--preview-inline-code-background);

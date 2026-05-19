@@ -12,6 +12,7 @@
 }
 
 .preview-scroll {
+  container-type: size;
   height: 100%;
   overflow: auto;
   padding:
