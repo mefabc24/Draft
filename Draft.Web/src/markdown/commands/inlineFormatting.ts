@@ -2,6 +2,7 @@ import type {
   MarkdownSelectionOffsetRange,
   MarkdownTextEdit,
 } from '../markdownTypes'
+import { normalizeInlineSelectionRange } from './inlineSelectionNormalization'
 
 type InlineWrapperContext = {
   closeEndOffset: number
@@ -99,21 +100,27 @@ export function getToggleWrappedEdits(
   prefix: string,
   suffix = prefix,
 ) {
-  const { endOffset, startOffset } = selection
-  const hasSelectedWrapper = isSelectedTextWrapped(
+  const normalizedSelection = normalizeInlineSelectionRange(
+    value,
+    selection,
     selectedText,
+  )
+  const { coreRange, coreText } = normalizedSelection
+  const { endOffset, startOffset } = coreRange
+  const hasSelectedWrapper = isSelectedTextWrapped(
+    coreText,
     prefix,
     suffix,
   )
 
   if (hasSelectedWrapper) {
-    const text = selectedText.slice(
+    const text = coreText.slice(
       prefix.length,
-      selectedText.length - suffix.length,
+      coreText.length - suffix.length,
     )
 
     return {
-      edits: [{ ...selection, text }],
+      edits: [{ ...coreRange, text }],
       nextSelection: {
         endOffset: startOffset + text.length,
         startOffset,
@@ -123,7 +130,7 @@ export function getToggleWrappedEdits(
 
   const wrapperContext = getInlineWrapperContext(
     value,
-    selection,
+    coreRange,
     prefix,
     suffix,
   )

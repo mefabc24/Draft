@@ -6,6 +6,7 @@ import {
   getInlineWrapperContext,
   isSelectedTextWrapped,
 } from '../commands/inlineFormatting'
+import { normalizeInlineSelectionRange } from '../commands/inlineSelectionNormalization'
 import { isLinkSelectionActive } from '../commands/linkFormatting'
 
 export const EMPTY_ACTIVE_FORMATS: ActiveFormats = {
@@ -21,19 +22,26 @@ export function detectActiveInlineFormats(
   selection: MarkdownSelectionOffsetRange,
   selectedText: string,
 ) {
+  const normalizedSelection = normalizeInlineSelectionRange(
+    value,
+    selection,
+    selectedText,
+  )
+  const { coreRange, coreText } = normalizedSelection
+
   return {
     bold:
-      getInlineWrapperContext(value, selection, '**') !== null ||
-      isSelectedTextWrapped(selectedText, '**'),
+      getInlineWrapperContext(value, coreRange, '**') !== null ||
+      isSelectedTextWrapped(coreText, '**'),
     italic:
-      getInlineWrapperContext(value, selection, '*') !== null ||
-      isSelectedTextWrapped(selectedText, '*'),
+      getInlineWrapperContext(value, coreRange, '*') !== null ||
+      isSelectedTextWrapped(coreText, '*'),
     strikethrough:
-      getInlineWrapperContext(value, selection, '~~') !== null ||
-      isSelectedTextWrapped(selectedText, '~~'),
+      getInlineWrapperContext(value, coreRange, '~~') !== null ||
+      isSelectedTextWrapped(coreText, '~~'),
     code:
-      getInlineWrapperContext(value, selection, '`') !== null ||
-      isSelectedTextWrapped(selectedText, '`'),
+      getInlineWrapperContext(value, coreRange, '`') !== null ||
+      isSelectedTextWrapped(coreText, '`'),
     link: isLinkSelectionActive(value, selection, selectedText),
   }
 }
