@@ -33,6 +33,7 @@ import {
   parseWorkspaceModeMessage,
   postCursorPositionChanged as postCursorPositionChangedMessage,
   postDocumentChanged,
+  postSaveRequested,
   postWorkspaceMode,
   type GoToPositionMessage,
   type LoadDocumentMessage,
@@ -282,6 +283,30 @@ function Workspace() {
 
     postWorkspaceMode(viewMode)
   }, [viewMode])
+
+  useEffect(() => {
+    const handleSaveShortcut = (event: KeyboardEvent) => {
+      const isSaveShortcut =
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        (event.key.toLowerCase() === 's' || event.code === 'KeyS')
+
+      if (!isSaveShortcut) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      postSaveRequested()
+    }
+
+    document.addEventListener('keydown', handleSaveShortcut, true)
+
+    return () => {
+      document.removeEventListener('keydown', handleSaveShortcut, true)
+    }
+  }, [])
 
   useEffect(() => {
     window.requestAnimationFrame(() => {

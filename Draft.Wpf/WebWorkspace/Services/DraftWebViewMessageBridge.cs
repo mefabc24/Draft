@@ -71,7 +71,8 @@ public sealed class DraftWebViewMessageBridge
         string? message,
         Action<string> workspaceModeChanged,
         Action<string> documentChanged,
-        Action<int, int, int> cursorPositionChanged)
+        Action<int, int, int> cursorPositionChanged,
+        Action saveRequested)
     {
         if (string.IsNullOrWhiteSpace(message))
             return;
@@ -96,6 +97,9 @@ public sealed class DraftWebViewMessageBridge
                     break;
                 case DraftWebViewMessageTypes.CursorPositionChanged:
                     DispatchCursorPositionChangedMessage(root, cursorPositionChanged);
+                    break;
+                case DraftWebViewMessageTypes.SaveRequested:
+                    saveRequested();
                     break;
             }
         }

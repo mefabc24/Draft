@@ -541,7 +541,7 @@ public class MainWindowViewModel : BaseViewModel
 
     private async void ExecuteSaveFileCommand()
     {
-        if (IsSaving || (HasFilePath && !IsDirty))
+        if (IsSaving)
             return;
 
         if (!HasFilePath)

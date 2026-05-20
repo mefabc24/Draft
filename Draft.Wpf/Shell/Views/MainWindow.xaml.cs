@@ -531,14 +531,15 @@ public partial class MainWindow : Window
 
     private void CoreWebView2_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
     {
-        if (ViewModel is null)
+        if (ViewModel is not MainWindowViewModel viewModel)
             return;
 
         _webViewMessageBridge.DispatchIncomingMessage(
             e.TryGetWebMessageAsString(),
-            ViewModel.SetWorkspaceMode,
-            ViewModel.UpdateContentFromWeb,
-            ViewModel.UpdateCursorPosition);
+            viewModel.SetWorkspaceMode,
+            viewModel.UpdateContentFromWeb,
+            viewModel.UpdateCursorPosition,
+            () => viewModel.SaveFileCommand.Execute(null));
     }
 
     private static bool IsFileOperationException(Exception ex)
