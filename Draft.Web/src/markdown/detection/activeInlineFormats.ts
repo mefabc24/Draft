@@ -3,6 +3,7 @@ import type {
   MarkdownSelectionOffsetRange,
 } from '../markdownTypes'
 import {
+  findContainingInlineFormatRange,
   getInlineWrapperContext,
   isSelectedTextWrapped,
 } from '../commands/inlineFormatting'
@@ -32,16 +33,20 @@ export function detectActiveInlineFormats(
   return {
     bold:
       getInlineWrapperContext(value, coreRange, '**') !== null ||
-      isSelectedTextWrapped(coreText, '**'),
+      isSelectedTextWrapped(coreText, '**') ||
+      findContainingInlineFormatRange(value, coreRange, '**') !== null,
     italic:
       getInlineWrapperContext(value, coreRange, '*') !== null ||
-      isSelectedTextWrapped(coreText, '*'),
+      isSelectedTextWrapped(coreText, '*') ||
+      findContainingInlineFormatRange(value, coreRange, '*') !== null,
     strikethrough:
       getInlineWrapperContext(value, coreRange, '~~') !== null ||
-      isSelectedTextWrapped(coreText, '~~'),
+      isSelectedTextWrapped(coreText, '~~') ||
+      findContainingInlineFormatRange(value, coreRange, '~~') !== null,
     code:
       getInlineWrapperContext(value, coreRange, '`') !== null ||
-      isSelectedTextWrapped(coreText, '`'),
+      isSelectedTextWrapped(coreText, '`') ||
+      findContainingInlineFormatRange(value, coreRange, '`') !== null,
     link: isLinkSelectionActive(value, selection, selectedText),
   }
 }
