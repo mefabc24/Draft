@@ -3,6 +3,7 @@ import type {
   MarkdownSelectionOffsetRange,
 } from '../markdownTypes'
 import {
+  areSelectedNonEmptyLinesWrapped,
   findContainingInlineFormatRange,
   getInlineWrapperContext,
   isSelectedTextWrapped,
@@ -23,6 +24,16 @@ export function detectActiveInlineFormats(
   selection: MarkdownSelectionOffsetRange,
   selectedText: string,
 ) {
+  if (value.slice(selection.startOffset, selection.endOffset).includes('\n')) {
+    return {
+      bold: areSelectedNonEmptyLinesWrapped(value, selection, '**'),
+      italic: areSelectedNonEmptyLinesWrapped(value, selection, '*'),
+      strikethrough: areSelectedNonEmptyLinesWrapped(value, selection, '~~'),
+      code: areSelectedNonEmptyLinesWrapped(value, selection, '`'),
+      link: false,
+    }
+  }
+
   const normalizedSelection = normalizeInlineSelectionRange(
     value,
     selection,
