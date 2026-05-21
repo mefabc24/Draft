@@ -6,7 +6,10 @@ autosave, snapshots, update packaging, and Windows integration; the web workspac
 owns the Monaco editor, Markdown preview, formatting toolbar, and editor-facing
 interaction model.
 
-The app is currently versioned as `2.0.0-beta`.
+## Version
+
+The latest stable release is `1.4.0`.
+The latest pre-release is `2.0.0-beta.2`.
 
 ## Features
 
