@@ -10,6 +10,7 @@ import FloatingMarkdownToolbar from '../../toolbar/components/FloatingMarkdownTo
 import MarkdownEditorPane from '../../editor/components/MarkdownEditorPane'
 import PaneHeader from './PaneHeader'
 import PreviewPane from '../../preview/components/PreviewPane'
+import WorkspaceDevMenu from '../../dev/components/WorkspaceDevMenu'
 import WorkspaceSplitResizer from './WorkspaceSplitResizer'
 import { getEditorTheme, getPreviewTheme, getPreviewThemeStyle } from '../../themes'
 import { useEditorScrollbar } from '../../editor/hooks/useEditorScrollbar'
@@ -388,6 +389,10 @@ function Workspace() {
           workspaceRef={workspaceRef}
         />
       </section>
+      <WorkspaceDevMenu
+        activePreviewThemeId={activePreviewThemeId}
+        onPreviewThemeChange={setActivePreviewThemeId}
+      />
     </main>
   )
 }

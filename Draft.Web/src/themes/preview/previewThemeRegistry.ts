@@ -20,3 +20,17 @@ export const previewThemes = Object.fromEntries(
 export function getPreviewTheme(themeId: string): DraftPreviewTheme {
   return previewThemes[themeId] ?? previewThemes[DEFAULT_PREVIEW_THEME_ID]
 }
+
+export function getPreviewThemeOptions() {
+  return Object.values(previewThemes).sort((left, right) => {
+    if (left.id === DEFAULT_PREVIEW_THEME_ID) {
+      return -1
+    }
+
+    if (right.id === DEFAULT_PREVIEW_THEME_ID) {
+      return 1
+    }
+
+    return left.label.localeCompare(right.label)
+  })
+}
