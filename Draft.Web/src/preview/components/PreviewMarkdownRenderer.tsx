@@ -44,7 +44,6 @@ type PreviewListProps<TagName extends 'ol' | 'ul'> =
     sourceLine?: number
   }
 
-const COPY_ICON_SRC = `${import.meta.env.BASE_URL}icons/Copy.svg`
 const COPY_FEEDBACK_MS = 1000
 const PRETTY_CODE_FALLBACK_THEME = 'github-dark'
 const supportedExternalLinkProtocols = new Set(['http:', 'https:', 'mailto:'])
@@ -209,9 +208,18 @@ function PreviewCodeBlock({
           event.stopPropagation()
         }}
       >
-        <span className="preview-code-block-copy-icon" aria-hidden="true">
-          <img src={COPY_ICON_SRC} alt="" />
-        </span>
+        <svg
+          className="preview-code-block-copy-icon"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+          <path d="M20.4053 37.5C15.2484 37.5 12.5 34.7514 12.5 29.5943V17.8774C12.5 16.4328 13.2867 15.1757 14.4526 14.5V29.5943C14.4526 33.6729 16.3269 35.5472 20.4053 35.5472H31.5C30.8245 36.7137 29.5658 37.5 28.121 37.5L20.4053 37.5Z" />
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M20.3 33.5C18.2013 33.5 16.5 31.7987 16.5 29.7V14.3C16.5 12.2013 18.2013 10.5 20.3 10.5H31.7C33.7987 10.5 35.5 12.2013 35.5 14.3V29.7C35.5 31.7987 33.7987 33.5 31.7 33.5H20.3ZM31.7 31.6C32.7493 31.6 33.6 30.7493 33.6 29.7V14.3C33.6 13.2507 32.7493 12.4 31.7 12.4H20.3C19.2507 12.4 18.4 13.2507 18.4 14.3V29.7C18.4 30.7493 19.2507 31.6 20.3 31.6H31.7Z"
+          />
+        </svg>
         <svg
           className="preview-code-block-check-icon"
           viewBox="0 0 16 16"

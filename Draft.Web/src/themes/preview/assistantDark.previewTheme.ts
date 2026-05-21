@@ -30,12 +30,12 @@ const assistantDarkPreviewColorVariables = {
   '--preview-h6-background': 'transparent',
 
   // Headings: underline color
-  '--preview-h1-line-color': 'red',
-  '--preview-h2-line-color': '#374151',
-  '--preview-h3-line-color': '#374151',
-  '--preview-h4-line-color': '#374151',
-  '--preview-h5-line-color': '#374151',
-  '--preview-h6-line-color': '#374151',
+  '--preview-h1-line-color': 'transparent',
+  '--preview-h2-line-color': 'transparent',
+  '--preview-h3-line-color': 'transparent',
+  '--preview-h4-line-color': 'transparent',
+  '--preview-h5-line-color': 'transparent',
+  '--preview-h6-line-color': 'transparent',
 
   // Horizontal rule
   '--preview-rule-border': '#374151',
@@ -62,8 +62,10 @@ const assistantDarkPreviewColorVariables = {
   '--preview-task-list-checkbox-checked-foreground': '#fff',
 
   // Code blocks
+  // copy-icon-foreground controls only the copy symbol fill color.
   '--preview-code-block-background': '#242424',
   '--preview-code-block-border': 'transparent',
+  '--preview-code-block-copy-icon-foreground': '#fff',
   '--preview-code-block-foreground': '#fff',
 
   // Blockquotes
@@ -100,18 +102,26 @@ const assistantDarkPreviewLayoutVariables = {
   // Headings: background shape
   // padding: CSS padding shorthand, e.g. 0, 4px 8px, 8px 12px 10px.
   // border-radius: CSS length or radius shorthand, e.g. 0, 6px, 8px 8px 0 0.
+  // background-width: auto stretches the background; fit-content wraps text and padding.
+  '--preview-heading-background-width': 'auto',
   '--preview-heading-padding': '0',
   '--preview-heading-border-radius': '0',
+  '--preview-h1-background-width': 'auto',
   '--preview-h1-padding': '0',
   '--preview-h1-border-radius': '0',
+  '--preview-h2-background-width': 'auto',
   '--preview-h2-padding': '0',
   '--preview-h2-border-radius': '0',
+  '--preview-h3-background-width': 'auto',
   '--preview-h3-padding': '0',
   '--preview-h3-border-radius': '0',
+  '--preview-h4-background-width': 'auto',
   '--preview-h4-padding': '0',
   '--preview-h4-border-radius': '0',
+  '--preview-h5-background-width': 'auto',
   '--preview-h5-padding': '0',
   '--preview-h5-border-radius': '0',
+  '--preview-h6-background-width': 'auto',
   '--preview-h6-padding': '0',
   '--preview-h6-border-radius': '0',
 

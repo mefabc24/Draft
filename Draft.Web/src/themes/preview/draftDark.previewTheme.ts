@@ -62,8 +62,10 @@ const draftDarkPreviewColorVariables = {
   '--preview-task-list-checkbox-checked-foreground': '#111827',
 
   // Code blocks
+  // copy-icon-foreground controls only the copy symbol fill color.
   '--preview-code-block-background': '#111827',
   '--preview-code-block-border': '#2f3545',
+  '--preview-code-block-copy-icon-foreground': '#e5e7eb',
   '--preview-code-block-foreground': '#e5e7eb',
 
   // Blockquotes
@@ -100,18 +102,26 @@ const draftDarkPreviewLayoutVariables = {
   // Headings: background shape
   // padding: CSS padding shorthand, e.g. 0, 4px 8px, 8px 12px 10px.
   // border-radius: CSS length or radius shorthand, e.g. 0, 6px, 8px 8px 0 0.
+  // background-width: auto stretches the background; fit-content wraps text and padding.
+  '--preview-heading-background-width': 'auto',
   '--preview-heading-padding': '0',
   '--preview-heading-border-radius': '0',
+  '--preview-h1-background-width': 'auto',
   '--preview-h1-padding': '0',
   '--preview-h1-border-radius': '0',
+  '--preview-h2-background-width': 'auto',
   '--preview-h2-padding': '0',
   '--preview-h2-border-radius': '0',
+  '--preview-h3-background-width': 'auto',
   '--preview-h3-padding': '0',
   '--preview-h3-border-radius': '0',
+  '--preview-h4-background-width': 'auto',
   '--preview-h4-padding': '0',
   '--preview-h4-border-radius': '0',
+  '--preview-h5-background-width': 'auto',
   '--preview-h5-padding': '0',
   '--preview-h5-border-radius': '0',
+  '--preview-h6-background-width': 'auto',
   '--preview-h6-padding': '0',
   '--preview-h6-border-radius': '0',
 

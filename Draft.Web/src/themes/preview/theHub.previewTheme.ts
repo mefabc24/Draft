@@ -12,9 +12,9 @@ const theHubPreviewColorVariables = {
 
   // Headings: text color
   '--preview-heading-foreground': '#fff',
-  '--preview-h1-foreground': '#fff',
-  '--preview-h2-foreground': '#fff',
-  '--preview-h3-foreground': '#fff',
+  '--preview-h1-foreground': '#000',
+  '--preview-h2-foreground': draftDarkTokens.theHubAccent,
+  '--preview-h3-foreground': draftDarkTokens.theHubAccent,
   '--preview-h4-foreground': '#fff',
   '--preview-h5-foreground': '#fff',
   '--preview-h6-foreground': '#fff',
@@ -22,7 +22,7 @@ const theHubPreviewColorVariables = {
   // Headings: background color
   // Use transparent to disable the background. Values accept any CSS color.
   '--preview-heading-background': 'transparent',
-  '--preview-h1-background': 'transparent',
+  '--preview-h1-background': draftDarkTokens.theHubAccent,
   '--preview-h2-background': 'transparent',
   '--preview-h3-background': 'transparent',
   '--preview-h4-background': 'transparent',
@@ -38,7 +38,7 @@ const theHubPreviewColorVariables = {
   '--preview-h6-line-color': '#374151',
 
   // Horizontal rule
-  '--preview-rule-border': '#374151',
+  '--preview-rule-border': draftDarkTokens.theHubAccent,
 
   // Links
   '--preview-link-background': 'transparent',
@@ -62,24 +62,26 @@ const theHubPreviewColorVariables = {
   '--preview-task-list-checkbox-checked-foreground': '#000',
 
   // Code blocks
+  // copy-icon-foreground controls only the copy symbol fill color.
   '--preview-code-block-background': draftDarkTokens.theHubAccent,
   '--preview-code-block-border': 'transparent',
+  '--preview-code-block-copy-icon-foreground': '#000',
   '--preview-code-block-foreground': '#000',
 
   // Blockquotes
-  '--preview-blockquote-background': 'transparent',
+  '--preview-blockquote-background': 'rgba(247, 152, 23, 10%)',
   '--preview-blockquote-border': draftDarkTokens.theHubAccent,
   '--preview-blockquote-foreground': '#fff',
 
   // Tables
-  '--preview-table-border': 'transparent',
+  '--preview-table-border': 'blue',
   '--preview-table-cell-background': 'transparent',
   '--preview-table-column-border': 'transparent',
-  '--preview-table-header-background': 'transparent',
-  '--preview-table-header-border': '#3F3F3F',
-  '--preview-table-header-foreground': '#f9fafb',
-  '--preview-table-outer-border': 'transparent',
-  '--preview-table-row-border': '#202020',
+  '--preview-table-header-background': draftDarkTokens.theHubAccent,
+  '--preview-table-header-border': draftDarkTokens.theHubAccent,
+  '--preview-table-header-foreground': '#000',
+  '--preview-table-outer-border': draftDarkTokens.theHubAccent,
+  '--preview-table-row-border': 'rgba(247, 152, 23, 30%)',
 
   // Scrollbars
   '--preview-scrollbar-thumb': draftDarkTokens.scrollbarThumb,
@@ -100,18 +102,26 @@ const theHubPreviewLayoutVariables = {
   // Headings: background shape
   // padding: CSS padding shorthand, e.g. 0, 4px 8px, 8px 12px 10px.
   // border-radius: CSS length or radius shorthand, e.g. 0, 6px, 8px 8px 0 0.
+  // background-width: auto stretches the background; fit-content wraps text and padding.
+  '--preview-heading-background-width': 'auto',
   '--preview-heading-padding': '0',
   '--preview-heading-border-radius': '0',
-  '--preview-h1-padding': '0',
-  '--preview-h1-border-radius': '0',
+  '--preview-h1-background-width': 'fit-content',
+  '--preview-h1-padding': '0 12px',
+  '--preview-h1-border-radius': '8px',
+  '--preview-h2-background-width': 'auto',
   '--preview-h2-padding': '0',
   '--preview-h2-border-radius': '0',
+  '--preview-h3-background-width': 'auto',
   '--preview-h3-padding': '0',
   '--preview-h3-border-radius': '0',
+  '--preview-h4-background-width': 'auto',
   '--preview-h4-padding': '0',
   '--preview-h4-border-radius': '0',
+  '--preview-h5-background-width': 'auto',
   '--preview-h5-padding': '0',
   '--preview-h5-border-radius': '0',
+  '--preview-h6-background-width': 'auto',
   '--preview-h6-padding': '0',
   '--preview-h6-border-radius': '0',
 
@@ -184,18 +194,18 @@ const theHubPreviewLayoutVariables = {
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.
   '--preview-blockquote-border-inset': '0',
   '--preview-blockquote-border-line-radius': '2px',
-  '--preview-blockquote-border-radius': '0',
+  '--preview-blockquote-border-radius': '0 8px 8px 0',
   '--preview-blockquote-border-width': '4px',
   '--preview-blockquote-padding': '8px 16px',
 
   // Tables
   // Border width 0 removes that line. Use row, column, header, and outer widths to shape the grid.
-  '--preview-table-border-radius': '0',
+  '--preview-table-border-radius': '8px',
   '--preview-table-cell-padding': '10px 12px',
-  '--preview-table-column-border-width': '0',
-  '--preview-table-header-border-width': '1px',
-  '--preview-table-last-row-border-width': '0',
-  '--preview-table-outer-border-width': '0',
+  '--preview-table-column-border-width': '0px',
+  '--preview-table-header-border-width': '2px',
+  '--preview-table-last-row-border-width': '2px',
+  '--preview-table-outer-border-width': '2px',
   '--preview-table-row-border-width': '1px',
 } satisfies PreviewThemeVariables
 
@@ -243,7 +253,7 @@ export const theHubPreviewTheme: DraftPreviewTheme = {
    * spacing: CSS length, e.g. 0, 4px, 0.35em.
    * size: CSS length, e.g. 1em, 0.9em, 14px.
    */
-  orderedListMarkerStyles: [{ numbering: 'decimal', fontWeight: '700' }],
+  orderedListMarkerStyles: [{ numbering: 'decimal', fontWeight: '700',  color: draftDarkTokens.theHubAccent }],
   /**
    * 0 disables looping. 1 repeats the whole ordered marker array once.
    */
@@ -258,7 +268,7 @@ export const theHubPreviewTheme: DraftPreviewTheme = {
    * spacing: CSS length, e.g. 0, 4px, 0.35em.
    * size: CSS length, e.g. 1em, 0.9em, 14px.
    */
-  unorderedListMarkerStyles: [{ shape: 'disc', size: '1.2em' }],
+  unorderedListMarkerStyles: [{ shape: 'disc', size: '1.2em', color: draftDarkTokens.theHubAccent }],
   /**
    * 0 disables looping. 1 repeats the whole unordered marker array once.
    */
