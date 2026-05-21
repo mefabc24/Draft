@@ -8,6 +8,7 @@
     xmlns:sharedControls="clr-namespace:Draft.Shared.UI.Controls"
     xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     Title="Draft"
+    d:Height="500"
     AllowsTransparency="True"
     Background="Transparent"
     Icon="/Assets/Icons/draft.ico"

@@ -806,6 +806,109 @@ function getRemoveContainingInlineFormatEdits(
   }
 }
 
+function isInlineCodeSelectionBoundary(
+  offset: number,
+  range: InlineFormatRange,
+  boundary: 'end' | 'start',
+) {
+  return boundary === 'start'
+    ? offset === range.fullRange.startOffset ||
+        offset === range.innerContentRange.startOffset
+    : offset === range.fullRange.endOffset ||
+        offset === range.innerContentRange.endOffset
+}
+
+function getMergeSelectedInlineCodeSpansEdits(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  prefix: string,
+  suffix: string,
+): ToggleWrappedEditResult | null {
+  if (
+    prefix !== '`' ||
+    suffix !== '`' ||
+    /[\r\n]/u.test(value.slice(selection.startOffset, selection.endOffset))
+  ) {
+    return null
+  }
+
+  const lineRange = getLineSearchRange(value, selection)
+  const selectedRanges = getInlineFormatRanges(value, lineRange, prefix, suffix)
+    .filter(
+      (range) =>
+        range.innerContentRange.startOffset < selection.endOffset &&
+        range.innerContentRange.endOffset > selection.startOffset,
+    )
+    .sort((a, b) => a.fullRange.startOffset - b.fullRange.startOffset)
+
+  if (selectedRanges.length < 2) {
+    return null
+  }
+
+  const firstRange = selectedRanges[0]
+  const lastRange = selectedRanges[selectedRanges.length - 1]
+
+  if (
+    !isInlineCodeSelectionBoundary(selection.startOffset, firstRange, 'start') ||
+    !isInlineCodeSelectionBoundary(selection.endOffset, lastRange, 'end')
+  ) {
+    return null
+  }
+
+  for (const range of selectedRanges) {
+    if (
+      range.innerContentRange.startOffset < selection.startOffset ||
+      range.innerContentRange.endOffset > selection.endOffset
+    ) {
+      return null
+    }
+  }
+
+  for (let index = 0; index < selectedRanges.length - 1; index += 1) {
+    const currentRange = selectedRanges[index]
+    const nextRange = selectedRanges[index + 1]
+
+    if (
+      !isInlineWhitespaceOnly(
+        value.slice(currentRange.fullRange.endOffset, nextRange.fullRange.startOffset),
+      )
+    ) {
+      return null
+    }
+  }
+
+  const replacementStartOffset = firstRange.fullRange.startOffset
+  const replacementEndOffset = lastRange.fullRange.endOffset
+  let replacementInnerText = ''
+  let lastOffset = replacementStartOffset
+
+  for (const range of selectedRanges) {
+    replacementInnerText += value.slice(lastOffset, range.fullRange.startOffset)
+    replacementInnerText += value.slice(
+      range.innerContentRange.startOffset,
+      range.innerContentRange.endOffset,
+    )
+    lastOffset = range.fullRange.endOffset
+  }
+
+  replacementInnerText += value.slice(lastOffset, replacementEndOffset)
+
+  return {
+    edits: [
+      {
+        endOffset: replacementEndOffset,
+        startOffset: replacementStartOffset,
+        text: `${prefix}${replacementInnerText}${suffix}`,
+      },
+    ],
+    nextSelection: {
+      endOffset:
+        replacementStartOffset + prefix.length + replacementInnerText.length,
+      startOffset: replacementStartOffset + prefix.length,
+    },
+  }
+}
+
 export function normalizeAdjacentInlineFormattingRanges(
   value: string,
   selection: MarkdownSelectionOffsetRange,
@@ -914,6 +1017,16 @@ export function getToggleWrappedEdits(
     prefix,
     suffix,
   )
+  const selectedInlineCodeMerge = getMergeSelectedInlineCodeSpansEdits(
+    value,
+    coreRange,
+    prefix,
+    suffix,
+  )
+
+  if (selectedInlineCodeMerge) {
+    return selectedInlineCodeMerge
+  }
 
   if (hasSelectedWrapper) {
     const text = coreText.slice(
