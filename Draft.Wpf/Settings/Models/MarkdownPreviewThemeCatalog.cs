@@ -14,7 +14,7 @@ public static class MarkdownPreviewThemeCatalog
         new[]
         {
             new MarkdownPreviewThemeOption(DefaultThemeId, SettingsDefaults.DefaultMarkdownTheme),
-            new MarkdownPreviewThemeOption("gpt", "GPT"),
+            new MarkdownPreviewThemeOption("assistantDark", "Assistant Dark"),
             new MarkdownPreviewThemeOption("github", "GitHub"),
         };
 

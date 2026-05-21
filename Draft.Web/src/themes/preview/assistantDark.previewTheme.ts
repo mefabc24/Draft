@@ -5,7 +5,7 @@ type PreviewThemeVariables = DraftPreviewTheme['cssVariables']
 
 // Color tokens: surfaces, text, accents, and line colors.
 // Color values accept CSS colors: hex, rgb(), hsl(), transparent, or currentColor.
-const gptPreviewColorVariables = {
+const assistantDarkPreviewColorVariables = {
   // Document
   '--preview-background': draftDarkTokens.chromeBackground,
   '--preview-foreground': '#fff',
@@ -61,7 +61,7 @@ const gptPreviewColorVariables = {
 } satisfies PreviewThemeVariables
 
 // Layout tokens: radii, border widths, spacing, and table grid behavior.
-const gptPreviewLayoutVariables = {
+const assistantDarkPreviewLayoutVariables = {
   // Inline code
   // Border width 0 removes the border. Radius, padding, and border width accept CSS lengths.
   '--preview-inline-code-border-radius': '6px',
@@ -121,7 +121,7 @@ const gptPreviewLayoutVariables = {
 } satisfies PreviewThemeVariables
 
 // Typography tokens: font stacks used inside rendered markdown.
-const gptPreviewTypographyVariables = {
+const assistantDarkPreviewTypographyVariables = {
   // Code
   '--font-mono': themeFontStacks.mono,
 
@@ -129,17 +129,17 @@ const gptPreviewTypographyVariables = {
   '--font-preview': themeFontStacks.preview,
 } satisfies PreviewThemeVariables
 
-export const gptPreviewTheme: DraftPreviewTheme = {
+export const assistantDarkPreviewTheme: DraftPreviewTheme = {
   cssVariables: {
-    ...gptPreviewColorVariables,
-    ...gptPreviewLayoutVariables,
-    ...gptPreviewTypographyVariables,
+    ...assistantDarkPreviewColorVariables,
+    ...assistantDarkPreviewLayoutVariables,
+    ...assistantDarkPreviewTypographyVariables,
   },
-  id: 'gpt',
-  label: 'GPT',
+  id: 'assistantDark',
+  label: 'Assistant Dark',
   // false: normal list numbers; true: bold list numbers.
   useBoldOrderedListMarkers: true,
   useRomanNestedOrderedLists: false,
 }
 
-export default gptPreviewTheme
+export default assistantDarkPreviewTheme
