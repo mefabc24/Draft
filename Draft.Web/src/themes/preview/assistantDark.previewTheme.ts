@@ -77,10 +77,10 @@ const assistantDarkPreviewLayoutVariables = {
   // Headings and rules
   // Heading line height 0 hides the line. Line spacing controls the gap between heading text and line.
   '--preview-h1-font-weight': '600',
-  '--preview-h1-line-height': '1px',
+  '--preview-h1-line-height': '0',
   '--preview-h1-line-spacing': '0',
   '--preview-h2-font-weight': '600',
-  '--preview-h2-line-height': '1px',
+  '--preview-h2-line-height': '0',
   '--preview-h2-line-spacing': '0',
   '--preview-h3-font-weight': '600',
   '--preview-h3-line-height': '0',
@@ -177,6 +177,15 @@ export const assistantDarkPreviewTheme: DraftPreviewTheme = {
   },
   id: 'assistantDark',
   label: 'Assistant Dark',
+  /**
+   * true: fenced code blocks receive Shiki token colors.
+   * false: code blocks use the plain theme foreground color.
+   */
+  usePrettyCode: true,
+  /**
+   * Shiki theme used by rehype-pretty-code when usePrettyCode is true.
+   */
+  prettyCodeTheme: 'dark-plus',
   /**
    * true: table stretches to the full preview width.
    * false: table uses content width, capped at the preview width.

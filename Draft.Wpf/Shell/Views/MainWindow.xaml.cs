@@ -8,6 +8,7 @@ using Draft.Shell.ViewModels;
 using Draft.WebWorkspace.Services;
 using Microsoft.Web.WebView2.Core;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Security;
 using System.Windows;
@@ -539,7 +540,64 @@ public partial class MainWindow : Window
             viewModel.SetWorkspaceMode,
             viewModel.UpdateContentFromWeb,
             viewModel.UpdateCursorPosition,
-            () => viewModel.SaveFileCommand.Execute(null));
+            () => viewModel.SaveFileCommand.Execute(null),
+            OpenExternalUrl);
+    }
+
+    private void OpenExternalUrl(string url)
+    {
+        if (!TryCreateExternalUri(url, out Uri? uri))
+            return;
+
+        if (_settings.ConfirmBeforeOpeningExternalLinks
+            && !_dialogCoordinator.ConfirmOpenExternalLink(uri))
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri)
+            {
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex) when (IsExternalLinkException(ex))
+        {
+            _dialogCoordinator.ShowMessage(
+                "Open External Link",
+                "The link could not be opened in your default browser.",
+                MessageDialogType.Error);
+        }
+    }
+
+    private static bool TryCreateExternalUri(string url, out Uri uri)
+    {
+        uri = null!;
+
+        if (string.IsNullOrWhiteSpace(url)
+            || !Uri.TryCreate(url, UriKind.Absolute, out Uri? parsedUri))
+        {
+            return false;
+        }
+
+        if (!string.Equals(parsedUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(parsedUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(parsedUri.Scheme, Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        uri = parsedUri;
+        return true;
+    }
+
+    private static bool IsExternalLinkException(Exception ex)
+    {
+        return ex is Win32Exception
+            or InvalidOperationException
+            or FileNotFoundException
+            or SecurityException;
     }
 
     private static bool IsFileOperationException(Exception ex)

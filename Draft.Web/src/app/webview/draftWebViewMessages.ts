@@ -10,6 +10,7 @@ const GO_TO_POSITION_MESSAGE_TYPE = 'goToPosition'
 const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
 const CURSOR_POSITION_CHANGED_MESSAGE_TYPE = 'cursorPositionChanged'
 const SAVE_REQUESTED_MESSAGE_TYPE = 'saveRequested'
+const OPEN_EXTERNAL_URL_MESSAGE_TYPE = 'openExternalUrl'
 
 export type WorkspaceModeMessage = {
   type: 'workspaceModeChanged'
@@ -142,5 +143,12 @@ export function postCursorPositionChanged(message: {
 export function postSaveRequested() {
   postWebViewMessage({
     type: SAVE_REQUESTED_MESSAGE_TYPE,
+  })
+}
+
+export function postOpenExternalUrl(url: string) {
+  postWebViewMessage({
+    type: OPEN_EXTERNAL_URL_MESSAGE_TYPE,
+    url,
   })
 }

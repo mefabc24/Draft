@@ -9,4 +9,5 @@ public static class DraftWebViewMessageTypes
     public const string SettingsChanged = "settingsChanged";
     public const string GoToPosition = "goToPosition";
     public const string SaveRequested = "saveRequested";
+    public const string OpenExternalUrl = "openExternalUrl";
 }

@@ -178,6 +178,15 @@ export const repositoryDarkPreviewTheme: DraftPreviewTheme = {
   id: 'repositoryDark',
   label: 'Repository Dark',
   /**
+   * true: fenced code blocks receive Shiki token colors.
+   * false: code blocks use the plain theme foreground color.
+   */
+  usePrettyCode: true,
+  /**
+   * Shiki theme used by rehype-pretty-code when usePrettyCode is true.
+   */
+  prettyCodeTheme: 'github-dark',
+  /**
    * true: table stretches to the full preview width.
    * false: table uses content width, capped at the preview width.
    */

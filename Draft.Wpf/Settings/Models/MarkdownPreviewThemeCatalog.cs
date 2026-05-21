@@ -15,7 +15,7 @@ public static class MarkdownPreviewThemeCatalog
         {
             new MarkdownPreviewThemeOption(DefaultThemeId, SettingsDefaults.DefaultMarkdownTheme),
             new MarkdownPreviewThemeOption("assistantDark", "Assistant Dark"),
-            new MarkdownPreviewThemeOption("github", "GitHub"),
+            new MarkdownPreviewThemeOption("repositoryDark", "Repository Dark"),
         };
 
     public static IReadOnlyList<MarkdownPreviewThemeOption> ThemeOptions { get; } =

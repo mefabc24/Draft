@@ -1,4 +1,5 @@
 import type { CssVariableMap } from '../shared/themeTypes'
+import type { Theme as RehypePrettyCodeTheme } from 'rehype-pretty-code'
 
 export type PreviewThemeId = string
 
@@ -42,6 +43,16 @@ export type DraftPreviewTheme = {
   cssVariables: CssVariableMap
   id: PreviewThemeId
   label: string
+  /**
+   * true: fenced code blocks receive Shiki token colors through rehype-pretty-code.
+   * false: code blocks use the theme's plain code foreground color.
+   */
+  usePrettyCode: boolean
+  /**
+   * rehype-pretty-code/Shiki theme used when usePrettyCode is true.
+   * Built-in examples: github-dark, github-dark-dimmed, dark-plus, min-dark, one-dark-pro.
+   */
+  prettyCodeTheme?: RehypePrettyCodeTheme
   /**
    * true: tables stretch across the full preview width.
    * false: tables use their content width and are capped at the preview width.

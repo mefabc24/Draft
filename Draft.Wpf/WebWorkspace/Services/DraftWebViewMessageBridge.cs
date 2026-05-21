@@ -74,7 +74,8 @@ public sealed class DraftWebViewMessageBridge
         Action<string> workspaceModeChanged,
         Action<string> documentChanged,
         Action<int, int, int> cursorPositionChanged,
-        Action saveRequested)
+        Action saveRequested,
+        Action<string> openExternalUrl)
     {
         if (string.IsNullOrWhiteSpace(message))
             return;
@@ -102,6 +103,9 @@ public sealed class DraftWebViewMessageBridge
                     break;
                 case DraftWebViewMessageTypes.SaveRequested:
                     saveRequested();
+                    break;
+                case DraftWebViewMessageTypes.OpenExternalUrl:
+                    DispatchOpenExternalUrlMessage(root, openExternalUrl);
                     break;
             }
         }
@@ -157,6 +161,21 @@ public sealed class DraftWebViewMessageBridge
             && columnElement.TryGetInt32(out int column))
         {
             cursorPositionChanged(line, column, selectedCharacterCount);
+        }
+    }
+
+    private static void DispatchOpenExternalUrlMessage(
+        JsonElement root,
+        Action<string> openExternalUrl)
+    {
+        if (!root.TryGetProperty("url", out JsonElement urlElement))
+            return;
+
+        string? url = urlElement.GetString();
+
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            openExternalUrl(url);
         }
     }
 }

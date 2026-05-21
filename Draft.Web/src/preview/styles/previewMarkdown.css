@@ -115,6 +115,14 @@
   margin: 16px 0;
 }
 
+.preview-content figure[data-rehype-pretty-code-figure] {
+  margin: 16px 0;
+}
+
+.preview-content figure[data-rehype-pretty-code-figure] .preview-code-block {
+  margin: 0;
+}
+
 .preview-content pre {
   background: var(--preview-code-block-background);
   border: var(--preview-code-block-border-width, 1px) solid var(--preview-code-block-border);
@@ -122,6 +130,7 @@
   padding: var(--preview-code-block-padding, 14px);
   overflow-x: auto;
   margin: 16px 0;
+  line-height: var(--preview-code-block-line-height, 1.55);
 }
 
 .preview-content .preview-code-block pre {
@@ -130,11 +139,18 @@
 }
 
 .preview-content pre code {
+  display: block;
   background: transparent;
   border: 0;
   padding: 0;
   color: var(--preview-code-block-foreground);
   font-family: var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace);
+}
+
+.preview-content pre code [data-line] {
+  display: block;
+  min-height: 0;
+  line-height: inherit;
 }
 
 .preview-code-block-copy-button {
@@ -151,6 +167,7 @@
   border: 0;
   border-radius: var(--preview-code-block-copy-button-border-radius, 8px);
   background: transparent;
+  color: var(--preview-code-block-foreground);
   cursor: pointer;
   opacity: 0.86;
   transition:
@@ -187,11 +204,57 @@
   );
 }
 
-.preview-code-block-copy-button img {
-  display: block;
+.preview-code-block-copy-icon,
+.preview-code-block-check-icon {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transform-origin: center;
+  transition:
+    opacity 180ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.preview-code-block-copy-icon {
+  top: 50%;
+  left: 50%;
   width: 28px;
   height: 28px;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.preview-code-block-copy-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+}
+
+.preview-code-block-check-icon {
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  opacity: 0;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2px;
+  transform: translate(-50%, -50%) scale(0.72);
+}
+
+.preview-code-block-copy-button.is-copied .preview-code-block-copy-icon {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.86);
+}
+
+.preview-code-block-copy-button.is-copied .preview-code-block-check-icon {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 /* Blockquote */

@@ -6,14 +6,20 @@ using System.IO;
 using System.Security;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Draft.Shell.ViewModels;
 
 public class MainWindowViewModel : BaseViewModel
 {
     private const int MinimumSavingStatusMilliseconds = 1000;
+    private const int CopyMarkdownFeedbackMilliseconds = 1000;
     private WorkspaceState _workspaceState;
     private readonly AutosaveScheduler _autosaveScheduler = new();
+    private readonly DispatcherTimer _copyMarkdownFeedbackTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(CopyMarkdownFeedbackMilliseconds),
+    };
     private readonly DocumentFileService _documentFileService;
     private readonly DocumentMetricsService _documentMetricsService;
     private readonly DocumentSessionState _documentState = new();
@@ -31,6 +37,7 @@ public class MainWindowViewModel : BaseViewModel
     private bool _includeMarkdownSyntaxInCharacterCount;
     private bool _confirmBeforeClosingUnsavedFiles = true;
     private bool _isStatusBarVisible = true;
+    private bool _isCopyMarkdownFeedbackVisible;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _defaultSaveLocation = string.Empty;
 
@@ -249,6 +256,19 @@ public class MainWindowViewModel : BaseViewModel
 
     public bool CanOpenRevertSavePrompt => HasFilePath;
 
+    public bool IsCopyMarkdownFeedbackVisible
+    {
+        get => _isCopyMarkdownFeedbackVisible;
+        private set
+        {
+            if (_isCopyMarkdownFeedbackVisible == value)
+                return;
+
+            _isCopyMarkdownFeedbackVisible = value;
+            OnPropertyChanged();
+        }
+    }
+
     public DateTimeOffset CurrentDraftUpdatedAtUtc => _documentState.CurrentDraftUpdatedAtUtc;
 
     public DateTimeOffset? LastSavedAtUtc => _documentState.LastSavedAtUtc;
@@ -394,6 +414,7 @@ public class MainWindowViewModel : BaseViewModel
             manualSaveSnapshotService,
             autosaveSnapshotService);
         _autosaveScheduler.Tick += AutosaveTimer_Tick;
+        _copyMarkdownFeedbackTimer.Tick += CopyMarkdownFeedbackTimer_Tick;
 
         OpenFileCommand = new RelayCommand(() => OpenFileRequested?.Invoke(this, EventArgs.Empty));
         SaveFileCommand = new RelayCommand(ExecuteSaveFileCommand);
@@ -565,6 +586,20 @@ public class MainWindowViewModel : BaseViewModel
             return;
 
         Clipboard.SetText(CurrentContent);
+        ShowCopyMarkdownFeedback();
+    }
+
+    private void ShowCopyMarkdownFeedback()
+    {
+        _copyMarkdownFeedbackTimer.Stop();
+        IsCopyMarkdownFeedbackVisible = true;
+        _copyMarkdownFeedbackTimer.Start();
+    }
+
+    private void CopyMarkdownFeedbackTimer_Tick(object? sender, EventArgs e)
+    {
+        _copyMarkdownFeedbackTimer.Stop();
+        IsCopyMarkdownFeedbackVisible = false;
     }
 
     private async void AutosaveTimer_Tick(object? sender, EventArgs e)

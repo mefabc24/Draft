@@ -89,7 +89,7 @@
                         </Trigger>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border"  Property="Background" Value="#101010" />
+                            <Setter TargetName="border" Property="Background" Value="#101010" />
                             <Setter Property="Cursor" Value="Hand" />
                         </Trigger>
 
@@ -102,7 +102,7 @@
                             <Setter Property="Cursor" Value="Hand" />
                         </MultiTrigger>
 
-                        
+
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Opacity" Value="0.52" />
