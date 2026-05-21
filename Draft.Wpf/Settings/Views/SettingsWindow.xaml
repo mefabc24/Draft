@@ -34,6 +34,77 @@
             <DataTemplate DataType="{x:Type settingsVm:AboutSettingsPageViewModel}">
                 <settings:AboutSettingsView />
             </DataTemplate>
+
+            <Style x:Key="SettingsPageTitleTransition" TargetType="TextBlock">
+                <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TranslateTransform X="0" />
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="0"
+                                    To="1"
+                                    Duration="0:0:0.14">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                    From="8"
+                                    To="0"
+                                    Duration="0:0:0.18">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="SettingsPageContentTransition" TargetType="ContentControl">
+                <Setter Property="ClipToBounds" Value="True" />
+                <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TranslateTransform X="0" />
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="0"
+                                    To="1"
+                                    Duration="0:0:0.16">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                    From="14"
+                                    To="0"
+                                    Duration="0:0:0.22">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -270,7 +341,8 @@
                             FontSize="32"
                             FontWeight="Bold"
                             Foreground="{StaticResource Brush.Text.Primary}"
-                            Text="{Binding CurrentSettingsPage.Title, FallbackValue='Page Title'}" />
+                            Style="{StaticResource SettingsPageTitleTransition}"
+                            Text="{Binding CurrentSettingsPage.Title, FallbackValue='Page Title', NotifyOnTargetUpdated=True}" />
 
                         <!-- Close Button -->
                         <Button
@@ -288,7 +360,11 @@
                         </Button>
                     </Grid>
 
-                    <ContentControl Grid.Row="1" Content="{Binding CurrentSettingsPage}" Margin="0,16"/>
+                    <ContentControl
+                        Grid.Row="1"
+                        Margin="0,16"
+                        Content="{Binding CurrentSettingsPage, NotifyOnTargetUpdated=True}"
+                        Style="{StaticResource SettingsPageContentTransition}" />
 
                     <Grid Grid.Row="2">
                         <StackPanel
