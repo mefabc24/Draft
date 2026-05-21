@@ -66,6 +66,11 @@
 }
 
 /* Code blocks */
+.preview-content .preview-code-block {
+  position: relative;
+  margin: 16px 0;
+}
+
 .preview-content pre {
   background: var(--preview-code-block-background);
   border: 1px solid var(--preview-code-block-border);
@@ -75,12 +80,74 @@
   margin: 16px 0;
 }
 
+.preview-content .preview-code-block pre {
+  margin: 0;
+  padding-right: 54px;
+}
+
 .preview-content pre code {
   background: transparent;
   border: 0;
   padding: 0;
   color: var(--preview-code-block-foreground);
   font-family: var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace);
+}
+
+.preview-code-block-copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.86;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.preview-code-block-copy-button:hover,
+.preview-code-block-copy-button:focus-visible,
+.preview-code-block-copy-button.is-copied {
+  opacity: 1;
+}
+
+.preview-code-block-copy-button:hover,
+.preview-code-block-copy-button:focus-visible {
+  background: color-mix(
+    in srgb,
+    var(--preview-code-block-background) 88%,
+    white 12%
+  );
+}
+
+.preview-code-block-copy-button:active {
+  transform: translateY(1px);
+}
+
+.preview-code-block-copy-button.is-copied {
+  background: color-mix(
+    in srgb,
+    var(--preview-code-block-background) 82%,
+    var(--preview-blockquote-border) 18%
+  );
+}
+
+.preview-code-block-copy-button img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
 }
 
 /* Blockquote */

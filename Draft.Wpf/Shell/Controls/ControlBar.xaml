@@ -137,21 +137,6 @@
                             </Ellipse>
                         </Canvas>
                     </Grid>
-
-                </Button>
-                <!-- New File Button -->
-                <Button
-                    Command="{Binding NewFileCommand}"
-                    Style="{StaticResource ControlButton}"
-                    ToolTip="New">
-                    <Path
-                        Width="16"
-                        Height="16"
-                        Data="{StaticResource Icon.NewFile}"
-                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                        Stretch="Uniform" />
-
-
                 </Button>
                 <!-- Copy Markdown Button -->
                 <Button
@@ -163,6 +148,18 @@
                         Width="16"
                         Height="16"
                         Data="{StaticResource Icon.Copy}"
+                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                        Stretch="Uniform" />
+                </Button>
+                <!-- New File Button -->
+                <Button
+                    Command="{Binding NewFileCommand}"
+                    Style="{StaticResource ControlButton}"
+                    ToolTip="New">
+                    <Path
+                        Width="16"
+                        Height="16"
+                        Data="{StaticResource Icon.NewFile}"
                         Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                         Stretch="Uniform" />
                 </Button>
