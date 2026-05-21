@@ -153,6 +153,19 @@
 
 
                 </Button>
+                <!-- Copy Markdown Button -->
+                <Button
+                    Margin="8,0,0,0"
+                    Command="{Binding CopyMarkdownCommand}"
+                    Style="{StaticResource ControlButton}"
+                    ToolTip="Copy Markdown">
+                    <Path
+                        Width="16"
+                        Height="16"
+                        Data="{StaticResource Icon.Copy}"
+                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                        Stretch="Uniform" />
+                </Button>
             </StackPanel>
 
             <!-- Divider -->

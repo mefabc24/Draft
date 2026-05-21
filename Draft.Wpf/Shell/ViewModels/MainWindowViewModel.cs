@@ -4,6 +4,7 @@ using Draft.Documents.Services;
 using Draft.Save.Services;
 using System.IO;
 using System.Security;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Draft.Shell.ViewModels;
@@ -348,6 +349,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand SaveFileCommand { get; }
 
+    public ICommand CopyMarkdownCommand { get; }
+
     public ICommand NewFileCommand { get; }
 
     public ICommand OpenSettingsCommand { get; }
@@ -394,6 +397,9 @@ public class MainWindowViewModel : BaseViewModel
 
         OpenFileCommand = new RelayCommand(() => OpenFileRequested?.Invoke(this, EventArgs.Empty));
         SaveFileCommand = new RelayCommand(ExecuteSaveFileCommand);
+        CopyMarkdownCommand = new RelayCommand(
+            CopyMarkdownToClipboard,
+            () => !string.IsNullOrEmpty(CurrentContent));
         NewFileCommand = new RelayCommand(() => NewFileRequested?.Invoke(this, EventArgs.Empty));
         OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
         OpenCursorPositionPromptCommand = new RelayCommand(
@@ -551,6 +557,14 @@ public class MainWindowViewModel : BaseViewModel
         }
 
         await SaveDocumentToCurrentPathAsync(DocumentSaveKind.Manual);
+    }
+
+    private void CopyMarkdownToClipboard()
+    {
+        if (string.IsNullOrEmpty(CurrentContent))
+            return;
+
+        Clipboard.SetText(CurrentContent);
     }
 
     private async void AutosaveTimer_Tick(object? sender, EventArgs e)
