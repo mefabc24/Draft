@@ -1,64 +1,84 @@
 # Draft
 
-Draft is a Windows desktop Markdown editor with a native WPF shell and a web-based editing workspace. The app combines Windows integration, local file handling, and packaging through the desktop host with a React-powered editor and preview experience embedded through WebView2.
+Draft is a Windows desktop Markdown editor with a native WPF shell and a React
+workspace embedded through WebView2. The desktop host handles files, settings,
+autosave, snapshots, update packaging, and Windows integration; the web workspace
+owns the Monaco editor, Markdown preview, formatting toolbar, and editor-facing
+interaction model.
+
+The app is currently versioned as `2.0.0-beta`.
 
 ## Features
 
-- Markdown editing with a Monaco-based editor
-- Live Markdown preview with GitHub-flavored Markdown support
-- Editor, split, and preview-focused workspace modes
-- Configurable editor and preview settings
-- Local file handling from the Windows desktop app
-- Windows installer, portable package, and update feed powered by Velopack
+- Monaco-based Markdown editor with syntax highlighting, word wrap, line
+  numbers, indentation guides, whitespace rendering, cursor settings, tab
+  settings, and bracket/quote pairing.
+- GitHub-flavored Markdown preview powered by `react-markdown` and `remark-gfm`.
+- Editor, split, and preview workspace modes with configurable preview scroll
+  sync.
+- Floating Markdown Toolbar in the editor and preview for headings, blockquotes,
+  code blocks, lists, checklists, bold, italic, strikethrough, inline code, and
+  links.
+- Native WPF control bar for workspace mode switching, open, save, new document,
+  copying the full Markdown source, and settings.
+- Native status bar with Markdown/UTF-8 indicators, word count, character count,
+  cursor position, selection count, save status, autosave status, and revert
+  access.
+- Local file handling for Markdown/text documents, default save location
+  settings, and optional `.txt` file association.
+- Manual saves, autosave, save-on-focus-lost, and saved-version snapshots that
+  can be restored through the Revert flow.
+- Settings window for general behavior, editor options, preview behavior,
+  appearance, update/demo controls, and app metadata.
+- Windows installer, portable package, and update feed generation through
+  Velopack.
+
+## Tech Stack
+
+- WPF on `net10.0-windows`
+- WebView2
+- Velopack
+- React 19
+- TypeScript 6
+- Vite 8
+- Monaco Editor
+- `react-markdown` with `remark-gfm`
 
 ## Repository Structure
 
 ```text
-Draft.Web/       React, TypeScript, Vite, and Monaco workspace UI
-Draft.Wpf/       Native Windows WPF host using WebView2
-Documentation/   Release and versioning documentation
-Scripts/         Automation scripts, including release packaging
-Releases/        Generated local release artifacts
+Draft.Web/        React, TypeScript, Vite, Monaco, preview, toolbar, themes
+Draft.Wpf/        WPF desktop host, WebView2 shell, settings, saves, packaging
+Documentation/    Release and versioning documentation
+Scripts/          Automation scripts for versioning and release packaging
+Licenses/         Third-party license files
+Releases/         Generated Velopack release artifacts
 ```
 
-`Releases/` is generated output and should not be committed to the repository.
-
-## Projects
-
-### Draft.Web
-
-`Draft.Web` contains the web-based workspace UI. It owns the editor-facing experience, including the Markdown editor, preview pane, view modes, and WebView message handling.
-
-See `Draft.Web/README.md` for more details.
-
-### Draft.Wpf
-
-`Draft.Wpf` contains the native Windows desktop host. It owns the application shell, WebView2 hosting, startup behavior, settings windows, local integration, and release packaging hooks.
-
-See `Draft.Wpf/README.md` for more details.
+`Releases/` is generated output and should not be committed.
 
 ## Prerequisites
 
-Install the following tools before building the app:
+Install these tools before building the app:
 
 ```text
+Windows
+.NET SDK with net10.0-windows support
 Node.js and npm
-.NET SDK
-Velopack CLI, for creating releases
+WebView2 Runtime
+Velopack CLI, only needed for creating releases
 ```
-
-The desktop app targets Windows and uses WPF, WebView2, and `net10.0-windows`.
 
 ## Development
 
-Install the web dependencies:
+Install web dependencies:
 
 ```powershell
 cd Draft.Web
 npm install
 ```
 
-Run the web workspace in development mode:
+Run the web workspace in Vite development mode:
 
 ```powershell
 npm run dev
@@ -76,48 +96,68 @@ Build the Windows desktop app from the repository root:
 dotnet build Draft.Wpf/Draft.slnx
 ```
 
-For packaged builds, the web app must be built first because `Draft.Wpf` includes `Draft.Web/dist` in its publish output.
-
-## Releasing
-
-Version fields are documented in:
-
-```text
-Documentation/VERSIONING.md
-```
-
-The release process is documented in:
-
-```text
-Documentation/RELEASING.md
-```
-
-Create a Windows release from the repository root:
+Run the Windows desktop app:
 
 ```powershell
+dotnet run --project Draft.Wpf/Draft.csproj
+```
+
+For desktop builds and releases, build `Draft.Web` first. `Draft.Wpf` includes
+the generated `Draft.Web/dist` files in its output and publish artifacts.
+
+## Useful Commands
+
+```powershell
+# Web checks
+cd Draft.Web
+npm run lint
+npm run build
+
+# Desktop build
+cd ..
+dotnet build Draft.Wpf/Draft.slnx
+
+# Update version fields
+.\Scripts\update-version.ps1 -Version 2.0.0-beta
+
+# Create a Windows release
 .\Scripts\create-release.ps1
 ```
 
-Generated release files are written to:
+## Releasing
+
+Version fields and release steps are documented in:
+
+```text
+Documentation/VERSIONING.md
+Documentation/RELEASING.md
+```
+
+The release script builds the web app, publishes the WPF host, creates Velopack
+packages, and writes generated files to:
 
 ```text
 Releases/
 ```
 
-Upload the generated files from `Releases/` as GitHub Release assets. They do not need to be committed to Git.
+Upload the full generated asset set from `Releases/` to the matching GitHub
+Release. Do not upload only the setup executable because Velopack updates also
+need the feed and package files.
 
 ## Documentation
 
-- `Documentation/VERSIONING.md` lists every version field that should be updated for a release.
+- `Documentation/VERSIONING.md` lists every manually maintained version field.
 - `Documentation/RELEASING.md` describes how to create and publish a release.
 - `Draft.Web/README.md` describes the web workspace.
 - `Draft.Wpf/README.md` describes the Windows desktop host.
 
 ## License
 
-Draft is licensed under the GNU General Public License v3.0. See `LICENSE` for the full license text.
+Draft is licensed under the GNU General Public License v3.0. See `LICENSE` for
+the full license text.
 
-Bundled fonts remain under their original third-party licenses. See `THIRD_PARTY_NOTICES.md` and `Licenses/OFL-1.1.txt` for details.
+Bundled fonts remain under their original third-party licenses. See
+`THIRD_PARTY_NOTICES.md` and `Licenses/OFL-1.1.txt` for details.
 
 ## Credits
 

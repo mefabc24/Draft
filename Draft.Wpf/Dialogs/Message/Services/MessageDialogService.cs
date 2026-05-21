@@ -1,3 +1,4 @@
+using Draft.Dialogs.Base.Services;
 using Draft.Dialogs.Base.Views;
 using Draft.Dialogs.Message.Models;
 using Draft.Dialogs.Message.ViewModels;
@@ -33,33 +34,12 @@ public sealed class MessageDialogService : IMessageDialogService
 
         try
         {
-            Window? owner = GetDialogOwner();
-            if (owner is not null)
-            {
-                window.Owner = owner;
-            }
-            else
-            {
-                window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            }
-
-            window.ShowDialog();
+            DialogWindowService.ShowDialog(window);
             return viewModel.Result;
         }
         finally
         {
             viewModel.CloseRequested -= CloseRequested;
         }
-    }
-
-    private static Window? GetDialogOwner()
-    {
-        if (Application.Current?.Windows is null)
-            return null;
-
-        return Application.Current.Windows
-            .OfType<Window>()
-            .FirstOrDefault(window => window.IsActive && window.IsVisible)
-            ?? Application.Current.MainWindow;
     }
 }

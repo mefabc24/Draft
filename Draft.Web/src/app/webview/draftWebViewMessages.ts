@@ -9,6 +9,7 @@ const LOAD_DOCUMENT_MESSAGE_TYPE = 'loadDocument'
 const GO_TO_POSITION_MESSAGE_TYPE = 'goToPosition'
 const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
 const CURSOR_POSITION_CHANGED_MESSAGE_TYPE = 'cursorPositionChanged'
+const SAVE_REQUESTED_MESSAGE_TYPE = 'saveRequested'
 
 export type WorkspaceModeMessage = {
   type: 'workspaceModeChanged'
@@ -135,5 +136,11 @@ export function postCursorPositionChanged(message: {
   postWebViewMessage({
     type: CURSOR_POSITION_CHANGED_MESSAGE_TYPE,
     ...message,
+  })
+}
+
+export function postSaveRequested() {
+  postWebViewMessage({
+    type: SAVE_REQUESTED_MESSAGE_TYPE,
   })
 }

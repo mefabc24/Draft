@@ -50,6 +50,25 @@
   box-shadow: none !important;
 }
 
+.editor-host
+  .monaco-editor.is-preview-toolbar-command-suppressed
+  .selected-text,
+.editor-host
+  .monaco-editor.is-preview-toolbar-command-suppressed
+  .selectionHighlight,
+.editor-host
+  .monaco-editor.is-preview-toolbar-command-suppressed
+  .cursors-layer,
+.editor-host .monaco-editor.is-preview-toolbar-command-suppressed .cursor,
+.editor-host
+  .monaco-editor.is-preview-toolbar-command-suppressed
+  .current-line,
+.editor-host
+  .monaco-editor.is-preview-toolbar-command-suppressed
+  .current-line-margin {
+  opacity: 0 !important;
+}
+
 .editor-scrollbar {
   position: absolute;
   top: 8px;

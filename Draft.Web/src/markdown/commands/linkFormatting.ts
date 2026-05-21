@@ -2,6 +2,10 @@ import type {
   MarkdownSelectionOffsetRange,
   MarkdownTextEdit,
 } from '../markdownTypes'
+import {
+  normalizeInlineSelectionRange,
+  type NormalizedInlineSelectionRange,
+} from './inlineSelectionNormalization'
 
 export type MarkdownLinkContext = MarkdownSelectionOffsetRange & {
   label: string
@@ -26,6 +30,16 @@ export function isSelectedLinkLabel(
 }
 
 export function getMarkdownLinkContext(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+): MarkdownLinkContext | null {
+  return getMarkdownLinkContextForNormalizedSelection(
+    value,
+    normalizeInlineSelectionRange(value, selection),
+  )
+}
+
+function getExactMarkdownLinkContext(
   value: string,
   selection: MarkdownSelectionOffsetRange,
 ): MarkdownLinkContext | null {
@@ -80,20 +94,88 @@ export function getMarkdownLinkContext(
   }
 }
 
+function getCrossedMarkdownLinkContext(
+  value: string,
+  normalizedSelection: NormalizedInlineSelectionRange,
+): MarkdownLinkContext | null {
+  const { coreRange, leadingWhitespace, trailingWhitespace } =
+    normalizedSelection
+  const { endOffset, startOffset } = coreRange
+
+  if (trailingWhitespace.length > 0 && startOffset > 0) {
+    const labelEndOffset = value.indexOf('](', startOffset)
+    const linkEndOffset =
+      labelEndOffset === -1 ? -1 : value.indexOf(')', labelEndOffset + 2)
+
+    if (
+      value[startOffset - 1] === '[' &&
+      labelEndOffset > startOffset &&
+      labelEndOffset < endOffset &&
+      linkEndOffset + 1 === endOffset
+    ) {
+      return {
+        endOffset,
+        label: value.slice(startOffset, labelEndOffset),
+        sourceText: value.slice(startOffset - 1, endOffset),
+        startOffset: startOffset - 1,
+        url: value.slice(labelEndOffset + 2, linkEndOffset),
+      }
+    }
+  }
+
+  if (leadingWhitespace.length > 0 && value[startOffset] === '[') {
+    const labelEndOffset = value.indexOf('](', startOffset)
+    const linkEndOffset =
+      labelEndOffset === -1 ? -1 : value.indexOf(')', labelEndOffset + 2)
+
+    if (
+      labelEndOffset > startOffset + 1 &&
+      labelEndOffset === endOffset &&
+      linkEndOffset !== -1
+    ) {
+      return {
+        endOffset: linkEndOffset + 1,
+        label: value.slice(startOffset + 1, labelEndOffset),
+        sourceText: value.slice(startOffset, linkEndOffset + 1),
+        startOffset,
+        url: value.slice(labelEndOffset + 2, linkEndOffset),
+      }
+    }
+  }
+
+  return null
+}
+
+function getMarkdownLinkContextForNormalizedSelection(
+  value: string,
+  normalizedSelection: NormalizedInlineSelectionRange,
+): MarkdownLinkContext | null {
+  return (
+    getExactMarkdownLinkContext(value, normalizedSelection.coreRange) ??
+    getCrossedMarkdownLinkContext(value, normalizedSelection)
+  )
+}
+
 export function getLinkEditState(
   value: string,
   selection: MarkdownSelectionOffsetRange,
 ): MarkdownLinkContext {
-  const linkContext = getMarkdownLinkContext(value, selection)
+  const normalizedSelection = normalizeInlineSelectionRange(value, selection)
+  const linkContext = getMarkdownLinkContextForNormalizedSelection(
+    value,
+    normalizedSelection,
+  )
 
   if (linkContext) {
     return linkContext
   }
 
+  const { coreRange, coreText } = normalizedSelection
+
   return {
-    ...selection,
-    label: value.slice(selection.startOffset, selection.endOffset),
-    sourceText: value.slice(selection.startOffset, selection.endOffset),
+    ...coreRange,
+    label: coreText,
+    sourceText: coreText,
     url: '',
   }
 }
@@ -107,44 +189,41 @@ export function getToggleLinkEdits(
   selection: MarkdownSelectionOffsetRange,
   selectedText: string,
 ) {
-  const { endOffset, startOffset } = selection
-  const linkMatch = selectedText.match(/^\[([\s\S]+)\]\([^)]+\)$/u)
+  const normalizedSelection = normalizeInlineSelectionRange(
+    value,
+    selection,
+    selectedText,
+  )
+  const linkContext = getMarkdownLinkContextForNormalizedSelection(
+    value,
+    normalizedSelection,
+  )
 
-  if (linkMatch) {
-    const text = linkMatch[1]
+  if (linkContext) {
+    const labelStartOffset = linkContext.startOffset + 1
+    const labelEndOffset = labelStartOffset + linkContext.label.length
 
-    return {
-      edits: [{ ...selection, text }],
-      nextSelection: {
-        endOffset: startOffset + text.length,
-        startOffset,
-      },
-    }
-  }
-
-  const linkCloseStartOffset = endOffset
-  const linkLabelContext = isSelectedLinkLabel(value, selection)
-
-  if (linkLabelContext.isSelectedLinkLabel) {
     return {
       edits: [
         {
-          endOffset: linkLabelContext.linkEndOffset + 1,
-          startOffset: linkCloseStartOffset,
+          endOffset: linkContext.endOffset,
+          startOffset: labelEndOffset,
           text: '',
         },
         {
-          endOffset: startOffset,
-          startOffset: startOffset - 1,
+          endOffset: labelStartOffset,
+          startOffset: linkContext.startOffset,
           text: '',
         },
       ] satisfies MarkdownTextEdit[],
       nextSelection: {
-        endOffset: endOffset - 1,
-        startOffset: startOffset - 1,
+        endOffset: linkContext.startOffset + linkContext.label.length,
+        startOffset: linkContext.startOffset,
       },
     }
   }
+
+  const { endOffset, startOffset } = normalizedSelection.coreRange
 
   return {
     edits: [
@@ -164,7 +243,9 @@ export function isLinkSelectionActive(
   selectedText: string,
 ) {
   return (
-    /^\[[\s\S]+\]\([^)]+\)$/u.test(selectedText) ||
-    isSelectedLinkLabel(value, selection).isSelectedLinkLabel
+    getMarkdownLinkContextForNormalizedSelection(
+      value,
+      normalizeInlineSelectionRange(value, selection, selectedText),
+    ) !== null
   )
 }

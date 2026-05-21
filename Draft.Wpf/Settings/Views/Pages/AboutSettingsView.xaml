@@ -1,0 +1,47 @@
+<UserControl
+    x:Class="Draft.Settings.Views.Pages.AboutSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="clr-namespace:Draft.Updates.Services"
+    xmlns:local="clr-namespace:Draft.Settings.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:section="clr-namespace:Draft.Settings.Controls"
+    xmlns:settings="clr-namespace:Draft.Settings.Controls"
+    d:DesignHeight="2000"
+    d:DesignWidth="540"
+    mc:Ignorable="d">
+    <Border Background="Transparent">
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            Style="{StaticResource SettingsScrollViewer}"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel VerticalAlignment="Top">
+                <section:SectionHeader Title="DRAFT" />
+
+                <settings:SettingCard Title="A focused Markdown editor for writing, previewing, and saving clean Markdown documents in a calm desktop workspace." Margin="0,0,0,32" />
+
+                <section:SectionHeader Title="VERSION &amp; UPDATES" />
+                <settings:UpdateSettingCard
+                    Title="Version"
+                    Margin="0,0,0,12"
+                    ActionCommand="{Binding UpdateActionCommand, RelativeSource={RelativeSource AncestorType={x:Type local:AboutSettingsView}}}"
+                    ActionText="{Binding Status.ActionButtonText, Source={x:Static helpers:UpdateCoordinator.Current}}"
+                    Description="{Binding VersionDescription, RelativeSource={RelativeSource AncestorType={x:Type local:AboutSettingsView}}, FallbackValue='Version 1.0.0'}"
+                    IsActionEnabled="{Binding Status.CanRunUpdateAction, Source={x:Static helpers:UpdateCoordinator.Current}}"
+                    IsUpdateAvailable="{Binding Status.HasAvailableUpdate, Source={x:Static helpers:UpdateCoordinator.Current}}"
+                    StatusText="{Binding Status.StatusText, Source={x:Static helpers:UpdateCoordinator.Current}}" />
+
+                <section:SectionHeader Title="PROJECT &amp; LINKS" />
+                <settings:SettingCard Title="GitHub" Description="Open the Draft project repository.">
+                    <Button
+                        Width="120"
+                        Height="36"
+                        Click="GitHubButton_Click"
+                        Content="Open GitHub"
+                        Style="{StaticResource SettingButton}" />
+                </settings:SettingCard>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

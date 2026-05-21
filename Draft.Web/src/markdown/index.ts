@@ -1,7 +1,13 @@
 export { countMarkdownWords } from './wordCount'
 export { addBlockquotePrefix, addHeadingPrefix, removeBlockquotePrefix, removeHeadingPrefix } from './commands/blockFormatting'
 export { toggleFencedCodeBlockText } from './commands/codeBlockFormatting'
-export { getToggleWrappedEdits, getInlineWrapperContext, isSelectedTextWrapped } from './commands/inlineFormatting'
+export {
+  findContainingInlineFormatRange,
+  getInlineWrapperContext,
+  getToggleWrappedEdits,
+  isSelectedTextWrapped,
+  normalizeAdjacentInlineFormattingRanges,
+} from './commands/inlineFormatting'
 export {
   createMarkdownLinkText,
   getLinkEditState,
@@ -29,4 +35,5 @@ export type {
 } from './markdownTypes'
 export type { FencedCodeBlockContext } from './detection/fencedCodeBlocks'
 export type { EditableMarkdownSourceRange } from './commands/sourceRangeEditing'
+export type { ContainingInlineWrapperContext } from './commands/inlineFormatting'
 export type { MarkdownLinkContext } from './commands/linkFormatting'

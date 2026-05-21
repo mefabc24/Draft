@@ -6,6 +6,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react'
+import { useToolbarMenuScrollbar } from '../hooks/useToolbarMenuScrollbar'
 import type { ToolbarTooltipContent } from './ToolbarTooltip'
 
 export type ToolbarDropdownItem = {
@@ -123,21 +124,33 @@ function ToolbarDropdown({
 }: ToolbarDropdownProps) {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const {
+    scrollRef: menuScrollRef,
+    scrollbarRef: menuScrollbarRef,
+    thumbRef: menuScrollbarThumbRef,
+    syncScrollbarPosition,
+    handleTrackPointerDown,
+    handleThumbPointerCancel,
+    handleThumbPointerDown,
+    handleThumbPointerMove,
+    handleThumbPointerUp,
+  } = useToolbarMenuScrollbar(open)
   const [menuGeometry, setMenuGeometry] = useState<ToolbarMenuGeometry>({
     placement: 'bottom',
   })
 
   const updateMenuGeometry = useCallback(() => {
     const menu = menuRef.current
+    const menuScroll = menuScrollRef.current
     const trigger = triggerRef.current
 
-    if (!menu || !trigger) {
+    if (!menu || !menuScroll || !trigger) {
       return
     }
 
     const boundaryRect = getDropdownBoundaryRect(trigger)
     const triggerRect = trigger.getBoundingClientRect()
-    const naturalMenuHeight = Math.max(menu.scrollHeight, menu.offsetHeight)
+    const naturalMenuHeight = Math.max(menuScroll.scrollHeight, menu.offsetHeight)
     const availableBelow =
       boundaryRect.bottom - triggerRect.bottom - MENU_GAP - MENU_EDGE_PADDING
     const availableAbove =
@@ -162,7 +175,7 @@ function ToolbarDropdown({
 
       return { maxHeight, placement }
     })
-  }, [])
+  }, [menuScrollRef])
 
   useEffect(() => {
     if (!open) {
@@ -175,6 +188,18 @@ function ToolbarDropdown({
       window.cancelAnimationFrame(frameId)
     }
   }, [open, updateMenuGeometry])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    const frameId = window.requestAnimationFrame(syncScrollbarPosition)
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [menuGeometry.maxHeight, open, syncScrollbarPosition])
 
   useEffect(() => {
     if (!open) {
@@ -238,49 +263,68 @@ function ToolbarDropdown({
           aria-label={menuLabel}
           style={menuStyle}
         >
-          {items.map((entry) => {
-            if (!isDropdownItem(entry)) {
+          <div ref={menuScrollRef} className="markdown-toolbar-menu-scroll">
+            {items.map((entry) => {
+              if (!isDropdownItem(entry)) {
+                return (
+                  <div
+                    key={entry.id}
+                    className="markdown-toolbar-menu-divider"
+                    role="separator"
+                  />
+                )
+              }
+
+              const selected = entry.value === selectedValue
+
               return (
-                <div
-                  key={entry.id}
-                  className="markdown-toolbar-menu-divider"
-                  role="separator"
-                />
-              )
-            }
-
-            const selected = entry.value === selectedValue
-
-            return (
-              <button
-                key={entry.value}
-                type="button"
-                className={`markdown-toolbar-menu-item${
-                  selected ? ' is-selected' : ''
-                }${entry.icon ? ' has-icon' : ' no-icon'}`}
-                role="menuitemradio"
-                aria-checked={selected}
-                onClick={() => {
-                  onTooltipHide?.()
-                  onSelect(entry.value)
-                  onOpenChange(false)
-                }}
-              >
-                {entry.icon ? (
-                  <span className="markdown-toolbar-item-icon">{entry.icon}</span>
-                ) : null}
-                <span className="markdown-toolbar-item-label">{entry.label}</span>
-                {entry.shortcut ? (
-                  <span className="markdown-toolbar-item-shortcut">
-                    {entry.shortcut}
+                <button
+                  key={entry.value}
+                  type="button"
+                  className={`markdown-toolbar-menu-item${
+                    selected ? ' is-selected' : ''
+                  }${entry.icon ? ' has-icon' : ' no-icon'}`}
+                  role="menuitemradio"
+                  aria-checked={selected}
+                  onClick={() => {
+                    onTooltipHide?.()
+                    onSelect(entry.value)
+                    onOpenChange(false)
+                  }}
+                >
+                  {entry.icon ? (
+                    <span className="markdown-toolbar-item-icon">{entry.icon}</span>
+                  ) : null}
+                  <span className="markdown-toolbar-item-label">{entry.label}</span>
+                  {entry.shortcut ? (
+                    <span className="markdown-toolbar-item-shortcut">
+                      {entry.shortcut}
+                    </span>
+                  ) : null}
+                  <span className="markdown-toolbar-item-check">
+                    {selected ? <CheckIcon /> : null}
                   </span>
-                ) : null}
-                <span className="markdown-toolbar-item-check">
-                  {selected ? <CheckIcon /> : null}
-                </span>
-              </button>
-            )
-          })}
+                </button>
+              )
+            })}
+          </div>
+          <div
+            ref={menuScrollbarRef}
+            className="markdown-toolbar-menu-scrollbar"
+            data-dragging="false"
+            data-scrollable="false"
+            aria-hidden="true"
+            onPointerDown={handleTrackPointerDown}
+          >
+            <div
+              ref={menuScrollbarThumbRef}
+              className="markdown-toolbar-menu-scrollbar-thumb"
+              onPointerCancel={handleThumbPointerCancel}
+              onPointerDown={handleThumbPointerDown}
+              onPointerMove={handleThumbPointerMove}
+              onPointerUp={handleThumbPointerUp}
+            />
+          </div>
         </div>
       ) : null}
     </div>

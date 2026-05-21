@@ -6,18 +6,18 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Styles/Foundation/Colors.xaml" />
-                <ResourceDictionary Source="/Styles/Foundation/Typography.xaml" />
-                <ResourceDictionary Source="/Styles/Foundation/Icons.xaml" />
+                <ResourceDictionary Source="/Resources/Foundation/Colors.xaml" />
+                <ResourceDictionary Source="/Resources/Foundation/Typography.xaml" />
+                <ResourceDictionary Source="/Resources/Foundation/Icons.xaml" />
 
-                <ResourceDictionary Source="/Styles/Components/ControlBarButton.xaml" />
-                <ResourceDictionary Source="/Styles/Components/WindowControlButton.xaml" />
-                <ResourceDictionary Source="/Styles/Components/StatusBarButton.xaml" />
-                <ResourceDictionary Source="/Styles/Components/StatusBarStatus.xaml" />
-                <ResourceDictionary Source="/Styles/Components/DraftCloseButton.xaml" />
+                <ResourceDictionary Source="/Resources/Components/ControlBarButton.xaml" />
+                <ResourceDictionary Source="/Resources/Components/WindowControlButton.xaml" />
+                <ResourceDictionary Source="/Resources/Components/StatusBarButton.xaml" />
+                <ResourceDictionary Source="/Resources/Components/StatusBarStatus.xaml" />
+                <ResourceDictionary Source="/Resources/Components/DraftCloseButton.xaml" />
                 <ResourceDictionary Source="/Dialogs/Message/Styles/MessageDialogButtons.xaml" />
-                <ResourceDictionary Source="/Styles/Settings/SettingsTheme.xaml" />
-                <ResourceDictionary Source="/Dialogs/Prompt/RevertSave/Styles/SaveVersionCard.xaml" />
+                <ResourceDictionary Source="/Settings/Styles/SettingsTheme.xaml" />
+                <ResourceDictionary Source="/Dialogs/Prompts/RevertSave/Styles/SaveVersionCard.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

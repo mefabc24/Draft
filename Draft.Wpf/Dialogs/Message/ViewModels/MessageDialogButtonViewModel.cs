@@ -1,5 +1,4 @@
 using Draft.Dialogs.Message.Models;
-using Draft.Helpers;
 using System.Windows.Input;
 
 namespace Draft.Dialogs.Message.ViewModels;
