@@ -1,9 +1,12 @@
 import {
+  createContext,
   isValidElement,
+  useContext,
   useEffect,
   useRef,
   useState,
   type ComponentPropsWithoutRef,
+  type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
@@ -11,19 +14,34 @@ import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
+import type { DraftPreviewTheme } from '../../themes/preview/previewThemeTypes'
+import {
+  getOrderedListMarkerStyle,
+  getUnorderedListMarkerStyle,
+} from '../../themes/preview/previewThemeStyles'
 import { rehypeSourceTextSpans } from '../sourceMapping/sourceTextSpansPlugin'
 import type { SourceMappedNode } from '../previewTypes'
 
 type PreviewMarkdownRendererProps = {
   markdown: string
+  previewTheme: DraftPreviewTheme
 }
 
 type PreviewCodeBlockProps = ComponentPropsWithoutRef<'pre'> & {
   sourceLine?: number
 }
 
+type ListCssProperties = CSSProperties & Record<`--${string}`, string>
+
+type PreviewListProps<TagName extends 'ol' | 'ul'> =
+  ComponentPropsWithoutRef<TagName> & {
+    sourceLine?: number
+  }
+
 const COPY_ICON_SRC = `${import.meta.env.BASE_URL}icons/Copy.svg`
 const COPY_FEEDBACK_MS = 1400
+const ListDepthContext = createContext(0)
+const PreviewThemeContext = createContext<DraftPreviewTheme | null>(null)
 
 function getSourceLine(node: SourceMappedNode | undefined) {
   const line = node?.position?.start?.line
@@ -143,6 +161,99 @@ function PreviewCodeBlock({
   )
 }
 
+function getOrderedListStyle(
+  previewTheme: DraftPreviewTheme | null,
+  depth: number,
+  style: CSSProperties | undefined,
+) {
+  if (!previewTheme) {
+    return style
+  }
+
+  const markerStyle = getOrderedListMarkerStyle(previewTheme, depth)
+
+  return {
+    ...style,
+    '--preview-current-ordered-list-marker-color': markerStyle.color,
+    '--preview-current-ordered-list-marker-font-weight':
+      markerStyle.fontWeight,
+    '--preview-current-ordered-list-marker-numbering':
+      markerStyle.numbering,
+    '--preview-current-ordered-list-marker-size': markerStyle.size,
+    '--preview-current-ordered-list-marker-spacing': markerStyle.spacing,
+    listStyleType: markerStyle.numbering,
+  } satisfies ListCssProperties
+}
+
+function getUnorderedListStyle(
+  previewTheme: DraftPreviewTheme | null,
+  depth: number,
+  style: CSSProperties | undefined,
+) {
+  if (!previewTheme) {
+    return style
+  }
+
+  const markerStyle = getUnorderedListMarkerStyle(previewTheme, depth)
+
+  return {
+    ...style,
+    '--preview-current-unordered-list-marker-color': markerStyle.color,
+    '--preview-current-unordered-list-marker-shape': markerStyle.shape,
+    '--preview-current-unordered-list-marker-size': markerStyle.size,
+    '--preview-current-unordered-list-marker-spacing': markerStyle.spacing,
+    listStyleType: markerStyle.shape,
+  } satisfies ListCssProperties
+}
+
+function PreviewOrderedList({
+  children,
+  sourceLine,
+  style,
+  ...props
+}: PreviewListProps<'ol'>) {
+  const depth = useContext(ListDepthContext)
+  const previewTheme = useContext(PreviewThemeContext)
+  const listStyle = getOrderedListStyle(previewTheme, depth, style)
+
+  return (
+    <ListDepthContext.Provider value={depth + 1}>
+      <ol
+        {...props}
+        data-list-depth={depth}
+        data-source-line={sourceLine}
+        style={listStyle}
+      >
+        {children}
+      </ol>
+    </ListDepthContext.Provider>
+  )
+}
+
+function PreviewUnorderedList({
+  children,
+  sourceLine,
+  style,
+  ...props
+}: PreviewListProps<'ul'>) {
+  const depth = useContext(ListDepthContext)
+  const previewTheme = useContext(PreviewThemeContext)
+  const listStyle = getUnorderedListStyle(previewTheme, depth, style)
+
+  return (
+    <ListDepthContext.Provider value={depth + 1}>
+      <ul
+        {...props}
+        data-list-depth={depth}
+        data-source-line={sourceLine}
+        style={listStyle}
+      >
+        {children}
+      </ul>
+    </ListDepthContext.Provider>
+  )
+}
+
 const previewComponents: Components = {
   h1({ node, ...props }) {
     return <h1 {...props} data-source-line={getSourceLine(node)} />
@@ -168,6 +279,12 @@ const previewComponents: Components = {
   li({ node, ...props }) {
     return <li {...props} data-source-line={getSourceLine(node)} />
   },
+  ol({ node, ...props }) {
+    return <PreviewOrderedList {...props} sourceLine={getSourceLine(node)} />
+  },
+  ul({ node, ...props }) {
+    return <PreviewUnorderedList {...props} sourceLine={getSourceLine(node)} />
+  },
   blockquote({ node, ...props }) {
     return <blockquote {...props} data-source-line={getSourceLine(node)} />
   },
@@ -186,15 +303,20 @@ const previewComponents: Components = {
   },
 }
 
-function PreviewMarkdownRenderer({ markdown }: PreviewMarkdownRendererProps) {
+function PreviewMarkdownRenderer({
+  markdown,
+  previewTheme,
+}: PreviewMarkdownRendererProps) {
   return (
-    <ReactMarkdown
-      components={previewComponents}
-      rehypePlugins={[rehypeRaw, rehypeSourceTextSpans]}
-      remarkPlugins={[remarkGfm]}
-    >
-      {markdown}
-    </ReactMarkdown>
+    <PreviewThemeContext.Provider value={previewTheme}>
+      <ReactMarkdown
+        components={previewComponents}
+        rehypePlugins={[rehypeRaw, rehypeSourceTextSpans]}
+        remarkPlugins={[remarkGfm]}
+      >
+        {markdown}
+      </ReactMarkdown>
+    </PreviewThemeContext.Provider>
   )
 }
 

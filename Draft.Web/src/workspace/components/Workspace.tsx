@@ -159,9 +159,13 @@ function Workspace() {
       }) as CSSProperties,
     [activeEditorTheme, clampedSplitEditorRatio],
   )
-  const previewThemeStyle = useMemo(
-    () => getPreviewThemeStyle(getPreviewTheme(activePreviewThemeId)),
+  const activePreviewTheme = useMemo(
+    () => getPreviewTheme(activePreviewThemeId),
     [activePreviewThemeId],
+  )
+  const previewThemeStyle = useMemo(
+    () => getPreviewThemeStyle(activePreviewTheme),
+    [activePreviewTheme],
   )
 
   const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
@@ -369,6 +373,7 @@ function Workspace() {
             />
           )}
           ariaHidden={viewMode === 'editor'}
+          previewTheme={activePreviewTheme}
           previewThemeStyle={previewThemeStyle}
           previewContentElementRef={previewContentRef}
           previewScrollElementRef={previewScrollRef}

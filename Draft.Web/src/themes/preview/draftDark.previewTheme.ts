@@ -12,6 +12,18 @@ const draftDarkPreviewColorVariables = {
 
   // Headings and rules
   '--preview-heading-foreground': draftDarkTokens.accentBlue,
+  '--preview-h1-foreground': draftDarkTokens.accentBlue,
+  '--preview-h1-line-color': '#374151',
+  '--preview-h2-foreground': draftDarkTokens.accentBlue,
+  '--preview-h2-line-color': '#374151',
+  '--preview-h3-foreground': draftDarkTokens.accentBlue,
+  '--preview-h3-line-color': '#374151',
+  '--preview-h4-foreground': draftDarkTokens.accentBlue,
+  '--preview-h4-line-color': '#374151',
+  '--preview-h5-foreground': draftDarkTokens.accentBlue,
+  '--preview-h5-line-color': '#374151',
+  '--preview-h6-foreground': draftDarkTokens.accentBlue,
+  '--preview-h6-line-color': '#374151',
   '--preview-rule-border': '#374151',
 
   // Links
@@ -62,6 +74,31 @@ const draftDarkPreviewColorVariables = {
 
 // Layout tokens: radii, border widths, spacing, and table grid behavior.
 const draftDarkPreviewLayoutVariables = {
+  // Headings and rules
+  // Heading line height 0 hides the line. Line spacing controls the gap between heading text and line.
+  '--preview-h1-font-weight': '600',
+  '--preview-h1-line-height': '0',
+  '--preview-h1-line-spacing': '0',
+  '--preview-h2-font-weight': '600',
+  '--preview-h2-line-height': '0',
+  '--preview-h2-line-spacing': '0',
+  '--preview-h3-font-weight': '600',
+  '--preview-h3-line-height': '0',
+  '--preview-h3-line-spacing': '0',
+  '--preview-h4-font-weight': '600',
+  '--preview-h4-line-height': '0',
+  '--preview-h4-line-spacing': '0',
+  '--preview-h5-font-weight': '600',
+  '--preview-h5-line-height': '0',
+  '--preview-h5-line-spacing': '0',
+  '--preview-h6-font-weight': '600',
+  '--preview-h6-line-height': '0',
+  '--preview-h6-line-spacing': '0',
+
+  // Rule height controls how thick the line is. Height 0 hides it. Radius accepts CSS lengths.
+  '--preview-rule-border-radius': '0',
+  '--preview-rule-height': '1px',
+
   // Inline code
   // Border width 0 removes the border. Radius, padding, and border width accept CSS lengths.
   '--preview-inline-code-border-radius': '6px',
@@ -123,9 +160,11 @@ const draftDarkPreviewLayoutVariables = {
 // Typography tokens: font stacks used inside rendered markdown.
 const draftDarkPreviewTypographyVariables = {
   // Code
+  // CSS font-family stack used by inline code and code blocks.
   '--font-mono': themeFontStacks.mono,
 
   // Markdown body
+  // CSS font-family stack used by normal markdown text.
   '--font-preview': themeFontStacks.preview,
 } satisfies PreviewThemeVariables
 
@@ -137,9 +176,41 @@ export const draftDarkPreviewTheme: DraftPreviewTheme = {
   },
   id: 'draftDark',
   label: 'Draft Theme',
-  // false: normal list numbers; true: bold list numbers.
-  useBoldOrderedListMarkers: true,
-  useRomanNestedOrderedLists: false,
+  /**
+   * true: table stretches to the full preview width.
+   * false: table uses content width, capped at the preview width.
+   */
+  stretchTablesToFullWidth: true,
+  /**
+   * Ordered list markers by nesting depth: [level 0, level 1, level 2+].
+   * The last entry repeats for deeper levels.
+   * Shorthand: 'decimal' equals { numbering: 'decimal' }.
+   * numbering: decimal | roman | upperRoman | alphabetical | upperAlphabetical | none | any CSS list-style-type.
+   * color: hex | rgb() | hsl() | currentColor | any CSS color.
+   * fontWeight: normal | bold | 100..900.
+   * spacing: CSS length, e.g. 0, 4px, 0.35em.
+   * size: CSS length, e.g. 1em, 0.9em, 14px.
+   */
+  orderedListMarkerStyles: [{ numbering: 'decimal', fontWeight: '700' }],
+  /**
+   * 0 disables looping. 1 repeats the whole ordered marker array once.
+   */
+  orderedListMarkerLoopCount: 0,
+
+  /**
+   * Unordered list markers by nesting depth: [level 0, level 1, level 2+].
+   * The last entry repeats for deeper levels.
+   * Shorthand: 'disc' equals { shape: 'disc' }.
+   * shape: disc | circle | square | none | any CSS list-style-type.
+   * color: hex | rgb() | hsl() | currentColor | any CSS color.
+   * spacing: CSS length, e.g. 0, 4px, 0.35em.
+   * size: CSS length, e.g. 1em, 0.9em, 14px.
+   */
+  unorderedListMarkerStyles: [{ shape: 'disc' }],
+  /**
+   * 0 disables looping. 1 repeats the whole unordered marker array once.
+   */
+  unorderedListMarkerLoopCount: 0,
 }
 
 export default draftDarkPreviewTheme

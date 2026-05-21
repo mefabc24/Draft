@@ -1,4 +1,4 @@
-import { draftDarkTokens, themeFontStacks } from '../shared/themeTokens'
+import { draftDarkTokens } from '../shared/themeTokens'
 import type { DraftPreviewTheme } from './previewThemeTypes'
 
 type PreviewThemeVariables = DraftPreviewTheme['cssVariables']
@@ -12,6 +12,18 @@ const assistantDarkPreviewColorVariables = {
 
   // Headings and rules
   '--preview-heading-foreground': '#fff',
+  '--preview-h1-foreground': '#fff',
+  '--preview-h1-line-color': 'red',
+  '--preview-h2-foreground': '#fff',
+  '--preview-h2-line-color': '#374151',
+  '--preview-h3-foreground': '#fff',
+  '--preview-h3-line-color': '#374151',
+  '--preview-h4-foreground': '#fff',
+  '--preview-h4-line-color': '#374151',
+  '--preview-h5-foreground': '#fff',
+  '--preview-h5-line-color': '#374151',
+  '--preview-h6-foreground': '#fff',
+  '--preview-h6-line-color': '#374151',
   '--preview-rule-border': '#374151',
 
   // Links
@@ -62,6 +74,31 @@ const assistantDarkPreviewColorVariables = {
 
 // Layout tokens: radii, border widths, spacing, and table grid behavior.
 const assistantDarkPreviewLayoutVariables = {
+  // Headings and rules
+  // Heading line height 0 hides the line. Line spacing controls the gap between heading text and line.
+  '--preview-h1-font-weight': '600',
+  '--preview-h1-line-height': '1px',
+  '--preview-h1-line-spacing': '0',
+  '--preview-h2-font-weight': '600',
+  '--preview-h2-line-height': '1px',
+  '--preview-h2-line-spacing': '0',
+  '--preview-h3-font-weight': '600',
+  '--preview-h3-line-height': '0',
+  '--preview-h3-line-spacing': '0',
+  '--preview-h4-font-weight': '600',
+  '--preview-h4-line-height': '0',
+  '--preview-h4-line-spacing': '0',
+  '--preview-h5-font-weight': '600',
+  '--preview-h5-line-height': '0',
+  '--preview-h5-line-spacing': '0',
+  '--preview-h6-font-weight': '600',
+  '--preview-h6-line-height': '0',
+  '--preview-h6-line-spacing': '0',
+
+  // Rule height controls how thick the line is. Height 0 hides it. Radius accepts CSS lengths.
+  '--preview-rule-border-radius': '0',
+  '--preview-rule-height': '1px',
+
   // Inline code
   // Border width 0 removes the border. Radius, padding, and border width accept CSS lengths.
   '--preview-inline-code-border-radius': '6px',
@@ -74,7 +111,7 @@ const assistantDarkPreviewLayoutVariables = {
   // decoration-thickness: auto | from-font | CSS length; underline-offset: auto | CSS length.
   '--preview-link-border-radius': '0',
   '--preview-link-hover-text-decoration-line': 'underline',
-  '--preview-link-hover-text-decoration-style': 'solid',
+  '--preview-link-hover-text-decoration-style': 'dotted',
   '--preview-link-hover-text-decoration-thickness': '1px',
   '--preview-link-text-decoration-line': 'underline',
   '--preview-link-text-decoration-style': 'dotted',
@@ -123,10 +160,13 @@ const assistantDarkPreviewLayoutVariables = {
 // Typography tokens: font stacks used inside rendered markdown.
 const assistantDarkPreviewTypographyVariables = {
   // Code
-  '--font-mono': themeFontStacks.mono,
+  // CSS font-family stack used by inline code and code blocks.
+  '--font-mono':
+    "'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace",
 
   // Markdown body
-  '--font-preview': themeFontStacks.preview,
+  // CSS font-family stack used by normal markdown text.
+  '--font-preview': "'Segoe UI', Arial, sans-serif",
 } satisfies PreviewThemeVariables
 
 export const assistantDarkPreviewTheme: DraftPreviewTheme = {
@@ -137,9 +177,41 @@ export const assistantDarkPreviewTheme: DraftPreviewTheme = {
   },
   id: 'assistantDark',
   label: 'Assistant Dark',
-  // false: normal list numbers; true: bold list numbers.
-  useBoldOrderedListMarkers: true,
-  useRomanNestedOrderedLists: false,
+  /**
+   * true: table stretches to the full preview width.
+   * false: table uses content width, capped at the preview width.
+   */
+  stretchTablesToFullWidth: true,
+  /**
+   * Ordered list markers by nesting depth: [level 0, level 1, level 2+].
+   * The last entry repeats for deeper levels.
+   * Shorthand: 'decimal' equals { numbering: 'decimal' }.
+   * numbering: decimal | roman | upperRoman | alphabetical | upperAlphabetical | none | any CSS list-style-type.
+   * color: hex | rgb() | hsl() | currentColor | any CSS color.
+   * fontWeight: normal | bold | 100..900.
+   * spacing: CSS length, e.g. 0, 4px, 0.35em.
+   * size: CSS length, e.g. 1em, 0.9em, 14px.
+   */
+  orderedListMarkerStyles: [{ numbering: 'decimal', fontWeight: '700' }],
+  /**
+   * 0 disables looping. 1 repeats the whole ordered marker array once.
+   */
+  orderedListMarkerLoopCount: 0,
+
+  /**
+   * Unordered list markers by nesting depth: [level 0, level 1, level 2+].
+   * The last entry repeats for deeper levels.
+   * Shorthand: 'disc' equals { shape: 'disc' }.
+   * shape: disc | circle | square | none | any CSS list-style-type.
+   * color: hex | rgb() | hsl() | currentColor | any CSS color.
+   * spacing: CSS length, e.g. 0, 4px, 0.35em.
+   * size: CSS length, e.g. 1em, 0.9em, 14px.
+   */
+  unorderedListMarkerStyles: [{ shape: 'disc', size: '1.2em' }],
+  /**
+   * 0 disables looping. 1 repeats the whole unordered marker array once.
+   */
+  unorderedListMarkerLoopCount: 0,
 }
 
 export default assistantDarkPreviewTheme

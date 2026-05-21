@@ -12,21 +12,65 @@
 /* Headings */
 .preview-content h1,
 .preview-content h2,
-.preview-content h3 {
-  color: var(--preview-heading-foreground);
+.preview-content h3,
+.preview-content h4,
+.preview-content h5,
+.preview-content h6 {
   margin: 24px 0 12px;
 }
 
 .preview-content h1 {
+  color: var(--preview-h1-foreground, var(--preview-heading-foreground));
   font-size: 28px;
+  font-weight: var(--preview-h1-font-weight, 600);
+  padding-bottom: var(--preview-h1-line-spacing, 0);
+  border-bottom: var(--preview-h1-line-height, 0) solid
+    var(--preview-h1-line-color, var(--preview-rule-border));
 }
 
 .preview-content h2 {
+  color: var(--preview-h2-foreground, var(--preview-heading-foreground));
   font-size: 22px;
+  font-weight: var(--preview-h2-font-weight, 600);
+  padding-bottom: var(--preview-h2-line-spacing, 0);
+  border-bottom: var(--preview-h2-line-height, 0) solid
+    var(--preview-h2-line-color, var(--preview-rule-border));
 }
 
 .preview-content h3 {
+  color: var(--preview-h3-foreground, var(--preview-heading-foreground));
   font-size: 18px;
+  font-weight: var(--preview-h3-font-weight, 600);
+  padding-bottom: var(--preview-h3-line-spacing, 0);
+  border-bottom: var(--preview-h3-line-height, 0) solid
+    var(--preview-h3-line-color, var(--preview-rule-border));
+}
+
+.preview-content h4 {
+  color: var(--preview-h4-foreground, var(--preview-heading-foreground));
+  font-size: 16px;
+  font-weight: var(--preview-h4-font-weight, 600);
+  padding-bottom: var(--preview-h4-line-spacing, 0);
+  border-bottom: var(--preview-h4-line-height, 0) solid
+    var(--preview-h4-line-color, var(--preview-rule-border));
+}
+
+.preview-content h5 {
+  color: var(--preview-h5-foreground, var(--preview-heading-foreground));
+  font-size: 15px;
+  font-weight: var(--preview-h5-font-weight, 600);
+  padding-bottom: var(--preview-h5-line-spacing, 0);
+  border-bottom: var(--preview-h5-line-height, 0) solid
+    var(--preview-h5-line-color, var(--preview-rule-border));
+}
+
+.preview-content h6 {
+  color: var(--preview-h6-foreground, var(--preview-heading-foreground));
+  font-size: 14px;
+  font-weight: var(--preview-h6-font-weight, 600);
+  padding-bottom: var(--preview-h6-line-spacing, 0);
+  border-bottom: var(--preview-h6-line-height, 0) solid
+    var(--preview-h6-line-color, var(--preview-rule-border));
 }
 
 /* Paragraphs */
@@ -182,7 +226,8 @@
 
 /* Tables */
 .preview-content table {
-  width: 100%;
+  width: var(--preview-table-width, 100%);
+  max-width: var(--preview-table-max-width, 100%);
   border-collapse: separate;
   border-spacing: 0;
   border: var(--preview-table-outer-border-width, 1px) solid var(--preview-table-outer-border, var(--preview-table-border));
@@ -229,12 +274,31 @@
   padding-left: 24px;
 }
 
-.preview-content ol ol {
-  list-style-type: var(--preview-nested-ordered-list-style-type, decimal);
+.preview-content ul {
+  list-style-type: var(--preview-current-unordered-list-marker-shape, disc);
+}
+
+.preview-content ul > li:not(.task-list-item) {
+  padding-left: var(--preview-current-unordered-list-marker-spacing, 0);
+}
+
+.preview-content ul > li::marker {
+  color: var(--preview-current-unordered-list-marker-color, currentColor);
+  font-size: var(--preview-current-unordered-list-marker-size, 1em);
+}
+
+.preview-content ol {
+  list-style-type: var(--preview-current-ordered-list-marker-numbering, decimal);
+}
+
+.preview-content ol > li {
+  padding-left: var(--preview-current-ordered-list-marker-spacing, 0);
 }
 
 .preview-content ol > li::marker {
-  font-weight: var(--preview-ordered-list-marker-font-weight, 400);
+  color: var(--preview-current-ordered-list-marker-color, currentColor);
+  font-size: var(--preview-current-ordered-list-marker-size, 1em);
+  font-weight: var(--preview-current-ordered-list-marker-font-weight, 400);
 }
 
 .preview-content li {
@@ -311,6 +375,8 @@
 /* Horizontal rule */
 .preview-content hr {
   border: 0;
-  border-top: 1px solid var(--preview-rule-border);
+  height: var(--preview-rule-height, 1px);
+  border-radius: var(--preview-rule-border-radius, 0);
+  background: var(--preview-rule-border);
   margin: 24px 0;
 }
