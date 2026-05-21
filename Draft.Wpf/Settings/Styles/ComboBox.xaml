@@ -126,7 +126,11 @@
                                         StrokeEndLineCap="Round"
                                         StrokeLineJoin="Round"
                                         StrokeStartLineCap="Round"
-                                        StrokeThickness="1.5" />
+                                        StrokeThickness="1.5">
+                                        <Path.RenderTransform>
+                                            <RotateTransform x:Name="ArrowRotate" Angle="0" />
+                                        </Path.RenderTransform>
+                                    </Path>
                                 </Grid>
                             </Border>
                         </ToggleButton>
@@ -180,12 +184,37 @@
                         </Trigger>
 
                         <Trigger Property="IsDropDownOpen" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ArrowRotate"
+                                            Storyboard.TargetProperty="Angle"
+                                            To="180"
+                                            Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ArrowRotate"
+                                            Storyboard.TargetProperty="Angle"
+                                            To="0"
+                                            Duration="0:0:0.14">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                             <Setter TargetName="Arrow" Property="Stroke" Value="{StaticResource Brush.Text.Primary}" />
-                            <Setter TargetName="Arrow" Property="RenderTransform">
-                                <Setter.Value>
-                                    <RotateTransform Angle="180" />
-                                </Setter.Value>
-                            </Setter>
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
