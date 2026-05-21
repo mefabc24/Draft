@@ -1,7 +1,11 @@
+using System.Globalization;
+
 namespace Draft.Dialogs.Prompts.RevertSave.Services;
 
 public sealed class RevertSaveOptionFormatter
 {
+    private static readonly CultureInfo TimestampCulture = CultureInfo.InvariantCulture;
+
     public string FormatWordCount(int wordCount)
     {
         return wordCount == 1 ? "1 word" : $"{wordCount:N0} words";
@@ -27,12 +31,17 @@ public sealed class RevertSaveOptionFormatter
         DateTime today = DateTime.Today;
 
         if (local.Date == today)
-            return $"{action} today at {local:h:mm tt}";
+            return $"{action} today at {FormatLocalTime(local)}";
 
         if (local.Date == today.AddDays(-1))
-            return $"{action} yesterday at {local:h:mm tt}";
+            return $"{action} yesterday at {FormatLocalTime(local)}";
 
-        return $"{action} {local:MMM d} at {local:h:mm tt}";
+        return $"{action} {local:MMM d} at {FormatLocalTime(local)}";
+    }
+
+    private static string FormatLocalTime(DateTime local)
+    {
+        return local.ToString("h:mm tt", TimestampCulture);
     }
 
     private static string FormatRelativeTime(TimeSpan elapsed)
