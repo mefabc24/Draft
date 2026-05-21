@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import ReactMarkdown from 'react-markdown'
+import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
 import { rehypeSourceTextSpans } from '../sourceMapping/sourceTextSpansPlugin'
@@ -189,7 +190,7 @@ function PreviewMarkdownRenderer({ markdown }: PreviewMarkdownRendererProps) {
   return (
     <ReactMarkdown
       components={previewComponents}
-      rehypePlugins={[rehypeSourceTextSpans]}
+      rehypePlugins={[rehypeRaw, rehypeSourceTextSpans]}
       remarkPlugins={[remarkGfm]}
     >
       {markdown}

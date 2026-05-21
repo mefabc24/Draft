@@ -10,6 +10,7 @@ import {
   getEditorFontLoadTarget,
   getEditorSettingsOptions,
 } from '../monaco/editorOptions'
+import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
 import { moveSelectionsByWord } from '../monaco/wordNavigation'
 
 type CurrentRef<T> = {
@@ -215,6 +216,21 @@ export function useMonacoMarkdownEditor({
         moveSelectionsByWord(editor, 'right', true)
       },
     )
+    const markdownContinuationSub = editor.onKeyDown((event) => {
+      if (
+        event.keyCode !== monaco.KeyCode.Enter ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey
+      ) {
+        return
+      }
+
+      if (continueMarkdownBlockOnEnter(editor)) {
+        event.preventDefault()
+      }
+    })
 
     const contentSub = editor.onDidChangeModelContent(() => {
       const nextMarkdown = editor.getValue()
@@ -300,6 +316,7 @@ export function useMonacoMarkdownEditor({
       scrollSub.dispose()
       selectionSub.dispose()
       contentSub.dispose()
+      markdownContinuationSub.dispose()
       editor.dispose()
       editorRef.current = null
       setEditorInstance(null)

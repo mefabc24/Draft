@@ -1,7 +1,7 @@
 import { draftDarkTokens, themeFontStacks } from '../shared/themeTokens'
 import type { DraftPreviewTheme } from './previewThemeTypes'
 
-export const draftDarkPreviewTheme: DraftPreviewTheme = {
+export const githubPreviewTheme: DraftPreviewTheme = {
   cssVariables: {
     '--preview-background': draftDarkTokens.chromeBackground,
     '--preview-blockquote-background': 'rgba(121, 169, 134, 0.08)',
@@ -26,8 +26,8 @@ export const draftDarkPreviewTheme: DraftPreviewTheme = {
     '--font-mono': themeFontStacks.mono,
     '--font-preview': themeFontStacks.preview,
   },
-  id: 'draftDark',
-  label: 'Draft Theme',
+  id: 'github',
+  label: 'GitHub',
 }
 
-export default draftDarkPreviewTheme
+export default githubPreviewTheme

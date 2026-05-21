@@ -32,8 +32,8 @@ public static class SettingsOptionCatalog
     public static IReadOnlyList<string> CursorStyleOptions { get; } =
         new[] { "Line", "Block", "Underline" };
 
-    public static IReadOnlyList<string> MarkdownThemeOptions { get; } =
-        new[] { SettingsDefaults.DefaultMarkdownTheme };
+    public static IReadOnlyList<string> MarkdownThemeOptions =>
+        MarkdownPreviewThemeCatalog.ThemeLabels;
 
     public static IReadOnlyList<string> PreviewScrollSyncModeOptions { get; } =
         new[]

@@ -102,7 +102,7 @@ public static class AppSettingsStore
     {
         settings.DefaultSaveLocation = NormalizeSaveLocation(settings.DefaultSaveLocation);
         settings.DefaultFileExtension = DefaultFileExtension;
-        settings.MarkdownTheme = DefaultMarkdownTheme;
+        settings.MarkdownTheme = MarkdownPreviewThemeCatalog.GetThemeLabel(settings.MarkdownTheme);
         settings.ToolbarControlbarPosition = DefaultToolbarPosition;
         settings.WindowBorderAccentMode = IsWindowBorderAccentMode(settings.WindowBorderAccentMode)
             ? settings.WindowBorderAccentMode

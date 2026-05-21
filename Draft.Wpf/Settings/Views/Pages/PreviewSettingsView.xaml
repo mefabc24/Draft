@@ -21,7 +21,6 @@
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
-                        IsEnabled="False"
                         ItemsSource="{Binding MarkdownThemeOptions}"
                         SelectedItem="{Binding Settings.MarkdownTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />

@@ -1,11 +1,22 @@
 import { DEFAULT_PREVIEW_THEME_ID } from '../../settings/themeSettings'
-import { draftDarkPreviewTheme } from './draftDark.previewTheme'
-import type { DraftPreviewTheme, PreviewThemeId } from './previewThemeTypes'
+import type { DraftPreviewTheme } from './previewThemeTypes'
 
-export const previewThemes = {
-  draftDark: draftDarkPreviewTheme,
-} satisfies Record<PreviewThemeId, DraftPreviewTheme>
+type PreviewThemeModule = {
+  default: DraftPreviewTheme
+}
+
+const previewThemeModules = import.meta.glob<PreviewThemeModule>(
+  './*.previewTheme.ts',
+  { eager: true },
+)
+
+export const previewThemes = Object.fromEntries(
+  Object.values(previewThemeModules).map(({ default: theme }) => [
+    theme.id,
+    theme,
+  ]),
+) as Record<string, DraftPreviewTheme>
 
 export function getPreviewTheme(themeId: string): DraftPreviewTheme {
-  return previewThemes[themeId as PreviewThemeId] ?? previewThemes[DEFAULT_PREVIEW_THEME_ID]
+  return previewThemes[themeId] ?? previewThemes[DEFAULT_PREVIEW_THEME_ID]
 }

@@ -2,6 +2,8 @@ namespace Draft.WebWorkspace.Messages;
 
 public sealed record SettingsChangedMessage(
     string Type,
+    string ActiveEditorThemeId,
+    string ActivePreviewThemeId,
     string EditorFontFamily,
     int EditorFontSize,
     double LineHeight,

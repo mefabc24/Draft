@@ -13,6 +13,8 @@ public sealed class DraftWebViewMessageBridge
     {
         string message = JsonSerializer.Serialize(new SettingsChangedMessage(
             DraftWebViewMessageTypes.SettingsChanged,
+            "draftDark",
+            MarkdownPreviewThemeCatalog.GetThemeId(settings.MarkdownTheme),
             settings.EditorFontFamily,
             settings.EditorFontSize,
             settings.LineHeight,

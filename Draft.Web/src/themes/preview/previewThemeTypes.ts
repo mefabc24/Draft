@@ -1,6 +1,6 @@
 import type { CssVariableMap } from '../shared/themeTypes'
 
-export type PreviewThemeId = 'draftDark'
+export type PreviewThemeId = string
 
 export type DraftPreviewTheme = {
   cssVariables: CssVariableMap
