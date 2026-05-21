@@ -10,20 +10,34 @@ const draftDarkPreviewColorVariables = {
   '--preview-background': draftDarkTokens.chromeBackground,
   '--preview-foreground': '#d1d5db',
 
-  // Headings and rules
+  // Headings: text color
   '--preview-heading-foreground': draftDarkTokens.accentBlue,
   '--preview-h1-foreground': draftDarkTokens.accentBlue,
-  '--preview-h1-line-color': '#374151',
   '--preview-h2-foreground': draftDarkTokens.accentBlue,
-  '--preview-h2-line-color': '#374151',
   '--preview-h3-foreground': draftDarkTokens.accentBlue,
-  '--preview-h3-line-color': '#374151',
   '--preview-h4-foreground': draftDarkTokens.accentBlue,
-  '--preview-h4-line-color': '#374151',
   '--preview-h5-foreground': draftDarkTokens.accentBlue,
-  '--preview-h5-line-color': '#374151',
   '--preview-h6-foreground': draftDarkTokens.accentBlue,
+
+  // Headings: background color
+  // Use transparent to disable the background. Values accept any CSS color.
+  '--preview-heading-background': 'transparent',
+  '--preview-h1-background': 'transparent',
+  '--preview-h2-background': 'transparent',
+  '--preview-h3-background': 'transparent',
+  '--preview-h4-background': 'transparent',
+  '--preview-h5-background': 'transparent',
+  '--preview-h6-background': 'transparent',
+
+  // Headings: underline color
+  '--preview-h1-line-color': '#374151',
+  '--preview-h2-line-color': '#374151',
+  '--preview-h3-line-color': '#374151',
+  '--preview-h4-line-color': '#374151',
+  '--preview-h5-line-color': '#374151',
   '--preview-h6-line-color': '#374151',
+
+  // Horizontal rule
   '--preview-rule-border': '#374151',
 
   // Links
@@ -74,26 +88,54 @@ const draftDarkPreviewColorVariables = {
 
 // Layout tokens: radii, border widths, spacing, and table grid behavior.
 const draftDarkPreviewLayoutVariables = {
-  // Headings and rules
-  // Heading line height 0 hides the line. Line spacing controls the gap between heading text and line.
+  // Headings: text weight
+  // font-weight: normal | bold | 100..900.
   '--preview-h1-font-weight': '600',
+  '--preview-h2-font-weight': '600',
+  '--preview-h3-font-weight': '600',
+  '--preview-h4-font-weight': '600',
+  '--preview-h5-font-weight': '600',
+  '--preview-h6-font-weight': '600',
+
+  // Headings: background shape
+  // padding: CSS padding shorthand, e.g. 0, 4px 8px, 8px 12px 10px.
+  // border-radius: CSS length or radius shorthand, e.g. 0, 6px, 8px 8px 0 0.
+  '--preview-heading-padding': '0',
+  '--preview-heading-border-radius': '0',
+  '--preview-h1-padding': '0',
+  '--preview-h1-border-radius': '0',
+  '--preview-h2-padding': '0',
+  '--preview-h2-border-radius': '0',
+  '--preview-h3-padding': '0',
+  '--preview-h3-border-radius': '0',
+  '--preview-h4-padding': '0',
+  '--preview-h4-border-radius': '0',
+  '--preview-h5-padding': '0',
+  '--preview-h5-border-radius': '0',
+  '--preview-h6-padding': '0',
+  '--preview-h6-border-radius': '0',
+
+  // Headings: underline
+  // line-height 0 hides the line. line-spacing controls the gap between text and line.
+  // line-radius accepts CSS lengths and radius shorthand.
   '--preview-h1-line-height': '0',
   '--preview-h1-line-spacing': '0',
-  '--preview-h2-font-weight': '600',
+  '--preview-h1-line-radius': '0',
   '--preview-h2-line-height': '0',
   '--preview-h2-line-spacing': '0',
-  '--preview-h3-font-weight': '600',
+  '--preview-h2-line-radius': '0',
   '--preview-h3-line-height': '0',
   '--preview-h3-line-spacing': '0',
-  '--preview-h4-font-weight': '600',
+  '--preview-h3-line-radius': '0',
   '--preview-h4-line-height': '0',
   '--preview-h4-line-spacing': '0',
-  '--preview-h5-font-weight': '600',
+  '--preview-h4-line-radius': '0',
   '--preview-h5-line-height': '0',
   '--preview-h5-line-spacing': '0',
-  '--preview-h6-font-weight': '600',
+  '--preview-h5-line-radius': '0',
   '--preview-h6-line-height': '0',
   '--preview-h6-line-spacing': '0',
+  '--preview-h6-line-radius': '0',
 
   // Rule height controls how thick the line is. Height 0 hides it. Radius accepts CSS lengths.
   '--preview-rule-border-radius': '0',

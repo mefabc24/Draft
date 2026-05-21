@@ -16,61 +16,104 @@
 .preview-content h4,
 .preview-content h5,
 .preview-content h6 {
+  position: relative;
   margin: 24px 0 12px;
+  padding: var(--preview-current-heading-padding);
+  border-radius: var(--preview-current-heading-border-radius);
+  background: var(--preview-current-heading-background);
+}
+
+.preview-content h1::after,
+.preview-content h2::after,
+.preview-content h3::after,
+.preview-content h4::after,
+.preview-content h5::after,
+.preview-content h6::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: var(--preview-current-heading-line-height);
+  margin-top: var(--preview-current-heading-line-spacing);
+  border-radius: var(--preview-current-heading-line-radius, 0);
+  background: var(--preview-current-heading-line-color);
 }
 
 .preview-content h1 {
+  --preview-current-heading-background: var(--preview-h1-background, var(--preview-heading-background, transparent));
+  --preview-current-heading-border-radius: var(--preview-h1-border-radius, var(--preview-heading-border-radius, 0));
+  --preview-current-heading-padding: var(--preview-h1-padding, var(--preview-heading-padding, 0));
+  --preview-current-heading-line-color: var(--preview-h1-line-color, var(--preview-rule-border));
+  --preview-current-heading-line-height: var(--preview-h1-line-height, 0);
+  --preview-current-heading-line-radius: var(--preview-h1-line-radius, 0);
+  --preview-current-heading-line-spacing: var(--preview-h1-line-spacing, 0);
   color: var(--preview-h1-foreground, var(--preview-heading-foreground));
   font-size: 28px;
   font-weight: var(--preview-h1-font-weight, 600);
-  padding-bottom: var(--preview-h1-line-spacing, 0);
-  border-bottom: var(--preview-h1-line-height, 0) solid
-    var(--preview-h1-line-color, var(--preview-rule-border));
 }
 
 .preview-content h2 {
+  --preview-current-heading-background: var(--preview-h2-background, var(--preview-heading-background, transparent));
+  --preview-current-heading-border-radius: var(--preview-h2-border-radius, var(--preview-heading-border-radius, 0));
+  --preview-current-heading-padding: var(--preview-h2-padding, var(--preview-heading-padding, 0));
+  --preview-current-heading-line-color: var(--preview-h2-line-color, var(--preview-rule-border));
+  --preview-current-heading-line-height: var(--preview-h2-line-height, 0);
+  --preview-current-heading-line-radius: var(--preview-h2-line-radius, 0);
+  --preview-current-heading-line-spacing: var(--preview-h2-line-spacing, 0);
   color: var(--preview-h2-foreground, var(--preview-heading-foreground));
   font-size: 22px;
   font-weight: var(--preview-h2-font-weight, 600);
-  padding-bottom: var(--preview-h2-line-spacing, 0);
-  border-bottom: var(--preview-h2-line-height, 0) solid
-    var(--preview-h2-line-color, var(--preview-rule-border));
 }
 
 .preview-content h3 {
+  --preview-current-heading-background: var(--preview-h3-background, var(--preview-heading-background, transparent));
+  --preview-current-heading-border-radius: var(--preview-h3-border-radius, var(--preview-heading-border-radius, 0));
+  --preview-current-heading-padding: var(--preview-h3-padding, var(--preview-heading-padding, 0));
+  --preview-current-heading-line-color: var(--preview-h3-line-color, var(--preview-rule-border));
+  --preview-current-heading-line-height: var(--preview-h3-line-height, 0);
+  --preview-current-heading-line-radius: var(--preview-h3-line-radius, 0);
+  --preview-current-heading-line-spacing: var(--preview-h3-line-spacing, 0);
   color: var(--preview-h3-foreground, var(--preview-heading-foreground));
   font-size: 18px;
   font-weight: var(--preview-h3-font-weight, 600);
-  padding-bottom: var(--preview-h3-line-spacing, 0);
-  border-bottom: var(--preview-h3-line-height, 0) solid
-    var(--preview-h3-line-color, var(--preview-rule-border));
 }
 
 .preview-content h4 {
+  --preview-current-heading-background: var(--preview-h4-background, var(--preview-heading-background, transparent));
+  --preview-current-heading-border-radius: var(--preview-h4-border-radius, var(--preview-heading-border-radius, 0));
+  --preview-current-heading-padding: var(--preview-h4-padding, var(--preview-heading-padding, 0));
+  --preview-current-heading-line-color: var(--preview-h4-line-color, var(--preview-rule-border));
+  --preview-current-heading-line-height: var(--preview-h4-line-height, 0);
+  --preview-current-heading-line-radius: var(--preview-h4-line-radius, 0);
+  --preview-current-heading-line-spacing: var(--preview-h4-line-spacing, 0);
   color: var(--preview-h4-foreground, var(--preview-heading-foreground));
   font-size: 16px;
   font-weight: var(--preview-h4-font-weight, 600);
-  padding-bottom: var(--preview-h4-line-spacing, 0);
-  border-bottom: var(--preview-h4-line-height, 0) solid
-    var(--preview-h4-line-color, var(--preview-rule-border));
 }
 
 .preview-content h5 {
+  --preview-current-heading-background: var(--preview-h5-background, var(--preview-heading-background, transparent));
+  --preview-current-heading-border-radius: var(--preview-h5-border-radius, var(--preview-heading-border-radius, 0));
+  --preview-current-heading-padding: var(--preview-h5-padding, var(--preview-heading-padding, 0));
+  --preview-current-heading-line-color: var(--preview-h5-line-color, var(--preview-rule-border));
+  --preview-current-heading-line-height: var(--preview-h5-line-height, 0);
+  --preview-current-heading-line-radius: var(--preview-h5-line-radius, 0);
+  --preview-current-heading-line-spacing: var(--preview-h5-line-spacing, 0);
   color: var(--preview-h5-foreground, var(--preview-heading-foreground));
   font-size: 15px;
   font-weight: var(--preview-h5-font-weight, 600);
-  padding-bottom: var(--preview-h5-line-spacing, 0);
-  border-bottom: var(--preview-h5-line-height, 0) solid
-    var(--preview-h5-line-color, var(--preview-rule-border));
 }
 
 .preview-content h6 {
+  --preview-current-heading-background: var(--preview-h6-background, var(--preview-heading-background, transparent));
+  --preview-current-heading-border-radius: var(--preview-h6-border-radius, var(--preview-heading-border-radius, 0));
+  --preview-current-heading-padding: var(--preview-h6-padding, var(--preview-heading-padding, 0));
+  --preview-current-heading-line-color: var(--preview-h6-line-color, var(--preview-rule-border));
+  --preview-current-heading-line-height: var(--preview-h6-line-height, 0);
+  --preview-current-heading-line-radius: var(--preview-h6-line-radius, 0);
+  --preview-current-heading-line-spacing: var(--preview-h6-line-spacing, 0);
   color: var(--preview-h6-foreground, var(--preview-heading-foreground));
   font-size: 14px;
   font-weight: var(--preview-h6-font-weight, 600);
-  padding-bottom: var(--preview-h6-line-spacing, 0);
-  border-bottom: var(--preview-h6-line-height, 0) solid
-    var(--preview-h6-line-color, var(--preview-rule-border));
 }
 
 /* Paragraphs */
