@@ -909,6 +909,13 @@ function getMergeSelectedInlineCodeSpansEdits(
   }
 }
 
+export function isSelectionComposedOfAdjacentInlineCodeSpans(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+) {
+  return getMergeSelectedInlineCodeSpansEdits(value, selection, '`', '`') !== null
+}
+
 export function normalizeAdjacentInlineFormattingRanges(
   value: string,
   selection: MarkdownSelectionOffsetRange,

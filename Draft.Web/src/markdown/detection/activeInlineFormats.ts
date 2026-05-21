@@ -6,6 +6,7 @@ import {
   areSelectedNonEmptyLinesWrapped,
   findContainingInlineFormatRange,
   getInlineWrapperContext,
+  isSelectionComposedOfAdjacentInlineCodeSpans,
   isSelectedTextWrapped,
 } from '../commands/inlineFormatting'
 import { normalizeInlineSelectionRange } from '../commands/inlineSelectionNormalization'
@@ -40,6 +41,8 @@ export function detectActiveInlineFormats(
     selectedText,
   )
   const { coreRange, coreText } = normalizedSelection
+  const codeSelectionWouldMerge =
+    isSelectionComposedOfAdjacentInlineCodeSpans(value, coreRange)
 
   return {
     bold:
@@ -55,9 +58,10 @@ export function detectActiveInlineFormats(
       isSelectedTextWrapped(coreText, '~~') ||
       findContainingInlineFormatRange(value, coreRange, '~~') !== null,
     code:
-      getInlineWrapperContext(value, coreRange, '`') !== null ||
-      isSelectedTextWrapped(coreText, '`') ||
-      findContainingInlineFormatRange(value, coreRange, '`') !== null,
+      !codeSelectionWouldMerge &&
+      (getInlineWrapperContext(value, coreRange, '`') !== null ||
+        isSelectedTextWrapped(coreText, '`') ||
+        findContainingInlineFormatRange(value, coreRange, '`') !== null),
     link: isLinkSelectionActive(value, selection, selectedText),
   }
 }
