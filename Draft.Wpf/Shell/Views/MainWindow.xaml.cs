@@ -182,6 +182,7 @@ public partial class MainWindow : Window
         viewModel.SaveFileAsRequested += ViewModel_SaveFileAsRequested;
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
+        viewModel.OpenAboutSettingsRequested += ViewModel_OpenAboutSettingsRequested;
         viewModel.OpenCursorPositionPromptRequested += ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested += ViewModel_OpenAutosavePromptRequested;
         viewModel.OpenRevertSavePromptRequested += ViewModel_OpenRevertSavePromptRequested;
@@ -195,6 +196,7 @@ public partial class MainWindow : Window
         viewModel.SaveFileAsRequested -= ViewModel_SaveFileAsRequested;
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
+        viewModel.OpenAboutSettingsRequested -= ViewModel_OpenAboutSettingsRequested;
         viewModel.OpenCursorPositionPromptRequested -= ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested -= ViewModel_OpenAutosavePromptRequested;
         viewModel.OpenRevertSavePromptRequested -= ViewModel_OpenRevertSavePromptRequested;
@@ -260,6 +262,11 @@ public partial class MainWindow : Window
     private void ViewModel_OpenSettingsRequested(object? sender, EventArgs e)
     {
         ShowSettings();
+    }
+
+    private void ViewModel_OpenAboutSettingsRequested(object? sender, EventArgs e)
+    {
+        ShowSettings(SettingsPage.About);
     }
 
     public void ShowSettings(SettingsPage initialPage = SettingsPage.General)

@@ -3,6 +3,7 @@ using Draft.Save.Models;
 using Draft.Documents.Services;
 using Draft.Save.Services;
 using System.IO;
+using System.Reflection;
 using System.Security;
 using System.Windows;
 using System.Windows.Input;
@@ -250,6 +251,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public string AutosaveModeDisplay => AutosaveEnabled ? "AUTOSAVE" : "MANUAL SAVE";
 
+    public string AppVersionDisplay { get; } = $"V{GetAppVersionDisplay().ToUpper()}";
+
     public bool HasFilePath => _documentState.HasFilePath;
 
     public bool HasUnsavedWork => _documentState.HasUnsavedWork;
@@ -375,6 +378,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand OpenSettingsCommand { get; }
 
+    public ICommand OpenAboutSettingsCommand { get; }
+
     public ICommand OpenCursorPositionPromptCommand { get; }
 
     public ICommand OpenAutosavePromptCommand { get; }
@@ -388,6 +393,8 @@ public class MainWindowViewModel : BaseViewModel
     public event EventHandler? NewFileRequested;
 
     public event EventHandler? OpenSettingsRequested;
+
+    public event EventHandler? OpenAboutSettingsRequested;
 
     public event EventHandler? OpenCursorPositionPromptRequested;
 
@@ -423,6 +430,8 @@ public class MainWindowViewModel : BaseViewModel
             () => !string.IsNullOrEmpty(CurrentContent));
         NewFileCommand = new RelayCommand(() => NewFileRequested?.Invoke(this, EventArgs.Empty));
         OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
+        OpenAboutSettingsCommand = new RelayCommand(
+            () => OpenAboutSettingsRequested?.Invoke(this, EventArgs.Empty));
         OpenCursorPositionPromptCommand = new RelayCommand(
             () => OpenCursorPositionPromptRequested?.Invoke(this, EventArgs.Empty));
         OpenAutosavePromptCommand = new RelayCommand(
@@ -444,6 +453,27 @@ public class MainWindowViewModel : BaseViewModel
             "preview" => WorkspaceState.Preview,
             _ => WorkspaceState,
         };
+    }
+
+    private static string GetAppVersionDisplay()
+    {
+        Assembly assembly = typeof(MainWindowViewModel).Assembly;
+        string? informationalVersion = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion;
+
+        if (!string.IsNullOrWhiteSpace(informationalVersion))
+        {
+            int metadataSeparatorIndex = informationalVersion.IndexOf('+');
+            return metadataSeparatorIndex > 0
+                ? informationalVersion[..metadataSeparatorIndex]
+                : informationalVersion;
+        }
+
+        Version? version = assembly.GetName().Version;
+        return version is null
+            ? "Unknown"
+            : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     public void ApplySettings(DraftSettings settings)
