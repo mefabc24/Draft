@@ -29,13 +29,6 @@
                 <section:SectionHeader Title="LINKS &amp; SECURITY" />
 
                 <settings:SettingCard
-                    Title="Open links in browser"
-                    Margin="0,0,0,12"
-                    Description="Open clicked links in your default external browser.">
-                    <CheckBox IsChecked="{Binding Settings.OpenLinksInBrowser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
-                </settings:SettingCard>
-
-                <settings:SettingCard
                     Title="Confirm before opening external links"
                     Margin="0,0,0,32"
                     Description="Ask for confirmation before opening links outside Draft.">

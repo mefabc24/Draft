@@ -87,6 +87,8 @@ public partial class MainWindow : Window
             WorkspaceWebView,
             WebHostName,
             CoreWebView2_WebMessageReceived,
+            WorkspaceWebView_NavigationStarting,
+            WorkspaceWebView_NewWindowRequested,
             WorkspaceWebView_NavigationCompleted);
     }
 
@@ -128,6 +130,8 @@ public partial class MainWindow : Window
         if (WorkspaceWebView.CoreWebView2 is not null)
         {
             WorkspaceWebView.CoreWebView2.WebMessageReceived -= CoreWebView2_WebMessageReceived;
+            WorkspaceWebView.CoreWebView2.NavigationStarting -= WorkspaceWebView_NavigationStarting;
+            WorkspaceWebView.CoreWebView2.NewWindowRequested -= WorkspaceWebView_NewWindowRequested;
         }
 
         WorkspaceWebView.NavigationCompleted -= WorkspaceWebView_NavigationCompleted;
@@ -461,7 +465,6 @@ public partial class MainWindow : Window
             CursorStyle = settings.CursorStyle,
             CursorBlinking = settings.CursorBlinking,
             MarkdownTheme = settings.MarkdownTheme,
-            OpenLinksInBrowser = settings.OpenLinksInBrowser,
             ConfirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks,
             PreviewScrollSyncMode = settings.PreviewScrollSyncMode,
             FloatingMarkdownToolbarMode = settings.FloatingMarkdownToolbarMode,
@@ -480,7 +483,6 @@ public partial class MainWindow : Window
 
         _webViewMessageBridge.PostSettings(WorkspaceWebView.CoreWebView2, _settings);
 
-        // TODO: Wire preview link/security settings once link interception is hosted.
     }
 
     private void PostDocumentToWebView()
@@ -530,6 +532,21 @@ public partial class MainWindow : Window
         PostSettingsToWebView();
         SyncWebViewWithWorkspaceState();
         PostDocumentToWebView();
+    }
+
+    private void WorkspaceWebView_NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+    {
+        if (IsInternalWebViewUri(e.Uri))
+            return;
+
+        e.Cancel = true;
+        OpenExternalUrl(e.Uri);
+    }
+
+    private void WorkspaceWebView_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+    {
+        e.Handled = true;
+        OpenExternalUrl(e.Uri);
     }
 
     private void PostWorkspaceMode(string mode)
@@ -597,6 +614,12 @@ public partial class MainWindow : Window
 
         uri = parsedUri;
         return true;
+    }
+
+    private static bool IsInternalWebViewUri(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out Uri? uri)
+            && string.Equals(uri.Host, WebHostName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsExternalLinkException(Exception ex)

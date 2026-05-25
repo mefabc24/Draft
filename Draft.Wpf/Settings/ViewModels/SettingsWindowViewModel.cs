@@ -45,7 +45,6 @@ public class SettingsWindowViewModel : BaseViewModel
     private string _cursorStyle = "Line";
     private bool _cursorBlinking = true;
     private string _markdownTheme = AppSettingsStore.DefaultMarkdownTheme;
-    private bool _openLinksInBrowser = true;
     private bool _confirmBeforeOpeningExternalLinks = true;
     private string _previewScrollSyncMode = AppSettingsStore.DefaultPreviewScrollSyncMode;
     private string _floatingMarkdownToolbarMode = AppSettingsStore.DefaultFloatingMarkdownToolbarMode;
@@ -435,12 +434,6 @@ public class SettingsWindowViewModel : BaseViewModel
             EnsureOption(MarkdownThemeOptions, value, AppSettingsStore.DefaultMarkdownTheme));
     }
 
-    public bool OpenLinksInBrowser
-    {
-        get => _openLinksInBrowser;
-        set => SetSetting(ref _openLinksInBrowser, value);
-    }
-
     public bool ConfirmBeforeOpeningExternalLinks
     {
         get => _confirmBeforeOpeningExternalLinks;
@@ -568,7 +561,6 @@ public class SettingsWindowViewModel : BaseViewModel
             MarkdownThemeOptions,
             settings.MarkdownTheme,
             AppSettingsStore.DefaultMarkdownTheme);
-        _openLinksInBrowser = settings.OpenLinksInBrowser;
         _confirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks;
         _previewScrollSyncMode = EnsureOptionValue(
             GetPreviewScrollSyncValues(),
@@ -672,7 +664,6 @@ public class SettingsWindowViewModel : BaseViewModel
             CursorStyle = CursorStyle,
             CursorBlinking = CursorBlinking,
             MarkdownTheme = MarkdownTheme,
-            OpenLinksInBrowser = OpenLinksInBrowser,
             ConfirmBeforeOpeningExternalLinks = ConfirmBeforeOpeningExternalLinks,
             PreviewScrollSyncMode = _previewScrollSyncMode,
             FloatingMarkdownToolbarMode = _floatingMarkdownToolbarMode,
@@ -784,7 +775,6 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(CursorStyle));
         OnPropertyChanged(nameof(CursorBlinking));
         OnPropertyChanged(nameof(MarkdownTheme));
-        OnPropertyChanged(nameof(OpenLinksInBrowser));
         OnPropertyChanged(nameof(ConfirmBeforeOpeningExternalLinks));
         OnPropertyChanged(nameof(PreviewScrollSyncMode));
         OnPropertyChanged(nameof(FloatingMarkdownToolbarMode));
