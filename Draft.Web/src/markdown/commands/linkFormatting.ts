@@ -113,6 +113,110 @@ function getFullResourceMatch(
     : selectedText.match(/^\[([\s\S]*)\]\(([^)]*)\)$/u)
 }
 
+function createMarkdownResourceContext(
+  value: string,
+  resourceStartOffset: number,
+  labelStartOffset: number,
+  labelEndOffset: number,
+  resourceEndOffset: number,
+): MarkdownLinkContext {
+  return {
+    endOffset: resourceEndOffset,
+    label: value.slice(labelStartOffset + 1, labelEndOffset),
+    sourceText: value.slice(resourceStartOffset, resourceEndOffset),
+    startOffset: resourceStartOffset,
+    url: value.slice(labelEndOffset + 2, resourceEndOffset - 1),
+  }
+}
+
+function getMarkdownResourceContextFromLabelStart(
+  value: string,
+  labelStartOffset: number,
+  kind: MarkdownInlineResourceKind,
+): MarkdownLinkContext | null {
+  const resourceStartOffset = getResourceStartOffset(
+    value,
+    labelStartOffset,
+    kind,
+  )
+
+  if (
+    resourceStartOffset === null ||
+    value[labelStartOffset] !== '['
+  ) {
+    return null
+  }
+
+  const labelEndOffset = value.indexOf('](', labelStartOffset + 1)
+
+  if (labelEndOffset === -1) {
+    return null
+  }
+
+  const linkEndOffset = value.indexOf(')', labelEndOffset + 2)
+
+  if (linkEndOffset === -1) {
+    return null
+  }
+
+  return createMarkdownResourceContext(
+    value,
+    resourceStartOffset,
+    labelStartOffset,
+    labelEndOffset,
+    linkEndOffset + 1,
+  )
+}
+
+function getContainingMarkdownResourceContext(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  kind: MarkdownInlineResourceKind,
+): MarkdownLinkContext | null {
+  const { endOffset, startOffset } = selection
+
+  if (startOffset >= endOffset) {
+    return null
+  }
+
+  const lineStartOffset = value.lastIndexOf('\n', startOffset - 1) + 1
+  const nextLineBreakOffset = value.indexOf('\n', endOffset)
+  const lineEndOffset =
+    nextLineBreakOffset === -1 ? value.length : nextLineBreakOffset
+  const openText = getResourceOpenText(kind)
+  let searchOffset = lineStartOffset
+
+  while (searchOffset < lineEndOffset) {
+    const resourceStartOffset = value.indexOf(openText, searchOffset)
+
+    if (resourceStartOffset === -1 || resourceStartOffset >= lineEndOffset) {
+      break
+    }
+
+    const labelStartOffset = getResourceLabelStartOffset(
+      resourceStartOffset,
+      kind,
+    )
+    const resourceContext = getMarkdownResourceContextFromLabelStart(
+      value,
+      labelStartOffset,
+      kind,
+    )
+
+    if (
+      resourceContext &&
+      resourceContext.startOffset <= startOffset &&
+      endOffset <= resourceContext.endOffset
+    ) {
+      return resourceContext
+    }
+
+    searchOffset = labelStartOffset + 1
+  }
+
+  return null
+}
+
 function getExactMarkdownResourceContext(
   value: string,
   selection: MarkdownSelectionOffsetRange,
@@ -165,13 +269,13 @@ function getExactMarkdownResourceContext(
     return null
   }
 
-  return {
-    endOffset: linkEndOffset + 1,
-    label: value.slice(labelStartOffset + 1, labelEndOffset),
-    sourceText: value.slice(resourceStartOffset, linkEndOffset + 1),
-    startOffset: resourceStartOffset,
-    url: value.slice(labelEndOffset + 2, linkEndOffset),
-  }
+  return createMarkdownResourceContext(
+    value,
+    resourceStartOffset,
+    labelStartOffset,
+    labelEndOffset,
+    linkEndOffset + 1,
+  )
 }
 
 function getCrossedMarkdownResourceContext(
@@ -245,6 +349,11 @@ function getMarkdownResourceContextForNormalizedSelection(
 ): MarkdownLinkContext | null {
   return (
     getExactMarkdownResourceContext(value, normalizedSelection.coreRange, kind) ??
+    getContainingMarkdownResourceContext(
+      value,
+      normalizedSelection.coreRange,
+      kind,
+    ) ??
     getCrossedMarkdownResourceContext(value, normalizedSelection, kind)
   )
 }
