@@ -8,6 +8,7 @@ import {
 import {
   applyHeadingStyle,
   applyListStyle,
+  toggleImageSelection,
   toggleLinkSelection,
   toggleWrappedSelection,
 } from '../../editor/monaco/markdownCommandAdapter'
@@ -72,6 +73,7 @@ function FloatingMarkdownToolbar({
   const {
     activeFormats,
     headingValue,
+    imageEdit,
     listValue,
     linkEdit,
     markToolbarInteraction,
@@ -96,6 +98,7 @@ function FloatingMarkdownToolbar({
   })
   const closePreviewEditMenu = previewEdit.close
   const closeLinkEditMenu = linkEdit.close
+  const closeImageEditMenu = imageEdit.close
   const toolbarStyle = useMemo(
     () =>
       position
@@ -119,18 +122,32 @@ function FloatingMarkdownToolbar({
       hideToolbarTooltip()
       closePreviewEditMenu()
       closeLinkEditMenu()
+      closeImageEditMenu()
       setOpenDropdown(open ? 'heading' : null)
     },
-    [closeLinkEditMenu, closePreviewEditMenu, hideToolbarTooltip, setOpenDropdown],
+    [
+      closeImageEditMenu,
+      closeLinkEditMenu,
+      closePreviewEditMenu,
+      hideToolbarTooltip,
+      setOpenDropdown,
+    ],
   )
   const handleListOpenChange = useCallback(
     (open: boolean) => {
       hideToolbarTooltip()
       closePreviewEditMenu()
       closeLinkEditMenu()
+      closeImageEditMenu()
       setOpenDropdown(open ? 'list' : null)
     },
-    [closeLinkEditMenu, closePreviewEditMenu, hideToolbarTooltip, setOpenDropdown],
+    [
+      closeImageEditMenu,
+      closeLinkEditMenu,
+      closePreviewEditMenu,
+      hideToolbarTooltip,
+      setOpenDropdown,
+    ],
   )
   const headingTooltip = useMemo(
     () => ({
@@ -269,6 +286,33 @@ function FloatingMarkdownToolbar({
           tooltip={inlineTooltips.link}
         >
           <ToolbarIcon name="link" />
+        </ToolbarButton>
+      )}
+      {imageEdit.available ? (
+        <LinkEditMenu
+          active={activeFormats.image}
+          initialState={imageEdit.initialState}
+          kind="image"
+          open={imageEdit.open}
+          toolbarRef={toolbarRef}
+          workspaceRef={workspaceRef}
+          onCancel={imageEdit.cancel}
+          onClose={imageEdit.close}
+          onConfirm={imageEdit.confirm}
+          onOpen={imageEdit.openMenu}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+        />
+      ) : (
+        <ToolbarButton
+          ariaLabel="Image"
+          active={activeFormats.image}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+          onClick={() => runEditorCommand(toggleImageSelection)}
+          tooltip={inlineTooltips.image}
+        >
+          <ToolbarIcon name="image" />
         </ToolbarButton>
       )}
       {previewEdit.available ? (

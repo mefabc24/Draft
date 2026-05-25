@@ -1,0 +1,201 @@
+.editor-quick-insert-menu {
+  position: absolute;
+  z-index: 24;
+  box-sizing: border-box;
+  width: min(294px, calc(100% - 16px));
+  padding: 8px;
+  border: 1px solid var(--markdown-toolbar-border);
+  border-radius: 12px;
+  background: var(--markdown-toolbar-background);
+  box-shadow: var(--markdown-toolbar-shadow);
+  color: var(--markdown-toolbar-foreground);
+  font-family: var(--font-ui);
+  line-height: 1;
+  user-select: none;
+}
+
+.editor-quick-insert-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-quick-insert-menu-section {
+  overflow: hidden;
+  border-radius: 8px;
+  transition: background 160ms ease;
+}
+
+.editor-quick-insert-menu-section.is-expanded {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.editor-quick-insert-section-trigger,
+.editor-quick-insert-menu-item {
+  display: grid;
+  width: 100%;
+  min-height: 44px;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--markdown-toolbar-foreground);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-section-trigger:hover,
+.editor-quick-insert-menu-item:hover {
+  background: var(--markdown-toolbar-hover-background);
+}
+
+.editor-quick-insert-menu-item.is-nested {
+  min-height: 40px;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  padding-right: 18px;
+}
+
+.editor-quick-insert-section-content-frame {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    grid-template-rows 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 120ms ease;
+}
+
+.editor-quick-insert-menu-section.is-expanded
+  .editor-quick-insert-section-content-frame {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.editor-quick-insert-section-content {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  transform: translateY(-8px);
+  transition: transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.editor-quick-insert-menu-section.is-expanded
+  .editor-quick-insert-section-content {
+  transform: translateY(0);
+}
+
+.editor-quick-insert-section-content .editor-quick-insert-menu-item {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 140ms ease,
+    transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-menu-section.is-expanded
+  .editor-quick-insert-section-content
+  .editor-quick-insert-menu-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.editor-quick-insert-item-icon,
+.editor-quick-insert-item-spacer,
+.editor-quick-insert-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-quick-insert-item-icon {
+  width: 22px;
+  height: 22px;
+  color: currentColor;
+}
+
+.editor-quick-insert-item-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.editor-quick-insert-item-spacer {
+  width: 22px;
+}
+
+.editor-quick-insert-item-label {
+  min-width: 0;
+  overflow: hidden;
+  color: currentColor;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  padding-bottom: 3px;
+  margin-bottom: -3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-quick-insert-menu-item.is-nested .editor-quick-insert-item-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 86%,
+    transparent
+  );
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.editor-quick-insert-item-shortcut {
+  color: var(--markdown-toolbar-muted);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.editor-quick-insert-chevron {
+  width: 18px;
+  height: 18px;
+  color: currentColor;
+  transition: transform 140ms ease;
+}
+
+.editor-quick-insert-chevron.is-expanded {
+  transform: rotate(180deg);
+}
+
+.editor-quick-insert-chevron svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-quick-insert-menu-section,
+  .editor-quick-insert-section-content-frame,
+  .editor-quick-insert-section-content,
+  .editor-quick-insert-section-content .editor-quick-insert-menu-item,
+  .editor-quick-insert-chevron {
+    transition: none;
+  }
+}

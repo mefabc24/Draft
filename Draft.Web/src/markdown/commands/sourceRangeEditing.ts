@@ -1,6 +1,6 @@
 import type { MarkdownSelectionOffsetRange } from '../markdownTypes'
 import { getInlineWrapperContext } from './inlineFormatting'
-import { isSelectedLinkLabel } from './linkFormatting'
+import { isSelectedImageLabel, isSelectedLinkLabel } from './linkFormatting'
 
 export type EditableMarkdownSourceRange = MarkdownSelectionOffsetRange & {
   text: string
@@ -49,12 +49,21 @@ function expandSourceRangeOnce(
     }
   }
 
+  const imageContext = isSelectedImageLabel(value, range)
+
+  if (imageContext.isSelectedLinkLabel) {
+    return {
+      endOffset: imageContext.linkEndOffset + 1,
+      startOffset: imageContext.resourceStartOffset ?? range.startOffset - 2,
+    }
+  }
+
   const linkContext = isSelectedLinkLabel(value, range)
 
   if (linkContext.isSelectedLinkLabel) {
     return {
       endOffset: linkContext.linkEndOffset + 1,
-      startOffset: range.startOffset - 1,
+      startOffset: linkContext.resourceStartOffset ?? range.startOffset - 1,
     }
   }
 
@@ -96,6 +105,17 @@ function getVisibleMarkdownTextRange(
   }
 
   const linkLabelEndOffset = value.indexOf('](')
+
+  if (
+    value.startsWith('![') &&
+    linkLabelEndOffset > 2 &&
+    value.endsWith(')')
+  ) {
+    return getVisibleMarkdownTextRange(
+      value.slice(2, linkLabelEndOffset),
+      baseOffset + 2,
+    )
+  }
 
   if (
     value.startsWith('[') &&

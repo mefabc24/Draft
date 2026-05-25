@@ -344,6 +344,7 @@ function Workspace() {
       >
         <MarkdownEditorPane
           ariaHidden={viewMode === 'preview'}
+          editor={editorInstance}
           editorBodyRef={editorBodyRef}
           editorHostRef={editorHostRef}
           header={(

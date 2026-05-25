@@ -5,6 +5,7 @@ export type ToolbarIconName =
   | 'code'
   | 'codeBlock'
   | 'edit'
+  | 'image'
   | 'italic'
   | 'link'
   | 'noneList'
@@ -19,6 +20,7 @@ const toolbarIconPaths: Record<ToolbarIconName, string> = {
   code: 'icons/Code.svg',
   codeBlock: 'icons/Code%20Block.svg',
   edit: 'icons/Edit.svg',
+  image: 'icons/Image.svg',
   italic: 'icons/Italic.svg',
   link: 'icons/Link.svg',
   noneList: 'icons/NoList.svg',

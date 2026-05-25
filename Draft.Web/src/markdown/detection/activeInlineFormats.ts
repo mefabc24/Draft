@@ -10,7 +10,10 @@ import {
   isSelectedTextWrapped,
 } from '../commands/inlineFormatting'
 import { normalizeInlineSelectionRange } from '../commands/inlineSelectionNormalization'
-import { isLinkSelectionActive } from '../commands/linkFormatting'
+import {
+  isImageSelectionActive,
+  isLinkSelectionActive,
+} from '../commands/linkFormatting'
 
 export const EMPTY_ACTIVE_FORMATS: ActiveFormats = {
   bold: false,
@@ -18,6 +21,7 @@ export const EMPTY_ACTIVE_FORMATS: ActiveFormats = {
   strikethrough: false,
   code: false,
   link: false,
+  image: false,
 }
 
 export function detectActiveInlineFormats(
@@ -32,6 +36,7 @@ export function detectActiveInlineFormats(
       strikethrough: areSelectedNonEmptyLinesWrapped(value, selection, '~~'),
       code: areSelectedNonEmptyLinesWrapped(value, selection, '`'),
       link: false,
+      image: false,
     }
   }
 
@@ -63,5 +68,6 @@ export function detectActiveInlineFormats(
         isSelectedTextWrapped(coreText, '`') ||
         findContainingInlineFormatRange(value, coreRange, '`') !== null),
     link: isLinkSelectionActive(value, selection, selectedText),
+    image: isImageSelectionActive(value, selection, selectedText),
   }
 }

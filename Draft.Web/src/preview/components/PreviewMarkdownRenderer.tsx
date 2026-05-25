@@ -136,6 +136,19 @@ function openExternalHref(href: string) {
   window.open(href, '_blank', 'noopener,noreferrer')
 }
 
+function selectPreviewElement(element: HTMLElement) {
+  const selection = window.getSelection()
+
+  if (!selection) {
+    return
+  }
+
+  const range = document.createRange()
+  range.selectNode(element)
+  selection.removeAllRanges()
+  selection.addRange(range)
+}
+
 function getRehypePlugins(previewTheme: DraftPreviewTheme): PluggableList {
   const plugins: PluggableList = [rehypeRaw]
 
@@ -384,6 +397,25 @@ const previewComponents: Components = {
 
           event.preventDefault()
           openExternalHref(normalizedHref)
+        }}
+      />
+    )
+  },
+  img({ node, onClick, ...props }) {
+    return (
+      <img
+        {...props}
+        data-source-line={getSourceLine(node)}
+        onClick={(event) => {
+          onClick?.(event)
+
+          if (event.defaultPrevented) {
+            return
+          }
+
+          event.preventDefault()
+          event.stopPropagation()
+          selectPreviewElement(event.currentTarget)
         }}
       />
     )

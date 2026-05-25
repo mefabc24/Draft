@@ -2,6 +2,7 @@ import { useEffect, type RefObject } from 'react'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import {
   applyHeadingStyle,
+  toggleImageSelection,
   toggleLinkSelection,
   toggleWrappedSelection,
   type MarkdownEditorCommand,
@@ -93,6 +94,16 @@ export function useToolbarKeyboardCommands({
         },
       }),
       editor.addAction({
+        id: 'draft.markdownToolbar.image',
+        label: 'Markdown: Toggle Image',
+        keybindings: [
+          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyI,
+        ],
+        run: () => {
+          runKeyboardCommand(toggleImageSelection)
+        },
+      }),
+      editor.addAction({
         id: 'draft.markdownToolbar.heading1',
         label: 'Markdown: Heading 1',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit1],
@@ -179,8 +190,7 @@ export function useToolbarKeyboardCommands({
     const handlePreviewKeyDown = (event: KeyboardEvent) => {
       if (
         savedSelectionSourceRef.current !== 'preview' ||
-        !(event.ctrlKey || event.metaKey) ||
-        event.altKey
+        !(event.ctrlKey || event.metaKey)
       ) {
         return
       }
@@ -193,33 +203,39 @@ export function useToolbarKeyboardCommands({
         switchPreviewLinkToEditor?: boolean
       } = { focusEditor: false }
 
-      if (!event.shiftKey && key === 'b') {
+      if (!event.shiftKey && event.altKey && key === 'i') {
+        command = toggleImageSelection
+        options = {
+          focusEditor: true,
+          switchPreviewLinkToEditor: true,
+        }
+      } else if (!event.shiftKey && !event.altKey && key === 'b') {
         command = (activeEditor, commandOptions) => {
           toggleWrappedSelection(activeEditor, '**', '**', commandOptions)
         }
-      } else if (!event.shiftKey && key === 'i') {
+      } else if (!event.shiftKey && !event.altKey && key === 'i') {
         command = (activeEditor, commandOptions) => {
           toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
         }
-      } else if (!event.shiftKey && key === 'e') {
+      } else if (!event.shiftKey && !event.altKey && key === 'e') {
         command = (activeEditor, commandOptions) => {
           toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
         }
-      } else if (event.shiftKey && key === 'x') {
+      } else if (event.shiftKey && !event.altKey && key === 'x') {
         command = (activeEditor, commandOptions) => {
           toggleWrappedSelection(activeEditor, '~~', '~~', commandOptions)
         }
-      } else if (!event.shiftKey && key === 'k') {
+      } else if (!event.shiftKey && !event.altKey && key === 'k') {
         command = toggleLinkSelection
         options = {
           focusEditor: true,
           switchPreviewLinkToEditor: true,
         }
-      } else if (!event.shiftKey && key === 'n') {
+      } else if (!event.shiftKey && !event.altKey && key === 'n') {
         command = (activeEditor, commandOptions) => {
           applyHeadingStyle(activeEditor, 'normal', commandOptions)
         }
-      } else if (!event.shiftKey && /^Digit[1-6]$/u.test(code)) {
+      } else if (!event.shiftKey && !event.altKey && /^Digit[1-6]$/u.test(code)) {
         command = (activeEditor, commandOptions) => {
           applyHeadingStyle(
             activeEditor,

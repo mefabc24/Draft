@@ -1,0 +1,222 @@
+:root {
+  --app-foreground: #e5e7eb;
+  --draft-chrome-background: #131313;
+  --draft-divider-color: #242424;
+  --draft-muted-foreground: #7a7a7a;
+  --draft-pane-border: #1f1f1f;
+  --draft-subtle-foreground: #7a7a7a;
+
+  --editor-background: #131313;
+  --editor-current-line-background: #1a1a1a;
+  --editor-line-number-left-padding: 0px;
+  --editor-pane-width: 100%;
+  --editor-scrollbar-offset: 4px;
+  --editor-scrollbar-thumb: #353535;
+  --editor-scrollbar-track: transparent;
+  --editor-scrollbar-width: 6px;
+  --editor-surface-background: #1b1b1b;
+
+  --font-editor: 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono',
+    'Courier New', monospace;
+  --font-mono: 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono',
+    'Courier New', monospace;
+  --font-preview: 'Manrope', 'Segoe UI', Arial, sans-serif;
+  --font-ui: 'Segoe UI', Arial, sans-serif;
+
+  --markdown-toolbar-background: #131313;
+  --markdown-toolbar-border: #3d3d3d;
+  --markdown-toolbar-divider: #242424;
+  --markdown-toolbar-foreground: #acabaa;
+  --markdown-toolbar-hover-background: #1f2020;
+  --markdown-toolbar-icon-filter: brightness(0) saturate(100%) invert(74%)
+    sepia(6%) saturate(89%) hue-rotate(344deg) brightness(91%) contrast(88%);
+  --markdown-toolbar-icon-primary-filter: brightness(0) saturate(100%)
+    invert(78%) sepia(18%) saturate(720%) hue-rotate(184deg)
+    brightness(105%) contrast(101%);
+  --markdown-toolbar-muted: #575757;
+  --markdown-toolbar-primary: #a5c8ff;
+  --markdown-toolbar-radius: 10px;
+  --markdown-toolbar-selected-shortcut: rgba(165, 200, 255, 0.55);
+  --markdown-toolbar-shadow: 0 10px 24px rgba(0, 0, 0, 0.26),
+    0 2px 8px rgba(0, 0, 0, 0.22);
+  --markdown-toolbar-tooltip-arrow-left: 50%;
+
+  --pane-slide-distance: 32px;
+  --pane-transition-duration: 240ms;
+  --pane-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --preview-pane-width: 50%;
+  --split-editor-pane-width: 50%;
+  --split-preview-pane-width: 50%;
+
+  --preview-background: #131313;
+  --preview-foreground: #d1d5db;
+  --preview-heading-foreground: #a5c8ff;
+  --preview-h1-foreground: #a5c8ff;
+  --preview-h2-foreground: #a5c8ff;
+  --preview-h3-foreground: #a5c8ff;
+  --preview-h4-foreground: #a5c8ff;
+  --preview-h5-foreground: #a5c8ff;
+  --preview-h6-foreground: #a5c8ff;
+
+  --preview-heading-background: transparent;
+  --preview-h1-background: transparent;
+  --preview-h2-background: transparent;
+  --preview-h3-background: transparent;
+  --preview-h4-background: transparent;
+  --preview-h5-background: transparent;
+  --preview-h6-background: transparent;
+  --preview-heading-background-width: auto;
+  --preview-heading-border-radius: 0;
+  --preview-heading-padding: 0;
+
+  --preview-h1-background-width: auto;
+  --preview-h1-border-radius: 0;
+  --preview-h1-font-weight: 600;
+  --preview-h1-line-color: #374151;
+  --preview-h1-line-height: 0;
+  --preview-h1-line-radius: 0;
+  --preview-h1-line-spacing: 0;
+  --preview-h1-padding: 0;
+  --preview-h2-background-width: auto;
+  --preview-h2-border-radius: 0;
+  --preview-h2-font-weight: 600;
+  --preview-h2-line-color: #374151;
+  --preview-h2-line-height: 0;
+  --preview-h2-line-radius: 0;
+  --preview-h2-line-spacing: 0;
+  --preview-h2-padding: 0;
+  --preview-h3-background-width: auto;
+  --preview-h3-border-radius: 0;
+  --preview-h3-font-weight: 600;
+  --preview-h3-line-color: #374151;
+  --preview-h3-line-height: 0;
+  --preview-h3-line-radius: 0;
+  --preview-h3-line-spacing: 0;
+  --preview-h3-padding: 0;
+  --preview-h4-background-width: auto;
+  --preview-h4-border-radius: 0;
+  --preview-h4-font-weight: 600;
+  --preview-h4-line-color: #374151;
+  --preview-h4-line-height: 0;
+  --preview-h4-line-radius: 0;
+  --preview-h4-line-spacing: 0;
+  --preview-h4-padding: 0;
+  --preview-h5-background-width: auto;
+  --preview-h5-border-radius: 0;
+  --preview-h5-font-weight: 600;
+  --preview-h5-line-color: #374151;
+  --preview-h5-line-height: 0;
+  --preview-h5-line-radius: 0;
+  --preview-h5-line-spacing: 0;
+  --preview-h5-padding: 0;
+  --preview-h6-background-width: auto;
+  --preview-h6-border-radius: 0;
+  --preview-h6-font-weight: 600;
+  --preview-h6-line-color: #374151;
+  --preview-h6-line-height: 0;
+  --preview-h6-line-radius: 0;
+  --preview-h6-line-spacing: 0;
+  --preview-h6-padding: 0;
+
+  --preview-current-heading-background: transparent;
+  --preview-current-heading-background-width: auto;
+  --preview-current-heading-border-radius: 0;
+  --preview-current-heading-line-color: #374151;
+  --preview-current-heading-line-height: 0;
+  --preview-current-heading-line-radius: 0;
+  --preview-current-heading-line-spacing: 0;
+  --preview-current-heading-padding: 0;
+
+  --preview-rule-border: #374151;
+  --preview-rule-border-radius: 0;
+  --preview-rule-height: 1px;
+
+  --preview-link-background: transparent;
+  --preview-link-border-radius: 0;
+  --preview-link-foreground: #60a5fa;
+  --preview-link-hover-background: transparent;
+  --preview-link-hover-foreground: #93c5fd;
+  --preview-link-hover-text-decoration-color: #93c5fd;
+  --preview-link-hover-text-decoration-line: underline;
+  --preview-link-hover-text-decoration-style: solid;
+  --preview-link-hover-text-decoration-thickness: 1px;
+  --preview-link-text-decoration-color: #60a5fa;
+  --preview-link-text-decoration-line: none;
+  --preview-link-text-decoration-style: solid;
+  --preview-link-text-decoration-thickness: 1px;
+  --preview-link-text-underline-offset: 3px;
+
+  --preview-inline-code-background: #1f2937;
+  --preview-inline-code-border: #374151;
+  --preview-inline-code-border-radius: 6px;
+  --preview-inline-code-border-width: 1px;
+  --preview-inline-code-foreground: #f9fafb;
+  --preview-inline-code-padding: 2px 6px;
+
+  --preview-code-block-background: #111827;
+  --preview-code-block-border: #2f3545;
+  --preview-code-block-border-radius: 10px;
+  --preview-code-block-border-width: 1px;
+  --preview-code-block-copy-button-border-radius: 8px;
+  --preview-code-block-copy-icon-foreground: #e5e7eb;
+  --preview-code-block-foreground: #e5e7eb;
+  --preview-code-block-line-height: 1.55;
+  --preview-code-block-padding: 14px;
+
+  --preview-blockquote-background: rgba(121, 169, 134, 0.08);
+  --preview-blockquote-border: #79a986;
+  --preview-blockquote-border-inset: 0;
+  --preview-blockquote-border-line-radius: 0;
+  --preview-blockquote-border-radius: 0;
+  --preview-blockquote-border-width: 4px;
+  --preview-blockquote-foreground: #cbd5e1;
+  --preview-blockquote-padding: 8px 16px;
+
+  --preview-table-border: #374151;
+  --preview-table-border-radius: 0;
+  --preview-table-cell-background: #111827;
+  --preview-table-cell-padding: 8px 12px;
+  --preview-table-column-border: #374151;
+  --preview-table-column-border-width: 1px;
+  --preview-table-header-background: #1f2937;
+  --preview-table-header-border: #374151;
+  --preview-table-header-border-width: 1px;
+  --preview-table-header-foreground: #f9fafb;
+  --preview-table-last-row-border-width: 0;
+  --preview-table-max-width: 100%;
+  --preview-table-outer-border: #374151;
+  --preview-table-outer-border-width: 1px;
+  --preview-table-row-border: #374151;
+  --preview-table-row-border-width: 1px;
+  --preview-table-width: 100%;
+
+  --preview-task-list-checkbox-background: transparent;
+  --preview-task-list-checkbox-border: #4b5563;
+  --preview-task-list-checkbox-border-radius: 4px;
+  --preview-task-list-checkbox-border-width: 1px;
+  --preview-task-list-checkbox-checked-background: #79a986;
+  --preview-task-list-checkbox-checked-border: #79a986;
+  --preview-task-list-checkbox-checked-foreground: #111827;
+  --preview-task-list-checkbox-checkmark-height: 6px;
+  --preview-task-list-checkbox-checkmark-width: 8px;
+  --preview-task-list-checkbox-disabled-opacity: 1;
+  --preview-task-list-checkbox-foreground: transparent;
+  --preview-task-list-checkbox-margin: 0 8px 0 -20px;
+  --preview-task-list-checkbox-size: 16px;
+  --preview-task-list-checkbox-vertical-align: middle;
+
+  --preview-current-ordered-list-marker-color: currentColor;
+  --preview-current-ordered-list-marker-font-weight: 400;
+  --preview-current-ordered-list-marker-numbering: decimal;
+  --preview-current-ordered-list-marker-size: 1em;
+  --preview-current-ordered-list-marker-spacing: 0;
+  --preview-current-unordered-list-marker-color: currentColor;
+  --preview-current-unordered-list-marker-shape: disc;
+  --preview-current-unordered-list-marker-size: 1em;
+  --preview-current-unordered-list-marker-spacing: 0;
+
+  --preview-scrollbar-offset: 4px;
+  --preview-scrollbar-thumb: #353535;
+  --preview-scrollbar-track: transparent;
+  --preview-scrollbar-width: 6px;
+}

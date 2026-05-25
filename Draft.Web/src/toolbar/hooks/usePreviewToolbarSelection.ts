@@ -341,6 +341,26 @@ export function setPreviewDomSelectionFromOffsets(
   const endNode = endSpan?.firstChild
 
   if (
+    startSpan &&
+    endSpan &&
+    startSpan === endSpan &&
+    (!startNode || !endNode)
+  ) {
+    const range = document.createRange()
+    range.selectNode(startSpan)
+
+    const domSelection = window.getSelection()
+
+    if (!domSelection) {
+      return false
+    }
+
+    domSelection.removeAllRanges()
+    domSelection.addRange(range)
+    return true
+  }
+
+  if (
     !startSpan ||
     !endSpan ||
     !startNode ||

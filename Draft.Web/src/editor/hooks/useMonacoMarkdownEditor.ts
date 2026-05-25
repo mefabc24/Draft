@@ -5,6 +5,7 @@ import { getEditorTheme, registerEditorThemes } from '../../themes'
 import { syncCurrentLineDecorations } from '../monaco/currentLineDecorations'
 import { duplicateCurrentLine } from '../monaco/duplicateLine'
 import {
+  EDITOR_LINE_NUMBER_LEFT_PADDING_PX,
   EDITOR_PADDING,
   EDITOR_SCROLL_SENSITIVITY,
   getEditorFontLoadTarget,
@@ -38,6 +39,13 @@ function remeasureEditor(editor: monaco.editor.IStandaloneCodeEditor) {
     monaco.editor.remeasureFonts()
     editor.layout()
   })
+}
+
+function syncEditorLayoutVariables(editorHost: HTMLDivElement) {
+  editorHost.style.setProperty(
+    '--editor-line-number-left-padding',
+    `${EDITOR_LINE_NUMBER_LEFT_PADDING_PX}px`,
+  )
 }
 
 function isEditableKeyboardTarget(target: EventTarget | null) {
@@ -130,17 +138,20 @@ export function useMonacoMarkdownEditor({
   )
 
   useEffect(() => {
-    if (!editorHostRef.current) {
+    const editorHost = editorHostRef.current
+
+    if (!editorHost) {
       return
     }
 
+    syncEditorLayoutVariables(editorHost)
     registerEditorThemes()
     monaco.editor.setTheme(
       getEditorTheme(settingsRef.current.activeEditorThemeId).monacoThemeName,
     )
 
     const currentEditorSettings = settingsRef.current
-    const editor = monaco.editor.create(editorHostRef.current, {
+    const editor = monaco.editor.create(editorHost, {
       value: initialMarkdownRef.current,
       language: currentEditorSettings.markdownSyntaxHighlighting ? 'markdown' : 'plaintext',
       automaticLayout: true,

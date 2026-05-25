@@ -9,11 +9,17 @@ export {
   normalizeAdjacentInlineFormattingRanges,
 } from './commands/inlineFormatting'
 export {
+  createMarkdownImageText,
   createMarkdownLinkText,
+  getImageEditState,
   getLinkEditState,
+  getMarkdownImageContext,
   getMarkdownLinkContext,
+  getToggleImageEdits,
   getToggleLinkEdits,
+  isImageSelectionActive,
   isLinkSelectionActive,
+  isSelectedImageLabel,
   isSelectedLinkLabel,
 } from './commands/linkFormatting'
 export { addListPrefix, removeListPrefix } from './commands/listFormatting'
@@ -36,4 +42,4 @@ export type {
 export type { FencedCodeBlockContext } from './detection/fencedCodeBlocks'
 export type { EditableMarkdownSourceRange } from './commands/sourceRangeEditing'
 export type { ContainingInlineWrapperContext } from './commands/inlineFormatting'
-export type { MarkdownLinkContext } from './commands/linkFormatting'
+export type { MarkdownImageContext, MarkdownLinkContext } from './commands/linkFormatting'

@@ -13,54 +13,134 @@ export type MarkdownLinkContext = MarkdownSelectionOffsetRange & {
   url: string
 }
 
-export function isSelectedLinkLabel(
+export type MarkdownImageContext = MarkdownLinkContext
+
+type MarkdownInlineResourceKind = 'image' | 'link'
+
+function getResourceOpenText(kind: MarkdownInlineResourceKind) {
+  return kind === 'image' ? '![' : '['
+}
+
+function getResourceLabelStartOffset(
+  resourceStartOffset: number,
+  kind: MarkdownInlineResourceKind,
+) {
+  return resourceStartOffset + (kind === 'image' ? 1 : 0)
+}
+
+function getResourceStartOffset(
+  value: string,
+  labelStartOffset: number,
+  kind: MarkdownInlineResourceKind,
+) {
+  const hasImagePrefix =
+    labelStartOffset > 0 && value[labelStartOffset - 1] === '!'
+
+  if (kind === 'image') {
+    return hasImagePrefix ? labelStartOffset - 1 : null
+  }
+
+  return hasImagePrefix ? null : labelStartOffset
+}
+
+function isSelectedResourceLabel(
   value: string,
   selection: MarkdownSelectionOffsetRange,
+  kind: MarkdownInlineResourceKind,
 ) {
   const { endOffset, startOffset } = selection
+  const labelStartOffset = startOffset - 1
+  const resourceStartOffset =
+    labelStartOffset >= 0
+      ? getResourceStartOffset(value, labelStartOffset, kind)
+      : null
   const linkClosePrefix = value.slice(endOffset, endOffset + 2)
   const linkEndOffset =
     linkClosePrefix === '](' ? value.indexOf(')', endOffset + 2) : -1
 
   return {
     isSelectedLinkLabel:
-      startOffset > 0 && value[startOffset - 1] === '[' && linkEndOffset !== -1,
+      resourceStartOffset !== null &&
+      value[labelStartOffset] === '[' &&
+      linkEndOffset !== -1,
     linkEndOffset,
+    resourceStartOffset,
   }
+}
+
+export function isSelectedLinkLabel(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+) {
+  return isSelectedResourceLabel(value, selection, 'link')
+}
+
+export function isSelectedImageLabel(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+) {
+  return isSelectedResourceLabel(value, selection, 'image')
 }
 
 export function getMarkdownLinkContext(
   value: string,
   selection: MarkdownSelectionOffsetRange,
 ): MarkdownLinkContext | null {
-  return getMarkdownLinkContextForNormalizedSelection(
+  return getMarkdownResourceContextForNormalizedSelection(
     value,
     normalizeInlineSelectionRange(value, selection),
+    'link',
   )
 }
 
-function getExactMarkdownLinkContext(
+export function getMarkdownImageContext(
   value: string,
   selection: MarkdownSelectionOffsetRange,
+): MarkdownImageContext | null {
+  return getMarkdownResourceContextForNormalizedSelection(
+    value,
+    normalizeInlineSelectionRange(value, selection),
+    'image',
+  )
+}
+
+function getFullResourceMatch(
+  selectedText: string,
+  kind: MarkdownInlineResourceKind,
+) {
+  return kind === 'image'
+    ? selectedText.match(/^!\[([\s\S]*)\]\(([^)]*)\)$/u)
+    : selectedText.match(/^\[([\s\S]*)\]\(([^)]*)\)$/u)
+}
+
+function getExactMarkdownResourceContext(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  kind: MarkdownInlineResourceKind,
 ): MarkdownLinkContext | null {
   const { endOffset, startOffset } = selection
   const selectedText = value.slice(startOffset, endOffset)
-  const fullLinkMatch = selectedText.match(/^\[([\s\S]*)\]\(([^)]*)\)$/u)
+  const fullResourceMatch = getFullResourceMatch(selectedText, kind)
 
-  if (fullLinkMatch) {
+  if (fullResourceMatch) {
     return {
       endOffset,
-      label: fullLinkMatch[1],
+      label: fullResourceMatch[1],
       sourceText: selectedText,
       startOffset,
-      url: fullLinkMatch[2],
+      url: fullResourceMatch[2],
     }
   }
 
   const labelStartOffset = value.lastIndexOf('[', startOffset)
   const labelEndOffset = value.indexOf('](', endOffset)
+  const resourceStartOffset =
+    labelStartOffset === -1
+      ? null
+      : getResourceStartOffset(value, labelStartOffset, kind)
 
   if (
+    resourceStartOffset === null ||
     labelStartOffset === -1 ||
     labelEndOffset === -1 ||
     labelStartOffset >= startOffset ||
@@ -79,7 +159,7 @@ function getExactMarkdownLinkContext(
   const previousOpenOffset = value.lastIndexOf('[', startOffset - 1)
 
   if (
-    previousCloseOffset > labelStartOffset ||
+    previousCloseOffset > resourceStartOffset ||
     previousOpenOffset > labelStartOffset
   ) {
     return null
@@ -88,27 +168,35 @@ function getExactMarkdownLinkContext(
   return {
     endOffset: linkEndOffset + 1,
     label: value.slice(labelStartOffset + 1, labelEndOffset),
-    sourceText: value.slice(labelStartOffset, linkEndOffset + 1),
-    startOffset: labelStartOffset,
+    sourceText: value.slice(resourceStartOffset, linkEndOffset + 1),
+    startOffset: resourceStartOffset,
     url: value.slice(labelEndOffset + 2, linkEndOffset),
   }
 }
 
-function getCrossedMarkdownLinkContext(
+function getCrossedMarkdownResourceContext(
   value: string,
   normalizedSelection: NormalizedInlineSelectionRange,
+  kind: MarkdownInlineResourceKind,
 ): MarkdownLinkContext | null {
   const { coreRange, leadingWhitespace, trailingWhitespace } =
     normalizedSelection
   const { endOffset, startOffset } = coreRange
 
   if (trailingWhitespace.length > 0 && startOffset > 0) {
+    const labelStartOffset = startOffset - 1
+    const resourceStartOffset = getResourceStartOffset(
+      value,
+      labelStartOffset,
+      kind,
+    )
     const labelEndOffset = value.indexOf('](', startOffset)
     const linkEndOffset =
       labelEndOffset === -1 ? -1 : value.indexOf(')', labelEndOffset + 2)
 
     if (
-      value[startOffset - 1] === '[' &&
+      resourceStartOffset !== null &&
+      value[labelStartOffset] === '[' &&
       labelEndOffset > startOffset &&
       labelEndOffset < endOffset &&
       linkEndOffset + 1 === endOffset
@@ -116,26 +204,30 @@ function getCrossedMarkdownLinkContext(
       return {
         endOffset,
         label: value.slice(startOffset, labelEndOffset),
-        sourceText: value.slice(startOffset - 1, endOffset),
-        startOffset: startOffset - 1,
+        sourceText: value.slice(resourceStartOffset, endOffset),
+        startOffset: resourceStartOffset,
         url: value.slice(labelEndOffset + 2, linkEndOffset),
       }
     }
   }
 
-  if (leadingWhitespace.length > 0 && value[startOffset] === '[') {
-    const labelEndOffset = value.indexOf('](', startOffset)
+  if (
+    leadingWhitespace.length > 0 &&
+    value.startsWith(getResourceOpenText(kind), startOffset)
+  ) {
+    const labelStartOffset = getResourceLabelStartOffset(startOffset, kind)
+    const labelEndOffset = value.indexOf('](', labelStartOffset)
     const linkEndOffset =
       labelEndOffset === -1 ? -1 : value.indexOf(')', labelEndOffset + 2)
 
     if (
-      labelEndOffset > startOffset + 1 &&
+      labelEndOffset > labelStartOffset + 1 &&
       labelEndOffset === endOffset &&
       linkEndOffset !== -1
     ) {
       return {
         endOffset: linkEndOffset + 1,
-        label: value.slice(startOffset + 1, labelEndOffset),
+        label: value.slice(labelStartOffset + 1, labelEndOffset),
         sourceText: value.slice(startOffset, linkEndOffset + 1),
         startOffset,
         url: value.slice(labelEndOffset + 2, linkEndOffset),
@@ -146,13 +238,14 @@ function getCrossedMarkdownLinkContext(
   return null
 }
 
-function getMarkdownLinkContextForNormalizedSelection(
+function getMarkdownResourceContextForNormalizedSelection(
   value: string,
   normalizedSelection: NormalizedInlineSelectionRange,
+  kind: MarkdownInlineResourceKind,
 ): MarkdownLinkContext | null {
   return (
-    getExactMarkdownLinkContext(value, normalizedSelection.coreRange) ??
-    getCrossedMarkdownLinkContext(value, normalizedSelection)
+    getExactMarkdownResourceContext(value, normalizedSelection.coreRange, kind) ??
+    getCrossedMarkdownResourceContext(value, normalizedSelection, kind)
   )
 }
 
@@ -161,9 +254,10 @@ export function getLinkEditState(
   selection: MarkdownSelectionOffsetRange,
 ): MarkdownLinkContext {
   const normalizedSelection = normalizeInlineSelectionRange(value, selection)
-  const linkContext = getMarkdownLinkContextForNormalizedSelection(
+  const linkContext = getMarkdownResourceContextForNormalizedSelection(
     value,
     normalizedSelection,
+    'link',
   )
 
   if (linkContext) {
@@ -180,8 +274,37 @@ export function getLinkEditState(
   }
 }
 
+export function getImageEditState(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+): MarkdownImageContext {
+  const normalizedSelection = normalizeInlineSelectionRange(value, selection)
+  const imageContext = getMarkdownResourceContextForNormalizedSelection(
+    value,
+    normalizedSelection,
+    'image',
+  )
+
+  if (imageContext) {
+    return imageContext
+  }
+
+  const { coreRange, coreText } = normalizedSelection
+
+  return {
+    ...coreRange,
+    label: coreText,
+    sourceText: coreText,
+    url: '',
+  }
+}
+
 export function createMarkdownLinkText(label: string, url: string) {
   return `[${label}](${url})`
+}
+
+export function createMarkdownImageText(label: string, url: string) {
+  return `![${label}](${url})`
 }
 
 export function getToggleLinkEdits(
@@ -194,9 +317,10 @@ export function getToggleLinkEdits(
     selection,
     selectedText,
   )
-  const linkContext = getMarkdownLinkContextForNormalizedSelection(
+  const linkContext = getMarkdownResourceContextForNormalizedSelection(
     value,
     normalizedSelection,
+    'link',
   )
 
   if (linkContext) {
@@ -237,15 +361,84 @@ export function getToggleLinkEdits(
   }
 }
 
+export function getToggleImageEdits(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  selectedText: string,
+) {
+  const normalizedSelection = normalizeInlineSelectionRange(
+    value,
+    selection,
+    selectedText,
+  )
+  const imageContext = getMarkdownResourceContextForNormalizedSelection(
+    value,
+    normalizedSelection,
+    'image',
+  )
+
+  if (imageContext) {
+    const labelStartOffset = imageContext.startOffset + 2
+    const labelEndOffset = labelStartOffset + imageContext.label.length
+
+    return {
+      edits: [
+        {
+          endOffset: imageContext.endOffset,
+          startOffset: labelEndOffset,
+          text: '',
+        },
+        {
+          endOffset: labelStartOffset,
+          startOffset: imageContext.startOffset,
+          text: '',
+        },
+      ] satisfies MarkdownTextEdit[],
+      nextSelection: {
+        endOffset: imageContext.startOffset + imageContext.label.length,
+        startOffset: imageContext.startOffset,
+      },
+    }
+  }
+
+  const { endOffset, startOffset } = normalizedSelection.coreRange
+
+  return {
+    edits: [
+      { endOffset, startOffset: endOffset, text: ']()' },
+      { endOffset: startOffset, startOffset, text: '![' },
+    ] satisfies MarkdownTextEdit[],
+    nextSelection: {
+      endOffset: endOffset + 4,
+      startOffset: endOffset + 4,
+    },
+  }
+}
+
 export function isLinkSelectionActive(
   value: string,
   selection: MarkdownSelectionOffsetRange,
   selectedText: string,
 ) {
   return (
-    getMarkdownLinkContextForNormalizedSelection(
+    getMarkdownResourceContextForNormalizedSelection(
       value,
       normalizeInlineSelectionRange(value, selection, selectedText),
+      'link',
+    ) !== null
+  )
+}
+
+export function isImageSelectionActive(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  selectedText: string,
+) {
+  return (
+    getMarkdownResourceContextForNormalizedSelection(
+      value,
+      normalizeInlineSelectionRange(value, selection, selectedText),
+      'image',
     ) !== null
   )
 }
