@@ -34,7 +34,7 @@
 .editor-quick-insert-menu-item {
   display: grid;
   width: 100%;
-  min-height: 44px;
+  height: 36px;
   grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
@@ -57,7 +57,6 @@
 }
 
 .editor-quick-insert-menu-item.is-nested {
-  min-height: 40px;
   grid-template-columns: 28px minmax(0, 1fr) auto;
   padding-right: 18px;
 }
