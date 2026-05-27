@@ -28,6 +28,7 @@ function EmptyLineInsertButton({
     menuPosition,
     menuRef,
     openMenu,
+    runMenuActionKeepingOpen,
     targetLineNumber,
   } = useEditorQuickInsertMenu(editor, editorBodyRef)
   const buttonStyle = useMemo(
@@ -93,10 +94,11 @@ function EmptyLineInsertButton({
       ) : null}
       <EditorQuickInsertMenu
         editor={editor}
-        key={targetLineNumber ?? 'closed'}
+        key={targetLineNumber === null ? 'closed' : 'open'}
         lineNumber={targetLineNumber}
         menuRef={menuRef}
         onClose={closeMenu}
+        onKeepOpenAction={runMenuActionKeepingOpen}
         position={menuPosition}
       />
     </>

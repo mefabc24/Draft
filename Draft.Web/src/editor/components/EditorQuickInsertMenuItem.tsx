@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react'
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 
 type EditorQuickInsertMenuItemProps = {
   icon?: ReactNode
   label: string
   nested?: boolean
-  onSelect: () => void
+  onSelect: (event: ReactMouseEvent<HTMLButtonElement>) => void
   shortcut?: string
 }
 

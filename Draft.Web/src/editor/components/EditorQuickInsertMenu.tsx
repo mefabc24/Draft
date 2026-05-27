@@ -4,6 +4,7 @@ import {
   useMemo,
   useState,
   type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
   type RefObject,
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
@@ -32,6 +33,7 @@ type EditorQuickInsertMenuProps = {
   lineNumber: number | null
   menuRef: RefObject<HTMLDivElement | null>
   onClose: () => void
+  onKeepOpenAction: (action: () => number | false | null) => void
   position: EditorQuickInsertMenuPosition | null
 }
 
@@ -123,11 +125,16 @@ function isEditableMenuTarget(target: EventTarget | null) {
   )
 }
 
+function shouldKeepMenuOpen(event: ReactMouseEvent<HTMLElement>) {
+  return event.shiftKey && event.button === 0
+}
+
 function EditorQuickInsertMenu({
   editor,
   lineNumber,
   menuRef,
   onClose,
+  onKeepOpenAction,
   position,
 }: EditorQuickInsertMenuProps) {
   const [expandedSections, setExpandedSections] = useState(
@@ -180,36 +187,88 @@ function EditorQuickInsertMenu({
   }, [lineNumber, menuRef, onClose])
 
   const runCommand = useCallback(
-    (command: EditorQuickInsertCommand) => {
-      if (editor && lineNumber !== null) {
-        runEditorQuickInsertCommand(editor, lineNumber, command)
+    (command: EditorQuickInsertCommand, keepOpen = false) => {
+      const runAction = () => {
+        if (!editor || lineNumber === null) {
+          return null
+        }
+
+        const result = runEditorQuickInsertCommand(editor, lineNumber, command, {
+          advanceToNextEmptyLine: keepOpen,
+        })
+
+        return result ? result.nextLineNumber : null
       }
 
+      if (keepOpen) {
+        onKeepOpenAction(runAction)
+        return
+      }
+
+      runAction()
       onClose()
     },
-    [editor, lineNumber, onClose],
+    [editor, lineNumber, onClose, onKeepOpenAction],
   )
 
   const confirmTable = useCallback(
-    (tableData: CreateTableMarkdownData) => {
-      if (editor && lineNumber !== null) {
-        insertEditorQuickInsertTable(editor, lineNumber, tableData)
+    (tableData: CreateTableMarkdownData, keepOpen = false) => {
+      const runAction = () => {
+        if (!editor || lineNumber === null) {
+          return null
+        }
+
+        const result = insertEditorQuickInsertTable(
+          editor,
+          lineNumber,
+          tableData,
+          {
+            advanceToNextEmptyLine: keepOpen,
+          },
+        )
+
+        return result ? result.nextLineNumber : null
       }
 
+      if (keepOpen) {
+        onKeepOpenAction(runAction)
+        return
+      }
+
+      runAction()
       onClose()
     },
-    [editor, lineNumber, onClose],
+    [editor, lineNumber, onClose, onKeepOpenAction],
   )
 
   const confirmCodeBlock = useCallback(
-    (codeBlockData: CreateCodeBlockMarkdownData) => {
-      if (editor && lineNumber !== null) {
-        insertEditorQuickInsertCodeBlock(editor, lineNumber, codeBlockData)
+    (codeBlockData: CreateCodeBlockMarkdownData, keepOpen = false) => {
+      const runAction = () => {
+        if (!editor || lineNumber === null) {
+          return null
+        }
+
+        const result = insertEditorQuickInsertCodeBlock(
+          editor,
+          lineNumber,
+          codeBlockData,
+          {
+            advanceToNextEmptyLine: keepOpen,
+          },
+        )
+
+        return result ? result.nextLineNumber : null
       }
 
+      if (keepOpen) {
+        onKeepOpenAction(runAction)
+        return
+      }
+
+      runAction()
       onClose()
     },
-    [editor, lineNumber, onClose],
+    [editor, lineNumber, onClose, onKeepOpenAction],
   )
 
   const renderCommandItem = useCallback(
@@ -219,8 +278,8 @@ function EditorQuickInsertMenu({
         key={entry.id}
         label={entry.label}
         nested={nested}
-        onSelect={() => {
-          runCommand(entry.command)
+        onSelect={(event) => {
+          runCommand(entry.command, shouldKeepMenuOpen(event))
         }}
         shortcut={entry.shortcut}
       />

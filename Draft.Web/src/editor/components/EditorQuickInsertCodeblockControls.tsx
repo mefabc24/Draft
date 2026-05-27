@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from 'react'
 import type { CreateCodeBlockMarkdownData } from '../commands/createCodeBlockMarkdown'
 import { useToolbarMenuScrollbar } from '../../toolbar/hooks/useToolbarMenuScrollbar'
 
@@ -10,7 +16,10 @@ type CodeblockLanguageOption = {
 }
 
 type EditorQuickInsertCodeblockControlsProps = {
-  onConfirm: (codeBlockData: CreateCodeBlockMarkdownData) => void
+  onConfirm: (
+    codeBlockData: CreateCodeBlockMarkdownData,
+    keepOpen?: boolean,
+  ) => void
 }
 
 const codeblockLanguageOptions: CodeblockLanguageOption[] = [
@@ -312,8 +321,11 @@ function EditorQuickInsertCodeblockControls({
       <button
         type="button"
         className="editor-quick-insert-table-confirm"
-        onClick={() => {
-          onConfirm({ language: selectedLanguage.value })
+        onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+          onConfirm(
+            { language: selectedLanguage.value },
+            event.shiftKey && event.button === 0,
+          )
         }}
       >
         Create

@@ -70,15 +70,22 @@ export function useEditorQuickInsertMenu(
     useState<EditorQuickInsertMenuPosition | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const menuTargetRef = useRef<EditorQuickInsertMenuTarget | null>(null)
+  const keepOpenActionRef = useRef(false)
+  const lockMenuPositionRef = useRef(false)
   const updateFrameRef = useRef<number | null>(null)
 
   const closeMenu = useCallback(() => {
     menuTargetRef.current = null
+    lockMenuPositionRef.current = false
     setMenuTarget(null)
     setMenuPosition(null)
   }, [])
 
   const updateMenuPosition = useCallback(() => {
+    if (lockMenuPositionRef.current) {
+      return
+    }
+
     const target = menuTargetRef.current
     const editorBody = editorBodyRef.current
 
@@ -103,6 +110,10 @@ export function useEditorQuickInsertMenu(
   }, [closeMenu, editor, editorBodyRef])
 
   const scheduleMenuPositionUpdate = useCallback(() => {
+    if (lockMenuPositionRef.current) {
+      return
+    }
+
     if (updateFrameRef.current !== null) {
       window.cancelAnimationFrame(updateFrameRef.current)
     }
@@ -134,11 +145,57 @@ export function useEditorQuickInsertMenu(
       }
 
       menuTargetRef.current = anchor
+      lockMenuPositionRef.current = false
       setMenuTarget(anchor)
       setMenuPosition(nextPosition)
       scheduleMenuPositionUpdate()
     },
     [closeMenu, editor, editorBodyRef, scheduleMenuPositionUpdate],
+  )
+
+  const moveMenuToLine = useCallback(
+    (lineNumber: number) => {
+      const currentTarget = menuTargetRef.current
+
+      if (!editor || !currentTarget) {
+        closeMenu()
+        return
+      }
+
+      const nextTarget = {
+        ...currentTarget,
+        lineNumber,
+      }
+
+      if (!isEditorQuickInsertTargetLine(editor, nextTarget.lineNumber)) {
+        closeMenu()
+        return
+      }
+
+      menuTargetRef.current = nextTarget
+      lockMenuPositionRef.current = true
+      setMenuTarget(nextTarget)
+    },
+    [closeMenu, editor],
+  )
+
+  const runMenuActionKeepingOpen = useCallback(
+    (action: () => number | false | null) => {
+      keepOpenActionRef.current = true
+
+      try {
+        const nextLineNumber = action()
+
+        if (typeof nextLineNumber === 'number') {
+          moveMenuToLine(nextLineNumber)
+        } else {
+          closeMenu()
+        }
+      } finally {
+        keepOpenActionRef.current = false
+      }
+    },
+    [closeMenu, moveMenuToLine],
   )
 
   useLayoutEffect(() => {
@@ -155,7 +212,18 @@ export function useEditorQuickInsertMenu(
     }
 
     const handleContentChange = () => {
-      if (!isEditorQuickInsertTargetLine(editor, menuTarget.lineNumber)) {
+      const currentTarget = menuTargetRef.current
+
+      if (!currentTarget) {
+        closeMenu()
+        return
+      }
+
+      if (keepOpenActionRef.current) {
+        return
+      }
+
+      if (!isEditorQuickInsertTargetLine(editor, currentTarget.lineNumber)) {
         closeMenu()
         return
       }
@@ -214,6 +282,7 @@ export function useEditorQuickInsertMenu(
     menuPosition,
     menuRef,
     openMenu,
+    runMenuActionKeepingOpen,
     targetLineNumber: menuTarget?.lineNumber ?? null,
   }
 }

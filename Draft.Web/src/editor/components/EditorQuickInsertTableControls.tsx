@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, type MouseEvent as ReactMouseEvent } from 'react'
 import type { CreateTableMarkdownData } from '../commands/createTableMarkdown'
 import NumberSpinner from './NumberSpinner'
 
 type EditorQuickInsertTableControlsProps = {
-  onConfirm: (tableData: CreateTableMarkdownData) => void
+  onConfirm: (tableData: CreateTableMarkdownData, keepOpen?: boolean) => void
 }
 
 const DEFAULT_ROWS = 3
@@ -86,8 +86,11 @@ function EditorQuickInsertTableControls({
       <button
         type="button"
         className="editor-quick-insert-table-confirm"
-        onClick={() => {
-          onConfirm(createTableData(rows, columns, populateWithSampleText))
+        onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+          onConfirm(
+            createTableData(rows, columns, populateWithSampleText),
+            event.shiftKey && event.button === 0,
+          )
         }}
       >
         Create

@@ -24,6 +24,14 @@ type EditorQuickInsertSnippet = {
   text: string
 }
 
+export type EditorQuickInsertInsertOptions = {
+  advanceToNextEmptyLine?: boolean
+}
+
+export type EditorQuickInsertInsertResult = {
+  nextLineNumber: number
+}
+
 const lineMarkers: Partial<Record<EditorQuickInsertCommand, string>> = {
   'bullet-list': '- ',
   'heading-1': '# ',
@@ -80,6 +88,7 @@ export function runEditorQuickInsertCommand(
   editor: monaco.editor.IStandaloneCodeEditor,
   lineNumber: number,
   command: EditorQuickInsertCommand,
+  options: EditorQuickInsertInsertOptions = {},
 ) {
   const model = editor.getModel()
 
@@ -98,6 +107,7 @@ export function runEditorQuickInsertCommand(
     lineNumber,
     snippet.text,
     snippet.selection,
+    options,
   )
 }
 
@@ -116,12 +126,20 @@ function replaceQuickInsertLine(
   lineNumber: number,
   text: string,
   selection?: monaco.Selection,
-) {
+  options: EditorQuickInsertInsertOptions = {},
+): EditorQuickInsertInsertResult | false {
   const model = editor.getModel()
 
   if (!model || !isEditorQuickInsertTargetLine(editor, lineNumber)) {
     return false
   }
+
+  const insertText =
+    options.advanceToNextEmptyLine && !text.endsWith('\n') ? `${text}\n` : text
+  const nextEmptyLineNumber = getInsertedTextEndPosition(
+    lineNumber,
+    insertText,
+  ).lineNumber
 
   const range = new monaco.Range(
     lineNumber,
@@ -135,32 +153,44 @@ function replaceQuickInsertLine(
     {
       forceMoveMarkers: true,
       range,
-      text,
+      text: insertText,
     },
   ])
 
-  if (selection) {
+  if (options.advanceToNextEmptyLine) {
+    editor.setPosition({
+      column: 1,
+      lineNumber: nextEmptyLineNumber,
+    })
+  } else if (selection) {
     editor.setSelection(selection)
   } else {
-    editor.setPosition(getInsertedTextEndPosition(lineNumber, text))
+    editor.setPosition(getInsertedTextEndPosition(lineNumber, insertText))
   }
 
-  editor.revealLineInCenterIfOutsideViewport(lineNumber)
+  editor.revealLineInCenterIfOutsideViewport(
+    options.advanceToNextEmptyLine ? nextEmptyLineNumber : lineNumber,
+  )
   editor.focus()
   editor.pushUndoStop()
 
-  return true
+  return {
+    nextLineNumber: nextEmptyLineNumber,
+  }
 }
 
 export function insertEditorQuickInsertTable(
   editor: monaco.editor.IStandaloneCodeEditor,
   lineNumber: number,
   tableData: CreateTableMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
 ) {
   return replaceQuickInsertLine(
     editor,
     lineNumber,
     createTableMarkdown(tableData),
+    undefined,
+    options,
   )
 }
 
@@ -168,11 +198,13 @@ export function insertEditorQuickInsertCodeBlock(
   editor: monaco.editor.IStandaloneCodeEditor,
   lineNumber: number,
   codeBlockData: CreateCodeBlockMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
 ) {
   return replaceQuickInsertLine(
     editor,
     lineNumber,
     createCodeBlockMarkdown(codeBlockData),
     new monaco.Selection(lineNumber + 1, 1, lineNumber + 1, 1),
+    options,
   )
 }
