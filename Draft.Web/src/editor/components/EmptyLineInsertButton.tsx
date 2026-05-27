@@ -1,4 +1,8 @@
-import { useMemo, type CSSProperties, type RefObject } from 'react'
+import {
+  useMemo,
+  type CSSProperties,
+  type RefObject,
+} from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { useEditorQuickInsertMenu } from '../hooks/useEditorQuickInsertMenu'
 import { useHoveredEditorLine } from '../hooks/useHoveredEditorLine'

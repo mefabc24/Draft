@@ -8,17 +8,23 @@ import {
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import {
+  insertEditorQuickInsertCodeBlock,
+  insertEditorQuickInsertTable,
   runEditorQuickInsertCommand,
   type EditorQuickInsertCommand,
 } from '../commands/editorQuickInsertCommands'
+import type { CreateCodeBlockMarkdownData } from '../commands/createCodeBlockMarkdown'
+import type { CreateTableMarkdownData } from '../commands/createTableMarkdown'
 import type { EditorQuickInsertMenuPosition } from '../hooks/useEditorQuickInsertMenu'
 import {
   editorQuickInsertMenuEntries,
   type EditorQuickInsertIconName,
   type EditorQuickInsertMenuEntry,
 } from './EditorQuickInsertMenuConfig'
+import EditorQuickInsertCodeblockControls from './EditorQuickInsertCodeblockControls'
 import EditorQuickInsertMenuItem from './EditorQuickInsertMenuItem'
 import EditorQuickInsertMenuSection from './EditorQuickInsertMenuSection'
+import EditorQuickInsertTableControls from './EditorQuickInsertTableControls'
 import './EditorQuickInsertMenu.css'
 
 type EditorQuickInsertMenuProps = {
@@ -71,8 +77,19 @@ function TableIcon() {
   )
 }
 
+function CodeblockIcon() {
+  return (
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20">
+      <rect height="12" rx="2.25" width="14" x="3" y="4" />
+      <path d="m8.15 7.55-2.25 2.45 2.25 2.45M11.85 7.55l2.25 2.45-2.25 2.45M10.85 7.25 9.15 12.75" />
+    </svg>
+  )
+}
+
 function getQuickInsertIcon(icon: EditorQuickInsertIconName | undefined) {
   switch (icon) {
+    case 'codeblock':
+      return <CodeblockIcon />
     case 'heading':
       return <HeadingIcon />
     case 'image':
@@ -96,6 +113,13 @@ function getInitialExpandedSections() {
       return sections
     },
     {},
+  )
+}
+
+function isEditableMenuTarget(target: EventTarget | null) {
+  return (
+    target instanceof HTMLElement &&
+    target.closest('input, textarea, select, [contenteditable="true"]') !== null
   )
 }
 
@@ -166,6 +190,28 @@ function EditorQuickInsertMenu({
     [editor, lineNumber, onClose],
   )
 
+  const confirmTable = useCallback(
+    (tableData: CreateTableMarkdownData) => {
+      if (editor && lineNumber !== null) {
+        insertEditorQuickInsertTable(editor, lineNumber, tableData)
+      }
+
+      onClose()
+    },
+    [editor, lineNumber, onClose],
+  )
+
+  const confirmCodeBlock = useCallback(
+    (codeBlockData: CreateCodeBlockMarkdownData) => {
+      if (editor && lineNumber !== null) {
+        insertEditorQuickInsertCodeBlock(editor, lineNumber, codeBlockData)
+      }
+
+      onClose()
+    },
+    [editor, lineNumber, onClose],
+  )
+
   const renderCommandItem = useCallback(
     (entry: EditorQuickInsertCommandEntry, nested = false) => (
       <EditorQuickInsertMenuItem
@@ -203,13 +249,19 @@ function EditorQuickInsertMenu({
             }))
           }}
         >
-          {entry.children.map((childEntry) =>
-            renderCommandItem(childEntry, true),
+          {entry.id === 'table' ? (
+            <EditorQuickInsertTableControls onConfirm={confirmTable} />
+          ) : entry.id === 'codeblocks' ? (
+            <EditorQuickInsertCodeblockControls onConfirm={confirmCodeBlock} />
+          ) : (
+            entry.children.map((childEntry) =>
+              renderCommandItem(childEntry, true),
+            )
           )}
         </EditorQuickInsertMenuSection>
       )
     },
-    [expandedSections, renderCommandItem],
+    [confirmCodeBlock, confirmTable, expandedSections, renderCommandItem],
   )
 
   if (!editor || lineNumber === null || !position) {
@@ -223,6 +275,10 @@ function EditorQuickInsertMenu({
       className="editor-quick-insert-menu"
       data-editor-quick-insert-menu="true"
       onMouseDown={(event) => {
+        if (isEditableMenuTarget(event.target)) {
+          return
+        }
+
         event.preventDefault()
       }}
       role="menu"

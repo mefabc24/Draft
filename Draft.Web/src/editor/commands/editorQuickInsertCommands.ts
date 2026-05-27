@@ -1,4 +1,12 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import {
+  createCodeBlockMarkdown,
+  type CreateCodeBlockMarkdownData,
+} from './createCodeBlockMarkdown'
+import {
+  createTableMarkdown,
+  type CreateTableMarkdownData,
+} from './createTableMarkdown'
 
 export type EditorQuickInsertCommand =
   | 'bullet-list'
@@ -8,7 +16,6 @@ export type EditorQuickInsertCommand =
   | 'heading-4'
   | 'image'
   | 'numbered-list'
-  | 'table'
   | 'task-list-checked'
   | 'task-list-unchecked'
 
@@ -31,7 +38,7 @@ const lineMarkers: Partial<Record<EditorQuickInsertCommand, string>> = {
 function getQuickInsertSnippet(
   command: EditorQuickInsertCommand,
   lineNumber: number,
-): EditorQuickInsertSnippet {
+): EditorQuickInsertSnippet | null {
   const lineMarker = lineMarkers[command]
 
   if (lineMarker) {
@@ -53,14 +60,7 @@ function getQuickInsertSnippet(
     }
   }
 
-  return {
-    selection: new monaco.Selection(lineNumber, 3, lineNumber, 11),
-    text: [
-      '| Column 1 | Column 2 |',
-      '|---|---|',
-      '| Value 1 | Value 2 |',
-    ].join('\n'),
-  }
+  return null
 }
 
 export function isEditorQuickInsertTargetLine(
@@ -88,6 +88,41 @@ export function runEditorQuickInsertCommand(
   }
 
   const snippet = getQuickInsertSnippet(command, lineNumber)
+
+  if (!snippet) {
+    return false
+  }
+
+  return replaceQuickInsertLine(
+    editor,
+    lineNumber,
+    snippet.text,
+    snippet.selection,
+  )
+}
+
+function getInsertedTextEndPosition(lineNumber: number, text: string) {
+  const lines = text.split('\n')
+  const lastLine = lines[lines.length - 1] ?? ''
+
+  return {
+    column: lastLine.length + 1,
+    lineNumber: lineNumber + lines.length - 1,
+  }
+}
+
+function replaceQuickInsertLine(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  lineNumber: number,
+  text: string,
+  selection?: monaco.Selection,
+) {
+  const model = editor.getModel()
+
+  if (!model || !isEditorQuickInsertTargetLine(editor, lineNumber)) {
+    return false
+  }
+
   const range = new monaco.Range(
     lineNumber,
     1,
@@ -100,12 +135,14 @@ export function runEditorQuickInsertCommand(
     {
       forceMoveMarkers: true,
       range,
-      text: snippet.text,
+      text,
     },
   ])
 
-  if (snippet.selection) {
-    editor.setSelection(snippet.selection)
+  if (selection) {
+    editor.setSelection(selection)
+  } else {
+    editor.setPosition(getInsertedTextEndPosition(lineNumber, text))
   }
 
   editor.revealLineInCenterIfOutsideViewport(lineNumber)
@@ -113,4 +150,29 @@ export function runEditorQuickInsertCommand(
   editor.pushUndoStop()
 
   return true
+}
+
+export function insertEditorQuickInsertTable(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  lineNumber: number,
+  tableData: CreateTableMarkdownData,
+) {
+  return replaceQuickInsertLine(
+    editor,
+    lineNumber,
+    createTableMarkdown(tableData),
+  )
+}
+
+export function insertEditorQuickInsertCodeBlock(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  lineNumber: number,
+  codeBlockData: CreateCodeBlockMarkdownData,
+) {
+  return replaceQuickInsertLine(
+    editor,
+    lineNumber,
+    createCodeBlockMarkdown(codeBlockData),
+    new monaco.Selection(lineNumber + 1, 1, lineNumber + 1, 1),
+  )
 }

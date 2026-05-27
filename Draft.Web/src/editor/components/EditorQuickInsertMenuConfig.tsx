@@ -1,6 +1,11 @@
 import type { EditorQuickInsertCommand } from '../commands/editorQuickInsertCommands'
 
-export type EditorQuickInsertIconName = 'heading' | 'image' | 'list' | 'table'
+export type EditorQuickInsertIconName =
+  | 'codeblock'
+  | 'heading'
+  | 'image'
+  | 'list'
+  | 'table'
 
 type EditorQuickInsertCommandItem = {
   command: EditorQuickInsertCommand
@@ -107,10 +112,19 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     type: 'item',
   },
   {
-    command: 'table',
+    children: [],
+    defaultExpanded: false,
     icon: 'table',
     id: 'table',
     label: 'Table',
-    type: 'item',
+    type: 'section',
+  },
+  {
+    children: [],
+    defaultExpanded: false,
+    icon: 'codeblock',
+    id: 'codeblocks',
+    label: 'Codeblocks',
+    type: 'section',
   },
 ]
