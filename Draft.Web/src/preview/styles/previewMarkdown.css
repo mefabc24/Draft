@@ -131,6 +131,7 @@
 
 /* Images */
 .preview-content img {
+  box-sizing: border-box;
   display: block;
   width: auto;
   height: auto;
@@ -138,6 +139,8 @@
   max-height: min(640px, calc(100vh - 128px));
   object-fit: contain;
   margin: 16px 0;
+  border: var(--preview-image-border-width, 0) solid var(--preview-image-border, transparent);
+  border-radius: var(--preview-image-border-radius, 0);
 }
 
 .preview-content p > img:only-child {

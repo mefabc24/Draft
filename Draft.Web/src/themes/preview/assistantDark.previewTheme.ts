@@ -40,6 +40,9 @@ const assistantDarkPreviewColorVariables = {
   // Horizontal rule
   '--preview-rule-border': '#374151',
 
+  // Images
+  '--preview-image-border': 'transparent',
+
   // Links
   '--preview-link-background': 'transparent',
   '--preview-link-foreground': '#fff',
@@ -150,6 +153,11 @@ const assistantDarkPreviewLayoutVariables = {
   // Rule height controls how thick the line is. Height 0 hides it. Radius accepts CSS lengths.
   '--preview-rule-border-radius': '0',
   '--preview-rule-height': '1px',
+
+  // Images
+  // Border width 0 removes the border. Radius and border width accept CSS lengths.
+  '--preview-image-border-radius': '8px',
+  '--preview-image-border-width': '0',
 
   // Inline code
   // Border width 0 removes the border. Radius, padding, and border width accept CSS lengths.

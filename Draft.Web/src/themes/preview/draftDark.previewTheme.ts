@@ -40,6 +40,9 @@ const draftDarkPreviewColorVariables = {
   // Horizontal rule
   '--preview-rule-border': '#374151',
 
+  // Images
+  '--preview-image-border': 'transparent',
+
   // Links
   '--preview-link-background': 'transparent',
   '--preview-link-foreground': '#60a5fa',
@@ -49,8 +52,8 @@ const draftDarkPreviewColorVariables = {
   '--preview-link-hover-text-decoration-color': '#93c5fd',
 
   // Inline code
-  '--preview-inline-code-background': '#1f2937',
-  '--preview-inline-code-border': '#374151',
+  '--preview-inline-code-background': '#1f252e',
+  '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#f9fafb',
 
   // Task list checkboxes
@@ -151,6 +154,11 @@ const draftDarkPreviewLayoutVariables = {
   '--preview-rule-border-radius': '0',
   '--preview-rule-height': '1px',
 
+  // Images
+  // Border width 0 removes the border. Radius and border width accept CSS lengths.
+  '--preview-image-border-radius': '8px',
+  '--preview-image-border-width': '0',
+
   // Inline code
   // Border width 0 removes the border. Radius, padding, and border width accept CSS lengths.
   '--preview-inline-code-border-radius': '6px',
@@ -193,14 +201,14 @@ const draftDarkPreviewLayoutVariables = {
   // Blockquotes
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.
   '--preview-blockquote-border-inset': '0',
-  '--preview-blockquote-border-line-radius': '0',
-  '--preview-blockquote-border-radius': '0',
+  '--preview-blockquote-border-line-radius': '8px',
+  '--preview-blockquote-border-radius': '0 8px 8px 0',
   '--preview-blockquote-border-width': '4px',
-  '--preview-blockquote-padding': '8px 16px',
+  '--preview-blockquote-padding': '8px 8px 8px 16px',
 
   // Tables
   // Border width 0 removes that line. Use row, column, header, and outer widths to shape the grid.
-  '--preview-table-border-radius': '0',
+  '--preview-table-border-radius': '8px',
   '--preview-table-cell-padding': '8px 12px',
   '--preview-table-column-border-width': '1px',
   '--preview-table-header-border-width': '1px',
