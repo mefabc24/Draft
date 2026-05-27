@@ -52,7 +52,7 @@ const draftDarkPreviewColorVariables = {
   '--preview-link-hover-text-decoration-color': '#93c5fd',
 
   // Inline code
-  '--preview-inline-code-background': '#1f252e',
+  '--preview-inline-code-background': '#333b47',
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#f9fafb',
 
