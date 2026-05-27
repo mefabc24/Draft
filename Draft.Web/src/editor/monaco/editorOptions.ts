@@ -83,6 +83,7 @@ export function getEditorSettingsOptions(
   settings: DraftEditorSettings,
 ): monaco.editor.IEditorOptions {
   return {
+    dragAndDrop: false,
     wordWrap: settings.wordWrap ? 'on' : 'off',
     fontSize: settings.editorFontSize,
     lineHeight: getEditorLineHeightPixels(settings),
