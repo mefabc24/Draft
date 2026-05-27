@@ -43,6 +43,33 @@ function getResourceStartOffset(
   return hasImagePrefix ? null : labelStartOffset
 }
 
+function getLineEndOffset(value: string, offset: number) {
+  const lineBreakOffset = value.indexOf('\n', offset)
+
+  return lineBreakOffset === -1 ? value.length : lineBreakOffset
+}
+
+function getResourceLabelEndOffset(value: string, labelStartOffset: number) {
+  const lineEndOffset = getLineEndOffset(value, labelStartOffset)
+  const labelEndOffset = value.indexOf('](', labelStartOffset + 1)
+
+  if (labelEndOffset === -1 || labelEndOffset >= lineEndOffset) {
+    return null
+  }
+
+  const firstLabelCloseOffset = value.indexOf(']', labelStartOffset + 1)
+  const nestedLabelOpenOffset = value.indexOf('[', labelStartOffset + 1)
+
+  if (
+    firstLabelCloseOffset !== labelEndOffset ||
+    (nestedLabelOpenOffset !== -1 && nestedLabelOpenOffset < labelEndOffset)
+  ) {
+    return null
+  }
+
+  return labelEndOffset
+}
+
 function isSelectedResourceLabel(
   value: string,
   selection: MarkdownSelectionOffsetRange,
@@ -55,6 +82,8 @@ function isSelectedResourceLabel(
       ? getResourceStartOffset(value, labelStartOffset, kind)
       : null
   const linkClosePrefix = value.slice(endOffset, endOffset + 2)
+  const lineEndOffset =
+    labelStartOffset >= 0 ? getLineEndOffset(value, labelStartOffset) : -1
   const linkEndOffset =
     linkClosePrefix === '](' ? value.indexOf(')', endOffset + 2) : -1
 
@@ -62,7 +91,8 @@ function isSelectedResourceLabel(
     isSelectedLinkLabel:
       resourceStartOffset !== null &&
       value[labelStartOffset] === '[' &&
-      linkEndOffset !== -1,
+      linkEndOffset !== -1 &&
+      linkEndOffset < lineEndOffset,
     linkEndOffset,
     resourceStartOffset,
   }
@@ -104,15 +134,6 @@ export function getMarkdownImageContext(
   )
 }
 
-function getFullResourceMatch(
-  selectedText: string,
-  kind: MarkdownInlineResourceKind,
-) {
-  return kind === 'image'
-    ? selectedText.match(/^!\[([\s\S]*)\]\(([^)]*)\)$/u)
-    : selectedText.match(/^\[([\s\S]*)\]\(([^)]*)\)$/u)
-}
-
 function createMarkdownResourceContext(
   value: string,
   resourceStartOffset: number,
@@ -134,6 +155,7 @@ function getMarkdownResourceContextFromLabelStart(
   labelStartOffset: number,
   kind: MarkdownInlineResourceKind,
 ): MarkdownLinkContext | null {
+  const lineEndOffset = getLineEndOffset(value, labelStartOffset)
   const resourceStartOffset = getResourceStartOffset(
     value,
     labelStartOffset,
@@ -147,15 +169,15 @@ function getMarkdownResourceContextFromLabelStart(
     return null
   }
 
-  const labelEndOffset = value.indexOf('](', labelStartOffset + 1)
+  const labelEndOffset = getResourceLabelEndOffset(value, labelStartOffset)
 
-  if (labelEndOffset === -1) {
+  if (labelEndOffset === null) {
     return null
   }
 
   const linkEndOffset = value.indexOf(')', labelEndOffset + 2)
 
-  if (linkEndOffset === -1) {
+  if (linkEndOffset === -1 || linkEndOffset >= lineEndOffset) {
     return null
   }
 
@@ -223,39 +245,46 @@ function getExactMarkdownResourceContext(
   kind: MarkdownInlineResourceKind,
 ): MarkdownLinkContext | null {
   const { endOffset, startOffset } = selection
-  const selectedText = value.slice(startOffset, endOffset)
-  const fullResourceMatch = getFullResourceMatch(selectedText, kind)
+  const openText = getResourceOpenText(kind)
 
-  if (fullResourceMatch) {
-    return {
-      endOffset,
-      label: fullResourceMatch[1],
-      sourceText: selectedText,
-      startOffset,
-      url: fullResourceMatch[2],
+  if (value.startsWith(openText, startOffset)) {
+    const fullResourceContext = getMarkdownResourceContextFromLabelStart(
+      value,
+      getResourceLabelStartOffset(startOffset, kind),
+      kind,
+    )
+
+    if (
+      fullResourceContext &&
+      fullResourceContext.startOffset === startOffset &&
+      fullResourceContext.endOffset === endOffset
+    ) {
+      return fullResourceContext
     }
   }
 
   const labelStartOffset = value.lastIndexOf('[', startOffset)
-  const labelEndOffset = value.indexOf('](', endOffset)
-  const resourceStartOffset =
+  const resourceContext =
     labelStartOffset === -1
       ? null
-      : getResourceStartOffset(value, labelStartOffset, kind)
+      : getMarkdownResourceContextFromLabelStart(
+          value,
+          labelStartOffset,
+          kind,
+        )
 
   if (
-    resourceStartOffset === null ||
-    labelStartOffset === -1 ||
-    labelEndOffset === -1 ||
+    resourceContext === null ||
     labelStartOffset >= startOffset ||
-    labelEndOffset < endOffset
+    getResourceLabelStartOffset(resourceContext.startOffset, kind) !==
+      labelStartOffset
   ) {
     return null
   }
 
-  const linkEndOffset = value.indexOf(')', labelEndOffset + 2)
+  const labelEndOffset = labelStartOffset + 1 + resourceContext.label.length
 
-  if (linkEndOffset === -1) {
+  if (labelEndOffset < endOffset) {
     return null
   }
 
@@ -263,19 +292,13 @@ function getExactMarkdownResourceContext(
   const previousOpenOffset = value.lastIndexOf('[', startOffset - 1)
 
   if (
-    previousCloseOffset > resourceStartOffset ||
+    previousCloseOffset > resourceContext.startOffset ||
     previousOpenOffset > labelStartOffset
   ) {
     return null
   }
 
-  return createMarkdownResourceContext(
-    value,
-    resourceStartOffset,
-    labelStartOffset,
-    labelEndOffset,
-    linkEndOffset + 1,
-  )
+  return resourceContext
 }
 
 function getCrossedMarkdownResourceContext(
@@ -289,29 +312,24 @@ function getCrossedMarkdownResourceContext(
 
   if (trailingWhitespace.length > 0 && startOffset > 0) {
     const labelStartOffset = startOffset - 1
-    const resourceStartOffset = getResourceStartOffset(
+    const resourceContext = getMarkdownResourceContextFromLabelStart(
       value,
       labelStartOffset,
       kind,
     )
-    const labelEndOffset = value.indexOf('](', startOffset)
-    const linkEndOffset =
-      labelEndOffset === -1 ? -1 : value.indexOf(')', labelEndOffset + 2)
+    const labelEndOffset = resourceContext
+      ? labelStartOffset + 1 + resourceContext.label.length
+      : -1
 
     if (
-      resourceStartOffset !== null &&
-      value[labelStartOffset] === '[' &&
+      resourceContext &&
+      getResourceLabelStartOffset(resourceContext.startOffset, kind) ===
+        labelStartOffset &&
       labelEndOffset > startOffset &&
       labelEndOffset < endOffset &&
-      linkEndOffset + 1 === endOffset
+      resourceContext.endOffset === endOffset
     ) {
-      return {
-        endOffset,
-        label: value.slice(startOffset, labelEndOffset),
-        sourceText: value.slice(resourceStartOffset, endOffset),
-        startOffset: resourceStartOffset,
-        url: value.slice(labelEndOffset + 2, linkEndOffset),
-      }
+      return resourceContext
     }
   }
 
@@ -320,22 +338,21 @@ function getCrossedMarkdownResourceContext(
     value.startsWith(getResourceOpenText(kind), startOffset)
   ) {
     const labelStartOffset = getResourceLabelStartOffset(startOffset, kind)
-    const labelEndOffset = value.indexOf('](', labelStartOffset)
-    const linkEndOffset =
-      labelEndOffset === -1 ? -1 : value.indexOf(')', labelEndOffset + 2)
+    const resourceContext = getMarkdownResourceContextFromLabelStart(
+      value,
+      labelStartOffset,
+      kind,
+    )
+    const labelEndOffset = resourceContext
+      ? labelStartOffset + 1 + resourceContext.label.length
+      : -1
 
     if (
+      resourceContext &&
       labelEndOffset > labelStartOffset + 1 &&
-      labelEndOffset === endOffset &&
-      linkEndOffset !== -1
+      labelEndOffset === endOffset
     ) {
-      return {
-        endOffset: linkEndOffset + 1,
-        label: value.slice(labelStartOffset + 1, labelEndOffset),
-        sourceText: value.slice(startOffset, linkEndOffset + 1),
-        startOffset,
-        url: value.slice(labelEndOffset + 2, linkEndOffset),
-      }
+      return resourceContext
     }
   }
 
