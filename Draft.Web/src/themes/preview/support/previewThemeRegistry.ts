@@ -1,4 +1,4 @@
-import { DEFAULT_PREVIEW_THEME_ID } from '../../settings/themeSettings'
+import { DEFAULT_PREVIEW_THEME_ID } from '../../../settings/themeSettings'
 import type { DraftPreviewTheme } from './previewThemeTypes'
 
 type PreviewThemeModule = {
@@ -6,7 +6,7 @@ type PreviewThemeModule = {
 }
 
 const previewThemeModules = import.meta.glob<PreviewThemeModule>(
-  './*.previewTheme.ts',
+  '../*.previewTheme.ts',
   { eager: true },
 )
 

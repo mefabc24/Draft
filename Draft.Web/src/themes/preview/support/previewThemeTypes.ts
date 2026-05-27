@@ -1,4 +1,4 @@
-import type { CssVariableMap } from '../shared/themeTypes'
+import type { CssVariableMap } from '../../shared/themeTypes'
 import type { Theme as RehypePrettyCodeTheme } from 'rehype-pretty-code'
 
 export type PreviewThemeId = string

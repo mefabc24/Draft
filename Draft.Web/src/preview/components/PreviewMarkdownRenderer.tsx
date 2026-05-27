@@ -20,11 +20,11 @@ import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
 import type { PluggableList } from 'unified'
 import { postOpenExternalUrl } from '../../app/webview/draftWebViewMessages'
-import type { DraftPreviewTheme } from '../../themes/preview/previewThemeTypes'
+import type { DraftPreviewTheme } from '../../themes/preview/support/previewThemeTypes'
 import {
   getOrderedListMarkerStyle,
   getUnorderedListMarkerStyle,
-} from '../../themes/preview/previewThemeStyles'
+} from '../../themes/preview/support/previewThemeStyles'
 import { rehypeSourceTextSpans } from '../sourceMapping/sourceTextSpansPlugin'
 import type { SourceMappedNode } from '../previewTypes'
 

@@ -1,5 +1,5 @@
 import { draftDarkTokens, themeFontStacks } from '../shared/themeTokens'
-import type { DraftEditorTheme } from './editorThemeTypes'
+import type { DraftEditorTheme } from './support/editorThemeTypes'
 
 export const draftDarkEditorTheme: DraftEditorTheme = {
   base: 'vs-dark',

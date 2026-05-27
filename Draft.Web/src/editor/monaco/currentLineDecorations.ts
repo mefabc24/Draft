@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import { DRAFT_CURRENT_LINE_DECORATION_CLASS } from '../../themes/editor/editorThemeTypes'
+import { DRAFT_CURRENT_LINE_DECORATION_CLASS } from '../../themes/editor/support/editorThemeTypes'
 
 function getCurrentLineDecorations(
   editor: monaco.editor.IStandaloneCodeEditor,

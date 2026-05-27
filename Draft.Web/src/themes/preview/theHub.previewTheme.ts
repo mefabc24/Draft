@@ -1,5 +1,5 @@
 import { draftDarkTokens } from '../shared/themeTokens'
-import type { DraftPreviewTheme } from './previewThemeTypes'
+import type { DraftPreviewTheme } from './support/previewThemeTypes'
 
 type PreviewThemeVariables = DraftPreviewTheme['cssVariables']
 

@@ -1,6 +1,6 @@
 import type { CSSProperties, MutableRefObject, ReactNode } from 'react'
 import '../styles/previewMarkdown.css'
-import type { DraftPreviewTheme } from '../../themes/preview/previewThemeTypes'
+import type { DraftPreviewTheme } from '../../themes/preview/support/previewThemeTypes'
 import { usePreviewScrollbar } from '../hooks/usePreviewScrollbar'
 import PreviewMarkdownRenderer from './PreviewMarkdownRenderer'
 import PreviewScrollbar from './PreviewScrollbar'
