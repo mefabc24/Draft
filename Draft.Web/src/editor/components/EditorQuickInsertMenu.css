@@ -2,6 +2,15 @@
   position: absolute;
   z-index: 24;
   box-sizing: border-box;
+  --quick-insert-control-background: #131313;
+  --quick-insert-control-border: #2c2d2f;
+  --quick-insert-control-border-hover: #34363a;
+  --quick-insert-control-hover-background: #1d1f20;
+  --quick-insert-control-foreground: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 86%,
+    transparent
+  );
   width: min(294px, calc(100% - 16px));
   max-height: calc(100% - 16px);
   overflow-y: auto;
@@ -259,10 +268,19 @@
   height: 36px;
   grid-template-columns: 36px minmax(0, 1fr) 36px;
   overflow: hidden;
-  border: 1px solid #43474f;
+  border: 1px solid var(--quick-insert-control-border);
   border-radius: 6px;
-  background: #333538;
-  color: #f3faff;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.number-spinner:hover,
+.number-spinner:focus-within {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-background);
 }
 
 .number-spinner-button {
@@ -283,17 +301,17 @@
 }
 
 .number-spinner-button:first-child {
-  border-right: 1px solid #43474f;
+  border-right: 1px solid var(--quick-insert-control-border);
 }
 
 .number-spinner-button:last-child {
-  border-left: 1px solid #43474f;
+  border-left: 1px solid var(--quick-insert-control-border);
 }
 
 .number-spinner-button:hover:not(:disabled),
 .number-spinner-button:focus-visible:not(:disabled) {
-  background: var(--markdown-toolbar-hover-background);
-  color: var(--markdown-toolbar-primary);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
 }
 
 .number-spinner-button:disabled {
@@ -319,14 +337,10 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: color-mix(
-    in srgb,
-    var(--markdown-toolbar-foreground) 86%,
-    transparent
-  );
-  font-family: 'Space Grotesk', var(--font-ui);
-  font-size: 16px;
-  font-weight: 600;
+  color: var(--quick-insert-control-foreground);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
   line-height: 36px;
   text-align: center;
   outline: none;
@@ -367,9 +381,9 @@
   height: 18px;
   align-items: center;
   justify-content: center;
-  border: 1px solid #43474f;
+  border: 1px solid var(--quick-insert-control-border);
   border-radius: 5px;
-  background: #333538;
+  background: var(--quick-insert-control-background);
   color: #294c7d;
   transition:
     background 140ms ease,
@@ -408,17 +422,14 @@
 
 .editor-quick-insert-table-sample-input:focus-visible
   + .editor-quick-insert-table-sample-box {
-  box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--markdown-toolbar-primary) 34%, transparent);
+  border-color: var(--quick-insert-control-border-hover);
+  box-shadow: none;
 }
 
 .editor-quick-insert-table-sample:hover
   .editor-quick-insert-table-sample-box {
-  border-color: color-mix(
-    in srgb,
-    var(--markdown-toolbar-primary) 70%,
-    #43474f
-  );
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
 }
 
 .editor-quick-insert-table-sample-text {
@@ -434,23 +445,26 @@
   height: 36px;
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid transparent;
+  border: 1px solid var(--quick-insert-control-border);
   border-radius: 6px;
-  background: var(--markdown-toolbar-primary);
-  color: #294c7d;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
   cursor: pointer;
-  font-family: var(--font-ui);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
   transition:
     background 140ms ease,
+    border-color 140ms ease,
     color 140ms ease;
 }
 
 .editor-quick-insert-table-confirm:hover,
 .editor-quick-insert-table-confirm:focus-visible {
-  background: #b5d2ff;
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
 }
 
 .editor-quick-insert-inline-media-controls {
@@ -475,7 +489,7 @@
   margin-top: 8px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -485,13 +499,13 @@
   width: 100%;
   height: 36px;
   padding: 0 12px;
-  border: 1px solid #43474f;
+  border: 1px solid var(--quick-insert-control-border);
   border-radius: 6px;
   outline: 0;
-  background: #333538;
-  color: var(--markdown-toolbar-foreground);
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
   font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.35;
   transition:
@@ -501,21 +515,13 @@
 }
 
 .editor-quick-insert-inline-media-field input::placeholder {
-  color: color-mix(
-    in srgb,
-    var(--markdown-toolbar-foreground) 44%,
-    transparent
-  );
+  color: var(--markdown-toolbar-muted);
 }
 
 .editor-quick-insert-inline-media-field input:focus {
-  border-color: color-mix(
-    in srgb,
-    var(--markdown-toolbar-primary) 72%,
-    #43474f
-  );
-  box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--markdown-toolbar-primary) 24%, transparent);
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-background);
+  box-shadow: none;
 }
 
 .editor-quick-insert-inline-media-confirm {
@@ -523,23 +529,26 @@
   height: 36px;
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid transparent;
+  border: 1px solid var(--quick-insert-control-border);
   border-radius: 6px;
-  background: var(--markdown-toolbar-primary);
-  color: #294c7d;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
   cursor: pointer;
   font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1;
   transition:
     background 140ms ease,
+    border-color 140ms ease,
     color 140ms ease;
 }
 
 .editor-quick-insert-inline-media-confirm:hover,
 .editor-quick-insert-inline-media-confirm:focus-visible {
-  background: #b5d2ff;
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
 }
 
 .editor-quick-insert-codeblock-controls {
@@ -575,9 +584,9 @@
   align-content: start;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid #2c2d2f;
+  border: 1px solid var(--quick-insert-control-border);
   border-radius: 6px;
-  background: #131313;
+  background: var(--quick-insert-control-background);
   transition:
     background 140ms ease,
     box-shadow 140ms ease,
@@ -591,8 +600,8 @@
 .editor-quick-insert-codeblock-select:hover,
 .editor-quick-insert-codeblock-select:focus-within,
 .editor-quick-insert-codeblock-select.is-open {
-  border-color: #34363a;
-  background: #131313;
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-background);
   box-shadow: none;
 }
 
@@ -610,11 +619,7 @@
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: color-mix(
-    in srgb,
-    var(--markdown-toolbar-foreground) 86%,
-    transparent
-  );
+  color: var(--quick-insert-control-foreground);
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: 14px;
