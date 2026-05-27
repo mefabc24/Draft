@@ -92,16 +92,19 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
+  padding: 0;
   pointer-events: none;
   transition:
     grid-template-rows 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 120ms ease;
+    opacity 120ms ease,
+    padding 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .editor-quick-insert-menu-section.is-expanded
   .editor-quick-insert-section-content-frame {
   grid-template-rows: 1fr;
   opacity: 1;
+  padding: 8px;
   pointer-events: auto;
 }
 
@@ -232,21 +235,21 @@
 
 .editor-quick-insert-table-controls {
   display: grid;
-  gap: 14px;
-  padding: 2px 10px 12px;
+  gap: 8px;
+  padding: 0;
 }
 
 .editor-quick-insert-table-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .editor-quick-insert-table-field {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .editor-quick-insert-table-label {
@@ -255,7 +258,7 @@
     var(--markdown-toolbar-foreground) 78%,
     transparent
   );
-  margin-top: 8px;
+  margin-top: 0;
   font-size: 11px;
   font-weight: 700;
   line-height: 1.2;
@@ -469,15 +472,15 @@
 
 .editor-quick-insert-inline-media-controls {
   display: grid;
-  gap: 12px;
-  padding: 2px 10px 12px;
+  gap: 8px;
+  padding: 0;
 }
 
 .editor-quick-insert-inline-media-field {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .editor-quick-insert-inline-media-label {
@@ -486,7 +489,7 @@
     var(--markdown-toolbar-foreground) 78%,
     transparent
   );
-  margin-top: 8px;
+  margin-top: 0;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0;
@@ -553,8 +556,8 @@
 
 .editor-quick-insert-codeblock-controls {
   display: grid;
-  gap: 12px;
-  padding: 2px 10px 12px;
+  gap: 8px;
+  padding: 0;
 }
 
 .editor-quick-insert-codeblock-field {
@@ -562,7 +565,7 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .editor-quick-insert-codeblock-label {
@@ -571,7 +574,7 @@
     var(--markdown-toolbar-foreground) 78%,
     transparent
   );
-  margin-top: 8px;
+  margin-top: 0;
   font-size: 11px;
   font-weight: 700;
   line-height: 1.2;
