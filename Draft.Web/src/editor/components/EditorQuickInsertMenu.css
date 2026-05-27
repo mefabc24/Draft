@@ -84,31 +84,30 @@
 }
 
 .editor-quick-insert-menu-item.is-nested {
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  padding-right: 18px;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  padding-right: 8px;
 }
 
 .editor-quick-insert-section-content-frame {
   display: grid;
   grid-template-rows: 0fr;
+  overflow: hidden;
   opacity: 0;
-  padding: 0;
   pointer-events: none;
   transition:
     grid-template-rows 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 120ms ease,
-    padding 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity 120ms ease;
 }
 
 .editor-quick-insert-menu-section.is-expanded
   .editor-quick-insert-section-content-frame {
   grid-template-rows: 1fr;
   opacity: 1;
-  padding: 8px;
   pointer-events: auto;
 }
 
 .editor-quick-insert-section-content {
+  box-sizing: border-box;
   min-height: 0;
   overflow: hidden;
   display: flex;
@@ -120,6 +119,7 @@
 
 .editor-quick-insert-menu-section.is-expanded
   .editor-quick-insert-section-content {
+  padding: 8px;
   transform: translateY(0);
 }
 
@@ -207,9 +207,10 @@
 
 .editor-quick-insert-item-shortcut {
   color: var(--markdown-toolbar-muted);
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1;
+  letter-spacing: -1px;
 }
 
 .editor-quick-insert-chevron {
