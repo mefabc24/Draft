@@ -670,7 +670,6 @@ export function useFloatingToolbarState({
     const scheduleToolbarUpdate = () => {
       if (editorMouseSelectionRef.current) {
         pendingEditorMouseSelectionUpdateRef.current = true
-        return
       }
 
       updateToolbarSoon()
