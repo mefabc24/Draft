@@ -12,6 +12,7 @@ import {
   getEditorSettingsOptions,
 } from '../monaco/editorOptions'
 import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
+import { indentEmptyMarkdownListItemOnTab } from '../monaco/markdownListIndentation'
 import { moveSelectionsByWord } from '../monaco/wordNavigation'
 
 type CurrentRef<T> = {
@@ -227,19 +228,27 @@ export function useMonacoMarkdownEditor({
         moveSelectionsByWord(editor, 'right', true)
       },
     )
-    const markdownContinuationSub = editor.onKeyDown((event) => {
-      if (
-        event.keyCode !== monaco.KeyCode.Enter ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey
-      ) {
+    const markdownKeyboardSub = editor.onKeyDown((event) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return
       }
 
-      if (continueMarkdownBlockOnEnter(editor)) {
-        event.preventDefault()
+      if (event.keyCode === monaco.KeyCode.Enter) {
+        if (continueMarkdownBlockOnEnter(editor)) {
+          event.preventDefault()
+        }
+        return
+      }
+
+      if (event.keyCode === monaco.KeyCode.Tab) {
+        const consumeTabEvent = () => {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
+        if (indentEmptyMarkdownListItemOnTab(editor, consumeTabEvent)) {
+          return
+        }
       }
     })
 
@@ -327,7 +336,7 @@ export function useMonacoMarkdownEditor({
       scrollSub.dispose()
       selectionSub.dispose()
       contentSub.dispose()
-      markdownContinuationSub.dispose()
+      markdownKeyboardSub.dispose()
       editor.dispose()
       editorRef.current = null
       setEditorInstance(null)

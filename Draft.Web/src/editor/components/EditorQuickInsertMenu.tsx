@@ -42,67 +42,30 @@ type EditorQuickInsertCommandEntry = Extract<
   { type: 'item' }
 >
 
-function HeadingIcon() {
-  return (
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20">
-      <rect height="14" rx="2.5" width="14" x="3" y="3" />
-      <path d="M8.35 6.5 7.55 13.5M12.45 6.5 11.65 13.5M6.5 8.45h7M6.05 11.55h7" />
-    </svg>
-  )
-}
-
-function ImageIcon() {
-  return (
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20">
-      <rect height="14" rx="2.5" width="14" x="3" y="3" />
-      <circle cx="7.15" cy="7.4" r="1.25" />
-      <path d="m4.75 14.25 3.4-3.4 2.05 2.05 1.35-1.35 3.7 3.7" />
-    </svg>
-  )
-}
-
-function ListIcon() {
-  return (
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20">
-      <path d="M8 5h8M8 10h8M8 15h8" />
-      <path d="M4 5h.01M4 10h.01M4 15h.01" />
-    </svg>
-  )
-}
-
-function TableIcon() {
-  return (
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20">
-      <rect height="14" rx="2.5" width="14" x="3" y="3" />
-      <path d="M3 7.65h14M3 12.35h14M7.65 3v14M12.35 3v14" />
-    </svg>
-  )
-}
-
-function CodeblockIcon() {
-  return (
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20">
-      <rect height="12" rx="2.25" width="14" x="3" y="4" />
-      <path d="m8.15 7.55-2.25 2.45 2.25 2.45M11.85 7.55l2.25 2.45-2.25 2.45M10.85 7.25 9.15 12.75" />
-    </svg>
-  )
+const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
+  codeblock: 'icons/Codeblock2.svg',
+  heading: 'icons/Headline.svg',
+  image: 'icons/Image.svg',
+  link: 'icons/Link2.svg',
+  list: 'icons/List.svg',
+  table: 'icons/Tables.svg',
 }
 
 function getQuickInsertIcon(icon: EditorQuickInsertIconName | undefined) {
-  switch (icon) {
-    case 'codeblock':
-      return <CodeblockIcon />
-    case 'heading':
-      return <HeadingIcon />
-    case 'image':
-      return <ImageIcon />
-    case 'list':
-      return <ListIcon />
-    case 'table':
-      return <TableIcon />
-    default:
-      return undefined
+  if (!icon) {
+    return undefined
   }
+
+  return (
+    <span
+      aria-hidden="true"
+      className="editor-quick-insert-icon-glyph"
+      style={{
+        WebkitMaskImage: `url("${quickInsertIconPaths[icon]}")`,
+        maskImage: `url("${quickInsertIconPaths[icon]}")`,
+      }}
+    />
+  )
 }
 
 function getInitialExpandedSections() {

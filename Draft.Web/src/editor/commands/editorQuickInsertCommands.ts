@@ -15,6 +15,7 @@ export type EditorQuickInsertCommand =
   | 'heading-3'
   | 'heading-4'
   | 'image'
+  | 'link'
   | 'numbered-list'
   | 'task-list-checked'
   | 'task-list-unchecked'
@@ -65,6 +66,13 @@ function getQuickInsertSnippet(
     return {
       selection: new monaco.Selection(lineNumber, 3, lineNumber, 11),
       text: '![alt text](image-url)',
+    }
+  }
+
+  if (command === 'link') {
+    return {
+      selection: new monaco.Selection(lineNumber, 2, lineNumber, 11),
+      text: '[link text](url)',
     }
   }
 

@@ -4,6 +4,7 @@ export type EditorQuickInsertIconName =
   | 'codeblock'
   | 'heading'
   | 'image'
+  | 'link'
   | 'list'
   | 'table'
 
@@ -103,6 +104,13 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     id: 'headings',
     label: 'Headings',
     type: 'section',
+  },
+  {
+    command: 'link',
+    icon: 'link',
+    id: 'link',
+    label: 'Link',
+    type: 'item',
   },
   {
     command: 'image',

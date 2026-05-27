@@ -12,7 +12,7 @@
   background: var(--markdown-toolbar-background);
   box-shadow: var(--markdown-toolbar-shadow);
   color: var(--markdown-toolbar-foreground);
-  font-family: var(--font-ui);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
   line-height: 1;
   scrollbar-color: var(--editor-scrollbar-thumb) transparent;
   scrollbar-width: thin;
@@ -60,7 +60,7 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--markdown-toolbar-foreground);
+  color: color-mix(in srgb, var(--markdown-toolbar-foreground) 82%, #ffffff);
   cursor: pointer;
   font: inherit;
   text-align: left;
@@ -137,19 +137,32 @@
 }
 
 .editor-quick-insert-item-icon {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   color: currentColor;
 }
 
 .editor-quick-insert-item-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.7;
+}
+
+.editor-quick-insert-icon-glyph {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
 }
 
 .editor-quick-insert-item-spacer {
@@ -160,6 +173,7 @@
   min-width: 0;
   overflow: hidden;
   color: currentColor;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
   font-size: 16px;
   font-weight: 500;
   line-height: 1.2;
