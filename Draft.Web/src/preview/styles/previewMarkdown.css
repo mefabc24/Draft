@@ -418,7 +418,12 @@
   list-style: none;
 }
 
-.preview-content li.task-list-item > input[type='checkbox'] {
+.preview-content li.task-list-item > p:last-child {
+  margin-bottom: 0;
+}
+
+.preview-content li.task-list-item > input[type='checkbox'],
+.preview-content li.task-list-item > p > input[type='checkbox']:first-child {
   appearance: none;
   box-sizing: border-box;
   display: inline-grid;
@@ -433,7 +438,8 @@
   vertical-align: var(--preview-task-list-checkbox-vertical-align, middle);
 }
 
-.preview-content li.task-list-item > input[type='checkbox']::after {
+.preview-content li.task-list-item > input[type='checkbox']::after,
+.preview-content li.task-list-item > p > input[type='checkbox']:first-child::after {
   content: '';
   width: var(--preview-task-list-checkbox-checkmark-width, 8px);
   height: var(--preview-task-list-checkbox-checkmark-height, 6px);
@@ -442,17 +448,20 @@
   transform: scale(0);
 }
 
-.preview-content li.task-list-item > input[type='checkbox']:checked {
+.preview-content li.task-list-item > input[type='checkbox']:checked,
+.preview-content li.task-list-item > p > input[type='checkbox']:first-child:checked {
   border-color: var(--preview-task-list-checkbox-checked-border, var(--preview-task-list-checkbox-border));
   background: var(--preview-task-list-checkbox-checked-background, var(--preview-task-list-checkbox-background, transparent));
   color: var(--preview-task-list-checkbox-checked-foreground, var(--preview-task-list-checkbox-foreground, currentColor));
 }
 
-.preview-content li.task-list-item > input[type='checkbox']:checked::after {
+.preview-content li.task-list-item > input[type='checkbox']:checked::after,
+.preview-content li.task-list-item > p > input[type='checkbox']:first-child:checked::after {
   transform: scale(1);
 }
 
-.preview-content li.task-list-item > input[type='checkbox']:disabled {
+.preview-content li.task-list-item > input[type='checkbox']:disabled,
+.preview-content li.task-list-item > p > input[type='checkbox']:first-child:disabled {
   opacity: var(--preview-task-list-checkbox-disabled-opacity, 1);
 }
 
