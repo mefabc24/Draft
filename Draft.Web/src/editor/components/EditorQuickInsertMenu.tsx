@@ -10,11 +10,17 @@ import {
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import {
   insertEditorQuickInsertCodeBlock,
+  insertEditorQuickInsertImage,
+  insertEditorQuickInsertLink,
   insertEditorQuickInsertTable,
   runEditorQuickInsertCommand,
   type EditorQuickInsertCommand,
 } from '../commands/editorQuickInsertCommands'
 import type { CreateCodeBlockMarkdownData } from '../commands/createCodeBlockMarkdown'
+import type {
+  CreateInlineImageMarkdownData,
+  CreateInlineLinkMarkdownData,
+} from '../commands/createInlineLinkMarkdown'
 import type { CreateTableMarkdownData } from '../commands/createTableMarkdown'
 import type { EditorQuickInsertMenuPosition } from '../hooks/useEditorQuickInsertMenu'
 import {
@@ -23,6 +29,7 @@ import {
   type EditorQuickInsertMenuEntry,
 } from './EditorQuickInsertMenuConfig'
 import EditorQuickInsertCodeblockControls from './EditorQuickInsertCodeblockControls'
+import EditorQuickInsertInlineMediaControls from './EditorQuickInsertInlineMediaControls'
 import EditorQuickInsertMenuItem from './EditorQuickInsertMenuItem'
 import EditorQuickInsertMenuSection from './EditorQuickInsertMenuSection'
 import EditorQuickInsertTableControls from './EditorQuickInsertTableControls'
@@ -234,6 +241,66 @@ function EditorQuickInsertMenu({
     [editor, lineNumber, onClose, onKeepOpenAction],
   )
 
+  const confirmImage = useCallback(
+    (imageData: CreateInlineImageMarkdownData, keepOpen = false) => {
+      const runAction = () => {
+        if (!editor || lineNumber === null) {
+          return null
+        }
+
+        const result = insertEditorQuickInsertImage(
+          editor,
+          lineNumber,
+          imageData,
+          {
+            advanceToNextEmptyLine: keepOpen,
+          },
+        )
+
+        return result ? result.nextLineNumber : null
+      }
+
+      if (keepOpen) {
+        onKeepOpenAction(runAction)
+        return
+      }
+
+      runAction()
+      onClose()
+    },
+    [editor, lineNumber, onClose, onKeepOpenAction],
+  )
+
+  const confirmLink = useCallback(
+    (linkData: CreateInlineLinkMarkdownData, keepOpen = false) => {
+      const runAction = () => {
+        if (!editor || lineNumber === null) {
+          return null
+        }
+
+        const result = insertEditorQuickInsertLink(
+          editor,
+          lineNumber,
+          linkData,
+          {
+            advanceToNextEmptyLine: keepOpen,
+          },
+        )
+
+        return result ? result.nextLineNumber : null
+      }
+
+      if (keepOpen) {
+        onKeepOpenAction(runAction)
+        return
+      }
+
+      runAction()
+      onClose()
+    },
+    [editor, lineNumber, onClose, onKeepOpenAction],
+  )
+
   const renderCommandItem = useCallback(
     (entry: EditorQuickInsertCommandEntry, nested = false) => (
       <EditorQuickInsertMenuItem
@@ -275,6 +342,16 @@ function EditorQuickInsertMenu({
             <EditorQuickInsertTableControls onConfirm={confirmTable} />
           ) : entry.id === 'codeblocks' ? (
             <EditorQuickInsertCodeblockControls onConfirm={confirmCodeBlock} />
+          ) : entry.id === 'image' ? (
+            <EditorQuickInsertInlineMediaControls
+              type="image"
+              onConfirm={confirmImage}
+            />
+          ) : entry.id === 'link' ? (
+            <EditorQuickInsertInlineMediaControls
+              type="link"
+              onConfirm={confirmLink}
+            />
           ) : (
             entry.children.map((childEntry) =>
               renderCommandItem(childEntry, true),
@@ -283,7 +360,14 @@ function EditorQuickInsertMenu({
         </EditorQuickInsertMenuSection>
       )
     },
-    [confirmCodeBlock, confirmTable, expandedSections, renderCommandItem],
+    [
+      confirmCodeBlock,
+      confirmImage,
+      confirmLink,
+      confirmTable,
+      expandedSections,
+      renderCommandItem,
+    ],
   )
 
   if (!editor || lineNumber === null || !position) {

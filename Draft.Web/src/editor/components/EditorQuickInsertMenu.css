@@ -453,6 +453,95 @@
   background: #b5d2ff;
 }
 
+.editor-quick-insert-inline-media-controls {
+  display: grid;
+  gap: 12px;
+  padding: 2px 10px 12px;
+}
+
+.editor-quick-insert-inline-media-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-quick-insert-inline-media-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.editor-quick-insert-inline-media-field input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #43474f;
+  border-radius: 6px;
+  outline: 0;
+  background: #333538;
+  color: var(--markdown-toolbar-foreground);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.editor-quick-insert-inline-media-field input::placeholder {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 44%,
+    transparent
+  );
+}
+
+.editor-quick-insert-inline-media-field input:focus {
+  border-color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-primary) 72%,
+    #43474f
+  );
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--markdown-toolbar-primary) 24%, transparent);
+}
+
+.editor-quick-insert-inline-media-confirm {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--markdown-toolbar-primary);
+  color: #294c7d;
+  cursor: pointer;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-inline-media-confirm:hover,
+.editor-quick-insert-inline-media-confirm:focus-visible {
+  background: #b5d2ff;
+}
+
 .editor-quick-insert-codeblock-controls {
   display: grid;
   gap: 12px;
@@ -796,6 +885,8 @@
   .editor-quick-insert-table-sample-box,
   .editor-quick-insert-table-sample-box svg,
   .editor-quick-insert-table-confirm,
+  .editor-quick-insert-inline-media-field input,
+  .editor-quick-insert-inline-media-confirm,
   .editor-quick-insert-codeblock-select,
   .editor-quick-insert-codeblock-combobox,
   .editor-quick-insert-codeblock-combobox-chevron,

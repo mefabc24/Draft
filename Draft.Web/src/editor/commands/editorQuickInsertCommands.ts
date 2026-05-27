@@ -4,6 +4,12 @@ import {
   type CreateCodeBlockMarkdownData,
 } from './createCodeBlockMarkdown'
 import {
+  createInlineImageMarkdown,
+  createInlineLinkMarkdown,
+  type CreateInlineImageMarkdownData,
+  type CreateInlineLinkMarkdownData,
+} from './createInlineLinkMarkdown'
+import {
   createTableMarkdown,
   type CreateTableMarkdownData,
 } from './createTableMarkdown'
@@ -213,6 +219,36 @@ export function insertEditorQuickInsertCodeBlock(
     lineNumber,
     createCodeBlockMarkdown(codeBlockData),
     new monaco.Selection(lineNumber + 1, 1, lineNumber + 1, 1),
+    options,
+  )
+}
+
+export function insertEditorQuickInsertImage(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  lineNumber: number,
+  imageData: CreateInlineImageMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
+) {
+  return replaceQuickInsertLine(
+    editor,
+    lineNumber,
+    createInlineImageMarkdown(imageData),
+    undefined,
+    options,
+  )
+}
+
+export function insertEditorQuickInsertLink(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  lineNumber: number,
+  linkData: CreateInlineLinkMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
+) {
+  return replaceQuickInsertLine(
+    editor,
+    lineNumber,
+    createInlineLinkMarkdown(linkData),
+    undefined,
     options,
   )
 }
