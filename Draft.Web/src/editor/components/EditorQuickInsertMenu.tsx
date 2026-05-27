@@ -55,6 +55,7 @@ const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
   image: 'icons/Image.svg',
   link: 'icons/Link2.svg',
   list: 'icons/List.svg',
+  misc: 'icons/Misc.svg',
   table: 'icons/Tables.svg',
 }
 

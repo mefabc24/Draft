@@ -20,6 +20,7 @@ export type EditorQuickInsertCommand =
   | 'heading-2'
   | 'heading-3'
   | 'heading-4'
+  | 'horizontal-rule'
   | 'image'
   | 'link'
   | 'numbered-list'
@@ -45,6 +46,7 @@ const lineMarkers: Partial<Record<EditorQuickInsertCommand, string>> = {
   'heading-2': '## ',
   'heading-3': '### ',
   'heading-4': '#### ',
+  'horizontal-rule': '---',
   'numbered-list': '1. ',
   'task-list-checked': '- [x] ',
   'task-list-unchecked': '- [ ] ',

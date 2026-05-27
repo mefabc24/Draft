@@ -6,6 +6,7 @@ export type EditorQuickInsertIconName =
   | 'image'
   | 'link'
   | 'list'
+  | 'misc'
   | 'table'
 
 type EditorQuickInsertCommandItem = {
@@ -135,6 +136,22 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'codeblock',
     id: 'codeblocks',
     label: 'Codeblocks',
+    type: 'section',
+  },
+  {
+    children: [
+      {
+        command: 'horizontal-rule',
+        id: 'horizontal-rule',
+        label: 'Horizontal rule',
+        shortcut: '---',
+        type: 'item',
+      },
+    ],
+    defaultExpanded: false,
+    icon: 'misc',
+    id: 'miscellaneous',
+    label: 'Miscellaneous',
     type: 'section',
   },
 ]
