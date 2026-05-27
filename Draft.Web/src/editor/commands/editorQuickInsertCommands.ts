@@ -15,6 +15,7 @@ import {
 } from './createTableMarkdown'
 
 export type EditorQuickInsertCommand =
+  | 'blockquote'
   | 'bullet-list'
   | 'heading-1'
   | 'heading-2'
@@ -41,6 +42,7 @@ export type EditorQuickInsertInsertResult = {
 }
 
 const lineMarkers: Partial<Record<EditorQuickInsertCommand, string>> = {
+  blockquote: '> ',
   'bullet-list': '- ',
   'heading-1': '# ',
   'heading-2': '## ',

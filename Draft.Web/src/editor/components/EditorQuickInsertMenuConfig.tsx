@@ -141,9 +141,16 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
   {
     children: [
       {
+        command: 'blockquote',
+        id: 'blockquote',
+        label: 'Quote',
+        shortcut: '>',
+        type: 'item',
+      },
+      {
         command: 'horizontal-rule',
         id: 'horizontal-rule',
-        label: 'Horizontal rule',
+        label: 'Divider',
         shortcut: '---',
         type: 'item',
       },

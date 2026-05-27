@@ -8,6 +8,8 @@ type NumberSpinnerProps = {
   value: number
 }
 
+const DEFAULT_MAX = 99999
+
 function StepIcon({ direction }: { direction: 'decrease' | 'increase' }) {
   return (
     <svg aria-hidden="true" focusable="false" viewBox="0 0 16 16">
@@ -17,20 +19,31 @@ function StepIcon({ direction }: { direction: 'decrease' | 'increase' }) {
   )
 }
 
-function getInputWheelDelta(event: WheelEvent<HTMLInputElement>) {
-  const dominantDelta =
-    Math.abs(event.deltaX) > Math.abs(event.deltaY)
-      ? event.deltaX
-      : event.deltaY
+function getDominantWheelDelta(event: WheelEvent<HTMLInputElement>) {
+  return Math.abs(event.deltaX) > Math.abs(event.deltaY)
+    ? event.deltaX
+    : event.deltaY
+}
 
-  switch (event.deltaMode) {
-    case 1:
-      return dominantDelta * 16
-    case 2:
-      return dominantDelta * event.currentTarget.clientWidth
-    default:
-      return dominantDelta
+function getWheelStep(event: WheelEvent<HTMLInputElement>) {
+  const dominantDelta = getDominantWheelDelta(event)
+
+  if (dominantDelta === 0) {
+    return 0
   }
+
+  return dominantDelta < 0 ? 1 : -1
+}
+
+function getBoundedSpinnerValue(
+  value: number,
+  step: number,
+  min: number,
+  max: number,
+) {
+  const nextValue = value + step
+
+  return Math.min(max, Math.max(min, nextValue))
 }
 
 function NumberSpinner({
@@ -41,8 +54,9 @@ function NumberSpinner({
   value,
 }: NumberSpinnerProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const maximumValue = max ?? DEFAULT_MAX
   const decreaseDisabled = value <= min
-  const increaseDisabled = max !== undefined && value >= max
+  const increaseDisabled = value >= maximumValue
 
   const setSpinnerValue = (nextValue: number) => {
     if (inputRef.current) {
@@ -63,29 +77,35 @@ function NumberSpinner({
       return
     }
 
-    const boundedValue =
-      max === undefined
-        ? Math.max(min, parsedValue)
-        : Math.min(max, Math.max(min, parsedValue))
+    const boundedValue = Math.min(maximumValue, Math.max(min, parsedValue))
 
     setSpinnerValue(boundedValue)
   }
 
   const handleInputWheel = (event: WheelEvent<HTMLInputElement>) => {
-    const input = event.currentTarget
-    const maxScrollLeft = input.scrollWidth - input.clientWidth
+    const step = getWheelStep(event)
 
-    if (maxScrollLeft <= 0) {
+    if (step === 0) {
       return
     }
 
     event.preventDefault()
     event.stopPropagation()
 
-    input.scrollLeft = Math.min(
-      maxScrollLeft,
-      Math.max(0, input.scrollLeft + getInputWheelDelta(event)),
+    const currentInputValue = Number.parseInt(event.currentTarget.value, 10)
+    const currentValue = Number.isNaN(currentInputValue)
+      ? value
+      : currentInputValue
+    const nextValue = getBoundedSpinnerValue(
+      currentValue,
+      step,
+      min,
+      maximumValue,
     )
+
+    if (nextValue !== currentValue) {
+      setSpinnerValue(nextValue)
+    }
   }
 
   return (
@@ -120,8 +140,7 @@ function NumberSpinner({
             const parsedValue = Number.parseInt(nextValue, 10)
 
             if (!Number.isNaN(parsedValue) && parsedValue >= min) {
-              const boundedValue =
-                max === undefined ? parsedValue : Math.min(max, parsedValue)
+              const boundedValue = Math.min(maximumValue, parsedValue)
 
               if (boundedValue !== parsedValue) {
                 event.target.value = String(boundedValue)
@@ -144,9 +163,7 @@ function NumberSpinner({
         disabled={increaseDisabled}
         aria-label={`Increase ${label}`}
         onClick={() => {
-          setSpinnerValue(
-            max === undefined ? value + 1 : Math.min(max, value + 1),
-          )
+          setSpinnerValue(Math.min(maximumValue, value + 1))
         }}
       >
         <StepIcon direction="increase" />

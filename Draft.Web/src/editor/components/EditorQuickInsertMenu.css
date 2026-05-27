@@ -113,7 +113,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 0;
+  padding: 0 8px;
   transform: translateY(-8px);
   transition: transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -194,6 +194,10 @@
   margin-bottom: -3px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.editor-quick-insert-section-trigger .editor-quick-insert-item-label {
+  font-weight: 600;
 }
 
 .editor-quick-insert-menu-item.is-nested .editor-quick-insert-item-label {
@@ -303,14 +307,6 @@
     background 140ms ease,
     color 140ms ease,
     opacity 140ms ease;
-}
-
-.number-spinner-button:first-child {
-  border-right: 1px solid var(--quick-insert-control-border);
-}
-
-.number-spinner-button:last-child {
-  border-left: 1px solid var(--quick-insert-control-border);
 }
 
 .number-spinner-button:hover:not(:disabled),
@@ -432,7 +428,8 @@
 }
 
 .editor-quick-insert-table-sample:hover
-  .editor-quick-insert-table-sample-box {
+  .editor-quick-insert-table-sample-input:not(:checked)
+  + .editor-quick-insert-table-sample-box {
   border-color: var(--quick-insert-control-border-hover);
   background: var(--quick-insert-control-hover-background);
 }
@@ -460,7 +457,7 @@
   font-weight: 500;
   line-height: 1;
   transition:
-    background 140ms ease,
+    background 140ms ease,nutz das [Misc.svg](Draft.Web/public/icons/Misc.svg) icon
     border-color 140ms ease,
     color 140ms ease;
 }
