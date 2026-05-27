@@ -24,29 +24,59 @@ type EditorQuickInsertCodeblockControlsProps = {
 
 const codeblockLanguageOptions: CodeblockLanguageOption[] = [
   { code: '', label: 'None', value: '' },
+  { aliases: ['plain', 'plaintext', 'txt'], code: 'TXT', label: 'Plain Text', value: 'text' },
+  { aliases: ['patch'], code: 'DIFF', label: 'Diff', value: 'diff' },
   { code: 'JAVA', label: 'Java', value: 'java' },
   { aliases: ['csharp', 'c sharp', 'dotnet', '.net'], code: 'CS', label: 'C-Sharp', value: 'csharp' },
   { aliases: ['cpp', 'cplusplus'], code: 'CPP', label: 'C++', value: 'cpp' },
   { code: 'C', label: 'C', value: 'c' },
+  { aliases: ['objc'], code: 'OBJC', label: 'Objective-C', value: 'objective-c' },
   { code: 'KT', label: 'Kotlin', value: 'kotlin' },
   { aliases: ['md'], code: 'MD', label: 'Markdown', value: 'markdown' },
   { aliases: ['py'], code: 'PY', label: 'Python', value: 'python' },
   { aliases: ['js', 'ecmascript', 'node'], code: 'JS', label: 'JavaScript', value: 'javascript' },
+  { code: 'JSX', label: 'JSX', value: 'jsx' },
   { aliases: ['ts'], code: 'TS', label: 'TypeScript', value: 'typescript' },
+  { code: 'TSX', label: 'TSX', value: 'tsx' },
   { code: 'HTML', label: 'HTML', value: 'html' },
   { code: 'CSS', label: 'CSS', value: 'css' },
+  { code: 'SCSS', label: 'SCSS', value: 'scss' },
+  { code: 'SASS', label: 'Sass', value: 'sass' },
+  { code: 'LESS', label: 'Less', value: 'less' },
+  { code: 'VUE', label: 'Vue', value: 'vue' },
+  { code: 'SVELTE', label: 'Svelte', value: 'svelte' },
   { code: 'JSON', label: 'JSON', value: 'json' },
+  { code: 'JSONC', label: 'JSONC', value: 'jsonc' },
+  { aliases: ['gql'], code: 'GQL', label: 'GraphQL', value: 'graphql' },
   { aliases: ['shell', 'sh', 'zsh'], code: 'SH', label: 'Bash', value: 'bash' },
   { aliases: ['ps', 'pwsh'], code: 'PS', label: 'PowerShell', value: 'powershell' },
+  { aliases: ['bat', 'cmd'], code: 'BAT', label: 'Batch', value: 'bat' },
   { code: 'SQL', label: 'SQL', value: 'sql' },
   { aliases: ['yml'], code: 'YAML', label: 'YAML', value: 'yaml' },
+  { code: 'TOML', label: 'TOML', value: 'toml' },
+  { code: 'INI', label: 'INI', value: 'ini' },
+  { code: 'CSV', label: 'CSV', value: 'csv' },
   { code: 'XML', label: 'XML', value: 'xml' },
+  { aliases: ['docker'], code: 'DOCKER', label: 'Dockerfile', value: 'dockerfile' },
+  { aliases: ['tf'], code: 'HCL', label: 'Terraform', value: 'terraform' },
+  { aliases: ['make'], code: 'MAKE', label: 'Makefile', value: 'makefile' },
   { aliases: ['golang'], code: 'GO', label: 'Go', value: 'go' },
   { code: 'RS', label: 'Rust', value: 'rust' },
   { code: 'PHP', label: 'PHP', value: 'php' },
   { code: 'RB', label: 'Ruby', value: 'ruby' },
   { code: 'SWIFT', label: 'Swift', value: 'swift' },
   { code: 'DART', label: 'Dart', value: 'dart' },
+  { code: 'SCALA', label: 'Scala', value: 'scala' },
+  { code: 'R', label: 'R', value: 'r' },
+  { aliases: ['jl'], code: 'JL', label: 'Julia', value: 'julia' },
+  { code: 'LUA', label: 'Lua', value: 'lua' },
+  { aliases: ['pl'], code: 'PL', label: 'Perl', value: 'perl' },
+  { aliases: ['hs'], code: 'HS', label: 'Haskell', value: 'haskell' },
+  { aliases: ['ex', 'exs'], code: 'EX', label: 'Elixir', value: 'elixir' },
+  { aliases: ['erl'], code: 'ERL', label: 'Erlang', value: 'erlang' },
+  { aliases: ['clj'], code: 'CLJ', label: 'Clojure', value: 'clojure' },
+  { aliases: ['fsharp', 'f sharp'], code: 'FS', label: 'F-Sharp', value: 'fsharp' },
+  { aliases: ['asm'], code: 'ASM', label: 'Assembly', value: 'asm' },
 ]
 
 function SearchIcon() {
@@ -224,7 +254,12 @@ function EditorQuickInsertCodeblockControls({
               <ChevronIcon />
             </span>
           </button>
-          {open ? (
+          <div
+            className={`editor-quick-insert-codeblock-popup-frame${
+              open ? ' is-open' : ''
+            }`}
+            aria-hidden={!open}
+          >
             <div
               className="editor-quick-insert-codeblock-popup"
               onMouseDown={(event) => {
@@ -238,6 +273,7 @@ function EditorQuickInsertCodeblockControls({
                   type="text"
                   value={searchValue}
                   placeholder="Search languages..."
+                  tabIndex={open ? undefined : -1}
                   onChange={(event) => {
                     setSearchValue(event.target.value)
                   }}
@@ -269,6 +305,7 @@ function EditorQuickInsertCodeblockControls({
                           key={option.value || 'none'}
                           role="option"
                           aria-selected={selected}
+                          tabIndex={open ? undefined : -1}
                           onClick={() => {
                             setSelectedLanguage(option)
                             setOpen(false)
@@ -315,7 +352,7 @@ function EditorQuickInsertCodeblockControls({
                 </div>
               </div>
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
       <button

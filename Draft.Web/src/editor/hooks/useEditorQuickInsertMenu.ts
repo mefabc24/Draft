@@ -28,10 +28,8 @@ export type EditorQuickInsertMenuPosition = {
 
 type EditorQuickInsertMenuTarget = EditorQuickInsertMenuAnchor
 
-function getQuickInsertMenuPosition(
+function getQuickInsertMenuPreferredPosition(
   editor: monaco.editor.IStandaloneCodeEditor,
-  editorBody: HTMLDivElement,
-  menu: HTMLDivElement | null,
   target: EditorQuickInsertMenuTarget,
 ): EditorQuickInsertMenuPosition | null {
   if (!isEditorQuickInsertTargetLine(editor, target.lineNumber)) {
@@ -47,16 +45,25 @@ function getQuickInsertMenuPosition(
     return null
   }
 
+  return {
+    left: target.left + BUTTON_SIZE + MENU_GAP,
+    top: visiblePosition.top - MENU_GAP,
+  }
+}
+
+function clampQuickInsertMenuPosition(
+  editorBody: HTMLDivElement,
+  menu: HTMLDivElement | null,
+  position: EditorQuickInsertMenuPosition,
+) {
   const menuWidth = menu?.offsetWidth ?? MENU_ESTIMATED_WIDTH
   const menuHeight = menu?.offsetHeight ?? MENU_ESTIMATED_HEIGHT
   const maxLeft = editorBody.clientWidth - menuWidth - MENU_EDGE_PADDING
   const maxTop = editorBody.clientHeight - menuHeight - MENU_EDGE_PADDING
-  const preferredLeft = target.left + BUTTON_SIZE + MENU_GAP
-  const preferredTop = visiblePosition.top - MENU_GAP
 
   return {
-    left: clamp(preferredLeft, MENU_EDGE_PADDING, maxLeft),
-    top: clamp(preferredTop, MENU_EDGE_PADDING, maxTop),
+    left: clamp(position.left, MENU_EDGE_PADDING, maxLeft),
+    top: clamp(position.top, MENU_EDGE_PADDING, maxTop),
   }
 }
 
@@ -69,12 +76,16 @@ export function useEditorQuickInsertMenu(
   const [menuPosition, setMenuPosition] =
     useState<EditorQuickInsertMenuPosition | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const menuPreferredPositionRef =
+    useRef<EditorQuickInsertMenuPosition | null>(null)
   const menuTargetRef = useRef<EditorQuickInsertMenuTarget | null>(null)
   const keepOpenActionRef = useRef(false)
   const lockMenuPositionRef = useRef(false)
+  const boundsUpdateFrameRef = useRef<number | null>(null)
   const updateFrameRef = useRef<number | null>(null)
 
   const closeMenu = useCallback(() => {
+    menuPreferredPositionRef.current = null
     menuTargetRef.current = null
     lockMenuPositionRef.current = false
     setMenuTarget(null)
@@ -94,18 +105,20 @@ export function useEditorQuickInsertMenu(
       return
     }
 
-    const nextPosition = getQuickInsertMenuPosition(
-      editor,
-      editorBody,
-      menuRef.current,
-      target,
-    )
+    const preferredPosition = getQuickInsertMenuPreferredPosition(editor, target)
 
-    if (!nextPosition) {
+    if (!preferredPosition) {
       closeMenu()
       return
     }
 
+    const nextPosition = clampQuickInsertMenuPosition(
+      editorBody,
+      menuRef.current,
+      preferredPosition,
+    )
+
+    menuPreferredPositionRef.current = preferredPosition
     setMenuPosition(nextPosition)
   }, [closeMenu, editor, editorBodyRef])
 
@@ -124,6 +137,49 @@ export function useEditorQuickInsertMenu(
     })
   }, [updateMenuPosition])
 
+  const clampMenuPositionToViewport = useCallback(() => {
+    const editorBody = editorBodyRef.current
+    const menu = menuRef.current
+
+    if (!editorBody || !menu) {
+      return
+    }
+
+    setMenuPosition((currentPosition) => {
+      if (!currentPosition) {
+        return currentPosition
+      }
+
+      const targetPosition =
+        menuPreferredPositionRef.current ?? currentPosition
+      const nextPosition = clampQuickInsertMenuPosition(
+        editorBody,
+        menu,
+        targetPosition,
+      )
+
+      if (
+        nextPosition.left === currentPosition.left &&
+        nextPosition.top === currentPosition.top
+      ) {
+        return currentPosition
+      }
+
+      return nextPosition
+    })
+  }, [editorBodyRef])
+
+  const scheduleMenuBoundsUpdate = useCallback(() => {
+    if (boundsUpdateFrameRef.current !== null) {
+      window.cancelAnimationFrame(boundsUpdateFrameRef.current)
+    }
+
+    boundsUpdateFrameRef.current = window.requestAnimationFrame(() => {
+      boundsUpdateFrameRef.current = null
+      clampMenuPositionToViewport()
+    })
+  }, [clampMenuPositionToViewport])
+
   const openMenu = useCallback(
     (anchor: EditorQuickInsertMenuAnchor) => {
       const editorBody = editorBodyRef.current
@@ -132,18 +188,23 @@ export function useEditorQuickInsertMenu(
         return
       }
 
-      const nextPosition = getQuickInsertMenuPosition(
+      const preferredPosition = getQuickInsertMenuPreferredPosition(
         editor,
-        editorBody,
-        null,
         anchor,
       )
 
-      if (!nextPosition) {
+      if (!preferredPosition) {
         closeMenu()
         return
       }
 
+      const nextPosition = clampQuickInsertMenuPosition(
+        editorBody,
+        null,
+        preferredPosition,
+      )
+
+      menuPreferredPositionRef.current = preferredPosition
       menuTargetRef.current = anchor
       lockMenuPositionRef.current = false
       setMenuTarget(anchor)
@@ -205,6 +266,32 @@ export function useEditorQuickInsertMenu(
 
     updateMenuPosition()
   }, [menuTarget, updateMenuPosition])
+
+  useEffect(() => {
+    if (!menuTarget) {
+      return
+    }
+
+    const menu = menuRef.current
+    const editorBody = editorBodyRef.current
+
+    if (!menu) {
+      return
+    }
+
+    const resizeObserver = new ResizeObserver(scheduleMenuBoundsUpdate)
+    resizeObserver.observe(menu)
+
+    if (editorBody) {
+      resizeObserver.observe(editorBody)
+    }
+
+    scheduleMenuBoundsUpdate()
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [editorBodyRef, menuTarget, scheduleMenuBoundsUpdate])
 
   useEffect(() => {
     if (!editor || !menuTarget) {
@@ -270,6 +357,11 @@ export function useEditorQuickInsertMenu(
 
   useEffect(() => {
     return () => {
+      if (boundsUpdateFrameRef.current !== null) {
+        window.cancelAnimationFrame(boundsUpdateFrameRef.current)
+        boundsUpdateFrameRef.current = null
+      }
+
       if (updateFrameRef.current !== null) {
         window.cancelAnimationFrame(updateFrameRef.current)
         updateFrameRef.current = null
