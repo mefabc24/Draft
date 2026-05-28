@@ -1,47 +1,117 @@
 # Draft
 
-Draft is a Windows desktop Markdown editor with a native WPF shell and a React
-workspace embedded through WebView2. The desktop host handles files, settings,
-autosave, snapshots, update packaging, and Windows integration; the web workspace
-owns the Monaco editor, Markdown preview, formatting toolbar, and editor-facing
-interaction model.
+Draft is a focused Windows Markdown editor with live preview, save snapshots, a floating formatting toolbar, and a calm desktop workspace.
 
-## Version
+Current version: `2.0.0`
 
-The latest stable release is `2.0.0`.
+## For Users
 
-## Download
+### What Draft Is
 
-Download the latest Windows installer from the [Releases page](https://github.com/mefabc24/Draft/releases/latest).
+Draft gives you a local Markdown workspace with three modes:
 
-For most users: download `Draft-Setup-v2.0.0.exe`.
+- **Editor** for distraction-light writing.
+- **Split** for writing and previewing side by side.
+- **Preview** for reading the rendered document.
 
-## Features
+It works with normal Markdown and text files on your Windows machine. Your files
+stay local unless you choose to put them somewhere else.
 
-- Monaco-based Markdown editor with syntax highlighting, word wrap, line
-  numbers, indentation guides, whitespace rendering, cursor settings, tab
-  settings, and bracket/quote pairing.
-- GitHub-flavored Markdown preview powered by `react-markdown` and `remark-gfm`.
-- Editor, split, and preview workspace modes with configurable preview scroll
-  sync.
-- Floating Markdown Toolbar in the editor and preview for headings, blockquotes,
-  code blocks, lists, checklists, bold, italic, strikethrough, inline code, and
-  links.
-- Native WPF control bar for workspace mode switching, open, save, new document,
-  copying the full Markdown source, and settings.
-- Native status bar with Markdown/UTF-8 indicators, word count, character count,
-  cursor position, selection count, save status, autosave status, and revert
-  access.
-- Local file handling for Markdown/text documents, default save location
-  settings, and optional `.txt` file association.
-- Manual saves, autosave, save-on-focus-lost, and saved-version snapshots that
-  can be restored through the Revert flow.
-- Settings window for general behavior, editor options, preview behavior,
-  appearance, update/demo controls, and app metadata.
-- Windows installer, portable package, and update feed generation through
-  Velopack.
+### Download and Install
 
-## Tech Stack
+Get the latest Windows release from:
+
+https://github.com/mefabc24/Draft/releases
+
+Release downloads normally include:
+
+- `Draft-Setup-v<version>.exe` for the installed app.
+- `mefabc24.Draft-win-Portable.zip` for the portable app.
+
+Automatic update checks are available in installed Draft releases. Portable or
+development builds may show that updates are not available.
+
+### Highlights
+
+- A Markdown editor with syntax highlighting, word wrap, line numbers,
+  indentation guides, whitespace display, cursor settings, tab settings, and
+  automatic bracket and quote pairing.
+- Live preview for GitHub-flavored Markdown, Markdown tables, task lists, raw
+  HTML, and highlighted code blocks.
+- Preview themes including Draft Dark, Assistant Dark, and Repository Dark.
+- A Floating Markdown Toolbar for headings, quotes, code blocks, lists,
+  checklists, bold, italic, strikethrough, inline code, links, and images.
+- Toolbar controls also work from preview mode, including source editing for
+  rendered preview content.
+- A Quick Insert Menu on empty editor lines for adding lists, headings, images,
+  links, tables, code blocks, quotes, and dividers without remembering Markdown
+  syntax.
+- Automatic Markdown list continuation when you press Enter.
+- Duplicate the current line with `Ctrl + D`.
+- Save the current file with `Ctrl + S`.
+- Copy the full Markdown document from the control bar.
+- Copy code blocks directly from the rendered preview.
+- Undo and redo continue to work even when focus is in the preview.
+- A status bar with file type, encoding, word count, character count, cursor
+  position, selection count, save state, autosave state, and app version.
+
+### Saving and Recovery
+
+Draft supports manual save, autosave, and optional save-on-focus-lost behavior.
+
+For each file, Draft keeps separate restore points for:
+
+- The last manual save.
+- The latest autosave.
+
+This means you can recover recent work without overwriting the intentional save
+point you created manually.
+
+### Settings
+
+Draft includes settings for:
+
+- Startup behavior, update checks, autosave, save-on-focus-lost, and close
+  confirmations.
+- Editor typography, layout, Markdown syntax highlighting, whitespace display,
+  indentation, cursor style, and pairing behavior.
+- Preview theme and external-link confirmation.
+- App theme, status bar visibility, and toolbar/control bar position.
+- Default save location and optional `.txt` file association.
+- A shortcuts page that lists the main keyboard shortcuts.
+- Version and update controls.
+
+### Useful Shortcuts
+
+```text
+Ctrl + S          Save file
+Ctrl + Z          Undo
+Ctrl + Shift + Z  Redo
+Ctrl + D          Duplicate current line
+Ctrl + B          Bold
+Ctrl + I          Italic
+Ctrl + E          Inline code
+Ctrl + K          Link
+Ctrl + Alt + I    Image
+Ctrl + 1..6       Heading 1 through Heading 6
+Ctrl + Shift + E  Edit the Markdown behind selected preview content
+Enter             Continue the current Markdown list or quote
+Shift + Left Click  Insert from Quick Insert and keep the menu open
+```
+
+## For Developers
+
+### Architecture
+
+Draft is a Windows desktop app with a native WPF shell and a React workspace
+embedded through WebView2.
+
+- `Draft.Wpf` handles the desktop window, startup flow, local files, settings,
+  autosave, snapshots, update checks, packaging hooks, and Windows integration.
+- `Draft.Web` handles the Monaco editor, Markdown preview, preview themes,
+  Floating Markdown Toolbar, Quick Insert Menu, and editor-facing interactions.
+
+### Tech Stack
 
 - WPF on `net10.0-windows`
 - WebView2
@@ -51,8 +121,10 @@ For most users: download `Draft-Setup-v2.0.0.exe`.
 - Vite 8
 - Monaco Editor
 - `react-markdown` with `remark-gfm`
+- `rehype-raw` for Markdown HTML support
+- `rehype-pretty-code` for highlighted code previews
 
-## Repository Structure
+### Repository Structure
 
 ```text
 Draft.Web/        React, TypeScript, Vite, Monaco, preview, toolbar, themes
@@ -65,7 +137,7 @@ Releases/         Generated Velopack release artifacts
 
 `Releases/` is generated output and should not be committed.
 
-## Prerequisites
+### Prerequisites
 
 Install these tools before building the app:
 
@@ -77,7 +149,7 @@ WebView2 Runtime
 Velopack CLI, only needed for creating releases
 ```
 
-## Development
+### Development
 
 Install web dependencies:
 
@@ -113,7 +185,7 @@ dotnet run --project Draft.Wpf/Draft.csproj
 For desktop builds and releases, build `Draft.Web` first. `Draft.Wpf` includes
 the generated `Draft.Web/dist` files in its output and publish artifacts.
 
-## Useful Commands
+### Useful Commands
 
 ```powershell
 # Web checks
@@ -126,13 +198,13 @@ cd ..
 dotnet build Draft.Wpf/Draft.slnx
 
 # Update version fields
-.\Scripts\update-version.ps1 -Version 2.0.0-beta
+.\Scripts\update-version.ps1 -Version 2.0.0
 
 # Create a Windows release
 .\Scripts\create-release.ps1
 ```
 
-## Releasing
+### Releasing
 
 Version fields and release steps are documented in:
 
@@ -152,7 +224,7 @@ Upload the full generated asset set from `Releases/` to the matching GitHub
 Release. Do not upload only the setup executable because Velopack updates also
 need the feed and package files.
 
-## Documentation
+### Documentation
 
 - `Documentation/VERSIONING.md` lists every manually maintained version field.
 - `Documentation/RELEASING.md` describes how to create and publish a release.
