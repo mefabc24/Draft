@@ -4,6 +4,8 @@ Draft is a focused Windows Markdown editor with live preview, save snapshots, a 
 
 Current version: `2.0.0`
 
+![Draft main workspace](Documentation/Assets/draft-main-workspace.png)
+
 ## For Users
 
 ### What Draft Is
@@ -31,24 +33,6 @@ Release downloads normally include:
 Automatic update checks are available in installed Draft releases. Portable or
 development builds may show that updates are not available.
 
-### Screenshots
-
-#### Main Workspace
-
-![Draft main workspace](Documentation/Assets/draft-main-workspace.png)
-
-#### Floating Markdown Toolbar
-
-![Floating Markdown Toolbar](Documentation/Assets/floating-markdown-toolbar.png)
-
-#### Quick Insert Menu
-
-![Quick Insert Menu](Documentation/Assets/quick-insert-menu.png)
-
-#### Save Snapshots
-
-![Save Snapshot Controls](Documentation/Assets/snapshots-controls.png)
-
 ### Highlights
 
 - Three workspace modes: **Editor**, **Split**, and **Preview** for writing, editing, and reading Markdown.
@@ -60,6 +44,25 @@ development builds may show that updates are not available.
 - Flexible scroll sync options, including two-way sync, editor-to-preview sync, preview-to-editor sync, and follow-edited-section behavior.
 - Save Snapshot System with separate restore points for the last manual save and the latest autosave.
 
+### Feature Preview
+
+#### Floating Markdown Toolbar
+
+Quickly format Markdown in both the editor and the rendered preview.
+
+![Floating Markdown Toolbar](Documentation/Assets/draft-floating-markdown-toolbar.png)
+
+#### Quick Insert Menu
+
+Insert common Markdown blocks without remembering the exact syntax.
+
+![Quick Insert Menu](Documentation/Assets/draft-quick-insert-menu.png)
+
+#### Save Snapshots
+
+Restore either the last manual save or the latest autosave.
+
+![Save Snapshot Controls](Documentation/Assets/draft-save-snapshots.png)
 
 ### Saving and Recovery
 
