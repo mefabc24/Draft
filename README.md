@@ -21,7 +21,7 @@ stay local unless you choose to put them somewhere else.
 
 Get the latest Windows release from:
 
-https://github.com/mefabc24/Draft/releases
+https://github.com/mefabc24/Draft/releases/latest
 
 Release downloads normally include:
 
@@ -33,27 +33,14 @@ development builds may show that updates are not available.
 
 ### Highlights
 
-- A Markdown editor with syntax highlighting, word wrap, line numbers,
-  indentation guides, whitespace display, cursor settings, tab settings, and
-  automatic bracket and quote pairing.
-- Live preview for GitHub-flavored Markdown, Markdown tables, task lists, raw
-  HTML, and highlighted code blocks.
-- Preview themes including Draft Dark, Assistant Dark, and Repository Dark.
-- A Floating Markdown Toolbar for headings, quotes, code blocks, lists,
-  checklists, bold, italic, strikethrough, inline code, links, and images.
-- Toolbar controls also work from preview mode, including source editing for
-  rendered preview content.
-- A Quick Insert Menu on empty editor lines for adding lists, headings, images,
-  links, tables, code blocks, quotes, and dividers without remembering Markdown
-  syntax.
-- Automatic Markdown list continuation when you press Enter.
-- Duplicate the current line with `Ctrl + D`.
-- Save the current file with `Ctrl + S`.
-- Copy the full Markdown document from the control bar.
-- Copy code blocks directly from the rendered preview.
-- Undo and redo continue to work even when focus is in the preview.
-- A status bar with file type, encoding, word count, character count, cursor
-  position, selection count, save state, autosave state, and app version.
+- Three workspace modes: **Editor**, **Split**, and **Preview** for writing, editing, and reading Markdown.
+- Live Markdown preview with support for GitHub-flavored Markdown, tables, task lists, raw HTML, and highlighted code blocks.
+- Multiple preview themes, including Draft Dark, Assistant Dark, and Repository Dark.
+- Floating Markdown Toolbar for quickly formatting content in both the editor and the rendered preview.
+- Preview editing support for editing the Markdown source behind selected rendered content.
+- Quick Insert Menu for adding common Markdown elements like headings, lists, images, links, tables, code blocks, quotes, and dividers.
+- Save Snapshot System with separate restore points for the last manual save and the latest autosave.
+
 
 ### Saving and Recovery
 
