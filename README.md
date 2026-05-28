@@ -6,9 +6,11 @@ autosave, snapshots, update packaging, and Windows integration; the web workspac
 owns the Monaco editor, Markdown preview, formatting toolbar, and editor-facing
 interaction model.
 
-## Version
+## Download
 
-The latest stable release is `2.0.0`.
+Download the latest Windows installer from the [Releases page](https://github.com/mefabc24/Draft/releases/latest).
+
+For most users: download `Draft-Setup-v2.0.0.exe`.
 
 ## Features
 
