@@ -84,19 +84,19 @@ Draft includes settings for:
 ### Useful Shortcuts
 
 ```text
-Ctrl + S          Save file
-Ctrl + Z          Undo
-Ctrl + Shift + Z  Redo
-Ctrl + D          Duplicate current line
-Ctrl + B          Bold
-Ctrl + I          Italic
-Ctrl + E          Inline code
-Ctrl + K          Link
-Ctrl + Alt + I    Image
-Ctrl + 1..6       Heading 1 through Heading 6
-Ctrl + Shift + E  Edit the Markdown behind selected preview content
-Enter             Continue the current Markdown list or quote
-Shift + Left Click  Insert from Quick Insert and keep the menu open
+Ctrl + S              Save file
+Ctrl + Z              Undo
+Ctrl + Shift + Z      Redo
+Ctrl + D              Duplicate current line
+Ctrl + B              Bold
+Ctrl + I              Italic
+Ctrl + E              Inline code
+Ctrl + K              Link
+Ctrl + Alt + I        Image
+Ctrl + 1..6           Heading 1 through Heading 6
+Ctrl + Shift + E      Edit the Markdown behind selected preview content
+Enter                 Continue the current Markdown list or quote
+Shift + Left Click    Insert from Quick Insert and keep the menu open
 ```
 
 ## For Developers
