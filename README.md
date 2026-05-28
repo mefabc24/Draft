@@ -31,6 +31,24 @@ Release downloads normally include:
 Automatic update checks are available in installed Draft releases. Portable or
 development builds may show that updates are not available.
 
+### Screenshots
+
+#### Main Workspace
+
+![Draft main workspace](Documentation/Assets/draft-main-workspace.png)
+
+#### Floating Markdown Toolbar
+
+![Floating Markdown Toolbar](Documentation/Assets/floating-markdown-toolbar.png)
+
+#### Quick Insert Menu
+
+![Quick Insert Menu](Documentation/Assets/quick-insert-menu.png)
+
+#### Save Snapshots
+
+![Save Snapshot Controls](Documentation/Assets/snapshots-controls.png)
+
 ### Highlights
 
 - Three workspace modes: **Editor**, **Split**, and **Preview** for writing, editing, and reading Markdown.
