@@ -70,19 +70,29 @@ Draft includes settings for:
 
 ### Useful Shortcuts
 
+#### General
 ```text
 Ctrl + S              Save file
 Ctrl + Z              Undo
 Ctrl + Shift + Z      Redo
-Ctrl + D              Duplicate current line
+Ctrl + D              Duplicate current link
+Enter                 Continue the current Markdown list or quote
+```
+
+#### Floating Markdown Toolbar (FMT)
+```text
 Ctrl + B              Bold
 Ctrl + I              Italic
+Ctrl + Shift + X      Strikethrough
 Ctrl + E              Inline code
 Ctrl + K              Link
 Ctrl + Alt + I        Image
 Ctrl + 1..6           Heading 1 through Heading 6
 Ctrl + Shift + E      Edit the Markdown behind selected preview content
-Enter                 Continue the current Markdown list or quote
+```
+
+#### Quick Insert Menu (QIM)
+```text
 Shift + Left Click    Insert from Quick Insert and keep the menu open
 ```
 
