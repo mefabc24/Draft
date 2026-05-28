@@ -8,8 +8,7 @@ interaction model.
 
 ## Version
 
-The latest stable release is `1.4.0`.  
-The latest pre-release is `2.0.0-beta.2`.
+The latest stable release is `2.0.0`.
 
 ## Features
 
