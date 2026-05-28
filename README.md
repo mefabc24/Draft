@@ -39,6 +39,7 @@ development builds may show that updates are not available.
 - Floating Markdown Toolbar for quickly formatting content in both the editor and the rendered preview.
 - Preview editing support for editing the Markdown source behind selected rendered content.
 - Quick Insert Menu for adding common Markdown elements like headings, lists, images, links, tables, code blocks, quotes, and dividers.
+- Flexible scroll sync options, including two-way sync, editor-to-preview sync, preview-to-editor sync, and follow-edited-section behavior.
 - Save Snapshot System with separate restore points for the last manual save and the latest autosave.
 
 
