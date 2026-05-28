@@ -97,7 +97,7 @@ Draft includes settings for:
 Ctrl + S              Save file
 Ctrl + Z              Undo
 Ctrl + Shift + Z      Redo
-Ctrl + D              Duplicate current link
+Ctrl + D              Duplicate current line
 Enter                 Continue the current Markdown list or quote
 ```
 
