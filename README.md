@@ -6,6 +6,8 @@ Current version: `2.0.0`
 
 ![Draft main workspace](Documentation/Assets/app-preview.png)
 
+[Download latest release](https://github.com/mefabc24/Draft/releases/latest)
+
 ## For Users
 
 ### What Draft Is
