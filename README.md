@@ -50,19 +50,19 @@ development builds may show that updates are not available.
 
 Quickly format Markdown in both the editor and the rendered preview.
 
-![Floating Markdown Toolbar](Documentation/Assets/draft-floating-markdown-toolbar.png)
+![Floating Markdown Toolbar](Documentation/Assets/floating-markdown-toolbar.png)
 
 #### Quick Insert Menu
 
 Insert common Markdown blocks without remembering the exact syntax.
 
-![Quick Insert Menu](Documentation/Assets/draft-quick-insert-menu.png)
+![Quick Insert Menu](Documentation/Assets/quick-insert-menu.png)
 
 #### Save Snapshots
 
 Restore either the last manual save or the latest autosave.
 
-![Save Snapshot Controls](Documentation/Assets/draft-save-snapshots.png)
+![Save Snapshot Controls](Documentation/Assets/snapshot-control.png)
 
 ### Saving and Recovery
 
