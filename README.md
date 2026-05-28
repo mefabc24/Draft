@@ -62,7 +62,7 @@ Insert common Markdown blocks without remembering the exact syntax.
 
 Restore either the last manual save or the latest autosave.
 
-![Save Snapshot Controls](Documentation/Assets/snapshot-control.png)
+![Save Snapshot Controls](Documentation/Assets/snapshot-controls.png)
 
 ### Saving and Recovery
 
