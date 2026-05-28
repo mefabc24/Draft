@@ -9,6 +9,7 @@ public class SettingsWindowViewModel : BaseViewModel
     private readonly EditorSettingsPageViewModel _editorSettingsPage;
     private readonly PreviewSettingsPageViewModel _previewSettingsPage;
     private readonly AppearanceSettingsPageViewModel _appearanceSettingsPage;
+    private readonly ShortcutsSettingsPageViewModel _shortcutsSettingsPage;
     private readonly DevelopSettingsPageViewModel _developSettingsPage;
     private readonly AboutSettingsPageViewModel _aboutSettingsPage;
     private readonly SettingsApplicationService _settingsApplicationService = new();
@@ -45,7 +46,6 @@ public class SettingsWindowViewModel : BaseViewModel
     private string _cursorStyle = "Line";
     private bool _cursorBlinking = true;
     private string _markdownTheme = AppSettingsStore.DefaultMarkdownTheme;
-    private bool _openLinksInBrowser = true;
     private bool _confirmBeforeOpeningExternalLinks = true;
     private string _previewScrollSyncMode = AppSettingsStore.DefaultPreviewScrollSyncMode;
     private string _floatingMarkdownToolbarMode = AppSettingsStore.DefaultFloatingMarkdownToolbarMode;
@@ -68,6 +68,7 @@ public class SettingsWindowViewModel : BaseViewModel
         _editorSettingsPage = new EditorSettingsPageViewModel(this);
         _previewSettingsPage = new PreviewSettingsPageViewModel(this);
         _appearanceSettingsPage = new AppearanceSettingsPageViewModel(this);
+        _shortcutsSettingsPage = new ShortcutsSettingsPageViewModel(this);
         _developSettingsPage = new DevelopSettingsPageViewModel(this);
         _aboutSettingsPage = new AboutSettingsPageViewModel(this);
         _currentSettingsPage = _generalSettingsPage;
@@ -187,6 +188,16 @@ public class SettingsWindowViewModel : BaseViewModel
         {
             if (value)
                 SelectSettingsPage(SettingsPage.Appearance);
+        }
+    }
+
+    public bool IsShortcutsSettingsSelected
+    {
+        get => _selectedPage == SettingsPage.Shortcuts;
+        set
+        {
+            if (value)
+                SelectSettingsPage(SettingsPage.Shortcuts);
         }
     }
 
@@ -435,12 +446,6 @@ public class SettingsWindowViewModel : BaseViewModel
             EnsureOption(MarkdownThemeOptions, value, AppSettingsStore.DefaultMarkdownTheme));
     }
 
-    public bool OpenLinksInBrowser
-    {
-        get => _openLinksInBrowser;
-        set => SetSetting(ref _openLinksInBrowser, value);
-    }
-
     public bool ConfirmBeforeOpeningExternalLinks
     {
         get => _confirmBeforeOpeningExternalLinks;
@@ -513,6 +518,7 @@ public class SettingsWindowViewModel : BaseViewModel
             SettingsPage.Editor => _editorSettingsPage,
             SettingsPage.Preview => _previewSettingsPage,
             SettingsPage.Appearance => _appearanceSettingsPage,
+            SettingsPage.Shortcuts => _shortcutsSettingsPage,
             SettingsPage.Develop => IsDevelopSettingsVisible
                 ? _developSettingsPage
                 : _generalSettingsPage,
@@ -524,6 +530,7 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsEditorSettingsSelected));
         OnPropertyChanged(nameof(IsPreviewSettingsSelected));
         OnPropertyChanged(nameof(IsAppearanceSettingsSelected));
+        OnPropertyChanged(nameof(IsShortcutsSettingsSelected));
         OnPropertyChanged(nameof(IsDevelopSettingsSelected));
         OnPropertyChanged(nameof(IsAboutSettingsSelected));
     }
@@ -568,7 +575,6 @@ public class SettingsWindowViewModel : BaseViewModel
             MarkdownThemeOptions,
             settings.MarkdownTheme,
             AppSettingsStore.DefaultMarkdownTheme);
-        _openLinksInBrowser = settings.OpenLinksInBrowser;
         _confirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks;
         _previewScrollSyncMode = EnsureOptionValue(
             GetPreviewScrollSyncValues(),
@@ -672,7 +678,6 @@ public class SettingsWindowViewModel : BaseViewModel
             CursorStyle = CursorStyle,
             CursorBlinking = CursorBlinking,
             MarkdownTheme = MarkdownTheme,
-            OpenLinksInBrowser = OpenLinksInBrowser,
             ConfirmBeforeOpeningExternalLinks = ConfirmBeforeOpeningExternalLinks,
             PreviewScrollSyncMode = _previewScrollSyncMode,
             FloatingMarkdownToolbarMode = _floatingMarkdownToolbarMode,
@@ -784,7 +789,6 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(CursorStyle));
         OnPropertyChanged(nameof(CursorBlinking));
         OnPropertyChanged(nameof(MarkdownTheme));
-        OnPropertyChanged(nameof(OpenLinksInBrowser));
         OnPropertyChanged(nameof(ConfirmBeforeOpeningExternalLinks));
         OnPropertyChanged(nameof(PreviewScrollSyncMode));
         OnPropertyChanged(nameof(FloatingMarkdownToolbarMode));

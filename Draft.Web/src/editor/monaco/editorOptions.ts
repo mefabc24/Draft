@@ -12,6 +12,23 @@ export const EDITOR_PADDING: monaco.editor.IEditorPaddingOptions = {
 
 export const EDITOR_SCROLL_SENSITIVITY = 1.5
 
+export const EDITOR_LINE_NUMBERS_MIN_CHARS = 2
+export const EDITOR_LINE_NUMBER_LEFT_PADDING_PX = 16
+export const EDITOR_LINE_DECORATIONS_WIDTH = 48
+
+export const EDITOR_GUTTER_OPTIONS = {
+  glyphMargin: false,
+  folding: false,
+  lineDecorationsWidth:
+    EDITOR_LINE_DECORATIONS_WIDTH + EDITOR_LINE_NUMBER_LEFT_PADDING_PX,
+  lineNumbersMinChars: EDITOR_LINE_NUMBERS_MIN_CHARS,
+} satisfies Pick<
+  monaco.editor.IEditorOptions,
+  'folding' | 'glyphMargin' | 'lineDecorationsWidth' | 'lineNumbersMinChars'
+>
+
+export const EDITOR_EMPTY_LINE_INSERT_BUTTON_LEFT = 50
+
 export function getEditorFontFamilyCss(fontFamily: string) {
   switch (fontFamily) {
     case 'Cascadia Code':
@@ -66,10 +83,12 @@ export function getEditorSettingsOptions(
   settings: DraftEditorSettings,
 ): monaco.editor.IEditorOptions {
   return {
+    dragAndDrop: false,
     wordWrap: settings.wordWrap ? 'on' : 'off',
     fontSize: settings.editorFontSize,
     lineHeight: getEditorLineHeightPixels(settings),
     fontFamily: getEditorFontFamilyCss(settings.editorFontFamily),
+    ...EDITOR_GUTTER_OPTIONS,
     renderLineHighlight: settings.highlightCurrentLine ? 'gutter' : 'none',
     lineNumbers: settings.showLineNumbers ? 'on' : 'off',
     renderWhitespace: getRenderWhitespace(settings.showWhitespaceCharacters),

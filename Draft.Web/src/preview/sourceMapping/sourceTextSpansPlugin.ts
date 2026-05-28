@@ -24,6 +24,7 @@ const MARKDOWN_SOURCE_ELEMENT_TAGS = new Set([
   'code',
   'del',
   'em',
+  'img',
   'strong',
 ])
 
@@ -42,10 +43,19 @@ function annotateMarkdownSourceElement(node: HastNode) {
     return
   }
 
-  node.properties = {
-    ...node.properties,
+  const sourceProperties: Record<string, string> = {
     'data-source-markdown-end': String(sourceRange.endOffset),
     'data-source-markdown-start': String(sourceRange.startOffset),
+  }
+
+  if (node.tagName === 'img') {
+    sourceProperties['data-source-end'] = String(sourceRange.endOffset)
+    sourceProperties['data-source-start'] = String(sourceRange.startOffset)
+  }
+
+  node.properties = {
+    ...node.properties,
+    ...sourceProperties,
   }
 }
 
@@ -94,11 +104,11 @@ function getTextSourceRange(source: string, node: HastNode, child: HastNode) {
 }
 
 function wrapSourceMappedTextNodes(node: HastNode, source: string) {
+  annotateMarkdownSourceElement(node)
+
   if (!node.children || shouldSkipSourceTextMapping(node)) {
     return
   }
-
-  annotateMarkdownSourceElement(node)
 
   node.children = node.children.map((child) => {
     if (child.type !== 'text') {

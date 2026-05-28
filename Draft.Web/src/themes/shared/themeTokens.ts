@@ -25,4 +25,5 @@ export const draftDarkTokens = {
   mutedStrong: '#504f4f',
   scrollbarThumb: '#353535',
   transparent: '#00000000',
+  theHubAccent: '#F79817',
 } as const

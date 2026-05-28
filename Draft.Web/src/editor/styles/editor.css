@@ -27,14 +27,83 @@
 }
 
 .editor-host {
+  --editor-line-number-left-padding: 0px;
   width: 100%;
   height: 100%;
   background: var(--editor-surface-background);
 }
 
+.editor-host .monaco-editor,
+.editor-host .monaco-editor-background,
+.editor-host .monaco-editor .inputarea.ime-input,
+.editor-host .monaco-editor .margin,
+.editor-host .monaco-editor .monaco-editor-background {
+  background-color: var(--editor-background) !important;
+}
+
+.editor-host .monaco-editor .line-numbers {
+  color: var(--draft-muted-foreground) !important;
+}
+
+.editor-host .monaco-editor .current-line-margin {
+  background-color: var(--editor-current-line-background) !important;
+}
+
+.editor-host .monaco-editor .margin-view-overlays .current-line-margin {
+  border: 0 !important;
+}
+
+.empty-line-insert-button {
+  position: absolute;
+  z-index: 18;
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--draft-subtle-foreground);
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.88;
+  pointer-events: auto;
+  touch-action: manipulation;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease;
+  user-select: none;
+}
+
+.empty-line-insert-button:hover {
+  background: transparent;
+  color: var(--markdown-toolbar-primary);
+  opacity: 1;
+}
+
+.empty-line-insert-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+  pointer-events: none;
+}
+
 .editor-host .monaco-editor .scrollbar {
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+.editor-host .monaco-editor .line-numbers {
+  box-sizing: content-box;
+  padding-left: var(--editor-line-number-left-padding);
 }
 
 .editor-host .monaco-editor .scrollbar.vertical,

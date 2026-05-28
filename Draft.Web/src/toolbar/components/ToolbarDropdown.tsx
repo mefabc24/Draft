@@ -263,7 +263,11 @@ function ToolbarDropdown({
           aria-label={menuLabel}
           style={menuStyle}
         >
-          <div ref={menuScrollRef} className="markdown-toolbar-menu-scroll">
+          <div
+            ref={menuScrollRef}
+            className="markdown-toolbar-menu-scroll"
+            data-scrollable="false"
+          >
             {items.map((entry) => {
               if (!isDropdownItem(entry)) {
                 return (

@@ -1,4 +1,4 @@
-export { getEditorTheme } from './editor/editorThemeRegistry'
-export { registerEditorThemes } from './editor/registerEditorThemes'
-export { getPreviewTheme } from './preview/previewThemeRegistry'
-export { getPreviewThemeStyle } from './preview/previewThemeStyles'
+export { getEditorTheme } from './editor/support/editorThemeRegistry'
+export { registerEditorThemes } from './editor/support/registerEditorThemes'
+export { getPreviewTheme, getPreviewThemeOptions } from './preview/support/previewThemeRegistry'
+export { getPreviewThemeStyle } from './preview/support/previewThemeStyles'

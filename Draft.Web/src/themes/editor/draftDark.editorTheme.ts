@@ -1,5 +1,5 @@
 import { draftDarkTokens, themeFontStacks } from '../shared/themeTokens'
-import type { DraftEditorTheme } from './editorThemeTypes'
+import type { DraftEditorTheme } from './support/editorThemeTypes'
 
 export const draftDarkEditorTheme: DraftEditorTheme = {
   base: 'vs-dark',
@@ -11,6 +11,7 @@ export const draftDarkEditorTheme: DraftEditorTheme = {
     '--draft-pane-border': draftDarkTokens.borderSubtle,
     '--draft-subtle-foreground': draftDarkTokens.muted,
     '--editor-background': draftDarkTokens.editorBackground,
+    '--editor-current-line-background': '#1a1a1a',
     '--editor-scrollbar-thumb': draftDarkTokens.scrollbarThumb,
     '--editor-scrollbar-track': 'transparent',
     '--editor-surface-background': draftDarkTokens.editorSurface,
@@ -28,7 +29,7 @@ export const draftDarkEditorTheme: DraftEditorTheme = {
     '--markdown-toolbar-primary': draftDarkTokens.accentBlue,
     '--markdown-toolbar-radius': '10px',
     '--markdown-toolbar-selected-shortcut': 'rgba(165, 200, 255, 0.55)',
-    '--markdown-toolbar-shadow': '0 18px 42px rgba(0, 0, 0, 0.44), 0 4px 12px rgba(0, 0, 0, 0.32)',
+    '--markdown-toolbar-shadow': '0 10px 24px rgba(0, 0, 0, 0.26), 0 2px 8px rgba(0, 0, 0, 0.22)',
   },
   colors: {
     'editor.background': draftDarkTokens.chromeBackground,

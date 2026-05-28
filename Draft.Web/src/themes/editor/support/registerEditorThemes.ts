@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import { registerDraftMarkdownLanguage } from '../../editor/monaco/markdownLanguage'
+import { registerDraftMarkdownLanguage } from '../../../editor/monaco/markdownLanguage'
 import { editorThemes } from './editorThemeRegistry'
 import { DRAFT_CURRENT_LINE_DECORATION_CLASS } from './editorThemeTypes'
 

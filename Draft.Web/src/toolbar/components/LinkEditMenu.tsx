@@ -20,9 +20,12 @@ type LinkEditInitialState = {
   url: string
 }
 
+type LinkEditKind = 'image' | 'link'
+
 type LinkEditMenuProps = {
   active: boolean
   initialState: LinkEditInitialState
+  kind?: LinkEditKind
   onCancel: () => void
   onClose: () => void
   onConfirm: (label: string, url: string) => void
@@ -46,6 +49,25 @@ type LinkEditMenuGeometry = {
 const MENU_EDGE_PADDING = 8
 const MENU_GAP = 12
 
+const linkEditCopy = {
+  image: {
+    dialogLabel: 'Edit Markdown image',
+    labelInputLabel: 'Image alt text',
+    title: 'Image',
+    triggerLabel: 'Edit image',
+    urlInputLabel: 'Image URL',
+    urlPlaceholder: 'https://example.com/image.png',
+  },
+  link: {
+    dialogLabel: 'Edit Markdown link',
+    labelInputLabel: 'Link text',
+    title: 'Link',
+    triggerLabel: 'Edit link',
+    urlInputLabel: 'Link URL',
+    urlPlaceholder: 'https://example.com',
+  },
+} satisfies Record<LinkEditKind, Record<string, string>>
+
 function getMenuBoundaryRect(toolbar: HTMLElement) {
   const boundaryElement = toolbar.closest('.workspace') ?? toolbar.closest('.editor-body')
 
@@ -59,12 +81,12 @@ function getMenuBoundaryRect(toolbar: HTMLElement) {
   )
 }
 
-function LinkFieldIcon({ type }: { type: 'link' | 'text' }) {
+function LinkFieldIcon({ type }: { type: 'image' | 'link' | 'text' }) {
   return (
     <img
       className="link-edit-field-icon"
       src={`${import.meta.env.BASE_URL}icons/${
-        type === 'text' ? 'Text.svg' : 'Link.svg'
+        type === 'text' ? 'Text.svg' : type === 'image' ? 'Image.svg' : 'Link.svg'
       }`}
       alt=""
       aria-hidden="true"
@@ -88,6 +110,7 @@ function ValidationIcon({ valid }: { valid: boolean }) {
 function LinkEditMenu({
   active,
   initialState,
+  kind = 'link',
   onCancel,
   onClose,
   onConfirm,
@@ -98,6 +121,7 @@ function LinkEditMenu({
   toolbarRef,
   workspaceRef,
 }: LinkEditMenuProps) {
+  const copy = linkEditCopy[kind]
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const textInputRef = useRef<HTMLInputElement | null>(null)
@@ -261,13 +285,16 @@ function LinkEditMenu({
         active={active || open}
         ariaExpanded={open}
         ariaHasPopup="dialog"
-        ariaLabel="Edit link"
+        ariaLabel={copy.triggerLabel}
         onClick={handleOpen}
         onTooltipHide={onTooltipHide}
         onTooltipShow={onTooltipShow}
-        tooltip={{ label: 'Link', shortcut: 'CTRL + K' }}
+        tooltip={{
+          label: copy.title,
+          shortcut: kind === 'link' ? 'CTRL + K' : 'CTRL + ALT + I',
+        }}
       >
-        <ToolbarIcon name="link" />
+        <ToolbarIcon name={kind} />
       </ToolbarButton>
 
       {open ? (
@@ -276,7 +303,7 @@ function LinkEditMenu({
           className={`preview-edit-menu link-edit-menu place-${menuGeometry.placement}`}
           data-toolbar-popup="true"
           role="dialog"
-          aria-label="Edit Markdown link"
+          aria-label={copy.dialogLabel}
           style={menuStyle}
           onKeyDown={handleKeyDown}
         >
@@ -287,7 +314,7 @@ function LinkEditMenu({
               className="link-edit-input"
               value={label}
               spellCheck={false}
-              aria-label="Link text"
+              aria-label={copy.labelInputLabel}
               onChange={(event) => {
                 setLabel(event.target.value)
               }}
@@ -295,13 +322,13 @@ function LinkEditMenu({
             />
           </label>
           <label className="link-edit-field">
-            <LinkFieldIcon type="link" />
+            <LinkFieldIcon type={kind} />
             <input
               className="link-edit-input"
               value={url}
               spellCheck={false}
-              placeholder="https://example.com"
-              aria-label="Link URL"
+              placeholder={copy.urlPlaceholder}
+              aria-label={copy.urlInputLabel}
               onBlur={() => {
                 setUrlTouched(true)
               }}

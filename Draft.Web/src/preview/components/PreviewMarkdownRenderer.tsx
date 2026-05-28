@@ -1,28 +1,55 @@
 import {
+  createContext,
   isValidElement,
+  useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ComponentPropsWithoutRef,
+  type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
-import ReactMarkdown from 'react-markdown'
+import { MarkdownHooks } from 'react-markdown'
+import rehypePrettyCode, {
+  type Options as RehypePrettyCodeOptions,
+} from 'rehype-pretty-code'
+import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
+import type { PluggableList } from 'unified'
+import { postOpenExternalUrl } from '../../app/webview/draftWebViewMessages'
+import type { DraftPreviewTheme } from '../../themes/preview/support/previewThemeTypes'
+import {
+  getOrderedListMarkerStyle,
+  getUnorderedListMarkerStyle,
+} from '../../themes/preview/support/previewThemeStyles'
 import { rehypeSourceTextSpans } from '../sourceMapping/sourceTextSpansPlugin'
 import type { SourceMappedNode } from '../previewTypes'
 
 type PreviewMarkdownRendererProps = {
   markdown: string
+  previewTheme: DraftPreviewTheme
 }
 
 type PreviewCodeBlockProps = ComponentPropsWithoutRef<'pre'> & {
   sourceLine?: number
 }
 
-const COPY_ICON_SRC = `${import.meta.env.BASE_URL}icons/Copy.svg`
-const COPY_FEEDBACK_MS = 1400
+type ListCssProperties = CSSProperties & Record<`--${string}`, string>
+
+type PreviewListProps<TagName extends 'ol' | 'ul'> =
+  ComponentPropsWithoutRef<TagName> & {
+    sourceLine?: number
+  }
+
+const COPY_FEEDBACK_MS = 1000
+const PRETTY_CODE_FALLBACK_THEME = 'github-dark'
+const supportedExternalLinkProtocols = new Set(['http:', 'https:', 'mailto:'])
+const remarkPlugins: PluggableList = [remarkGfm]
+const ListDepthContext = createContext(0)
+const PreviewThemeContext = createContext<DraftPreviewTheme | null>(null)
 
 function getSourceLine(node: SourceMappedNode | undefined) {
   const line = node?.position?.start?.line
@@ -83,6 +110,64 @@ async function copyTextToClipboard(text: string) {
   return copyTextWithTextarea(text)
 }
 
+function getNormalizedExternalHref(href: string | undefined) {
+  const trimmedHref = href?.trim()
+
+  if (!trimmedHref || trimmedHref.startsWith('#')) {
+    return null
+  }
+
+  try {
+    const url = new URL(trimmedHref)
+
+    return supportedExternalLinkProtocols.has(url.protocol) ? url.href : null
+  } catch {
+    return null
+  }
+}
+
+function openExternalHref(href: string) {
+  postOpenExternalUrl(href)
+
+  if (window.chrome?.webview) {
+    return
+  }
+
+  window.open(href, '_blank', 'noopener,noreferrer')
+}
+
+function selectPreviewElement(element: HTMLElement) {
+  const selection = window.getSelection()
+
+  if (!selection) {
+    return
+  }
+
+  const range = document.createRange()
+  range.selectNode(element)
+  selection.removeAllRanges()
+  selection.addRange(range)
+}
+
+function getRehypePlugins(previewTheme: DraftPreviewTheme): PluggableList {
+  const plugins: PluggableList = [rehypeRaw]
+
+  if (previewTheme.usePrettyCode) {
+    const prettyCodeOptions: RehypePrettyCodeOptions = {
+      bypassInlineCode: true,
+      grid: true,
+      keepBackground: false,
+      theme: previewTheme.prettyCodeTheme ?? PRETTY_CODE_FALLBACK_THEME,
+    }
+
+    plugins.push([rehypePrettyCode, prettyCodeOptions])
+  }
+
+  plugins.push(rehypeSourceTextSpans)
+
+  return plugins
+}
+
 function PreviewCodeBlock({
   children,
   sourceLine,
@@ -136,9 +221,120 @@ function PreviewCodeBlock({
           event.stopPropagation()
         }}
       >
-        <img src={COPY_ICON_SRC} alt="" aria-hidden="true" />
+        <svg
+          className="preview-code-block-copy-icon"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+          <path d="M20.4053 37.5C15.2484 37.5 12.5 34.7514 12.5 29.5943V17.8774C12.5 16.4328 13.2867 15.1757 14.4526 14.5V29.5943C14.4526 33.6729 16.3269 35.5472 20.4053 35.5472H31.5C30.8245 36.7137 29.5658 37.5 28.121 37.5L20.4053 37.5Z" />
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M20.3 33.5C18.2013 33.5 16.5 31.7987 16.5 29.7V14.3C16.5 12.2013 18.2013 10.5 20.3 10.5H31.7C33.7987 10.5 35.5 12.2013 35.5 14.3V29.7C35.5 31.7987 33.7987 33.5 31.7 33.5H20.3ZM31.7 31.6C32.7493 31.6 33.6 30.7493 33.6 29.7V14.3C33.6 13.2507 32.7493 12.4 31.7 12.4H20.3C19.2507 12.4 18.4 13.2507 18.4 14.3V29.7C18.4 30.7493 19.2507 31.6 20.3 31.6H31.7Z"
+          />
+        </svg>
+        <svg
+          className="preview-code-block-check-icon"
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+        >
+          <path d="M3.6 8.4 6.7 11.4 12.6 4.8" />
+        </svg>
       </button>
     </div>
+  )
+}
+
+function getOrderedListStyle(
+  previewTheme: DraftPreviewTheme | null,
+  depth: number,
+  style: CSSProperties | undefined,
+) {
+  if (!previewTheme) {
+    return style
+  }
+
+  const markerStyle = getOrderedListMarkerStyle(previewTheme, depth)
+
+  return {
+    ...style,
+    '--preview-current-ordered-list-marker-color': markerStyle.color,
+    '--preview-current-ordered-list-marker-font-weight':
+      markerStyle.fontWeight,
+    '--preview-current-ordered-list-marker-numbering':
+      markerStyle.numbering,
+    '--preview-current-ordered-list-marker-size': markerStyle.size,
+    '--preview-current-ordered-list-marker-spacing': markerStyle.spacing,
+    listStyleType: markerStyle.numbering,
+  } satisfies ListCssProperties
+}
+
+function getUnorderedListStyle(
+  previewTheme: DraftPreviewTheme | null,
+  depth: number,
+  style: CSSProperties | undefined,
+) {
+  if (!previewTheme) {
+    return style
+  }
+
+  const markerStyle = getUnorderedListMarkerStyle(previewTheme, depth)
+
+  return {
+    ...style,
+    '--preview-current-unordered-list-marker-color': markerStyle.color,
+    '--preview-current-unordered-list-marker-shape': markerStyle.shape,
+    '--preview-current-unordered-list-marker-size': markerStyle.size,
+    '--preview-current-unordered-list-marker-spacing': markerStyle.spacing,
+    listStyleType: markerStyle.shape,
+  } satisfies ListCssProperties
+}
+
+function PreviewOrderedList({
+  children,
+  sourceLine,
+  style,
+  ...props
+}: PreviewListProps<'ol'>) {
+  const depth = useContext(ListDepthContext)
+  const previewTheme = useContext(PreviewThemeContext)
+  const listStyle = getOrderedListStyle(previewTheme, depth, style)
+
+  return (
+    <ListDepthContext.Provider value={depth + 1}>
+      <ol
+        {...props}
+        data-list-depth={depth}
+        data-source-line={sourceLine}
+        style={listStyle}
+      >
+        {children}
+      </ol>
+    </ListDepthContext.Provider>
+  )
+}
+
+function PreviewUnorderedList({
+  children,
+  sourceLine,
+  style,
+  ...props
+}: PreviewListProps<'ul'>) {
+  const depth = useContext(ListDepthContext)
+  const previewTheme = useContext(PreviewThemeContext)
+  const listStyle = getUnorderedListStyle(previewTheme, depth, style)
+
+  return (
+    <ListDepthContext.Provider value={depth + 1}>
+      <ul
+        {...props}
+        data-list-depth={depth}
+        data-source-line={sourceLine}
+        style={listStyle}
+      >
+        {children}
+      </ul>
+    </ListDepthContext.Provider>
   )
 }
 
@@ -167,8 +363,62 @@ const previewComponents: Components = {
   li({ node, ...props }) {
     return <li {...props} data-source-line={getSourceLine(node)} />
   },
+  ol({ node, ...props }) {
+    return <PreviewOrderedList {...props} sourceLine={getSourceLine(node)} />
+  },
+  ul({ node, ...props }) {
+    return <PreviewUnorderedList {...props} sourceLine={getSourceLine(node)} />
+  },
   blockquote({ node, ...props }) {
     return <blockquote {...props} data-source-line={getSourceLine(node)} />
+  },
+  a({ node, href, onClick, ...props }) {
+    const normalizedHref = getNormalizedExternalHref(href)
+
+    return (
+      <a
+        {...props}
+        href={href}
+        data-source-line={getSourceLine(node)}
+        onClick={(event) => {
+          onClick?.(event)
+
+          if (event.defaultPrevented) {
+            return
+          }
+
+          if (!normalizedHref) {
+            if (!href?.startsWith('#')) {
+              event.preventDefault()
+            }
+
+            return
+          }
+
+          event.preventDefault()
+          openExternalHref(normalizedHref)
+        }}
+      />
+    )
+  },
+  img({ node, onClick, ...props }) {
+    return (
+      <img
+        {...props}
+        data-source-line={getSourceLine(node)}
+        onClick={(event) => {
+          onClick?.(event)
+
+          if (event.defaultPrevented) {
+            return
+          }
+
+          event.preventDefault()
+          event.stopPropagation()
+          selectPreviewElement(event.currentTarget)
+        }}
+      />
+    )
   },
   pre({ node, children, ...props }) {
     return (
@@ -185,15 +435,25 @@ const previewComponents: Components = {
   },
 }
 
-function PreviewMarkdownRenderer({ markdown }: PreviewMarkdownRendererProps) {
+function PreviewMarkdownRenderer({
+  markdown,
+  previewTheme,
+}: PreviewMarkdownRendererProps) {
+  const rehypePlugins = useMemo(
+    () => getRehypePlugins(previewTheme),
+    [previewTheme],
+  )
+
   return (
-    <ReactMarkdown
-      components={previewComponents}
-      rehypePlugins={[rehypeSourceTextSpans]}
-      remarkPlugins={[remarkGfm]}
-    >
-      {markdown}
-    </ReactMarkdown>
+    <PreviewThemeContext.Provider value={previewTheme}>
+      <MarkdownHooks
+        components={previewComponents}
+        rehypePlugins={rehypePlugins}
+        remarkPlugins={remarkPlugins}
+      >
+        {markdown}
+      </MarkdownHooks>
+    </PreviewThemeContext.Provider>
   )
 }
 

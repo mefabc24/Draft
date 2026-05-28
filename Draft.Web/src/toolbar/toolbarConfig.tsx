@@ -70,6 +70,7 @@ export const inlineTooltips: Record<InlineFormat, ToolbarTooltipContent> = {
   },
   code: { label: 'Inline Code', shortcut: 'CTRL + E' },
   link: { label: 'Link', shortcut: 'CTRL + K' },
+  image: { label: 'Image', shortcut: 'CTRL + ALT + I' },
 }
 
 export const listItems: ToolbarDropdownMenuEntry[] = [

@@ -1,5 +1,5 @@
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import type { CssVariableMap } from '../shared/themeTypes'
+import type { CssVariableMap } from '../../shared/themeTypes'
 
 export type EditorThemeId = 'draftDark'
 

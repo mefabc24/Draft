@@ -7,6 +7,7 @@ import {
   detectActiveInlineFormats,
   detectActiveListValue,
   EMPTY_ACTIVE_FORMATS,
+  getToggleImageEdits,
   getToggleLinkEdits,
   getToggleWrappedEdits,
   removeBlockquotePrefix,
@@ -249,6 +250,41 @@ export function toggleLinkSelection(
     const selectionOffsets = getSelectionOffsets(model, selection)
     const selectedText = model.getValueInRange(selection)
     const result = getToggleLinkEdits(value, selectionOffsets, selectedText)
+
+    edits.push(
+      ...result.edits.map((edit) =>
+        createMonacoEditFromMarkdownEdit(model, edit),
+      ),
+    )
+    nextSelectionOffsets.push(result.nextSelection)
+  }
+
+  executeEditorEdits(editor, edits, nextSelectionOffsets, options)
+}
+
+export function toggleImageSelection(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  options?: MarkdownCommandOptions,
+) {
+  const model = editor.getModel()
+  const selections = editor.getSelections()
+
+  if (!model || !selections) {
+    return
+  }
+
+  const value = model.getValue()
+  const edits: monaco.editor.IIdentifiedSingleEditOperation[] = []
+  const nextSelectionOffsets: MarkdownSelectionOffsetRange[] = []
+
+  for (const selection of selections) {
+    if (isEmptySelection(selection)) {
+      continue
+    }
+
+    const selectionOffsets = getSelectionOffsets(model, selection)
+    const selectedText = model.getValueInRange(selection)
+    const result = getToggleImageEdits(value, selectionOffsets, selectedText)
 
     edits.push(
       ...result.edits.map((edit) =>

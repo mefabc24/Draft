@@ -60,8 +60,6 @@ public sealed class DraftSettings
 
     public string MarkdownTheme { get; set; } = SettingsDefaults.DefaultMarkdownTheme;
 
-    public bool OpenLinksInBrowser { get; set; } = true;
-
     public bool ConfirmBeforeOpeningExternalLinks { get; set; } = true;
 
     public string PreviewScrollSyncMode { get; set; } = SettingsDefaults.DefaultPreviewScrollSyncMode;

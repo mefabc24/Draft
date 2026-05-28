@@ -1,0 +1,61 @@
+<UserControl
+    x:Class="Draft.Settings.Views.Pages.ShortcutsSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:section="clr-namespace:Draft.Settings.Controls"
+    xmlns:settings="clr-namespace:Draft.Settings.Controls"
+    xmlns:settingsVm="clr-namespace:Draft.Settings.ViewModels.Pages"
+    d:DesignHeight="2000"
+    d:DesignWidth="540"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style x:Key="ShortcutKeyText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Font.CascadiaMono}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="ExtraBold" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+        </Style>
+
+        <DataTemplate x:Key="ShortcutCardTemplate" DataType="{x:Type settingsVm:ShortcutItemViewModel}">
+            <settings:SettingCard
+                Title="{Binding Title}"
+                Margin="0,0,0,12"
+                Description="{Binding Description}">
+                <TextBlock
+                    MinWidth="116"
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource ShortcutKeyText}"
+                    Text="{Binding Shortcut}" />
+            </settings:SettingCard>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Border Background="Transparent">
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Disabled"
+            Style="{StaticResource SettingsScrollViewer}"
+            VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Categories}">
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Margin" Value="0,0,0,20" />
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type settingsVm:ShortcutCategoryViewModel}">
+                        <StackPanel VerticalAlignment="Top">
+                            <section:SectionHeader Title="{Binding Title}" />
+                            <ItemsControl
+                                ItemTemplate="{StaticResource ShortcutCardTemplate}"
+                                ItemsSource="{Binding Shortcuts}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Border>
+</UserControl>

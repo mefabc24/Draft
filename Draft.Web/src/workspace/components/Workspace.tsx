@@ -10,6 +10,7 @@ import FloatingMarkdownToolbar from '../../toolbar/components/FloatingMarkdownTo
 import MarkdownEditorPane from '../../editor/components/MarkdownEditorPane'
 import PaneHeader from './PaneHeader'
 import PreviewPane from '../../preview/components/PreviewPane'
+import WorkspaceDevMenu from '../../dev/components/WorkspaceDevMenu'
 import WorkspaceSplitResizer from './WorkspaceSplitResizer'
 import { getEditorTheme, getPreviewTheme, getPreviewThemeStyle } from '../../themes'
 import { useEditorScrollbar } from '../../editor/hooks/useEditorScrollbar'
@@ -158,9 +159,13 @@ function Workspace() {
       }) as CSSProperties,
     [activeEditorTheme, clampedSplitEditorRatio],
   )
-  const previewThemeStyle = useMemo(
-    () => getPreviewThemeStyle(getPreviewTheme(activePreviewThemeId)),
+  const activePreviewTheme = useMemo(
+    () => getPreviewTheme(activePreviewThemeId),
     [activePreviewThemeId],
+  )
+  const previewThemeStyle = useMemo(
+    () => getPreviewThemeStyle(activePreviewTheme),
+    [activePreviewTheme],
   )
 
   const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
@@ -339,6 +344,7 @@ function Workspace() {
       >
         <MarkdownEditorPane
           ariaHidden={viewMode === 'preview'}
+          editor={editorInstance}
           editorBodyRef={editorBodyRef}
           editorHostRef={editorHostRef}
           header={(
@@ -368,6 +374,7 @@ function Workspace() {
             />
           )}
           ariaHidden={viewMode === 'editor'}
+          previewTheme={activePreviewTheme}
           previewThemeStyle={previewThemeStyle}
           previewContentElementRef={previewContentRef}
           previewScrollElementRef={previewScrollRef}
@@ -388,6 +395,10 @@ function Workspace() {
           workspaceRef={workspaceRef}
         />
       </section>
+      <WorkspaceDevMenu
+        activePreviewThemeId={activePreviewThemeId}
+        onPreviewThemeChange={setActivePreviewThemeId}
+      />
     </main>
   )
 }

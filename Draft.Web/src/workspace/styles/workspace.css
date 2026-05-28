@@ -111,6 +111,11 @@
   line-height: 1.2;
   position: relative;
   z-index: 1;
+  user-select: none;
+}
+
+.pane-header * {
+  user-select: none;
 }
 
 .pane-header-left {

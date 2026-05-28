@@ -153,11 +153,15 @@
   box-sizing: border-box;
   width: 100%;
   max-height: inherit;
-  padding: 8px 18px 8px 8px;
+  padding: 8px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.markdown-toolbar-menu-scroll[data-scrollable='true'] {
+  padding-right: 18px;
 }
 
 .markdown-toolbar-menu-scroll::-webkit-scrollbar {
@@ -170,7 +174,7 @@
   top: 8px;
   right: 4px;
   bottom: 8px;
-  width: 6px;
+  width: 0;
   overflow: hidden;
   border-radius: 999px;
   background: var(--editor-scrollbar-track);
@@ -181,6 +185,7 @@
 
 .markdown-toolbar-menu-scrollbar[data-scrollable='true'],
 .markdown-toolbar-menu-scrollbar[data-dragging='true'] {
+  width: 6px;
   opacity: 1;
   pointer-events: auto;
 }

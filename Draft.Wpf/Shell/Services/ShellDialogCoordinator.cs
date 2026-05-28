@@ -119,6 +119,17 @@ public sealed class ShellDialogCoordinator
         return result.Id == "close-draft";
     }
 
+    public bool ConfirmOpenExternalLink(Uri uri)
+    {
+        MessageDialogResult result = ShowConfirmationDialog(
+            "Open External Link",
+            $"Open this link in your default browser?\n{uri.AbsoluteUri}",
+            "Open Link",
+            "open-link");
+
+        return result.Id == "open-link";
+    }
+
     public void ShowFileOperationError(string title, Exception ex)
     {
         ShowMessage(

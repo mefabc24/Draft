@@ -38,6 +38,14 @@ function setScrollbarFlag(
   scrollbarElement.dataset[key] = enabled ? 'true' : 'false'
 }
 
+function setScrollContainerFlag(
+  scrollElement: HTMLDivElement,
+  key: 'scrollable',
+  enabled: boolean,
+) {
+  scrollElement.dataset[key] = enabled ? 'true' : 'false'
+}
+
 function getTrackMetrics(scrollbarElement: HTMLDivElement) {
   const { top } = scrollbarElement.getBoundingClientRect()
 
@@ -59,6 +67,7 @@ function syncToolbarMenuThumb({
   const isScrollable = maxScrollTop > 0 && trackHeight > 0
 
   setScrollbarFlag(scrollbarElement, 'scrollable', isScrollable)
+  setScrollContainerFlag(scrollElement, 'scrollable', isScrollable)
 
   if (!isScrollable) {
     thumbElement.style.height = `${trackHeight}px`

@@ -21,20 +21,12 @@
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
-                        IsEnabled="False"
                         ItemsSource="{Binding MarkdownThemeOptions}"
                         SelectedItem="{Binding Settings.MarkdownTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />
                 </settings:SettingFieldCard>
 
                 <section:SectionHeader Title="LINKS &amp; SECURITY" />
-
-                <settings:SettingCard
-                    Title="Open links in browser"
-                    Margin="0,0,0,12"
-                    Description="Open clicked links in your default external browser.">
-                    <CheckBox IsChecked="{Binding Settings.OpenLinksInBrowser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
-                </settings:SettingCard>
 
                 <settings:SettingCard
                     Title="Confirm before opening external links"

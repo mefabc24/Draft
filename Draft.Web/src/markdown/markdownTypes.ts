@@ -10,7 +10,13 @@ export type HeadingValue =
   | 'codeblock'
 
 export type ListValue = 'none' | 'bullet' | 'numbered' | 'checklist'
-export type InlineFormat = 'bold' | 'italic' | 'strikethrough' | 'code' | 'link'
+export type InlineFormat =
+  | 'bold'
+  | 'italic'
+  | 'strikethrough'
+  | 'code'
+  | 'link'
+  | 'image'
 export type ActiveFormats = Record<InlineFormat, boolean>
 
 export type MarkdownCommandOptions = {

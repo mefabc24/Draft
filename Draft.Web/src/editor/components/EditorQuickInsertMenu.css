@@ -1,0 +1,906 @@
+.editor-quick-insert-menu {
+  position: absolute;
+  z-index: 24;
+  box-sizing: border-box;
+  --quick-insert-control-background: #131313;
+  --quick-insert-control-border: #2c2d2f;
+  --quick-insert-control-border-hover: #34363a;
+  --quick-insert-control-hover-background: #1d1f20;
+  --quick-insert-control-foreground: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 86%,
+    transparent
+  );
+  width: min(294px, calc(100% - 16px));
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  border: 1px solid var(--markdown-toolbar-border);
+  border-radius: 12px;
+  background: var(--markdown-toolbar-background);
+  box-shadow: var(--markdown-toolbar-shadow);
+  color: var(--markdown-toolbar-foreground);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  line-height: 1;
+  scrollbar-color: var(--editor-scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+  user-select: none;
+}
+
+.editor-quick-insert-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.editor-quick-insert-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editor-quick-insert-menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--editor-scrollbar-thumb);
+}
+
+.editor-quick-insert-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-quick-insert-menu-section {
+  overflow: hidden;
+  border-radius: 8px;
+  transition: background 160ms ease;
+}
+
+.editor-quick-insert-menu-section.is-expanded {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.editor-quick-insert-section-trigger,
+.editor-quick-insert-menu-item {
+  display: grid;
+  width: 100%;
+  height: 36px;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--markdown-toolbar-foreground) 82%, #ffffff);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-section-trigger:hover,
+.editor-quick-insert-menu-item:hover {
+  background: var(--markdown-toolbar-hover-background);
+}
+
+.editor-quick-insert-menu-item.is-nested {
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  padding-right: 8px;
+}
+
+.editor-quick-insert-section-content-frame {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    grid-template-rows 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 120ms ease;
+}
+
+.editor-quick-insert-menu-section.is-expanded
+  .editor-quick-insert-section-content-frame {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.editor-quick-insert-section-content {
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px;
+  transform: translateY(-8px);
+  transition: transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.editor-quick-insert-menu-section.is-expanded
+  .editor-quick-insert-section-content {
+  padding: 8px;
+  transform: translateY(0);
+}
+
+.editor-quick-insert-section-content .editor-quick-insert-menu-item {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 140ms ease,
+    transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-menu-section.is-expanded
+  .editor-quick-insert-section-content
+  .editor-quick-insert-menu-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.editor-quick-insert-item-icon,
+.editor-quick-insert-item-spacer,
+.editor-quick-insert-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-quick-insert-item-icon {
+  width: 30px;
+  height: 30px;
+  color: currentColor;
+}
+
+.editor-quick-insert-item-icon svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.editor-quick-insert-icon-glyph {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
+.editor-quick-insert-item-spacer {
+  width: 22px;
+}
+
+.editor-quick-insert-item-label {
+  min-width: 0;
+  overflow: hidden;
+  color: currentColor;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  padding-bottom: 3px;
+  margin-bottom: -3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-quick-insert-section-trigger .editor-quick-insert-item-label {
+  font-weight: 600;
+}
+
+.editor-quick-insert-menu-item.is-nested .editor-quick-insert-item-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 86%,
+    transparent
+  );
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.editor-quick-insert-item-shortcut {
+  color: var(--markdown-toolbar-muted);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.editor-quick-insert-chevron {
+  width: 18px;
+  height: 18px;
+  color: currentColor;
+  transition: transform 140ms ease;
+}
+
+.editor-quick-insert-chevron.is-expanded {
+  transform: rotate(180deg);
+}
+
+.editor-quick-insert-chevron svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.editor-quick-insert-table-controls {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+}
+
+.editor-quick-insert-table-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.editor-quick-insert-table-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-quick-insert-table-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
+  margin-top: 0;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.number-spinner {
+  display: grid;
+  width: 100%;
+  height: 36px;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  overflow: hidden;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.number-spinner:hover,
+.number-spinner:focus-within {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-background);
+}
+
+.number-spinner-button {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease;
+}
+
+.number-spinner-button:hover:not(:disabled),
+.number-spinner-button:focus-visible:not(:disabled) {
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
+}
+
+.number-spinner-button:disabled {
+  color: var(--markdown-toolbar-muted);
+  cursor: default;
+  opacity: 0.55;
+}
+
+.number-spinner-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.number-spinner-value {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--quick-insert-control-foreground);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 36px;
+  text-align: center;
+  outline: none;
+  appearance: textfield;
+}
+
+.editor-quick-insert-table-sample {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 74%,
+    transparent
+  );
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.editor-quick-insert-table-sample-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.editor-quick-insert-table-sample-box {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 5px;
+  background: var(--quick-insert-control-background);
+  color: #294c7d;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-table-sample-box svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  opacity: 0;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.3;
+  transform: scale(0.82);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.editor-quick-insert-table-sample-input:checked
+  + .editor-quick-insert-table-sample-box {
+  border-color: var(--markdown-toolbar-primary);
+  background: var(--markdown-toolbar-primary);
+}
+
+.editor-quick-insert-table-sample-input:checked
+  + .editor-quick-insert-table-sample-box
+  svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.editor-quick-insert-table-sample-input:focus-visible
+  + .editor-quick-insert-table-sample-box {
+  border-color: var(--quick-insert-control-border-hover);
+  box-shadow: none;
+}
+
+.editor-quick-insert-table-sample:hover
+  .editor-quick-insert-table-sample-input:not(:checked)
+  + .editor-quick-insert-table-sample-box {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+}
+
+.editor-quick-insert-table-sample-text {
+  min-width: 0;
+  overflow: hidden;
+  padding-bottom: 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-quick-insert-table-confirm {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  cursor: pointer;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background 140ms ease,nutz das [Misc.svg](Draft.Web/public/icons/Misc.svg) icon
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-table-confirm:hover,
+.editor-quick-insert-table-confirm:focus-visible {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
+}
+
+.editor-quick-insert-inline-media-controls {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+}
+
+.editor-quick-insert-inline-media-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-quick-insert-inline-media-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
+  margin-top: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.editor-quick-insert-inline-media-field input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  outline: 0;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.editor-quick-insert-inline-media-field input::placeholder {
+  color: var(--markdown-toolbar-muted);
+}
+
+.editor-quick-insert-inline-media-field input:focus {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-background);
+  box-shadow: none;
+}
+
+.editor-quick-insert-inline-media-confirm {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  cursor: pointer;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-inline-media-confirm:hover,
+.editor-quick-insert-inline-media-confirm:focus-visible {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
+}
+
+.editor-quick-insert-codeblock-controls {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+}
+
+.editor-quick-insert-codeblock-field {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-quick-insert-codeblock-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
+  margin-top: 0;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.editor-quick-insert-codeblock-select {
+  display: grid;
+  grid-template-rows: 36px minmax(0, 0fr);
+  align-content: start;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  background: var(--quick-insert-control-background);
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease,
+    grid-template-rows 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.editor-quick-insert-codeblock-select.is-open {
+  grid-template-rows: 36px minmax(0, 1fr);
+}
+
+.editor-quick-insert-codeblock-select:hover,
+.editor-quick-insert-codeblock-select:focus-within,
+.editor-quick-insert-codeblock-select.is-open {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-background);
+  box-shadow: none;
+}
+
+.editor-quick-insert-codeblock-combobox {
+  display: grid;
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  min-height: 0;
+  max-height: 36px;
+  grid-template-columns: minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--quick-insert-control-foreground);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: left;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-codeblock-combobox:hover,
+.editor-quick-insert-codeblock-combobox:focus-visible {
+  background: #131313;
+  outline: none;
+}
+
+.editor-quick-insert-codeblock-select.is-open
+  .editor-quick-insert-codeblock-combobox {
+  border-bottom: 0;
+}
+
+.editor-quick-insert-codeblock-combobox span:first-child {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-quick-insert-codeblock-combobox-chevron {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 72%,
+    transparent
+  );
+  transition: transform 140ms ease;
+}
+
+.editor-quick-insert-codeblock-select.is-open
+  .editor-quick-insert-codeblock-combobox-chevron {
+  transform: rotate(180deg);
+}
+
+.editor-quick-insert-codeblock-combobox-chevron svg,
+.editor-quick-insert-codeblock-search svg,
+.editor-quick-insert-codeblock-option-check svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.editor-quick-insert-codeblock-popup-frame {
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.editor-quick-insert-codeblock-popup-frame.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.editor-quick-insert-codeblock-popup {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  min-width: 0;
+  max-height: 286px;
+  overflow: hidden;
+  padding: 8px;
+  background: #131313;
+  transform: translateY(-8px);
+  transition: transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.editor-quick-insert-codeblock-popup-frame.is-open
+  .editor-quick-insert-codeblock-popup {
+  transform: translateY(0);
+}
+
+.editor-quick-insert-codeblock-search {
+  display: grid;
+  height: 34px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border-radius: 7px;
+  color: var(--markdown-toolbar-muted);
+}
+
+.editor-quick-insert-codeblock-search:focus-within {
+  background: #1d1f20;
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 80%,
+    transparent
+  );
+}
+
+.editor-quick-insert-codeblock-search input {
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--markdown-toolbar-foreground);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.editor-quick-insert-codeblock-search input::placeholder {
+  color: var(--markdown-toolbar-muted);
+}
+
+.editor-quick-insert-codeblock-options-wrap {
+  position: relative;
+  min-height: 0;
+}
+
+.editor-quick-insert-codeblock-options {
+  display: flex;
+  min-height: 0;
+  max-height: 216px;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.editor-quick-insert-codeblock-options::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.editor-quick-insert-codeblock-options[data-scrollable='true'] {
+  padding-right: 10px;
+}
+
+.editor-quick-insert-codeblock-option {
+  display: grid;
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: left;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-codeblock-option:hover,
+.editor-quick-insert-codeblock-option:focus-visible,
+.editor-quick-insert-codeblock-option.is-selected {
+  background: var(--markdown-toolbar-hover-background);
+  color: var(--markdown-toolbar-foreground);
+  outline: none;
+}
+
+.editor-quick-insert-codeblock-option.is-selected {
+  color: var(--markdown-toolbar-primary);
+}
+
+.editor-quick-insert-codeblock-option-label {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-quick-insert-codeblock-option-code {
+  color: var(--markdown-toolbar-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.editor-quick-insert-codeblock-option-check {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  color: var(--markdown-toolbar-primary);
+}
+
+.editor-quick-insert-codeblock-empty {
+  padding: 10px;
+  color: var(--markdown-toolbar-muted);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.editor-quick-insert-codeblock-scrollbar {
+  position: absolute;
+  top: 2px;
+  right: 1px;
+  bottom: 2px;
+  width: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--editor-scrollbar-track);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.editor-quick-insert-codeblock-scrollbar[data-scrollable='true'],
+.editor-quick-insert-codeblock-scrollbar[data-dragging='true'] {
+  width: 6px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.editor-quick-insert-codeblock-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 32px;
+  border-radius: 999px;
+  background: var(--editor-scrollbar-thumb);
+  touch-action: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-quick-insert-menu-section,
+  .editor-quick-insert-section-content-frame,
+  .editor-quick-insert-section-content,
+  .editor-quick-insert-section-content .editor-quick-insert-menu-item,
+  .editor-quick-insert-chevron,
+  .number-spinner-button,
+  .editor-quick-insert-table-sample-box,
+  .editor-quick-insert-table-sample-box svg,
+  .editor-quick-insert-table-confirm,
+  .editor-quick-insert-inline-media-field input,
+  .editor-quick-insert-inline-media-confirm,
+  .editor-quick-insert-codeblock-select,
+  .editor-quick-insert-codeblock-combobox,
+  .editor-quick-insert-codeblock-combobox-chevron,
+  .editor-quick-insert-codeblock-popup-frame,
+  .editor-quick-insert-codeblock-popup,
+  .editor-quick-insert-codeblock-option,
+  .editor-quick-insert-codeblock-scrollbar {
+    transition: none;
+  }
+}

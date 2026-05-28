@@ -1,8 +1,11 @@
 import type { HTMLAttributes, ReactNode, RefObject } from 'react'
+import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import EmptyLineInsertButton from './EmptyLineInsertButton'
 import EditorScrollbar from './EditorScrollbar'
 
 type MarkdownEditorPaneProps = {
   ariaHidden: boolean
+  editor: monaco.editor.IStandaloneCodeEditor | null
   editorBodyRef: RefObject<HTMLDivElement | null>
   editorHostRef: RefObject<HTMLDivElement | null>
   header: ReactNode
@@ -14,6 +17,7 @@ type MarkdownEditorPaneProps = {
 
 function MarkdownEditorPane({
   ariaHidden,
+  editor,
   editorBodyRef,
   editorHostRef,
   header,
@@ -31,6 +35,12 @@ function MarkdownEditorPane({
       {header}
       <div ref={editorBodyRef} className="pane-body editor-body">
         <div ref={editorHostRef} className="editor-host" />
+        {ariaHidden ? null : (
+          <EmptyLineInsertButton
+            editor={editor}
+            editorBodyRef={editorBodyRef}
+          />
+        )}
         <EditorScrollbar
           scrollbarProps={scrollbarProps}
           scrollbarRef={scrollbarRef}

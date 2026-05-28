@@ -8,6 +8,7 @@ using Draft.Shell.ViewModels;
 using Draft.WebWorkspace.Services;
 using Microsoft.Web.WebView2.Core;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Security;
 using System.Windows;
@@ -86,6 +87,8 @@ public partial class MainWindow : Window
             WorkspaceWebView,
             WebHostName,
             CoreWebView2_WebMessageReceived,
+            WorkspaceWebView_NavigationStarting,
+            WorkspaceWebView_NewWindowRequested,
             WorkspaceWebView_NavigationCompleted);
     }
 
@@ -127,6 +130,8 @@ public partial class MainWindow : Window
         if (WorkspaceWebView.CoreWebView2 is not null)
         {
             WorkspaceWebView.CoreWebView2.WebMessageReceived -= CoreWebView2_WebMessageReceived;
+            WorkspaceWebView.CoreWebView2.NavigationStarting -= WorkspaceWebView_NavigationStarting;
+            WorkspaceWebView.CoreWebView2.NewWindowRequested -= WorkspaceWebView_NewWindowRequested;
         }
 
         WorkspaceWebView.NavigationCompleted -= WorkspaceWebView_NavigationCompleted;
@@ -181,6 +186,7 @@ public partial class MainWindow : Window
         viewModel.SaveFileAsRequested += ViewModel_SaveFileAsRequested;
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
+        viewModel.OpenAboutSettingsRequested += ViewModel_OpenAboutSettingsRequested;
         viewModel.OpenCursorPositionPromptRequested += ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested += ViewModel_OpenAutosavePromptRequested;
         viewModel.OpenRevertSavePromptRequested += ViewModel_OpenRevertSavePromptRequested;
@@ -194,6 +200,7 @@ public partial class MainWindow : Window
         viewModel.SaveFileAsRequested -= ViewModel_SaveFileAsRequested;
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
+        viewModel.OpenAboutSettingsRequested -= ViewModel_OpenAboutSettingsRequested;
         viewModel.OpenCursorPositionPromptRequested -= ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested -= ViewModel_OpenAutosavePromptRequested;
         viewModel.OpenRevertSavePromptRequested -= ViewModel_OpenRevertSavePromptRequested;
@@ -259,6 +266,11 @@ public partial class MainWindow : Window
     private void ViewModel_OpenSettingsRequested(object? sender, EventArgs e)
     {
         ShowSettings();
+    }
+
+    private void ViewModel_OpenAboutSettingsRequested(object? sender, EventArgs e)
+    {
+        ShowSettings(SettingsPage.About);
     }
 
     public void ShowSettings(SettingsPage initialPage = SettingsPage.General)
@@ -453,7 +465,6 @@ public partial class MainWindow : Window
             CursorStyle = settings.CursorStyle,
             CursorBlinking = settings.CursorBlinking,
             MarkdownTheme = settings.MarkdownTheme,
-            OpenLinksInBrowser = settings.OpenLinksInBrowser,
             ConfirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks,
             PreviewScrollSyncMode = settings.PreviewScrollSyncMode,
             FloatingMarkdownToolbarMode = settings.FloatingMarkdownToolbarMode,
@@ -472,7 +483,6 @@ public partial class MainWindow : Window
 
         _webViewMessageBridge.PostSettings(WorkspaceWebView.CoreWebView2, _settings);
 
-        // TODO: Wire preview link/security settings once link interception is hosted.
     }
 
     private void PostDocumentToWebView()
@@ -524,6 +534,21 @@ public partial class MainWindow : Window
         PostDocumentToWebView();
     }
 
+    private void WorkspaceWebView_NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+    {
+        if (IsInternalWebViewUri(e.Uri))
+            return;
+
+        e.Cancel = true;
+        OpenExternalUrl(e.Uri);
+    }
+
+    private void WorkspaceWebView_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+    {
+        e.Handled = true;
+        OpenExternalUrl(e.Uri);
+    }
+
     private void PostWorkspaceMode(string mode)
     {
         _webViewMessageBridge.PostWorkspaceMode(WorkspaceWebView.CoreWebView2, mode);
@@ -539,7 +564,70 @@ public partial class MainWindow : Window
             viewModel.SetWorkspaceMode,
             viewModel.UpdateContentFromWeb,
             viewModel.UpdateCursorPosition,
-            () => viewModel.SaveFileCommand.Execute(null));
+            () => viewModel.SaveFileCommand.Execute(null),
+            OpenExternalUrl);
+    }
+
+    private void OpenExternalUrl(string url)
+    {
+        if (!TryCreateExternalUri(url, out Uri? uri))
+            return;
+
+        if (_settings.ConfirmBeforeOpeningExternalLinks
+            && !_dialogCoordinator.ConfirmOpenExternalLink(uri))
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri)
+            {
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex) when (IsExternalLinkException(ex))
+        {
+            _dialogCoordinator.ShowMessage(
+                "Open External Link",
+                "The link could not be opened in your default browser.",
+                MessageDialogType.Error);
+        }
+    }
+
+    private static bool TryCreateExternalUri(string url, out Uri uri)
+    {
+        uri = null!;
+
+        if (string.IsNullOrWhiteSpace(url)
+            || !Uri.TryCreate(url, UriKind.Absolute, out Uri? parsedUri))
+        {
+            return false;
+        }
+
+        if (!string.Equals(parsedUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(parsedUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(parsedUri.Scheme, Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        uri = parsedUri;
+        return true;
+    }
+
+    private static bool IsInternalWebViewUri(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out Uri? uri)
+            && string.Equals(uri.Host, WebHostName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsExternalLinkException(Exception ex)
+    {
+        return ex is Win32Exception
+            or InvalidOperationException
+            or FileNotFoundException
+            or SecurityException;
     }
 
     private static bool IsFileOperationException(Exception ex)

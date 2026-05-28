@@ -1,5 +1,6 @@
 import type { CSSProperties, MutableRefObject, ReactNode } from 'react'
 import '../styles/previewMarkdown.css'
+import type { DraftPreviewTheme } from '../../themes/preview/support/previewThemeTypes'
 import { usePreviewScrollbar } from '../hooks/usePreviewScrollbar'
 import PreviewMarkdownRenderer from './PreviewMarkdownRenderer'
 import PreviewScrollbar from './PreviewScrollbar'
@@ -8,6 +9,7 @@ type PreviewPaneProps = {
   markdown: string
   header: ReactNode
   ariaHidden?: boolean
+  previewTheme: DraftPreviewTheme
   previewThemeStyle?: CSSProperties
   previewContentElementRef?: MutableRefObject<HTMLDivElement | null>
   previewScrollElementRef?: MutableRefObject<HTMLDivElement | null>
@@ -18,6 +20,7 @@ function PreviewPane({
   markdown,
   header,
   ariaHidden = false,
+  previewTheme,
   previewThemeStyle,
   previewContentElementRef,
   previewScrollElementRef,
@@ -65,7 +68,10 @@ function PreviewPane({
           onScroll={onPreviewScroll}
         >
           <div ref={setPreviewContentElement} className="preview-content">
-            <PreviewMarkdownRenderer markdown={markdown} />
+            <PreviewMarkdownRenderer
+              markdown={markdown}
+              previewTheme={previewTheme}
+            />
           </div>
         </div>
 

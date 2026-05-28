@@ -3,17 +3,24 @@ using Draft.Save.Models;
 using Draft.Documents.Services;
 using Draft.Save.Services;
 using System.IO;
+using System.Reflection;
 using System.Security;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Draft.Shell.ViewModels;
 
 public class MainWindowViewModel : BaseViewModel
 {
     private const int MinimumSavingStatusMilliseconds = 1000;
+    private const int CopyMarkdownFeedbackMilliseconds = 1000;
     private WorkspaceState _workspaceState;
     private readonly AutosaveScheduler _autosaveScheduler = new();
+    private readonly DispatcherTimer _copyMarkdownFeedbackTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(CopyMarkdownFeedbackMilliseconds),
+    };
     private readonly DocumentFileService _documentFileService;
     private readonly DocumentMetricsService _documentMetricsService;
     private readonly DocumentSessionState _documentState = new();
@@ -31,6 +38,7 @@ public class MainWindowViewModel : BaseViewModel
     private bool _includeMarkdownSyntaxInCharacterCount;
     private bool _confirmBeforeClosingUnsavedFiles = true;
     private bool _isStatusBarVisible = true;
+    private bool _isCopyMarkdownFeedbackVisible;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _defaultSaveLocation = string.Empty;
 
@@ -243,11 +251,26 @@ public class MainWindowViewModel : BaseViewModel
 
     public string AutosaveModeDisplay => AutosaveEnabled ? "AUTOSAVE" : "MANUAL SAVE";
 
+    public string AppVersionDisplay { get; } = $"V{GetAppVersionDisplay().ToUpper()}";
+
     public bool HasFilePath => _documentState.HasFilePath;
 
     public bool HasUnsavedWork => _documentState.HasUnsavedWork;
 
     public bool CanOpenRevertSavePrompt => HasFilePath;
+
+    public bool IsCopyMarkdownFeedbackVisible
+    {
+        get => _isCopyMarkdownFeedbackVisible;
+        private set
+        {
+            if (_isCopyMarkdownFeedbackVisible == value)
+                return;
+
+            _isCopyMarkdownFeedbackVisible = value;
+            OnPropertyChanged();
+        }
+    }
 
     public DateTimeOffset CurrentDraftUpdatedAtUtc => _documentState.CurrentDraftUpdatedAtUtc;
 
@@ -355,6 +378,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand OpenSettingsCommand { get; }
 
+    public ICommand OpenAboutSettingsCommand { get; }
+
     public ICommand OpenCursorPositionPromptCommand { get; }
 
     public ICommand OpenAutosavePromptCommand { get; }
@@ -368,6 +393,8 @@ public class MainWindowViewModel : BaseViewModel
     public event EventHandler? NewFileRequested;
 
     public event EventHandler? OpenSettingsRequested;
+
+    public event EventHandler? OpenAboutSettingsRequested;
 
     public event EventHandler? OpenCursorPositionPromptRequested;
 
@@ -394,6 +421,7 @@ public class MainWindowViewModel : BaseViewModel
             manualSaveSnapshotService,
             autosaveSnapshotService);
         _autosaveScheduler.Tick += AutosaveTimer_Tick;
+        _copyMarkdownFeedbackTimer.Tick += CopyMarkdownFeedbackTimer_Tick;
 
         OpenFileCommand = new RelayCommand(() => OpenFileRequested?.Invoke(this, EventArgs.Empty));
         SaveFileCommand = new RelayCommand(ExecuteSaveFileCommand);
@@ -402,6 +430,8 @@ public class MainWindowViewModel : BaseViewModel
             () => !string.IsNullOrEmpty(CurrentContent));
         NewFileCommand = new RelayCommand(() => NewFileRequested?.Invoke(this, EventArgs.Empty));
         OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
+        OpenAboutSettingsCommand = new RelayCommand(
+            () => OpenAboutSettingsRequested?.Invoke(this, EventArgs.Empty));
         OpenCursorPositionPromptCommand = new RelayCommand(
             () => OpenCursorPositionPromptRequested?.Invoke(this, EventArgs.Empty));
         OpenAutosavePromptCommand = new RelayCommand(
@@ -423,6 +453,27 @@ public class MainWindowViewModel : BaseViewModel
             "preview" => WorkspaceState.Preview,
             _ => WorkspaceState,
         };
+    }
+
+    private static string GetAppVersionDisplay()
+    {
+        Assembly assembly = typeof(MainWindowViewModel).Assembly;
+        string? informationalVersion = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion;
+
+        if (!string.IsNullOrWhiteSpace(informationalVersion))
+        {
+            int metadataSeparatorIndex = informationalVersion.IndexOf('+');
+            return metadataSeparatorIndex > 0
+                ? informationalVersion[..metadataSeparatorIndex]
+                : informationalVersion;
+        }
+
+        Version? version = assembly.GetName().Version;
+        return version is null
+            ? "Unknown"
+            : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     public void ApplySettings(DraftSettings settings)
@@ -565,6 +616,20 @@ public class MainWindowViewModel : BaseViewModel
             return;
 
         Clipboard.SetText(CurrentContent);
+        ShowCopyMarkdownFeedback();
+    }
+
+    private void ShowCopyMarkdownFeedback()
+    {
+        _copyMarkdownFeedbackTimer.Stop();
+        IsCopyMarkdownFeedbackVisible = true;
+        _copyMarkdownFeedbackTimer.Start();
+    }
+
+    private void CopyMarkdownFeedbackTimer_Tick(object? sender, EventArgs e)
+    {
+        _copyMarkdownFeedbackTimer.Stop();
+        IsCopyMarkdownFeedbackVisible = false;
     }
 
     private async void AutosaveTimer_Tick(object? sender, EventArgs e)

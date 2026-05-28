@@ -5,11 +5,14 @@ import { getEditorTheme, registerEditorThemes } from '../../themes'
 import { syncCurrentLineDecorations } from '../monaco/currentLineDecorations'
 import { duplicateCurrentLine } from '../monaco/duplicateLine'
 import {
+  EDITOR_LINE_NUMBER_LEFT_PADDING_PX,
   EDITOR_PADDING,
   EDITOR_SCROLL_SENSITIVITY,
   getEditorFontLoadTarget,
   getEditorSettingsOptions,
 } from '../monaco/editorOptions'
+import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
+import { indentEmptyMarkdownListItemOnTab } from '../monaco/markdownListIndentation'
 import { moveSelectionsByWord } from '../monaco/wordNavigation'
 
 type CurrentRef<T> = {
@@ -39,6 +42,13 @@ function remeasureEditor(editor: monaco.editor.IStandaloneCodeEditor) {
   })
 }
 
+function syncEditorLayoutVariables(editorHost: HTMLDivElement) {
+  editorHost.style.setProperty(
+    '--editor-line-number-left-padding',
+    `${EDITOR_LINE_NUMBER_LEFT_PADDING_PX}px`,
+  )
+}
+
 function isEditableKeyboardTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) {
     return false
@@ -47,6 +57,10 @@ function isEditableKeyboardTarget(target: EventTarget | null) {
   return (
     target.closest('input, textarea, select, [contenteditable="true"]') !== null
   )
+}
+
+function shouldAllowSelectionDragAndDrop(event: MouseEvent) {
+  return event.button === 0 && event.shiftKey
 }
 
 export function useMonacoMarkdownEditor({
@@ -129,17 +143,20 @@ export function useMonacoMarkdownEditor({
   )
 
   useEffect(() => {
-    if (!editorHostRef.current) {
+    const editorHost = editorHostRef.current
+
+    if (!editorHost) {
       return
     }
 
+    syncEditorLayoutVariables(editorHost)
     registerEditorThemes()
     monaco.editor.setTheme(
       getEditorTheme(settingsRef.current.activeEditorThemeId).monacoThemeName,
     )
 
     const currentEditorSettings = settingsRef.current
-    const editor = monaco.editor.create(editorHostRef.current, {
+    const editor = monaco.editor.create(editorHost, {
       value: initialMarkdownRef.current,
       language: currentEditorSettings.markdownSyntaxHighlighting ? 'markdown' : 'plaintext',
       automaticLayout: true,
@@ -215,6 +232,29 @@ export function useMonacoMarkdownEditor({
         moveSelectionsByWord(editor, 'right', true)
       },
     )
+    const markdownKeyboardSub = editor.onKeyDown((event) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        return
+      }
+
+      if (event.keyCode === monaco.KeyCode.Enter) {
+        if (continueMarkdownBlockOnEnter(editor)) {
+          event.preventDefault()
+        }
+        return
+      }
+
+      if (event.keyCode === monaco.KeyCode.Tab) {
+        const consumeTabEvent = () => {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
+        if (indentEmptyMarkdownListItemOnTab(editor, consumeTabEvent)) {
+          return
+        }
+      }
+    })
 
     const contentSub = editor.onDidChangeModelContent(() => {
       const nextMarkdown = editor.getValue()
@@ -270,6 +310,14 @@ export function useMonacoMarkdownEditor({
       event.stopPropagation()
       editor.trigger('draft.globalUndoRedo', isUndo ? 'undo' : 'redo', null)
     }
+    const handleSelectionDragMouseDown = (event: MouseEvent) => {
+      editor.updateOptions({
+        dragAndDrop: shouldAllowSelectionDragAndDrop(event),
+      })
+    }
+    const disableSelectionDragAndDrop = () => {
+      editor.updateOptions({ dragAndDrop: false })
+    }
 
     editorRef.current = editor
     setEditorInstance(editor)
@@ -290,16 +338,31 @@ export function useMonacoMarkdownEditor({
       .then(syncEditorFontMetrics)
     void document.fonts.ready.then(syncEditorFontMetrics)
     document.fonts.addEventListener('loadingdone', syncEditorFontMetrics)
+    editor.getDomNode()?.addEventListener(
+      'mousedown',
+      handleSelectionDragMouseDown,
+      true,
+    )
     document.addEventListener('keydown', handleGlobalUndoRedo, true)
+    window.addEventListener('mouseup', disableSelectionDragAndDrop, true)
+    window.addEventListener('blur', disableSelectionDragAndDrop)
 
     return () => {
+      window.removeEventListener('blur', disableSelectionDragAndDrop)
+      window.removeEventListener('mouseup', disableSelectionDragAndDrop, true)
       document.removeEventListener('keydown', handleGlobalUndoRedo, true)
+      editor.getDomNode()?.removeEventListener(
+        'mousedown',
+        handleSelectionDragMouseDown,
+        true,
+      )
       document.fonts.removeEventListener('loadingdone', syncEditorFontMetrics)
       contentSizeSub.dispose()
       layoutSub.dispose()
       scrollSub.dispose()
       selectionSub.dispose()
       contentSub.dispose()
+      markdownKeyboardSub.dispose()
       editor.dispose()
       editorRef.current = null
       setEditorInstance(null)
