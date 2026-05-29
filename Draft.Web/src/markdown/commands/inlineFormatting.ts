@@ -806,19 +806,76 @@ function getRemoveContainingInlineFormatEdits(
   }
 }
 
-function isInlineCodeSelectionBoundary(
-  offset: number,
-  range: InlineFormatRange,
-  boundary: 'end' | 'start',
+function doRangesIntersect(
+  left: MarkdownSelectionOffsetRange,
+  right: MarkdownSelectionOffsetRange,
 ) {
-  return boundary === 'start'
-    ? offset === range.fullRange.startOffset ||
-        offset === range.innerContentRange.startOffset
-    : offset === range.fullRange.endOffset ||
-        offset === range.innerContentRange.endOffset
+  return left.startOffset < right.endOffset && left.endOffset > right.startOffset
 }
 
-function getMergeSelectedInlineCodeSpansEdits(
+function getInlineCodeFragmentText(text: string) {
+  if (text.length === 0) {
+    return ''
+  }
+
+  const leading = splitLeadingInlineWhitespace(text)
+  const trailing = splitTrailingInlineWhitespace(leading.coreText)
+
+  return `${leading.leadingWhitespace}${wrapTextIfNeeded(
+    trailing.coreText,
+    '`',
+    '`',
+  )}${trailing.trailingWhitespace}`
+}
+
+function getSelectedTextWithoutInlineCodeMarkers(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  selectedRanges: InlineFormatRange[],
+) {
+  let normalizedText = ''
+  let currentOffset = selection.startOffset
+
+  for (const range of selectedRanges) {
+    const textBeforeCodeEndOffset = Math.min(
+      range.fullRange.startOffset,
+      selection.endOffset,
+    )
+
+    if (currentOffset < textBeforeCodeEndOffset) {
+      normalizedText += value.slice(currentOffset, textBeforeCodeEndOffset)
+    }
+
+    const selectedCodeStartOffset = Math.max(
+      range.innerContentRange.startOffset,
+      selection.startOffset,
+    )
+    const selectedCodeEndOffset = Math.min(
+      range.innerContentRange.endOffset,
+      selection.endOffset,
+    )
+
+    if (selectedCodeStartOffset < selectedCodeEndOffset) {
+      normalizedText += value.slice(
+        selectedCodeStartOffset,
+        selectedCodeEndOffset,
+      )
+    }
+
+    currentOffset = Math.max(
+      currentOffset,
+      Math.min(range.fullRange.endOffset, selection.endOffset),
+    )
+  }
+
+  if (currentOffset < selection.endOffset) {
+    normalizedText += value.slice(currentOffset, selection.endOffset)
+  }
+
+  return normalizedText
+}
+
+function getNormalizeSelectedInlineCodeSpansEdits(
   value: string,
   selection: MarkdownSelectionOffsetRange,
   prefix: string,
@@ -835,13 +892,11 @@ function getMergeSelectedInlineCodeSpansEdits(
   const lineRange = getLineSearchRange(value, selection)
   const selectedRanges = getInlineFormatRanges(value, lineRange, prefix, suffix)
     .filter(
-      (range) =>
-        range.innerContentRange.startOffset < selection.endOffset &&
-        range.innerContentRange.endOffset > selection.startOffset,
+      (range) => doRangesIntersect(range.fullRange, selection),
     )
     .sort((a, b) => a.fullRange.startOffset - b.fullRange.startOffset)
 
-  if (selectedRanges.length < 2) {
+  if (selectedRanges.length === 0) {
     return null
   }
 
@@ -849,62 +904,59 @@ function getMergeSelectedInlineCodeSpansEdits(
   const lastRange = selectedRanges[selectedRanges.length - 1]
 
   if (
-    !isInlineCodeSelectionBoundary(selection.startOffset, firstRange, 'start') ||
-    !isInlineCodeSelectionBoundary(selection.endOffset, lastRange, 'end')
+    selectedRanges.length === 1 &&
+    isRangeInsideRange(selection, firstRange.fullRange)
   ) {
     return null
   }
 
-  for (const range of selectedRanges) {
-    if (
-      range.innerContentRange.startOffset < selection.startOffset ||
-      range.innerContentRange.endOffset > selection.endOffset
-    ) {
-      return null
-    }
-  }
-
-  for (let index = 0; index < selectedRanges.length - 1; index += 1) {
-    const currentRange = selectedRanges[index]
-    const nextRange = selectedRanges[index + 1]
-
-    if (
-      !isInlineWhitespaceOnly(
-        value.slice(currentRange.fullRange.endOffset, nextRange.fullRange.startOffset),
+  const selectionStartsInsideFirstRange =
+    firstRange.fullRange.startOffset < selection.startOffset &&
+    selection.startOffset < firstRange.fullRange.endOffset
+  const selectionEndsInsideLastRange =
+    lastRange.fullRange.startOffset < selection.endOffset &&
+    selection.endOffset < lastRange.fullRange.endOffset
+  const replacementStartOffset = selectionStartsInsideFirstRange
+    ? firstRange.fullRange.startOffset
+    : selection.startOffset
+  const replacementEndOffset = selectionEndsInsideLastRange
+    ? lastRange.fullRange.endOffset
+    : selection.endOffset
+  const beforeSelectionText = selectionStartsInsideFirstRange
+    ? value.slice(
+        firstRange.innerContentRange.startOffset,
+        Math.min(selection.startOffset, firstRange.innerContentRange.endOffset),
       )
-    ) {
-      return null
-    }
-  }
-
-  const replacementStartOffset = firstRange.fullRange.startOffset
-  const replacementEndOffset = lastRange.fullRange.endOffset
-  let replacementInnerText = ''
-  let lastOffset = replacementStartOffset
-
-  for (const range of selectedRanges) {
-    replacementInnerText += value.slice(lastOffset, range.fullRange.startOffset)
-    replacementInnerText += value.slice(
-      range.innerContentRange.startOffset,
-      range.innerContentRange.endOffset,
-    )
-    lastOffset = range.fullRange.endOffset
-  }
-
-  replacementInnerText += value.slice(lastOffset, replacementEndOffset)
+    : ''
+  const afterSelectionText = selectionEndsInsideLastRange
+    ? value.slice(
+        Math.max(selection.endOffset, lastRange.innerContentRange.startOffset),
+        lastRange.innerContentRange.endOffset,
+      )
+    : ''
+  const selectedInnerText = getSelectedTextWithoutInlineCodeMarkers(
+    value,
+    selection,
+    selectedRanges,
+  )
+  const beforeText = getInlineCodeFragmentText(beforeSelectionText)
+  const selectedText = wrapTextIfNeeded(selectedInnerText, prefix, suffix)
+  const afterText = getInlineCodeFragmentText(afterSelectionText)
+  const replacementText = `${beforeText}${selectedText}${afterText}`
+  const selectedStartOffset =
+    replacementStartOffset + beforeText.length + prefix.length
 
   return {
     edits: [
       {
         endOffset: replacementEndOffset,
         startOffset: replacementStartOffset,
-        text: `${prefix}${replacementInnerText}${suffix}`,
+        text: replacementText,
       },
     ],
     nextSelection: {
-      endOffset:
-        replacementStartOffset + prefix.length + replacementInnerText.length,
-      startOffset: replacementStartOffset + prefix.length,
+      endOffset: selectedStartOffset + selectedInnerText.length,
+      startOffset: selectedStartOffset,
     },
   }
 }
@@ -913,7 +965,7 @@ export function isSelectionComposedOfAdjacentInlineCodeSpans(
   value: string,
   selection: MarkdownSelectionOffsetRange,
 ) {
-  return getMergeSelectedInlineCodeSpansEdits(value, selection, '`', '`') !== null
+  return getNormalizeSelectedInlineCodeSpansEdits(value, selection, '`', '`') !== null
 }
 
 export function normalizeAdjacentInlineFormattingRanges(
@@ -1024,7 +1076,7 @@ export function getToggleWrappedEdits(
     prefix,
     suffix,
   )
-  const selectedInlineCodeMerge = getMergeSelectedInlineCodeSpansEdits(
+  const selectedInlineCodeMerge = getNormalizeSelectedInlineCodeSpansEdits(
     value,
     coreRange,
     prefix,
