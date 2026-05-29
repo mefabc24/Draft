@@ -235,7 +235,7 @@ export const draftDarkPreviewTheme: DraftPreviewTheme = {
     ...draftDarkPreviewTypographyVariables,
   },
   id: 'draftDark',
-  label: 'Draft Theme',
+  label: 'Draft Dark',
   /**
    * true: fenced code blocks receive Shiki token colors.
    * false: code blocks use the plain theme foreground color.
