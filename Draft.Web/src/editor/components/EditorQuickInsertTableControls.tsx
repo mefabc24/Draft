@@ -39,21 +39,21 @@ function EditorQuickInsertTableControls({
     <div className="editor-quick-insert-table-controls">
       <div className="editor-quick-insert-table-fields">
         <div className="editor-quick-insert-table-field">
-          <span className="editor-quick-insert-table-label">Rows</span>
-          <NumberSpinner
-            label="Rows"
-            min={MIN_ROWS}
-            value={rows}
-            onChange={setRows}
-          />
-        </div>
-        <div className="editor-quick-insert-table-field">
           <span className="editor-quick-insert-table-label">Columns</span>
           <NumberSpinner
             label="Columns"
             min={MIN_COLUMNS}
             value={columns}
             onChange={setColumns}
+          />
+        </div>
+        <div className="editor-quick-insert-table-field">
+          <span className="editor-quick-insert-table-label">Rows</span>
+          <NumberSpinner
+            label="Rows"
+            min={MIN_ROWS}
+            value={rows}
+            onChange={setRows}
           />
         </div>
       </div>
