@@ -104,6 +104,33 @@ const PREVIEW_TOOLBAR_COMMAND_SUPPRESSION_FRAMES = 4
 const PREVIEW_TOOLBAR_COMMAND_SUPPRESSION_TIMEOUT_MS = 180
 const PREVIEW_TOOLBAR_COMMAND_SOURCE_LOCK_TIMEOUT_MS = 500
 
+function getResourceEditReplacementText(
+  label: string,
+  url: string,
+  createResourceText: (label: string, url: string) => string,
+) {
+  return url.trim().length === 0 ? label : createResourceText(label, url)
+}
+
+function getResourceEditLabelSelectionRange(
+  startOffset: number,
+  label: string,
+  url: string,
+  markdownLabelInset: number,
+) {
+  if (label.length === 0) {
+    return null
+  }
+
+  const labelStartOffset =
+    startOffset + (url.trim().length === 0 ? 0 : markdownLabelInset)
+
+  return {
+    endOffset: labelStartOffset + label.length,
+    startOffset: labelStartOffset,
+  }
+}
+
 function isEditableKeyboardTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) {
     return false
@@ -1215,7 +1242,11 @@ export function useFloatingToolbarState({
         return
       }
 
-      const nextLinkText = createMarkdownLinkText(label, url)
+      const nextLinkText = getResourceEditReplacementText(
+        label,
+        url,
+        createMarkdownLinkText,
+      )
 
       replaceMarkdownSourceRange(
         editor,
@@ -1230,11 +1261,19 @@ export function useFloatingToolbarState({
         },
       )
 
-      const labelSelection = createSelectionFromOffsets(
-        model,
-        session.startOffset + 1,
-        session.startOffset + 1 + label.length,
+      const labelSelectionRange = getResourceEditLabelSelectionRange(
+        session.startOffset,
+        label,
+        url,
+        1,
       )
+      const labelSelection = labelSelectionRange
+        ? createSelectionFromOffsets(
+            model,
+            labelSelectionRange.startOffset,
+            labelSelectionRange.endOffset,
+          )
+        : null
 
       setLinkEditSession(null)
       setOpenDropdown(null)
@@ -1242,6 +1281,13 @@ export function useFloatingToolbarState({
       clearToolbarTooltip()
 
       if (session.source === 'preview') {
+        if (!labelSelection) {
+          window.getSelection()?.removeAllRanges()
+          toolbarInteractionRef.current = false
+          setPosition(null)
+          return
+        }
+
         toolbarInteractionRef.current = true
         savedModelRef.current = model
         savedSelectionsRef.current = cloneSelections([labelSelection])
@@ -1258,7 +1304,9 @@ export function useFloatingToolbarState({
         return
       }
 
-      editor.setSelection(labelSelection)
+      if (labelSelection) {
+        editor.setSelection(labelSelection)
+      }
       editor.focus()
       updateToolbarSoon()
     },
@@ -1268,6 +1316,7 @@ export function useFloatingToolbarState({
       editor,
       restorePreviewSelectionSoon,
       setLinkEditSession,
+      setPosition,
       updateToolbarSoon,
     ],
   )
@@ -1359,7 +1408,11 @@ export function useFloatingToolbarState({
         return
       }
 
-      const nextImageText = createMarkdownImageText(label, url)
+      const nextImageText = getResourceEditReplacementText(
+        label,
+        url,
+        createMarkdownImageText,
+      )
 
       replaceMarkdownSourceRange(
         editor,
@@ -1374,17 +1427,28 @@ export function useFloatingToolbarState({
         },
       )
 
-      const labelSelection = createSelectionFromOffsets(
-        model,
-        session.startOffset + 2,
-        session.startOffset + 2 + label.length,
-      )
-
-      const imageSelection = createSelectionFromOffsets(
-        model,
+      const labelSelectionRange = getResourceEditLabelSelectionRange(
         session.startOffset,
-        session.startOffset + nextImageText.length,
+        label,
+        url,
+        2,
       )
+      const labelSelection = labelSelectionRange
+        ? createSelectionFromOffsets(
+            model,
+            labelSelectionRange.startOffset,
+            labelSelectionRange.endOffset,
+          )
+        : null
+
+      const imageSelection =
+        url.trim().length === 0
+          ? labelSelection
+          : createSelectionFromOffsets(
+              model,
+              session.startOffset,
+              session.startOffset + nextImageText.length,
+            )
 
       setImageEditSession(null)
       setOpenDropdown(null)
@@ -1392,6 +1456,13 @@ export function useFloatingToolbarState({
       clearToolbarTooltip()
 
       if (session.source === 'preview') {
+        if (!imageSelection) {
+          window.getSelection()?.removeAllRanges()
+          toolbarInteractionRef.current = false
+          setPosition(null)
+          return
+        }
+
         toolbarInteractionRef.current = true
         savedModelRef.current = model
         savedSelectionsRef.current = cloneSelections([imageSelection])
@@ -1408,7 +1479,9 @@ export function useFloatingToolbarState({
         return
       }
 
-      editor.setSelection(labelSelection)
+      if (labelSelection) {
+        editor.setSelection(labelSelection)
+      }
       editor.focus()
       updateToolbarSoon()
     },
@@ -1418,6 +1491,7 @@ export function useFloatingToolbarState({
       editor,
       restorePreviewSelectionSoon,
       setImageEditSession,
+      setPosition,
       updateToolbarSoon,
     ],
   )

@@ -133,8 +133,11 @@ function LinkEditMenu({
     placement: 'bottom',
     top: 0,
   })
-  const urlIsValid = isValidHttpUrl(url)
-  const confirmDisabled = label.trim().length === 0 || !urlIsValid
+  const normalizedUrl = url.trim()
+  const urlIsEmpty = normalizedUrl.length === 0
+  const urlIsValid = urlIsEmpty || isValidHttpUrl(normalizedUrl)
+  const confirmDisabled =
+    !urlIsEmpty && (label.trim().length === 0 || !urlIsValid)
 
   const updateMenuGeometry = useCallback(() => {
     const menu = menuRef.current
@@ -253,9 +256,9 @@ function LinkEditMenu({
 
   const handleConfirm = useCallback(() => {
     if (!confirmDisabled) {
-      onConfirm(label, url)
+      onConfirm(label, normalizedUrl)
     }
-  }, [confirmDisabled, label, onConfirm, url])
+  }, [confirmDisabled, label, normalizedUrl, onConfirm])
 
   const handleKeyDown = (event: ReactKeyboardEvent) => {
     event.stopPropagation()
@@ -276,7 +279,7 @@ function LinkEditMenu({
     left: `${menuGeometry.left}px`,
     top: `${menuGeometry.top}px`,
   } satisfies CSSProperties
-  const showUrlValidation = urlTouched && url.length > 0
+  const showUrlValidation = urlTouched && normalizedUrl.length > 0
 
   return (
     <>
