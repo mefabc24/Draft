@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Draft.Settings.Models;
@@ -6,16 +7,19 @@ namespace Draft.Settings.Models;
 public static class MarkdownPreviewThemeCatalog
 {
     private const string DefaultThemeId = "draftDark";
+    private const string ThemeManifestFileName = "preview-theme-options.json";
 
     private static readonly Regex ThemeIdRegex = new(@"id:\s*['""](?<id>[^'""]+)['""]", RegexOptions.Compiled);
     private static readonly Regex ThemeLabelRegex = new(@"label:\s*['""](?<label>[^'""]+)['""]", RegexOptions.Compiled);
+    private static readonly JsonSerializerOptions ThemeManifestJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
 
     private static readonly IReadOnlyList<MarkdownPreviewThemeOption> FallbackThemeOptions =
         new[]
         {
             new MarkdownPreviewThemeOption(DefaultThemeId, SettingsDefaults.DefaultMarkdownTheme),
-            new MarkdownPreviewThemeOption("assistantDark", "Assistant Dark"),
-            new MarkdownPreviewThemeOption("repositoryDark", "Repository Dark"),
         };
 
     public static IReadOnlyList<MarkdownPreviewThemeOption> ThemeOptions { get; } =
@@ -46,10 +50,17 @@ public static class MarkdownPreviewThemeCatalog
 
     private static IReadOnlyList<MarkdownPreviewThemeOption> LoadThemeOptions()
     {
-        IReadOnlyList<MarkdownPreviewThemeOption> sourceOptions = LoadThemeOptionsFromSourceFiles();
-        IReadOnlyList<MarkdownPreviewThemeOption> options = sourceOptions.Count > 0
-            ? sourceOptions
-            : FallbackThemeOptions;
+        IReadOnlyList<MarkdownPreviewThemeOption> options = LoadThemeOptionsFromSourceFiles();
+
+        if (options.Count == 0)
+        {
+            options = LoadThemeOptionsFromManifestFiles();
+        }
+
+        if (options.Count == 0)
+        {
+            options = FallbackThemeOptions;
+        }
 
         return options
             .GroupBy(option => option.Id, StringComparer.OrdinalIgnoreCase)
@@ -71,6 +82,24 @@ public static class MarkdownPreviewThemeCatalog
                 .Select(TryReadThemeOption)
                 .OfType<MarkdownPreviewThemeOption>()
                 .ToArray();
+
+            if (options.Length > 0)
+            {
+                return options;
+            }
+        }
+
+        return Array.Empty<MarkdownPreviewThemeOption>();
+    }
+
+    private static IReadOnlyList<MarkdownPreviewThemeOption> LoadThemeOptionsFromManifestFiles()
+    {
+        foreach (string filePath in GetPreviewThemeManifestFilePaths())
+        {
+            if (!File.Exists(filePath))
+                continue;
+
+            MarkdownPreviewThemeOption[] options = TryReadThemeManifest(filePath);
 
             if (options.Length > 0)
             {
@@ -110,6 +139,32 @@ public static class MarkdownPreviewThemeCatalog
             "preview"));
     }
 
+    private static IEnumerable<string> GetPreviewThemeManifestFilePaths()
+    {
+        yield return Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "Web",
+            ThemeManifestFileName));
+
+        yield return Path.GetFullPath(Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "Web",
+            ThemeManifestFileName));
+
+        yield return Path.GetFullPath(Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "Draft.Web",
+            "dist",
+            ThemeManifestFileName));
+
+        yield return Path.GetFullPath(Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "..",
+            "Draft.Web",
+            "dist",
+            ThemeManifestFileName));
+    }
+
     private static MarkdownPreviewThemeOption? TryReadThemeOption(string filePath)
     {
         try
@@ -137,6 +192,48 @@ public static class MarkdownPreviewThemeCatalog
             return null;
         }
     }
+
+    private static MarkdownPreviewThemeOption[] TryReadThemeManifest(string filePath)
+    {
+        try
+        {
+            string source = File.ReadAllText(filePath);
+            PreviewThemeManifest? manifest = JsonSerializer.Deserialize<PreviewThemeManifest>(
+                source,
+                ThemeManifestJsonOptions);
+
+            return manifest?.Themes?
+                .Select(TryCreateThemeOption)
+                .OfType<MarkdownPreviewThemeOption>()
+                .ToArray() ?? Array.Empty<MarkdownPreviewThemeOption>();
+        }
+        catch (JsonException)
+        {
+            return Array.Empty<MarkdownPreviewThemeOption>();
+        }
+        catch (IOException)
+        {
+            return Array.Empty<MarkdownPreviewThemeOption>();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Array.Empty<MarkdownPreviewThemeOption>();
+        }
+    }
+
+    private static MarkdownPreviewThemeOption? TryCreateThemeOption(PreviewThemeManifestOption option)
+    {
+        string id = option.Id?.Trim() ?? string.Empty;
+        string label = option.Label?.Trim() ?? string.Empty;
+
+        return string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(label)
+            ? null
+            : new MarkdownPreviewThemeOption(id, label);
+    }
+
+    private sealed record PreviewThemeManifest(PreviewThemeManifestOption[]? Themes);
+
+    private sealed record PreviewThemeManifestOption(string? Id, string? Label);
 }
 
 public sealed record MarkdownPreviewThemeOption(string Id, string Label);
