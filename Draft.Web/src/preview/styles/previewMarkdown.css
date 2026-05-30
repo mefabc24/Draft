@@ -163,6 +163,75 @@
   font-family: var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace);
 }
 
+/* Draft inline extensions */
+.preview-content .preview-highlight,
+.preview-content .preview-spoiler {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.preview-content .preview-highlight {
+  border-radius: var(--preview-highlight-border-radius, 4px);
+  padding:
+    var(--preview-highlight-padding-block, 2px)
+    var(--preview-highlight-padding-inline, 6px);
+  background: var(--preview-highlight-background);
+  color: var(--preview-highlight-foreground, inherit);
+}
+
+.preview-content .preview-spoiler {
+  border-radius: var(--preview-spoiler-border-radius, 4px);
+  padding:
+    var(--preview-spoiler-padding-block, 2px)
+    var(--preview-spoiler-padding-inline, 6px);
+  background: var(--preview-spoiler-background);
+  color: transparent;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.preview-content .preview-spoiler:focus-visible {
+  box-shadow: 0 0 0 2px var(--preview-link-foreground);
+}
+
+.preview-content .preview-spoiler.is-revealed {
+  background: var(--preview-spoiler-revealed-background, transparent);
+  color: var(--preview-spoiler-foreground, inherit);
+  cursor: text;
+  user-select: text;
+}
+
+.preview-content .preview-spoiler:not(.is-revealed) .preview-spoiler-content {
+  color: transparent;
+}
+
+.preview-content .preview-badge {
+  --preview-current-badge-color: var(--preview-badge-default-color);
+  display: inline-flex;
+  align-items: center;
+  border: var(--preview-badge-border-width, 1px) solid var(--preview-current-badge-color);
+  border-radius: var(--preview-badge-border-radius, 999px);
+  padding:
+    var(--preview-badge-padding-block, 2px)
+    var(--preview-badge-padding-inline, 8px);
+  background: color-mix(
+    in srgb,
+    var(--preview-current-badge-color) var(--preview-badge-background-opacity, 18%),
+    transparent
+  );
+  color: var(--preview-badge-foreground, currentColor);
+  font-family: var(--preview-badge-font-family, var(--font-preview, 'Manrope', 'Segoe UI', Arial, sans-serif));
+  font-size: var(--preview-badge-font-size, 0.78em);
+  font-weight: var(--preview-badge-font-weight, 700);
+  line-height: 1.2;
+  vertical-align: 0.08em;
+  white-space: nowrap;
+}
+
 /* Code blocks */
 .preview-content .preview-code-block {
   position: relative;

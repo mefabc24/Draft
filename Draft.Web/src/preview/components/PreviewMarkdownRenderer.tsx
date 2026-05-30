@@ -25,6 +25,7 @@ import {
   getOrderedListMarkerStyle,
   getUnorderedListMarkerStyle,
 } from '../../themes/preview/support/previewThemeStyles'
+import { rehypeDraftMarkdownExtensions } from '../markdownExtensions/draftMarkdownExtensionsPlugin'
 import { rehypeSourceTextSpans } from '../sourceMapping/sourceTextSpansPlugin'
 import type { SourceMappedNode } from '../previewTypes'
 
@@ -38,6 +39,15 @@ type PreviewCodeBlockProps = ComponentPropsWithoutRef<'pre'> & {
 }
 
 type ListCssProperties = CSSProperties & Record<`--${string}`, string>
+type PreviewBadgeCssProperties = CSSProperties & {
+  '--preview-current-badge-color'?: string
+}
+type PreviewBadgeProps = ComponentPropsWithoutRef<'span'> & {
+  badgeColor?: string
+}
+type PreviewSpoilerProps = ComponentPropsWithoutRef<'span'> & {
+  spoilerId?: string
+}
 
 type PreviewListProps<TagName extends 'ol' | 'ul'> =
   ComponentPropsWithoutRef<TagName> & {
@@ -50,6 +60,7 @@ const supportedExternalLinkProtocols = new Set(['http:', 'https:', 'mailto:'])
 const remarkPlugins: PluggableList = [remarkGfm]
 const ListDepthContext = createContext(0)
 const PreviewThemeContext = createContext<DraftPreviewTheme | null>(null)
+const revealedSpoilerIds = new Set<string>()
 
 function getSourceLine(node: SourceMappedNode | undefined) {
   const line = node?.position?.start?.line
@@ -70,6 +81,28 @@ function getTextFromReactNode(node: ReactNode): string {
   }
 
   return ''
+}
+
+function hasClassName(className: string | undefined, targetClassName: string) {
+  return className?.split(/\s+/u).includes(targetClassName) ?? false
+}
+
+function getStringAttribute(
+  props: Record<string, unknown>,
+  attributeName: string,
+) {
+  const value = props[attributeName]
+
+  return typeof value === 'string' ? value : undefined
+}
+
+function getSpanHtmlProps(props: Record<string, unknown>) {
+  const spanProps = { ...props }
+
+  delete spanProps.node
+
+  return spanProps as ComponentPropsWithoutRef<'span'> &
+    Record<string, unknown>
 }
 
 function copyTextWithTextarea(text: string) {
@@ -163,9 +196,86 @@ function getRehypePlugins(previewTheme: DraftPreviewTheme): PluggableList {
     plugins.push([rehypePrettyCode, prettyCodeOptions])
   }
 
+  plugins.push(rehypeDraftMarkdownExtensions)
   plugins.push(rehypeSourceTextSpans)
 
   return plugins
+}
+
+function PreviewBadge({
+  badgeColor,
+  style,
+  ...props
+}: PreviewBadgeProps) {
+  const badgeStyle = badgeColor
+    ? ({
+        ...style,
+        '--preview-current-badge-color': badgeColor,
+      } satisfies PreviewBadgeCssProperties)
+    : style
+
+  return <span {...props} style={badgeStyle} />
+}
+
+function PreviewSpoiler({
+  children,
+  className,
+  onClick,
+  onKeyDown,
+  spoilerId,
+  ...props
+}: PreviewSpoilerProps) {
+  const [revealVersion, setRevealVersion] = useState(0)
+  const isRevealed = spoilerId
+    ? revealedSpoilerIds.has(spoilerId)
+    : revealVersion > 0
+
+  function revealSpoiler() {
+    if (isRevealed) {
+      return
+    }
+
+    if (spoilerId) {
+      revealedSpoilerIds.add(spoilerId)
+    }
+
+    setRevealVersion((currentVersion) => currentVersion + 1)
+  }
+
+  return (
+    <span
+      {...props}
+      className={`${className ?? ''}${isRevealed ? ' is-revealed' : ''}`}
+      role={isRevealed ? undefined : 'button'}
+      tabIndex={isRevealed ? undefined : 0}
+      aria-label={isRevealed ? undefined : 'Spoiler hidden. Click to reveal.'}
+      onClick={(event) => {
+        onClick?.(event)
+
+        if (!event.defaultPrevented) {
+          revealSpoiler()
+        }
+      }}
+      onKeyDown={(event) => {
+        onKeyDown?.(event)
+
+        if (
+          event.defaultPrevented ||
+          isRevealed ||
+          (event.key !== 'Enter' && event.key !== ' ')
+        ) {
+          return
+        }
+
+        event.preventDefault()
+        revealSpoiler()
+      }}
+    >
+      <span className="preview-spoiler-content" aria-hidden={!isRevealed}>
+        {children}
+      </span>
+    </span>
+  )
 }
 
 function PreviewCodeBlock({
@@ -432,6 +542,40 @@ const previewComponents: Components = {
   },
   hr({ node, ...props }) {
     return <hr {...props} data-source-line={getSourceLine(node)} />
+  },
+  span({ className, children, style, ...props }) {
+    const spanProps = getSpanHtmlProps(props)
+
+    if (hasClassName(className, 'preview-spoiler')) {
+      return (
+        <PreviewSpoiler
+          {...spanProps}
+          className={className}
+          spoilerId={getStringAttribute(spanProps, 'data-spoiler-id')}
+        >
+          {children}
+        </PreviewSpoiler>
+      )
+    }
+
+    if (hasClassName(className, 'preview-badge')) {
+      return (
+        <PreviewBadge
+          {...spanProps}
+          className={className}
+          badgeColor={getStringAttribute(spanProps, 'data-badge-color')}
+          style={style}
+        >
+          {children}
+        </PreviewBadge>
+      )
+    }
+
+    return (
+      <span {...spanProps} className={className} style={style}>
+        {children}
+      </span>
+    )
   },
 }
 

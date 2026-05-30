@@ -56,6 +56,16 @@ const draftDarkPreviewColorVariables = {
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#f9fafb',
 
+  // Draft inline extensions
+  '--preview-highlight-background': 'rgba(240, 190, 108, 0.28)',
+  '--preview-highlight-foreground': '#f9fafb',
+  '--preview-spoiler-background': '#050505',
+  '--preview-spoiler-revealed-background': 'rgba(165, 200, 255, 0.14)',
+  '--preview-spoiler-foreground': '#f9fafb',
+  '--preview-badge-default-color': draftDarkTokens.accentBlue,
+  '--preview-badge-foreground': '#f3faff',
+  '--preview-badge-background-opacity': '18%',
+
   // Task list checkboxes
   '--preview-task-list-checkbox-background': 'transparent',
   '--preview-task-list-checkbox-border': '#4b5563',
@@ -165,6 +175,19 @@ const draftDarkPreviewLayoutVariables = {
   '--preview-inline-code-border-width': '1px',
   '--preview-inline-code-padding': '2px 6px',
 
+  // Draft inline extensions
+  // Padding inline/block controls how far the highlight or pill extends beyond text.
+  '--preview-highlight-border-radius': '4px',
+  '--preview-highlight-padding-inline': '6px',
+  '--preview-highlight-padding-block': '2px',
+  '--preview-spoiler-border-radius': '4px',
+  '--preview-spoiler-padding-inline': '6px',
+  '--preview-spoiler-padding-block': '2px',
+  '--preview-badge-border-radius': '999px',
+  '--preview-badge-border-width': '1px',
+  '--preview-badge-padding-inline': '8px',
+  '--preview-badge-padding-block': '2px',
+
   // Links
   // decoration-line: none | underline | overline | line-through
   // decoration-style: solid | double | dotted | dashed | wavy
@@ -226,6 +249,12 @@ const draftDarkPreviewTypographyVariables = {
   // Markdown body
   // CSS font-family stack used by normal markdown text.
   '--font-preview': themeFontStacks.preview,
+
+  // Badges
+  // CSS font values used by Draft badge pills.
+  '--preview-badge-font-family': 'var(--font-preview)',
+  '--preview-badge-font-weight': '700',
+  '--preview-badge-font-size': '0.78em',
 } satisfies PreviewThemeVariables
 
 export const draftDarkPreviewTheme: DraftPreviewTheme = {
