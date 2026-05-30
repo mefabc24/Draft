@@ -2,7 +2,7 @@
 
 Draft is a focused Windows Markdown editor with live preview, save snapshots, a floating formatting toolbar, and a calm desktop workspace.
 
-Current version: `2.0.0` [Download](https://github.com/mefabc24/Draft/releases/latest)
+Current version: `2.0.0` [Download](https://github.com/mefabc24/Draft/releases/latest) · [Themes](Documentation/User/THEMES.md) · [Report issue](https://github.com/mefabc24/Draft/issues)
 
 ![Draft main workspace](Documentation/Assets/app-preview.png)
 
