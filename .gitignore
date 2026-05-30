@@ -1,6 +1,7 @@
 .dotnet-home/
 .build-check/
 .verify/
+Metrics/
 
 # Shared editor and IDE folders
 .vs/
