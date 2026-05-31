@@ -11,6 +11,7 @@ import {
   getEditorFontLoadTarget,
   getEditorSettingsOptions,
 } from '../monaco/editorOptions'
+import { moveEditorLines, type LineMovementDirection } from '../monaco/lineMovement'
 import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
 import { indentEmptyMarkdownListItemOnTab } from '../monaco/markdownListIndentation'
 import { moveSelectionsByWord } from '../monaco/wordNavigation'
@@ -61,6 +62,36 @@ function isEditableKeyboardTarget(target: EventTarget | null) {
 
 function shouldAllowSelectionDragAndDrop(event: MouseEvent) {
   return event.button === 0 && event.shiftKey
+}
+
+function getLineMovementDirection(
+  event: monaco.IKeyboardEvent,
+): LineMovementDirection | null {
+  const browserEvent = event.browserEvent
+  const hasControlModifier =
+    event.ctrlKey || event.metaKey || browserEvent.ctrlKey || browserEvent.metaKey
+  const hasShiftModifier = event.shiftKey || browserEvent.shiftKey
+  const hasAltModifier = event.altKey || browserEvent.altKey
+
+  if (hasAltModifier || !hasShiftModifier || !hasControlModifier) {
+    return null
+  }
+
+  if (
+    event.keyCode === monaco.KeyCode.UpArrow ||
+    browserEvent.key === 'ArrowUp'
+  ) {
+    return 'up'
+  }
+
+  if (
+    event.keyCode === monaco.KeyCode.DownArrow ||
+    browserEvent.key === 'ArrowDown'
+  ) {
+    return 'down'
+  }
+
+  return null
 }
 
 export function useMonacoMarkdownEditor({
@@ -209,6 +240,18 @@ export function useMonacoMarkdownEditor({
       },
     )
     editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.UpArrow,
+      () => {
+        moveEditorLines(editor, 'up')
+      },
+    )
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.DownArrow,
+      () => {
+        moveEditorLines(editor, 'down')
+      },
+    )
+    editor.addCommand(
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.LeftArrow,
       () => {
         moveSelectionsByWord(editor, 'left', false)
@@ -233,6 +276,15 @@ export function useMonacoMarkdownEditor({
       },
     )
     const markdownKeyboardSub = editor.onKeyDown((event) => {
+      const lineMovementDirection = getLineMovementDirection(event)
+
+      if (lineMovementDirection) {
+        event.preventDefault()
+        event.stopPropagation()
+        moveEditorLines(editor, lineMovementDirection)
+        return
+      }
+
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return
       }

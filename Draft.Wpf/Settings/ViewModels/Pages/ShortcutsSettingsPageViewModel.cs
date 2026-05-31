@@ -28,6 +28,10 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
                         "Duplicate the active editor line.",
                         "Ctrl + D"),
                     new ShortcutItemViewModel(
+                        "Move line or selection",
+                        "Move the active editor line or selected lines up or down.",
+                        "Ctrl + Shift + Up / Down"),
+                    new ShortcutItemViewModel(
                         "Move by word",
                         "Move the cursor one word left or right in the editor.",
                         "Ctrl + Left / Right"),

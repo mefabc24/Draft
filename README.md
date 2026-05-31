@@ -98,6 +98,8 @@ Ctrl + S              Save file
 Ctrl + Z              Undo
 Ctrl + Shift + Z      Redo
 Ctrl + D              Duplicate current line
+Ctrl + Shift + Up     Move current line or selected lines up
+Ctrl + Shift + Down   Move current line or selected lines down
 Enter                 Continue the current Markdown list or quote
 ```
 
