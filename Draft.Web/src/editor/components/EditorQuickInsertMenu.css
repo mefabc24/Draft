@@ -457,7 +457,7 @@
   font-weight: 500;
   line-height: 1;
   transition:
-    background 140ms ease,nutz das [Misc.svg](Draft.Web/public/icons/Misc.svg) icon
+    background 140ms ease,
     border-color 140ms ease,
     color 140ms ease;
 }
@@ -548,6 +548,126 @@
 
 .editor-quick-insert-inline-media-confirm:hover,
 .editor-quick-insert-inline-media-confirm:focus-visible {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
+}
+
+.editor-quick-insert-tag-controls {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+}
+
+.editor-quick-insert-tag-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-quick-insert-tag-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
+  margin-top: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.editor-quick-insert-tag-field > input,
+.editor-quick-insert-tag-color-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  outline: 0;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.editor-quick-insert-tag-field > input {
+  padding: 0 12px;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.editor-quick-insert-tag-color-input {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+.editor-quick-insert-tag-color-preview {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+
+.editor-quick-insert-tag-color-input input {
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--quick-insert-control-foreground);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.editor-quick-insert-tag-field input::placeholder {
+  color: var(--markdown-toolbar-muted);
+}
+
+.editor-quick-insert-tag-field > input:focus,
+.editor-quick-insert-tag-color-input:focus-within {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-background);
+  box-shadow: none;
+}
+
+.editor-quick-insert-tag-confirm {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  cursor: pointer;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-tag-confirm:hover,
+.editor-quick-insert-tag-confirm:focus-visible {
   border-color: var(--quick-insert-control-border-hover);
   background: var(--quick-insert-control-hover-background);
   color: var(--markdown-toolbar-foreground);
@@ -894,6 +1014,9 @@
   .editor-quick-insert-table-confirm,
   .editor-quick-insert-inline-media-field input,
   .editor-quick-insert-inline-media-confirm,
+  .editor-quick-insert-tag-field > input,
+  .editor-quick-insert-tag-color-input,
+  .editor-quick-insert-tag-confirm,
   .editor-quick-insert-codeblock-select,
   .editor-quick-insert-codeblock-combobox,
   .editor-quick-insert-codeblock-combobox-chevron,

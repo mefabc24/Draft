@@ -6,8 +6,10 @@ import {
 import {
   createInlineImageMarkdown,
   createInlineLinkMarkdown,
+  createInlineTagMarkdown,
   type CreateInlineImageMarkdownData,
   type CreateInlineLinkMarkdownData,
+  type CreateInlineTagMarkdownData,
 } from './createInlineLinkMarkdown'
 import {
   createTableMarkdown,
@@ -354,6 +356,21 @@ export function insertEditorQuickInsertLink(
     editor,
     target,
     createInlineLinkMarkdown(linkData),
+    undefined,
+    options,
+  )
+}
+
+export function insertEditorQuickInsertTag(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  target: EditorQuickInsertTarget,
+  tagData: CreateInlineTagMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
+) {
+  return insertQuickInsertText(
+    editor,
+    target,
+    createInlineTagMarkdown(tagData),
     undefined,
     options,
   )

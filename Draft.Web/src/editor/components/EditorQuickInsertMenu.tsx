@@ -12,6 +12,7 @@ import {
   insertEditorQuickInsertCodeBlock,
   insertEditorQuickInsertImage,
   insertEditorQuickInsertLink,
+  insertEditorQuickInsertTag,
   insertEditorQuickInsertTable,
   runEditorQuickInsertCommand,
   type EditorQuickInsertCommand,
@@ -20,6 +21,7 @@ import type { CreateCodeBlockMarkdownData } from '../commands/createCodeBlockMar
 import type {
   CreateInlineImageMarkdownData,
   CreateInlineLinkMarkdownData,
+  CreateInlineTagMarkdownData,
 } from '../commands/createInlineLinkMarkdown'
 import type { CreateTableMarkdownData } from '../commands/createTableMarkdown'
 import type {
@@ -36,6 +38,7 @@ import EditorQuickInsertInlineMediaControls from './EditorQuickInsertInlineMedia
 import EditorQuickInsertMenuItem from './EditorQuickInsertMenuItem'
 import EditorQuickInsertMenuSection from './EditorQuickInsertMenuSection'
 import EditorQuickInsertTableControls from './EditorQuickInsertTableControls'
+import EditorQuickInsertTagControls from './EditorQuickInsertTagControls'
 import './EditorQuickInsertMenu.css'
 
 type EditorQuickInsertMenuProps = {
@@ -59,6 +62,7 @@ const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
   link: 'icons/Link2.svg',
   list: 'icons/List.svg',
   misc: 'icons/Misc.svg',
+  tag: 'icons/Tag.svg',
   table: 'icons/Tables.svg',
 }
 
@@ -108,6 +112,13 @@ function shouldAdvanceToNextEmptyLine(
   keepOpen: boolean,
 ) {
   return keepOpen && target?.mode === 'replace-line'
+}
+
+function canShowQuickInsertEntry(
+  entry: EditorQuickInsertMenuEntry,
+  target: EditorQuickInsertMenuAnchor | null,
+) {
+  return target?.mode !== 'insert-at-cursor' || entry.canInsertIntoNonEmptyLine
 }
 
 function EditorQuickInsertMenu({
@@ -332,6 +343,40 @@ function EditorQuickInsertMenu({
     [editor, onClose, onKeepOpenAction, target],
   )
 
+  const confirmTag = useCallback(
+    (tagData: CreateInlineTagMarkdownData, keepOpen = false) => {
+      const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
+        target,
+        keepOpen,
+      )
+      const runAction = () => {
+        if (!editor || target === null) {
+          return null
+        }
+
+        const result = insertEditorQuickInsertTag(
+          editor,
+          target,
+          tagData,
+          {
+            advanceToNextEmptyLine,
+          },
+        )
+
+        return result ? result.nextLineNumber : null
+      }
+
+      if (advanceToNextEmptyLine) {
+        onKeepOpenAction(runAction)
+        return
+      }
+
+      runAction()
+      onClose()
+    },
+    [editor, onClose, onKeepOpenAction, target],
+  )
+
   const renderCommandItem = useCallback(
     (entry: EditorQuickInsertCommandEntry, nested = false) => (
       <EditorQuickInsertMenuItem
@@ -350,6 +395,10 @@ function EditorQuickInsertMenu({
 
   const renderMenuEntry = useCallback(
     (entry: EditorQuickInsertMenuEntry) => {
+      if (!canShowQuickInsertEntry(entry, target)) {
+        return null
+      }
+
       if (entry.type === 'item') {
         return renderCommandItem(entry)
       }
@@ -383,10 +432,14 @@ function EditorQuickInsertMenu({
               type="link"
               onConfirm={confirmLink}
             />
+          ) : entry.id === 'tag' ? (
+            <EditorQuickInsertTagControls onConfirm={confirmTag} />
           ) : (
-            entry.children.map((childEntry) =>
-              renderCommandItem(childEntry, true),
-            )
+            entry.children
+              .filter((childEntry) =>
+                canShowQuickInsertEntry(childEntry, target),
+              )
+              .map((childEntry) => renderCommandItem(childEntry, true))
           )}
         </EditorQuickInsertMenuSection>
       )
@@ -395,9 +448,11 @@ function EditorQuickInsertMenu({
       confirmCodeBlock,
       confirmImage,
       confirmLink,
+      confirmTag,
       confirmTable,
       expandedSections,
       renderCommandItem,
+      target,
     ],
   )
 

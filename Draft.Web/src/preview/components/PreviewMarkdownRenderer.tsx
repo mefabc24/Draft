@@ -39,11 +39,11 @@ type PreviewCodeBlockProps = ComponentPropsWithoutRef<'pre'> & {
 }
 
 type ListCssProperties = CSSProperties & Record<`--${string}`, string>
-type PreviewBadgeCssProperties = CSSProperties & {
-  '--preview-current-badge-color'?: string
+type PreviewTagCssProperties = CSSProperties & {
+  '--preview-current-tag-color'?: string
 }
-type PreviewBadgeProps = ComponentPropsWithoutRef<'span'> & {
-  badgeColor?: string
+type PreviewTagProps = ComponentPropsWithoutRef<'span'> & {
+  tagColor?: string
 }
 type PreviewSpoilerProps = ComponentPropsWithoutRef<'span'> & {
   spoilerId?: string
@@ -202,19 +202,19 @@ function getRehypePlugins(previewTheme: DraftPreviewTheme): PluggableList {
   return plugins
 }
 
-function PreviewBadge({
-  badgeColor,
+function PreviewTag({
   style,
+  tagColor,
   ...props
-}: PreviewBadgeProps) {
-  const badgeStyle = badgeColor
+}: PreviewTagProps) {
+  const tagStyle = tagColor
     ? ({
         ...style,
-        '--preview-current-badge-color': badgeColor,
-      } satisfies PreviewBadgeCssProperties)
+        '--preview-current-tag-color': tagColor,
+      } satisfies PreviewTagCssProperties)
     : style
 
-  return <span {...props} style={badgeStyle} />
+  return <span {...props} style={tagStyle} />
 }
 
 function PreviewSpoiler({
@@ -558,16 +558,22 @@ const previewComponents: Components = {
       )
     }
 
-    if (hasClassName(className, 'preview-badge')) {
+    if (
+      hasClassName(className, 'preview-tag') ||
+      hasClassName(className, 'preview-badge')
+    ) {
       return (
-        <PreviewBadge
+        <PreviewTag
           {...spanProps}
           className={className}
-          badgeColor={getStringAttribute(spanProps, 'data-badge-color')}
+          tagColor={
+            getStringAttribute(spanProps, 'data-tag-color') ??
+            getStringAttribute(spanProps, 'data-badge-color')
+          }
           style={style}
         >
           {children}
-        </PreviewBadge>
+        </PreviewTag>
       )
     }
 

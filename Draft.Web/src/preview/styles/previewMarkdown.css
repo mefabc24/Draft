@@ -209,24 +209,25 @@
   color: transparent;
 }
 
+.preview-content .preview-tag,
 .preview-content .preview-badge {
-  --preview-current-badge-color: var(--preview-badge-default-color);
+  --preview-current-tag-color: var(--preview-tag-default-color, var(--preview-badge-default-color));
   display: inline-flex;
   align-items: center;
-  border: var(--preview-badge-border-width, 1px) solid var(--preview-current-badge-color);
-  border-radius: var(--preview-badge-border-radius, 999px);
+  border: var(--preview-tag-border-width, var(--preview-badge-border-width, 1px)) solid var(--preview-current-tag-color);
+  border-radius: var(--preview-tag-border-radius, var(--preview-badge-border-radius, 999px));
   padding:
-    var(--preview-badge-padding-block, 2px)
-    var(--preview-badge-padding-inline, 8px);
+    var(--preview-tag-padding-block, var(--preview-badge-padding-block, 2px))
+    var(--preview-tag-padding-inline, var(--preview-badge-padding-inline, 8px));
   background: color-mix(
     in srgb,
-    var(--preview-current-badge-color) var(--preview-badge-background-opacity, 18%),
+    var(--preview-current-tag-color) var(--preview-tag-background-opacity, var(--preview-badge-background-opacity, 18%)),
     transparent
   );
-  color: var(--preview-badge-foreground, currentColor);
-  font-family: var(--preview-badge-font-family, var(--font-preview, 'Manrope', 'Segoe UI', Arial, sans-serif));
-  font-size: var(--preview-badge-font-size, 0.78em);
-  font-weight: var(--preview-badge-font-weight, 700);
+  color: var(--preview-tag-foreground, var(--preview-badge-foreground, currentColor));
+  font-family: var(--preview-tag-font-family, var(--preview-badge-font-family, var(--font-preview, 'Manrope', 'Segoe UI', Arial, sans-serif)));
+  font-size: var(--preview-tag-font-size, var(--preview-badge-font-size, 0.78em));
+  font-weight: var(--preview-tag-font-weight, var(--preview-badge-font-weight, 700));
   line-height: 1.2;
   vertical-align: 0.08em;
   white-space: nowrap;

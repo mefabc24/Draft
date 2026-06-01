@@ -7,9 +7,11 @@ export type EditorQuickInsertIconName =
   | 'link'
   | 'list'
   | 'misc'
+  | 'tag'
   | 'table'
 
 type EditorQuickInsertCommandItem = {
+  canInsertIntoNonEmptyLine: boolean
   command: EditorQuickInsertCommand
   icon?: EditorQuickInsertIconName
   id: string
@@ -19,6 +21,7 @@ type EditorQuickInsertCommandItem = {
 }
 
 type EditorQuickInsertSection = {
+  canInsertIntoNonEmptyLine: boolean
   children: EditorQuickInsertCommandItem[]
   defaultExpanded: boolean
   icon: EditorQuickInsertIconName
@@ -35,6 +38,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
   {
     children: [
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'bullet-list',
         id: 'bullet-list',
         label: 'Bullet list',
@@ -42,6 +46,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'numbered-list',
         id: 'numbered-list',
         label: 'Numbered list',
@@ -49,6 +54,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'task-list-unchecked',
         id: 'task-list-unchecked',
         label: 'Task unchecked',
@@ -56,6 +62,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'task-list-checked',
         id: 'task-list-checked',
         label: 'Task checked',
@@ -63,6 +70,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
     ],
+    canInsertIntoNonEmptyLine: false,
     defaultExpanded: false,
     icon: 'list',
     id: 'lists',
@@ -72,6 +80,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
   {
     children: [
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'heading-1',
         id: 'heading-1',
         label: 'Heading 1',
@@ -79,6 +88,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'heading-2',
         id: 'heading-2',
         label: 'Heading 2',
@@ -86,6 +96,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'heading-3',
         id: 'heading-3',
         label: 'Heading 3',
@@ -93,6 +104,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'heading-4',
         id: 'heading-4',
         label: 'Heading 4',
@@ -100,6 +112,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
     ],
+    canInsertIntoNonEmptyLine: false,
     defaultExpanded: false,
     icon: 'heading',
     id: 'headings',
@@ -107,6 +120,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     type: 'section',
   },
   {
+    canInsertIntoNonEmptyLine: true,
     children: [],
     defaultExpanded: false,
     icon: 'image',
@@ -115,6 +129,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     type: 'section',
   },
   {
+    canInsertIntoNonEmptyLine: true,
     children: [],
     defaultExpanded: false,
     icon: 'link',
@@ -123,6 +138,16 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     type: 'section',
   },
   {
+    canInsertIntoNonEmptyLine: true,
+    children: [],
+    defaultExpanded: false,
+    icon: 'tag',
+    id: 'tag',
+    label: 'Tag',
+    type: 'section',
+  },
+  {
+    canInsertIntoNonEmptyLine: false,
     children: [],
     defaultExpanded: false,
     icon: 'table',
@@ -131,6 +156,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     type: 'section',
   },
   {
+    canInsertIntoNonEmptyLine: false,
     children: [],
     defaultExpanded: false,
     icon: 'codeblock',
@@ -141,6 +167,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
   {
     children: [
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'blockquote',
         id: 'blockquote',
         label: 'Quote',
@@ -148,6 +175,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
       {
+        canInsertIntoNonEmptyLine: false,
         command: 'horizontal-rule',
         id: 'horizontal-rule',
         label: 'Divider',
@@ -155,6 +183,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
     ],
+    canInsertIntoNonEmptyLine: false,
     defaultExpanded: false,
     icon: 'misc',
     id: 'miscellaneous',

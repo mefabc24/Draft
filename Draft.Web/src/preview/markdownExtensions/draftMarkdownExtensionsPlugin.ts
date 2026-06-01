@@ -24,7 +24,7 @@ type DraftExtensionFragment =
       startIndex: number
     }
   | {
-      kind: 'badge'
+      kind: 'tag'
       color: string | null
       value: string
       contentEndIndex: number
@@ -42,7 +42,7 @@ const skippedDraftExtensionElementTags = new Set([
   'style',
 ])
 
-const validBadgeColorPattern = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/iu
+const validTagColorPattern = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/iu
 
 function getSourceOffset(value: unknown) {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
@@ -98,10 +98,10 @@ function appendTextFragment(
   })
 }
 
-function normalizeBadgeColor(value: string) {
+function normalizeTagColor(value: string) {
   const trimmedValue = value.trim()
 
-  return validBadgeColorPattern.test(trimmedValue) ? trimmedValue : null
+  return validTagColorPattern.test(trimmedValue) ? trimmedValue : null
 }
 
 function getTrimmedRange(value: string, startIndex: number, endIndex: number) {
@@ -128,7 +128,7 @@ function getTrimmedRange(value: string, startIndex: number, endIndex: number) {
   }
 }
 
-function parseBadgeContent(value: string) {
+function parseTagContent(value: string) {
   const separatorIndex = value.indexOf('|')
   const labelRange = getTrimmedRange(
     value,
@@ -145,7 +145,7 @@ function parseBadgeContent(value: string) {
     color:
       separatorIndex === -1
         ? null
-        : normalizeBadgeColor(value.slice(separatorIndex + 1)),
+        : normalizeTagColor(value.slice(separatorIndex + 1)),
     label,
     labelEndIndex: labelRange.endIndex,
     labelStartIndex: labelRange.startIndex,
@@ -210,20 +210,27 @@ function parseDraftExtensionFragments(value: string) {
       }
     }
 
-    if (value.startsWith('[badge:', index)) {
-      const closeIndex = value.indexOf(']', index + 7)
-      const badge =
+    const tagMarker = value.startsWith('[tag:', index)
+      ? '[tag:'
+      : value.startsWith('[badge:', index)
+        ? '[badge:'
+        : null
+
+    if (tagMarker) {
+      const contentStartIndex = index + tagMarker.length
+      const closeIndex = value.indexOf(']', contentStartIndex)
+      const tag =
         closeIndex === -1
           ? null
-          : parseBadgeContent(value.slice(index + 7, closeIndex))
+          : parseTagContent(value.slice(contentStartIndex, closeIndex))
 
-      if (badge) {
+      if (tag) {
         fragments.push({
-          kind: 'badge',
-          color: badge.color,
-          value: badge.label,
-          contentEndIndex: index + 7 + badge.labelEndIndex,
-          contentStartIndex: index + 7 + badge.labelStartIndex,
+          kind: 'tag',
+          color: tag.color,
+          value: tag.label,
+          contentEndIndex: contentStartIndex + tag.labelEndIndex,
+          contentStartIndex: contentStartIndex + tag.labelStartIndex,
           endIndex: closeIndex + 1,
           startIndex: index,
         })
@@ -261,8 +268,8 @@ function createDraftExtensionElement(
     className: [className],
   }
 
-  if (fragment.kind === 'badge' && fragment.color) {
-    properties['data-badge-color'] = fragment.color
+  if (fragment.kind === 'tag' && fragment.color) {
+    properties['data-tag-color'] = fragment.color
   }
 
   if (fragment.kind === 'spoiler') {

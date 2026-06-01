@@ -62,9 +62,9 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-spoiler-background': '#050505',
   '--preview-spoiler-revealed-background': 'rgba(61, 147, 248, 0.12)',
   '--preview-spoiler-foreground': '#fff',
-  '--preview-badge-default-color': '#3D93F8',
-  '--preview-badge-foreground': '#fff',
-  '--preview-badge-background-opacity': '18%',
+  '--preview-tag-default-color': '#3D93F8',
+  '--preview-tag-foreground': '#fff',
+  '--preview-tag-background-opacity': '18%',
 
   // Task list checkboxes
   '--preview-task-list-checkbox-background': '#222128',
@@ -183,10 +183,10 @@ const repositoryDarkPreviewLayoutVariables = {
   '--preview-spoiler-border-radius': '4px',
   '--preview-spoiler-padding-inline': '6px',
   '--preview-spoiler-padding-block': '2px',
-  '--preview-badge-border-radius': '999px',
-  '--preview-badge-border-width': '1px',
-  '--preview-badge-padding-inline': '8px',
-  '--preview-badge-padding-block': '2px',
+  '--preview-tag-border-radius': '999px',
+  '--preview-tag-border-width': '1px',
+  '--preview-tag-padding-inline': '8px',
+  '--preview-tag-padding-block': '2px',
 
   // Links
   // decoration-line: none | underline | overline | line-through
@@ -251,11 +251,11 @@ const repositoryDarkPreviewTypographyVariables = {
   // CSS font-family stack used by normal markdown text.
   '--font-preview': "'Segoe UI', Arial, sans-serif",
 
-  // Badges
-  // CSS font values used by Draft badge pills.
-  '--preview-badge-font-family': 'var(--font-preview)',
-  '--preview-badge-font-weight': '700',
-  '--preview-badge-font-size': '0.78em',
+  // Tags
+  // CSS font values used by Draft tag pills.
+  '--preview-tag-font-family': 'var(--font-preview)',
+  '--preview-tag-font-weight': '700',
+  '--preview-tag-font-size': '0.78em',
 } satisfies PreviewThemeVariables
 
 export const repositoryDarkPreviewTheme: DraftPreviewTheme = {
