@@ -3,7 +3,6 @@ import type {
   MarkdownSelectionOffsetRange,
 } from '../markdownTypes'
 import { getInlineFormatState } from '../inline/getInlineFormatState'
-import { areSelectedNonEmptyLinesWrapped } from '../commands/inlineFormatting'
 import {
   isImageSelectionActive,
   isLinkSelectionActive,
@@ -24,22 +23,9 @@ export function detectActiveInlineFormats(
   selection: MarkdownSelectionOffsetRange,
   selectedText: string,
 ) {
-  if (value.slice(selection.startOffset, selection.endOffset).includes('\n')) {
-    return {
-      bold: areSelectedNonEmptyLinesWrapped(value, selection, '**'),
-      italic: areSelectedNonEmptyLinesWrapped(value, selection, '*'),
-      underline: areSelectedNonEmptyLinesWrapped(
-        value,
-        selection,
-        '<u>',
-        '</u>',
-      ),
-      strikethrough: areSelectedNonEmptyLinesWrapped(value, selection, '~~'),
-      code: areSelectedNonEmptyLinesWrapped(value, selection, '`'),
-      link: false,
-      image: false,
-    }
-  }
+  const selectionSpansLines = /[\r\n]/u.test(
+    value.slice(selection.startOffset, selection.endOffset),
+  )
 
   return {
     bold:
@@ -54,9 +40,14 @@ export function detectActiveInlineFormats(
       getInlineFormatState(value, selection, 'strike', selectedText) ===
       'active',
     code:
+      !selectionSpansLines &&
       getInlineFormatState(value, selection, 'inlineCode', selectedText) ===
       'active',
-    link: isLinkSelectionActive(value, selection, selectedText),
-    image: isImageSelectionActive(value, selection, selectedText),
+    link:
+      !selectionSpansLines &&
+      isLinkSelectionActive(value, selection, selectedText),
+    image:
+      !selectionSpansLines &&
+      isImageSelectionActive(value, selection, selectedText),
   }
 }

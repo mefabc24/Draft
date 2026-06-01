@@ -8,6 +8,10 @@ import {
   doInlineRangesIntersect,
   getInlineSyntaxRanges,
 } from './mergeInlineFormatRanges'
+import {
+  selectionSpansMultipleLines,
+  splitSelectionIntoLineLocalRanges,
+} from './multilineInlineSelection'
 import type {
   InlineFormatRange,
   InlineFormatState,
@@ -75,16 +79,12 @@ function getCoveredLength(
   return coveredLength
 }
 
-export function getInlineFormatState(
+function getSingleLineInlineFormatState(
   value: string,
   selection: MarkdownSelectionOffsetRange,
   format: ParsedInlineFormat,
   selectedText?: string,
 ): InlineFormatState {
-  if (value.slice(selection.startOffset, selection.endOffset).includes('\n')) {
-    return 'inactive'
-  }
-
   const normalizedSelection = normalizeInlineSelectionRange(
     value,
     selection,
@@ -118,6 +118,45 @@ export function getInlineFormatState(
   }
 
   return coveredLength === visibleLength ? 'active' : 'mixed'
+}
+
+export function getInlineFormatState(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  format: ParsedInlineFormat,
+  selectedText?: string,
+): InlineFormatState {
+  if (!selectionSpansMultipleLines(value, selection)) {
+    return getSingleLineInlineFormatState(value, selection, format, selectedText)
+  }
+
+  if (format === 'inlineCode') {
+    return 'inactive'
+  }
+
+  const normalizedSelection = normalizeInlineSelectionRange(
+    value,
+    selection,
+    selectedText,
+  )
+  const segmentStates = splitSelectionIntoLineLocalRanges(
+    value,
+    normalizedSelection.coreRange,
+  ).map((range) => getSingleLineInlineFormatState(value, range, format))
+
+  if (segmentStates.length === 0) {
+    return 'inactive'
+  }
+
+  if (segmentStates.every((state) => state === 'active')) {
+    return 'active'
+  }
+
+  if (segmentStates.every((state) => state === 'inactive')) {
+    return 'inactive'
+  }
+
+  return 'mixed'
 }
 
 export function isInlineFormatStateActive(

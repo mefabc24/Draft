@@ -134,18 +134,6 @@ export function normalizeInlineSelectionRange(
   const originalText =
     selectedText ?? value.slice(originalRange.startOffset, originalRange.endOffset)
 
-  if (/[\r\n]/u.test(originalText)) {
-    return {
-      coreRange: originalRange,
-      coreText: originalText,
-      hasEdgeWhitespace: false,
-      leadingWhitespace: '',
-      originalRange,
-      originalText,
-      trailingWhitespace: '',
-    }
-  }
-
   const leadingWhitespaceLength = countLeadingInlineWhitespace(originalText)
   const trailingWhitespaceLength = countTrailingInlineWhitespace(originalText)
   const coreStartOffset = originalRange.startOffset + leadingWhitespaceLength

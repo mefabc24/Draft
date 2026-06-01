@@ -15,7 +15,6 @@ import {
   getInlineRangeSyntaxRanges,
   getMergeableInlineFormatApplicationRange,
   isInlineRangeInside,
-  isInlineWhitespaceOnly,
 } from './mergeInlineFormatRanges'
 import { normalizeInlineSelectionRange } from './normalizeInlineSelection'
 import {
@@ -23,6 +22,10 @@ import {
   parseInlineFormatRanges,
   parseInlineFormatRangesForSelection,
 } from './parseInlineFormatRanges'
+import {
+  selectionSpansMultipleLines,
+  splitSelectionIntoLineLocalRanges,
+} from './multilineInlineSelection'
 import type {
   ContainingInlineFormatRange,
   InlineFormatRange,
@@ -57,16 +60,6 @@ function splitLeadingInlineWhitespace(value: string) {
   }
 }
 
-function getInlineWhitespaceBounds(value: string) {
-  const leadingWhitespaceLength = value.match(/^[^\S\r\n]*/u)?.[0].length ?? 0
-  const trailingWhitespaceLength = value.match(/[^\S\r\n]*$/u)?.[0].length ?? 0
-
-  return {
-    contentEndOffset: value.length - trailingWhitespaceLength,
-    contentStartOffset: leadingWhitespaceLength,
-  }
-}
-
 function isSelectedTextWrapped(
   selectedText: string,
   openingMarker: string,
@@ -86,334 +79,6 @@ function isSelectedTextWrapped(
   )
 }
 
-function isLineFullyWrapped(
-  value: string,
-  openingMarker: string,
-  closingMarker = openingMarker,
-) {
-  const { contentEndOffset, contentStartOffset } =
-    getInlineWhitespaceBounds(value)
-  const contentText = value.slice(contentStartOffset, contentEndOffset)
-
-  return isSelectedTextWrapped(contentText, openingMarker, closingMarker)
-}
-
-function getSelectionLineSegments(
-  value: string,
-  selection: MarkdownSelectionOffsetRange,
-) {
-  const selectionText = value.slice(selection.startOffset, selection.endOffset)
-
-  if (!selectionText.includes('\n')) {
-    return null
-  }
-
-  const startLineOffset = value.lastIndexOf(
-    '\n',
-    Math.max(0, selection.startOffset - 1),
-  ) + 1
-  const effectiveEndOffset =
-    selection.endOffset > selection.startOffset &&
-    value[selection.endOffset - 1] === '\n'
-      ? selection.endOffset - 1
-      : selection.endOffset
-  const endLineBreakOffset = value.indexOf('\n', effectiveEndOffset)
-  const finalLineEndOffset =
-    endLineBreakOffset === -1 ? value.length : endLineBreakOffset
-  const segments: Array<{
-    lineEndOffset: number
-    lineStartOffset: number
-    trailingNewline: string
-  }> = []
-  let lineStartOffset = startLineOffset
-
-  while (lineStartOffset <= finalLineEndOffset) {
-    const lineBreakOffset = value.indexOf('\n', lineStartOffset)
-    const lineEndOffset =
-      lineBreakOffset === -1 ? value.length : lineBreakOffset
-    const trailingNewline =
-      lineBreakOffset !== -1 && lineEndOffset < finalLineEndOffset ? '\n' : ''
-
-    segments.push({
-      lineEndOffset,
-      lineStartOffset,
-      trailingNewline,
-    })
-
-    if (lineBreakOffset === -1 || lineEndOffset >= finalLineEndOffset) {
-      break
-    }
-
-    lineStartOffset = lineBreakOffset + 1
-  }
-
-  return segments
-}
-
-export function areSelectedNonEmptyLinesWrapped(
-  value: string,
-  selection: MarkdownSelectionOffsetRange,
-  openingMarker: string,
-  closingMarker = openingMarker,
-) {
-  const segments = getSelectionLineSegments(value, selection)
-
-  if (!segments) {
-    return false
-  }
-
-  const nonEmptyLines = segments
-    .map((segment) => value.slice(segment.lineStartOffset, segment.lineEndOffset))
-    .filter((line) => !isInlineWhitespaceOnly(line))
-
-  return (
-    nonEmptyLines.length > 0 &&
-    nonEmptyLines.every((line) =>
-      isLineFullyWrapped(line, openingMarker, closingMarker),
-    )
-  )
-}
-
-function getLineToggleText(
-  value: string,
-  shouldUnwrap: boolean,
-  openingMarker: string,
-  closingMarker = openingMarker,
-) {
-  if (isInlineWhitespaceOnly(value)) {
-    return {
-      operation: 'none' as const,
-      text: value,
-    }
-  }
-
-  const { contentEndOffset, contentStartOffset } =
-    getInlineWhitespaceBounds(value)
-  const leadingWhitespace = value.slice(0, contentStartOffset)
-  const trailingWhitespace = value.slice(contentEndOffset)
-  const contentText = value.slice(contentStartOffset, contentEndOffset)
-  const isWrapped = isSelectedTextWrapped(
-    contentText,
-    openingMarker,
-    closingMarker,
-  )
-
-  if (shouldUnwrap) {
-    if (!isWrapped) {
-      return {
-        operation: 'none' as const,
-        text: value,
-      }
-    }
-
-    return {
-      operation: 'unwrap' as const,
-      text: `${leadingWhitespace}${contentText.slice(
-        openingMarker.length,
-        contentText.length - closingMarker.length,
-      )}${trailingWhitespace}`,
-    }
-  }
-
-  if (isWrapped) {
-    return {
-      operation: 'none' as const,
-      text: value,
-    }
-  }
-
-  return {
-    operation: 'wrap' as const,
-    text: `${leadingWhitespace}${openingMarker}${contentText}${closingMarker}${trailingWhitespace}`,
-  }
-}
-
-type MultilineSegmentTransform = {
-  lineEndOffset: number
-  lineStartOffset: number
-  newText: string
-  oldText: string
-  operation: 'none' | 'unwrap' | 'wrap'
-  trailingNewline: string
-}
-
-function mapMultilineLineOffset(
-  offset: number,
-  transform: MultilineSegmentTransform,
-  openingMarker: string,
-  closingMarker = openingMarker,
-) {
-  const localOffset = Math.min(
-    Math.max(0, offset - transform.lineStartOffset),
-    transform.oldText.length,
-  )
-  const { contentEndOffset, contentStartOffset } =
-    getInlineWhitespaceBounds(transform.oldText)
-
-  if (transform.operation === 'wrap') {
-    if (localOffset < contentStartOffset) {
-      return transform.lineStartOffset + localOffset
-    }
-
-    if (localOffset <= contentEndOffset) {
-      return transform.lineStartOffset + localOffset + openingMarker.length
-    }
-
-    return (
-      transform.lineStartOffset +
-      localOffset +
-      openingMarker.length +
-      closingMarker.length
-    )
-  }
-
-  if (transform.operation === 'unwrap') {
-    const prefixEndOffset = contentStartOffset + openingMarker.length
-    const suffixStartOffset = contentEndOffset - closingMarker.length
-
-    if (localOffset <= contentStartOffset) {
-      return transform.lineStartOffset + localOffset
-    }
-
-    if (localOffset <= prefixEndOffset) {
-      return transform.lineStartOffset + contentStartOffset
-    }
-
-    if (localOffset <= suffixStartOffset) {
-      return transform.lineStartOffset + localOffset - openingMarker.length
-    }
-
-    if (localOffset <= contentEndOffset) {
-      return transform.lineStartOffset + suffixStartOffset - openingMarker.length
-    }
-
-    return (
-      transform.lineStartOffset +
-      localOffset -
-      openingMarker.length -
-      closingMarker.length
-    )
-  }
-
-  return transform.lineStartOffset + localOffset
-}
-
-function mapMultilineSelectionOffset(
-  offset: number,
-  replacementStartOffset: number,
-  transforms: MultilineSegmentTransform[],
-  openingMarker: string,
-  closingMarker = openingMarker,
-) {
-  let accumulatedDelta = 0
-
-  for (const transform of transforms) {
-    const oldSegmentLength =
-      transform.oldText.length + transform.trailingNewline.length
-    const newSegmentLength =
-      transform.newText.length + transform.trailingNewline.length
-
-    if (offset <= transform.lineEndOffset) {
-      return (
-        mapMultilineLineOffset(
-          offset,
-          transform,
-          openingMarker,
-          closingMarker,
-        ) + accumulatedDelta
-      )
-    }
-
-    if (offset <= transform.lineEndOffset + transform.trailingNewline.length) {
-      return transform.lineStartOffset + accumulatedDelta + newSegmentLength
-    }
-
-    accumulatedDelta += newSegmentLength - oldSegmentLength
-  }
-
-  const lastTransform = transforms[transforms.length - 1]
-
-  return (
-    replacementStartOffset +
-    transforms.reduce(
-      (total, transform) =>
-        total + transform.newText.length + transform.trailingNewline.length,
-      0,
-    ) -
-    (lastTransform?.trailingNewline.length ?? 0)
-  )
-}
-
-function getToggleMultilineInlineFormatEdits(
-  value: string,
-  selection: MarkdownSelectionOffsetRange,
-  openingMarker: string,
-  closingMarker = openingMarker,
-  mode: ToggleInlineFormatMode = 'toggle',
-): ToggleInlineFormatResult | null {
-  const segments = getSelectionLineSegments(value, selection)
-
-  if (!segments) {
-    return null
-  }
-
-  const shouldUnwrap = areSelectedNonEmptyLinesWrapped(
-    value,
-    selection,
-    openingMarker,
-    closingMarker,
-  )
-  const operationShouldUnwrap =
-    mode === 'unwrap' || (mode === 'toggle' && shouldUnwrap)
-  const transforms = segments.map((segment) => {
-    const oldText = value.slice(segment.lineStartOffset, segment.lineEndOffset)
-    const result = getLineToggleText(
-      oldText,
-      operationShouldUnwrap,
-      openingMarker,
-      closingMarker,
-    )
-
-    return {
-      ...segment,
-      newText: result.text,
-      oldText,
-      operation: result.operation,
-    } satisfies MultilineSegmentTransform
-  })
-  const replacementStartOffset = transforms[0].lineStartOffset
-  const replacementEndOffset = transforms[transforms.length - 1].lineEndOffset
-  const replacementText = transforms
-    .map((transform) => `${transform.newText}${transform.trailingNewline}`)
-    .join('')
-
-  return {
-    edits: [
-      {
-        endOffset: replacementEndOffset,
-        startOffset: replacementStartOffset,
-        text: replacementText,
-      },
-    ],
-    nextSelection: {
-      endOffset: mapMultilineSelectionOffset(
-        selection.endOffset,
-        replacementStartOffset,
-        transforms,
-        openingMarker,
-        closingMarker,
-      ),
-      startOffset: mapMultilineSelectionOffset(
-        selection.startOffset,
-        replacementStartOffset,
-        transforms,
-        openingMarker,
-        closingMarker,
-      ),
-    },
-  }
-}
-
 function getSortedRangesForSelection(
   value: string,
   selection: MarkdownSelectionOffsetRange,
@@ -426,10 +91,7 @@ export function findContainingInlineFormatRange(
   selection: MarkdownSelectionOffsetRange,
   format: WrappableInlineFormat,
 ): ContainingInlineFormatRange | null {
-  if (
-    selection.startOffset >= selection.endOffset ||
-    /[\r\n]/u.test(value.slice(selection.startOffset, selection.endOffset))
-  ) {
+  if (selection.startOffset >= selection.endOffset) {
     return null
   }
 
@@ -967,7 +629,11 @@ function getSimpleWrapEdits(
   }
 }
 
-export function getToggleInlineFormatEdits(
+function getMarkdownEditDelta(edit: MarkdownTextEdit) {
+  return edit.text.length - (edit.endOffset - edit.startOffset)
+}
+
+function getToggleSingleLineInlineFormatEdits(
   value: string,
   selection: MarkdownSelectionOffsetRange,
   selectedText: string,
@@ -975,18 +641,6 @@ export function getToggleInlineFormatEdits(
   mode: ToggleInlineFormatMode = 'toggle',
 ): ToggleInlineFormatResult {
   const markers = getInlineFormatMarkers(format)
-  const multilineResult = getToggleMultilineInlineFormatEdits(
-    value,
-    selection,
-    markers.openingMarker,
-    markers.closingMarker,
-    mode,
-  )
-
-  if (multilineResult) {
-    return multilineResult
-  }
-
   const normalizedSelection = normalizeInlineSelectionRange(
     value,
     selection,
@@ -1060,6 +714,85 @@ export function getToggleInlineFormatEdits(
   }
 
   return { edits: [], nextSelection: coreRange }
+}
+
+function getToggleLineLocalInlineFormatEdits(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  format: WrappableInlineFormat,
+  mode: ToggleInlineFormatMode,
+): ToggleInlineFormatResult {
+  const lineRanges = splitSelectionIntoLineLocalRanges(value, selection)
+
+  if (lineRanges.length === 0) {
+    return { edits: [], nextSelection: selection }
+  }
+
+  const state = getInlineFormatState(
+    value,
+    selection,
+    format,
+    value.slice(selection.startOffset, selection.endOffset),
+  )
+  const lineMode =
+    mode === 'toggle' ? (state === 'active' ? 'unwrap' : 'wrap') : mode
+  const results = lineRanges.map((lineRange) => ({
+    lineRange,
+    result: getToggleSingleLineInlineFormatEdits(
+      value,
+      lineRange,
+      value.slice(lineRange.startOffset, lineRange.endOffset),
+      format,
+      lineMode,
+    ),
+  }))
+  const edits = results.flatMap(({ result }) => result.edits)
+  const firstResult = results[0]
+  const lastResult = results[results.length - 1]
+  const deltaBeforeLastLine = results
+    .slice(0, -1)
+    .flatMap(({ result }) => result.edits)
+    .reduce((delta, edit) => delta + getMarkdownEditDelta(edit), 0)
+
+  return {
+    edits,
+    nextSelection: {
+      endOffset:
+        lastResult.result.nextSelection.endOffset + deltaBeforeLastLine,
+      startOffset: firstResult.result.nextSelection.startOffset,
+    },
+  }
+}
+
+export function getToggleInlineFormatEdits(
+  value: string,
+  selection: MarkdownSelectionOffsetRange,
+  selectedText: string,
+  format: WrappableInlineFormat,
+  mode: ToggleInlineFormatMode = 'toggle',
+): ToggleInlineFormatResult {
+  const normalizedSelection = normalizeInlineSelectionRange(
+    value,
+    selection,
+    selectedText,
+  )
+  const { coreRange } = normalizedSelection
+
+  if (!selectionSpansMultipleLines(value, coreRange)) {
+    return getToggleSingleLineInlineFormatEdits(
+      value,
+      selection,
+      selectedText,
+      format,
+      mode,
+    )
+  }
+
+  if (format === 'inlineCode') {
+    return { edits: [], nextSelection: normalizedSelection.originalRange }
+  }
+
+  return getToggleLineLocalInlineFormatEdits(value, coreRange, format, mode)
 }
 
 export function isSelectionComposedOfAdjacentInlineCodeSpans(

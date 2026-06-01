@@ -5,7 +5,6 @@ import type {
 import { getWrappableInlineFormatForMarkers } from '../inline/inlineFormatConfig'
 import { getInlineFormatState } from '../inline/getInlineFormatState'
 import {
-  areSelectedNonEmptyLinesWrapped,
   findContainingInlineFormatRange as findContainingParsedInlineFormatRange,
   getInlineWrapperContext as getParsedInlineWrapperContext,
   getToggleInlineFormatEdits,
@@ -101,18 +100,12 @@ export function isInlineFormatActive(
   prefix: string,
   suffix = prefix,
 ) {
-  if (value.slice(selection.startOffset, selection.endOffset).includes('\n')) {
-    return areSelectedNonEmptyLinesWrapped(value, selection, prefix, suffix)
-  }
-
   const format = getFormatForMarkers(prefix, suffix)
 
   return format
     ? getInlineFormatState(value, selection, format, selectedText) === 'active'
     : false
 }
-
-export { areSelectedNonEmptyLinesWrapped }
 
 export { isSelectionComposedOfAdjacentInlineCodeSpans }
 
