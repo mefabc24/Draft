@@ -69,6 +69,24 @@ function createSourcePosition(
   }
 }
 
+function createAbsoluteSourcePosition(
+  startOffset: number | null,
+  endOffset: number | null,
+) {
+  if (startOffset === null || endOffset === null || startOffset >= endOffset) {
+    return undefined
+  }
+
+  return {
+    start: {
+      offset: startOffset,
+    },
+    end: {
+      offset: endOffset,
+    },
+  }
+}
+
 function appendTextFragment(
   fragments: DraftExtensionFragment[],
   value: string,
@@ -301,6 +319,155 @@ function createDraftExtensionElement(
   } satisfies HastNode
 }
 
+function getNodeTextContent(node: HastNode): string {
+  if (node.type === 'text' && typeof node.value === 'string') {
+    return node.value
+  }
+
+  return node.children?.map(getNodeTextContent).join('') ?? ''
+}
+
+function createSpoilerElementFromChildren(
+  children: HastNode[],
+  openMarkerNode: HastNode,
+  closeMarkerNode: HastNode,
+) {
+  const startOffset = getSourceOffset(openMarkerNode.position?.start?.offset)
+  const endOffset = getSourceOffset(closeMarkerNode.position?.end?.offset)
+  const spoilerStart = startOffset === null ? 'unknown' : String(startOffset)
+  const spoilerText = children.map(getNodeTextContent).join('')
+
+  return {
+    type: 'element',
+    tagName: 'span',
+    properties: {
+      className: ['preview-spoiler'],
+      'data-spoiler-id': `spoiler-${spoilerStart}-${hashSpoilerContent(spoilerText)}`,
+    },
+    children,
+    position: createAbsoluteSourcePosition(startOffset, endOffset),
+  } satisfies HastNode
+}
+
+type SpoilerNodeBuffer = {
+  children: HastNode[]
+  openMarkerNode: HastNode
+}
+
+function addSpoilerTextSegment(
+  targetChildren: HastNode[],
+  sourceNode: HastNode,
+  value: string,
+  startIndex: number,
+  endIndex: number,
+) {
+  if (!value) {
+    return
+  }
+
+  targetChildren.push(createTextNode(sourceNode, value, startIndex, endIndex))
+}
+
+function getSpoilerTextTarget(
+  outputChildren: HastNode[],
+  spoilerBuffer: SpoilerNodeBuffer | null,
+) {
+  return spoilerBuffer?.children ?? outputChildren
+}
+
+function groupSpoilerTextNode(
+  sourceNode: HastNode,
+  outputChildren: HastNode[],
+  spoilerBuffer: SpoilerNodeBuffer | null,
+) {
+  if (typeof sourceNode.value !== 'string') {
+    return spoilerBuffer
+  }
+
+  const { value } = sourceNode
+  let currentIndex = 0
+  let currentSpoilerBuffer = spoilerBuffer
+
+  while (currentIndex < value.length) {
+    const markerIndex = value.indexOf('||', currentIndex)
+
+    if (markerIndex === -1) {
+      addSpoilerTextSegment(
+        getSpoilerTextTarget(outputChildren, currentSpoilerBuffer),
+        sourceNode,
+        value.slice(currentIndex),
+        currentIndex,
+        value.length,
+      )
+      break
+    }
+
+    addSpoilerTextSegment(
+      getSpoilerTextTarget(outputChildren, currentSpoilerBuffer),
+      sourceNode,
+      value.slice(currentIndex, markerIndex),
+      currentIndex,
+      markerIndex,
+    )
+
+    const markerNode = createTextNode(
+      sourceNode,
+      '||',
+      markerIndex,
+      markerIndex + 2,
+    )
+
+    if (currentSpoilerBuffer) {
+      outputChildren.push(
+        createSpoilerElementFromChildren(
+          currentSpoilerBuffer.children,
+          currentSpoilerBuffer.openMarkerNode,
+          markerNode,
+        ),
+      )
+      currentSpoilerBuffer = null
+    } else {
+      currentSpoilerBuffer = {
+        children: [],
+        openMarkerNode: markerNode,
+      }
+    }
+
+    currentIndex = markerIndex + 2
+  }
+
+  return currentSpoilerBuffer
+}
+
+function groupSpoilerSiblingNodes(children: HastNode[]) {
+  const outputChildren: HastNode[] = []
+  let spoilerBuffer: SpoilerNodeBuffer | null = null
+
+  for (const child of children) {
+    if (child.type === 'text') {
+      spoilerBuffer = groupSpoilerTextNode(
+        child,
+        outputChildren,
+        spoilerBuffer,
+      )
+      continue
+    }
+
+    if (spoilerBuffer) {
+      spoilerBuffer.children.push(child)
+      continue
+    }
+
+    outputChildren.push(child)
+  }
+
+  if (spoilerBuffer) {
+    outputChildren.push(spoilerBuffer.openMarkerNode, ...spoilerBuffer.children)
+  }
+
+  return outputChildren
+}
+
 function getDraftExtensionNodes(sourceNode: HastNode) {
   if (typeof sourceNode.value !== 'string') {
     return [sourceNode]
@@ -367,7 +534,7 @@ function transformDraftExtensionNode(node: HastNode) {
     }
   }
 
-  node.children = children
+  node.children = groupSpoilerSiblingNodes(children)
 }
 
 export function rehypeDraftMarkdownExtensions() {
