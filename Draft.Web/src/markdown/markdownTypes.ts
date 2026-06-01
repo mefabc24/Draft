@@ -16,6 +16,7 @@ export type InlineFormat =
   | 'underline'
   | 'strikethrough'
   | 'code'
+  | 'spoiler'
   | 'link'
   | 'image'
 export type ActiveFormats = Record<InlineFormat, boolean>

@@ -274,6 +274,18 @@ function FloatingMarkdownToolbar({
       >
         <ToolbarIcon name="code" />
       </ToolbarButton>
+      <ToolbarButton
+        ariaLabel="Spoiler"
+        active={activeFormats.spoiler}
+        onTooltipHide={hideToolbarTooltip}
+        onTooltipShow={showToolbarTooltip}
+        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '||', '||', commandOptions)
+        })}
+        tooltip={inlineTooltips.spoiler}
+      >
+        <ToolbarIcon name="spoiler" />
+      </ToolbarButton>
       {linkEdit.available ? (
         <LinkEditMenu
           active={activeFormats.link}

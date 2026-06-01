@@ -84,6 +84,18 @@ export function useToolbarKeyboardCommands({
         },
       }),
       editor.addAction({
+        id: 'draft.markdownToolbar.spoiler',
+        label: 'Markdown: Toggle Spoiler',
+        keybindings: [
+          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS,
+        ],
+        run: () => {
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '||', '||', commandOptions)
+          })
+        },
+      }),
+      editor.addAction({
         id: 'draft.markdownToolbar.strikethrough',
         label: 'Markdown: Toggle Strikethrough',
         keybindings: [
@@ -234,6 +246,10 @@ export function useToolbarKeyboardCommands({
       } else if (!event.shiftKey && !event.altKey && key === 'e') {
         command = (activeEditor, commandOptions) => {
           toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
+        }
+      } else if (event.shiftKey && !event.altKey && key === 's') {
+        command = (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '||', '||', commandOptions)
         }
       } else if (event.shiftKey && !event.altKey && key === 'x') {
         command = (activeEditor, commandOptions) => {

@@ -10,6 +10,7 @@ export type ToolbarIconName =
   | 'link'
   | 'noneList'
   | 'numberedList'
+  | 'spoiler'
   | 'strikethrough'
   | 'taskList'
   | 'underline'
@@ -26,6 +27,7 @@ const toolbarIconPaths: Record<ToolbarIconName, string> = {
   link: 'icons/Link.svg',
   noneList: 'icons/NoList.svg',
   numberedList: 'icons/NumberedList.svg',
+  spoiler: 'icons/Spoiler.svg',
   strikethrough: 'icons/Strikethrough.svg',
   taskList: 'icons/Tasklist.svg',
   underline: 'icons/Underline.svg',

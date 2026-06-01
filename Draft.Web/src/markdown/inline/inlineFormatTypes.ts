@@ -9,6 +9,7 @@ export type ParsedInlineFormat =
   | 'inlineCode'
   | 'italic'
   | 'link'
+  | 'spoiler'
   | 'strike'
   | 'underline'
 

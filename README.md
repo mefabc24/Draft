@@ -109,6 +109,7 @@ Ctrl + B              Bold
 Ctrl + I              Italic
 Ctrl + Shift + X      Strikethrough
 Ctrl + E              Inline code
+Ctrl + Shift + S      Spoiler
 Ctrl + K              Link
 Ctrl + Alt + I        Image
 Ctrl + 1..6           Heading 1 through Heading 6

@@ -40,6 +40,12 @@ export const inlineFormatConfig = {
     openingMarker: '`',
     parseInsideInlineCode: false,
   },
+  spoiler: {
+    closingMarker: '||',
+    mergeAdjacent: false,
+    openingMarker: '||',
+    parseInsideInlineCode: false,
+  },
 } satisfies Record<WrappableInlineFormat, InlineFormatConfig>
 
 export const wrappableInlineFormats = Object.keys(
@@ -82,6 +88,7 @@ export function isParsedInlineFormat(
     value === 'inlineCode' ||
     value === 'italic' ||
     value === 'link' ||
+    value === 'spoiler' ||
     value === 'strike' ||
     value === 'underline'
   )

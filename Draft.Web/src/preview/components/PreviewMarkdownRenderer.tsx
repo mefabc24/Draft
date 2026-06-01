@@ -225,35 +225,42 @@ function PreviewSpoiler({
   spoilerId,
   ...props
 }: PreviewSpoilerProps) {
-  const [revealVersion, setRevealVersion] = useState(0)
+  const [isLocallyRevealed, setIsLocallyRevealed] = useState(false)
   const isRevealed = spoilerId
     ? revealedSpoilerIds.has(spoilerId)
-    : revealVersion > 0
+    : isLocallyRevealed
 
-  function revealSpoiler() {
-    if (isRevealed) {
+  function toggleSpoiler() {
+    if (spoilerId) {
+      if (isRevealed) {
+        revealedSpoilerIds.delete(spoilerId)
+      } else {
+        revealedSpoilerIds.add(spoilerId)
+      }
+    } else {
+      setIsLocallyRevealed((currentValue) => !currentValue)
       return
     }
 
-    if (spoilerId) {
-      revealedSpoilerIds.add(spoilerId)
-    }
-
-    setRevealVersion((currentVersion) => currentVersion + 1)
+    setIsLocallyRevealed((currentValue) => !currentValue)
   }
 
   return (
     <span
       {...props}
       className={`${className ?? ''}${isRevealed ? ' is-revealed' : ''}`}
-      role={isRevealed ? undefined : 'button'}
-      tabIndex={isRevealed ? undefined : 0}
-      aria-label={isRevealed ? undefined : 'Spoiler hidden. Click to reveal.'}
+      role="button"
+      tabIndex={0}
+      aria-label={
+        isRevealed
+          ? 'Spoiler visible. Click to hide.'
+          : 'Spoiler hidden. Click to reveal.'
+      }
       onClick={(event) => {
         onClick?.(event)
 
         if (!event.defaultPrevented) {
-          revealSpoiler()
+          toggleSpoiler()
         }
       }}
       onKeyDown={(event) => {
@@ -261,14 +268,13 @@ function PreviewSpoiler({
 
         if (
           event.defaultPrevented ||
-          isRevealed ||
           (event.key !== 'Enter' && event.key !== ' ')
         ) {
           return
         }
 
         event.preventDefault()
-        revealSpoiler()
+        toggleSpoiler()
       }}
     >
       <span className="preview-spoiler-content" aria-hidden={!isRevealed}>

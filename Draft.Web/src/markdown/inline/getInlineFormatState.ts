@@ -130,7 +130,7 @@ export function getInlineFormatState(
     return getSingleLineInlineFormatState(value, selection, format, selectedText)
   }
 
-  if (format === 'inlineCode') {
+  if (format === 'inlineCode' || format === 'spoiler') {
     return 'inactive'
   }
 

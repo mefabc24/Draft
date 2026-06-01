@@ -788,7 +788,7 @@ export function getToggleInlineFormatEdits(
     )
   }
 
-  if (format === 'inlineCode') {
+  if (format === 'inlineCode' || format === 'spoiler') {
     return { edits: [], nextSelection: normalizedSelection.originalRange }
   }
 

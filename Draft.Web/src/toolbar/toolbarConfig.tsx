@@ -70,6 +70,7 @@ export const inlineTooltips: Record<InlineFormat, ToolbarTooltipContent> = {
     shortcut: 'CTRL + SHIFT + X',
   },
   code: { label: 'Inline Code', shortcut: 'CTRL + E' },
+  spoiler: { label: 'Spoiler', shortcut: 'CTRL + SHIFT + S' },
   link: { label: 'Link', shortcut: 'CTRL + K' },
   image: { label: 'Image', shortcut: 'CTRL + ALT + I' },
 }

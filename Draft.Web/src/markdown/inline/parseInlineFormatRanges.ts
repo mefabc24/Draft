@@ -438,7 +438,13 @@ export function parseInlineFormatRanges(
   ])
   const excludedRanges = [...codeExclusions, ...resourceSyntaxExclusions]
   const wrappedRanges = (
-    ['bold', 'italic', 'strike', 'underline'] satisfies WrappableInlineFormat[]
+    [
+      'bold',
+      'italic',
+      'strike',
+      'underline',
+      'spoiler',
+    ] satisfies WrappableInlineFormat[]
   ).flatMap((type) =>
     parseWrappedRanges(value, lineRange, type, excludedRanges),
   )

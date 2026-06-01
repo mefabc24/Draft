@@ -201,7 +201,7 @@
 .preview-content .preview-spoiler.is-revealed {
   background: var(--preview-spoiler-revealed-background, transparent);
   color: var(--preview-spoiler-foreground, inherit);
-  cursor: text;
+  cursor: pointer;
   user-select: text;
 }
 
