@@ -61,6 +61,10 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
                         "Toggle italic Markdown around the current selection.",
                         "Ctrl + I"),
                     new ShortcutItemViewModel(
+                        "Underline",
+                        "Toggle underline HTML tags around the current selection.",
+                        "Ctrl + U"),
+                    new ShortcutItemViewModel(
                         "Inline code",
                         "Toggle inline code Markdown around the current selection.",
                         "Ctrl + E"),

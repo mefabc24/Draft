@@ -5,6 +5,7 @@ export {
   findContainingInlineFormatRange,
   getInlineWrapperContext,
   getToggleWrappedEdits,
+  isInlineFormatActive,
   isSelectedTextWrapped,
   normalizeAdjacentInlineFormattingRanges,
 } from './commands/inlineFormatting'
@@ -41,5 +42,8 @@ export type {
 } from './markdownTypes'
 export type { FencedCodeBlockContext } from './detection/fencedCodeBlocks'
 export type { EditableMarkdownSourceRange } from './commands/sourceRangeEditing'
-export type { ContainingInlineWrapperContext } from './commands/inlineFormatting'
+export type {
+  ContainingInlineWrapperContext,
+  ToggleWrappedMode,
+} from './commands/inlineFormatting'
 export type { MarkdownImageContext, MarkdownLinkContext } from './commands/linkFormatting'

@@ -64,6 +64,16 @@ export function useToolbarKeyboardCommands({
         },
       }),
       editor.addAction({
+        id: 'draft.markdownToolbar.underline',
+        label: 'Markdown: Toggle Underline',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyU],
+        run: () => {
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '<u>', '</u>', commandOptions)
+          })
+        },
+      }),
+      editor.addAction({
         id: 'draft.markdownToolbar.inlineCode',
         label: 'Markdown: Toggle Inline Code',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE],
@@ -216,6 +226,10 @@ export function useToolbarKeyboardCommands({
       } else if (!event.shiftKey && !event.altKey && key === 'i') {
         command = (activeEditor, commandOptions) => {
           toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
+        }
+      } else if (!event.shiftKey && !event.altKey && key === 'u') {
+        command = (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '<u>', '</u>', commandOptions)
         }
       } else if (!event.shiftKey && !event.altKey && key === 'e') {
         command = (activeEditor, commandOptions) => {

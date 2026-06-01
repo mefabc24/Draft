@@ -12,6 +12,7 @@ export type ToolbarIconName =
   | 'numberedList'
   | 'strikethrough'
   | 'taskList'
+  | 'underline'
 
 const toolbarIconPaths: Record<ToolbarIconName, string> = {
   blockquote: 'icons/Blockquote.svg',
@@ -27,6 +28,7 @@ const toolbarIconPaths: Record<ToolbarIconName, string> = {
   numberedList: 'icons/NumberedList.svg',
   strikethrough: 'icons/Strikethrough.svg',
   taskList: 'icons/Tasklist.svg',
+  underline: 'icons/Underline.svg',
 }
 
 function getToolbarIconSrc(name: ToolbarIconName) {

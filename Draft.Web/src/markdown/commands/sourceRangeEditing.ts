@@ -9,6 +9,7 @@ export type EditableMarkdownSourceRange = MarkdownSelectionOffsetRange & {
 const EDITABLE_INLINE_WRAPPERS = [
   { prefix: '`', suffix: '`' },
   { prefix: '**', suffix: '**' },
+  { prefix: '<u>', suffix: '</u>' },
   { prefix: '~~', suffix: '~~' },
   { prefix: '*', suffix: '*' },
 ]

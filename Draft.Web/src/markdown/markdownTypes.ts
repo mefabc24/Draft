@@ -13,6 +13,7 @@ export type ListValue = 'none' | 'bullet' | 'numbered' | 'checklist'
 export type InlineFormat =
   | 'bold'
   | 'italic'
+  | 'underline'
   | 'strikethrough'
   | 'code'
   | 'link'

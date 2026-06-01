@@ -239,6 +239,18 @@ function FloatingMarkdownToolbar({
         <ToolbarIcon name="italic" />
       </ToolbarButton>
       <ToolbarButton
+        ariaLabel="Underline"
+        active={activeFormats.underline}
+        onTooltipHide={hideToolbarTooltip}
+        onTooltipShow={showToolbarTooltip}
+        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '<u>', '</u>', commandOptions)
+        })}
+        tooltip={inlineTooltips.underline}
+      >
+        <ToolbarIcon name="underline" />
+      </ToolbarButton>
+      <ToolbarButton
         ariaLabel="Strikethrough"
         active={activeFormats.strikethrough}
         onTooltipHide={hideToolbarTooltip}

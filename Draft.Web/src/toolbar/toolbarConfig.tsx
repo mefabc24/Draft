@@ -64,6 +64,7 @@ export const headingShortcuts: Partial<Record<HeadingValue, string>> = {
 export const inlineTooltips: Record<InlineFormat, ToolbarTooltipContent> = {
   bold: { label: 'Bold', shortcut: 'CTRL + B' },
   italic: { label: 'Italic', shortcut: 'CTRL + I' },
+  underline: { label: 'Underline', shortcut: 'CTRL + U' },
   strikethrough: {
     label: 'Strikethrough',
     shortcut: 'CTRL + SHIFT + X',

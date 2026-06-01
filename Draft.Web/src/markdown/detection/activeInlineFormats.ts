@@ -2,14 +2,8 @@ import type {
   ActiveFormats,
   MarkdownSelectionOffsetRange,
 } from '../markdownTypes'
-import {
-  areSelectedNonEmptyLinesWrapped,
-  findContainingInlineFormatRange,
-  getInlineWrapperContext,
-  isSelectionComposedOfAdjacentInlineCodeSpans,
-  isSelectedTextWrapped,
-} from '../commands/inlineFormatting'
-import { normalizeInlineSelectionRange } from '../commands/inlineSelectionNormalization'
+import { getInlineFormatState } from '../inline/getInlineFormatState'
+import { areSelectedNonEmptyLinesWrapped } from '../commands/inlineFormatting'
 import {
   isImageSelectionActive,
   isLinkSelectionActive,
@@ -18,6 +12,7 @@ import {
 export const EMPTY_ACTIVE_FORMATS: ActiveFormats = {
   bold: false,
   italic: false,
+  underline: false,
   strikethrough: false,
   code: false,
   link: false,
@@ -33,6 +28,12 @@ export function detectActiveInlineFormats(
     return {
       bold: areSelectedNonEmptyLinesWrapped(value, selection, '**'),
       italic: areSelectedNonEmptyLinesWrapped(value, selection, '*'),
+      underline: areSelectedNonEmptyLinesWrapped(
+        value,
+        selection,
+        '<u>',
+        '</u>',
+      ),
       strikethrough: areSelectedNonEmptyLinesWrapped(value, selection, '~~'),
       code: areSelectedNonEmptyLinesWrapped(value, selection, '`'),
       link: false,
@@ -40,33 +41,21 @@ export function detectActiveInlineFormats(
     }
   }
 
-  const normalizedSelection = normalizeInlineSelectionRange(
-    value,
-    selection,
-    selectedText,
-  )
-  const { coreRange, coreText } = normalizedSelection
-  const codeSelectionWouldMerge =
-    isSelectionComposedOfAdjacentInlineCodeSpans(value, coreRange)
-
   return {
     bold:
-      getInlineWrapperContext(value, coreRange, '**') !== null ||
-      isSelectedTextWrapped(coreText, '**') ||
-      findContainingInlineFormatRange(value, coreRange, '**') !== null,
+      getInlineFormatState(value, selection, 'bold', selectedText) === 'active',
     italic:
-      getInlineWrapperContext(value, coreRange, '*') !== null ||
-      isSelectedTextWrapped(coreText, '*') ||
-      findContainingInlineFormatRange(value, coreRange, '*') !== null,
+      getInlineFormatState(value, selection, 'italic', selectedText) ===
+      'active',
+    underline:
+      getInlineFormatState(value, selection, 'underline', selectedText) ===
+      'active',
     strikethrough:
-      getInlineWrapperContext(value, coreRange, '~~') !== null ||
-      isSelectedTextWrapped(coreText, '~~') ||
-      findContainingInlineFormatRange(value, coreRange, '~~') !== null,
+      getInlineFormatState(value, selection, 'strike', selectedText) ===
+      'active',
     code:
-      !codeSelectionWouldMerge &&
-      (getInlineWrapperContext(value, coreRange, '`') !== null ||
-        isSelectedTextWrapped(coreText, '`') ||
-        findContainingInlineFormatRange(value, coreRange, '`') !== null),
+      getInlineFormatState(value, selection, 'inlineCode', selectedText) ===
+      'active',
     link: isLinkSelectionActive(value, selection, selectedText),
     image: isImageSelectionActive(value, selection, selectedText),
   }

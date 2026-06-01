@@ -5,6 +5,7 @@ import {
   getSelectionOffsets,
   isSelectionAllowedForToolbar,
 } from '../../editor/monaco/markdownCommandAdapter'
+import { mapPreviewSelectionToSourceRange } from '../../preview/sourceMapping/mapPreviewSelectionToSourceRange'
 import type { PreviewSelectionSnapshot } from '../toolbarTypes'
 import type { ViewMode } from '../../workspace/workspaceTypes'
 
@@ -124,6 +125,33 @@ function getPreviewBoundarySourceOffset(
       ? getSourceSpanOffset(sourceSpan, 'start')
       : null
     const textLength = container.textContent?.length ?? 0
+    const markdownElement = sourceSpan?.closest<HTMLElement>(
+      '[data-source-markdown-start][data-source-markdown-end]',
+    )
+
+    if (markdownElement && previewContentElement.contains(markdownElement)) {
+      if (boundary === 'start' && offset >= textLength) {
+        const markdownEnd = getMarkdownSourceElementOffset(
+          markdownElement,
+          'end',
+        )
+
+        if (markdownEnd !== null) {
+          return markdownEnd
+        }
+      }
+
+      if (boundary === 'end' && offset <= 0) {
+        const markdownStart = getMarkdownSourceElementOffset(
+          markdownElement,
+          'start',
+        )
+
+        if (markdownStart !== null) {
+          return markdownStart
+        }
+      }
+    }
 
     return sourceStart === null
       ? null
@@ -275,7 +303,22 @@ export function getPreviewSelectionSnapshot(
     return null
   }
 
-  const selection = createSelectionFromOffsets(model, startOffset, endOffset)
+  const normalizedSelectionRange = mapPreviewSelectionToSourceRange(
+    model.getValue(),
+    wholeMarkdownElementRange ?? { endOffset, startOffset },
+  )
+  const selectionStartOffset = normalizedSelectionRange.startOffset
+  const selectionEndOffset = normalizedSelectionRange.endOffset
+
+  if (selectionStartOffset >= selectionEndOffset) {
+    return null
+  }
+
+  const selection = createSelectionFromOffsets(
+    model,
+    selectionStartOffset,
+    selectionEndOffset,
+  )
 
   if (!isSelectionAllowedForToolbar(model, selection)) {
     return null
@@ -285,10 +328,10 @@ export function getPreviewSelectionSnapshot(
     anchorRect,
     editableEndOffset: wholeMarkdownElementRange?.endOffset ?? endOffset,
     editableStartOffset: wholeMarkdownElementRange?.startOffset ?? startOffset,
-    endOffset,
+    endOffset: selectionEndOffset,
     selection,
     sourceKey: `preview:${startOffset}:${endOffset}`,
-    startOffset,
+    startOffset: selectionStartOffset,
   }
 }
 

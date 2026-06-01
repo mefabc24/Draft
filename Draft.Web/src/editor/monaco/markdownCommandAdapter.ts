@@ -10,6 +10,7 @@ import {
   getToggleImageEdits,
   getToggleLinkEdits,
   getToggleWrappedEdits,
+  isInlineFormatActive,
   removeBlockquotePrefix,
   removeHeadingPrefix,
   removeListPrefix,
@@ -20,6 +21,7 @@ import {
   type MarkdownCommandOptions,
   type MarkdownSelectionOffsetRange,
   type MarkdownTextEdit,
+  type ToggleWrappedMode,
 } from '../../markdown'
 import {
   createRangeFromOffsets,
@@ -89,6 +91,50 @@ function executeEditorEdits(
   if (options.focusEditor ?? true) {
     editor.focus()
   }
+}
+
+type MarkdownEditGroup = {
+  anchorOffset: number
+  edits: MarkdownTextEdit[]
+  nextSelection: MarkdownSelectionOffsetRange
+}
+
+function getMarkdownEditDelta(edit: MarkdownTextEdit) {
+  return edit.text.length - (edit.endOffset - edit.startOffset)
+}
+
+function getMarkdownEditGroupDelta(group: MarkdownEditGroup) {
+  return group.edits.reduce(
+    (delta, edit) => delta + getMarkdownEditDelta(edit),
+    0,
+  )
+}
+
+function getMarkdownEditGroupAnchor(
+  selection: MarkdownSelectionOffsetRange,
+  edits: MarkdownTextEdit[],
+) {
+  return edits.reduce(
+    (anchorOffset, edit) => Math.min(anchorOffset, edit.startOffset),
+    selection.startOffset,
+  )
+}
+
+function getMappedEditGroupSelections(groups: MarkdownEditGroup[]) {
+  let accumulatedDelta = 0
+
+  return [...groups]
+    .sort((a, b) => a.anchorOffset - b.anchorOffset)
+    .map((group) => {
+      const nextSelection = {
+        endOffset: group.nextSelection.endOffset + accumulatedDelta,
+        startOffset: group.nextSelection.startOffset + accumulatedDelta,
+      }
+
+      accumulatedDelta += getMarkdownEditGroupDelta(group)
+
+      return nextSelection
+    })
 }
 
 function replaceSelectedLines(
@@ -199,21 +245,33 @@ export function toggleWrappedSelection(
 
   const value = model.getValue()
   const edits: monaco.editor.IIdentifiedSingleEditOperation[] = []
-  const nextSelectionOffsets: MarkdownSelectionOffsetRange[] = []
+  const selectionEntries = selections
+    .filter((selection) => !isEmptySelection(selection))
+    .map((selection) => {
+      const selectionOffsets = getSelectionOffsets(model, selection)
 
-  for (const selection of selections) {
-    if (isEmptySelection(selection)) {
-      continue
-    }
+      return {
+        selectedText: model.getValueInRange(selection),
+        selectionOffsets,
+      }
+    })
+  const mode: ToggleWrappedMode =
+    selectionEntries.length > 0 &&
+    selectionEntries.every(({ selectedText, selectionOffsets }) =>
+      isInlineFormatActive(value, selectionOffsets, selectedText, prefix, suffix),
+    )
+      ? 'unwrap'
+      : 'wrap'
+  const editGroups: MarkdownEditGroup[] = []
 
-    const selectionOffsets = getSelectionOffsets(model, selection)
-    const selectedText = model.getValueInRange(selection)
+  for (const { selectedText, selectionOffsets } of selectionEntries) {
     const result = getToggleWrappedEdits(
       value,
       selectionOffsets,
       selectedText,
       prefix,
       suffix,
+      mode,
     )
 
     edits.push(
@@ -221,10 +279,19 @@ export function toggleWrappedSelection(
         createMonacoEditFromMarkdownEdit(model, edit),
       ),
     )
-    nextSelectionOffsets.push(result.nextSelection)
+    editGroups.push({
+      anchorOffset: getMarkdownEditGroupAnchor(selectionOffsets, result.edits),
+      edits: result.edits,
+      nextSelection: result.nextSelection,
+    })
   }
 
-  executeEditorEdits(editor, edits, nextSelectionOffsets, options)
+  executeEditorEdits(
+    editor,
+    edits,
+    getMappedEditGroupSelections(editGroups),
+    options,
+  )
 }
 
 export function toggleLinkSelection(
@@ -363,16 +430,31 @@ export function detectInlineFormats(
   selections?: monaco.Selection[],
 ): ActiveFormats {
   const model = editor.getModel()
-  const selection = getPrimarySelection(editor, selections)
+  const activeSelections = (selections ?? editor.getSelections())?.filter(
+    (selection) => !isEmptySelection(selection),
+  )
 
-  if (!model || !selection) {
+  if (!model || !activeSelections || activeSelections.length === 0) {
     return EMPTY_ACTIVE_FORMATS
   }
 
-  return detectActiveInlineFormats(
-    model.getValue(),
-    getSelectionOffsets(model, selection),
-    model.getValueInRange(selection),
+  const formats = activeSelections.map((selection) =>
+    detectActiveInlineFormats(
+      model.getValue(),
+      getSelectionOffsets(model, selection),
+      model.getValueInRange(selection),
+    ),
+  )
+  const formatKeys = Object.keys(EMPTY_ACTIVE_FORMATS) as Array<
+    keyof ActiveFormats
+  >
+
+  return formatKeys.reduce(
+    (activeFormats, format) => ({
+      ...activeFormats,
+      [format]: formats.every((selectionFormats) => selectionFormats[format]),
+    }),
+    { ...EMPTY_ACTIVE_FORMATS },
   )
 }
 
