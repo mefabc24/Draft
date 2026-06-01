@@ -383,9 +383,10 @@ function compareRangesForWrapping(left: InlineFormatRange, right: InlineFormatRa
   )
 }
 
-function getInlineCodeReplacementRanges(
+function getIsolatedInlineFormatReplacementRanges(
   ranges: InlineFormatRange[],
   selection: MarkdownSelectionOffsetRange,
+  shouldIncludeRange: (range: InlineFormatRange) => boolean,
 ) {
   const selectedRanges = new Set<InlineFormatRange>()
   let replacementEndOffset = selection.endOffset
@@ -396,11 +397,7 @@ function getInlineCodeReplacementRanges(
     changed = false
 
     for (const range of ranges) {
-      if (
-        selectedRanges.has(range) ||
-        range.type === 'image' ||
-        range.type === 'link'
-      ) {
+      if (selectedRanges.has(range) || !shouldIncludeRange(range)) {
         continue
       }
 
@@ -432,6 +429,14 @@ function getInlineCodeReplacementRanges(
     replacementEndOffset,
     replacementStartOffset,
   }
+}
+
+function shouldIncludeInlineCodeIsolationRange(range: InlineFormatRange) {
+  return range.type !== 'image' && range.type !== 'link'
+}
+
+function shouldIncludeSpoilerIsolationRange(range: InlineFormatRange) {
+  return range.type === 'spoiler'
 }
 
 function getReplacementBoundaryOffsets(
@@ -517,16 +522,23 @@ function getFormattedFragmentText(text: string, ranges: InlineFormatRange[]) {
   return `${leading.leadingWhitespace}${wrappedText}${trailing.trailingWhitespace}`
 }
 
-function getApplyInlineCodeEdits(
+function getApplyIsolatedInlineFormatEdits(
   value: string,
   selection: MarkdownSelectionOffsetRange,
+  format: 'inlineCode' | 'spoiler',
 ): ToggleInlineFormatResult | null {
   const ranges = parseInlineFormatRangesForSelection(value, selection)
   const {
     ranges: selectedRanges,
     replacementEndOffset,
     replacementStartOffset,
-  } = getInlineCodeReplacementRanges(ranges, selection)
+  } = getIsolatedInlineFormatReplacementRanges(
+    ranges,
+    selection,
+    format === 'inlineCode'
+      ? shouldIncludeInlineCodeIsolationRange
+      : shouldIncludeSpoilerIsolationRange,
+  )
 
   if (selectedRanges.length === 0) {
     return null
@@ -564,10 +576,18 @@ function getApplyInlineCodeEdits(
     return null
   }
 
-  const codeMarker = getInlineCodeMarkerForText(selectedInnerText)
-  const selectedText = `${codeMarker}${selectedInnerText}${codeMarker}`
+  const markers =
+    format === 'inlineCode'
+      ? {
+          closingMarker: getInlineCodeMarkerForText(selectedInnerText),
+          openingMarker: getInlineCodeMarkerForText(selectedInnerText),
+        }
+      : getInlineFormatMarkers(format)
+  const selectedText =
+    `${markers.openingMarker}${selectedInnerText}${markers.closingMarker}`
   let replacementText = ''
-  let selectedStartOffset = replacementStartOffset + codeMarker.length
+  let selectedStartOffset =
+    replacementStartOffset + markers.openingMarker.length
   let insertedSelectedText = false
 
   for (let index = 0; index < boundaries.length - 1; index += 1) {
@@ -583,7 +603,9 @@ function getApplyInlineCodeEdits(
     if (doInlineRangesIntersect(span, selection)) {
       if (!insertedSelectedText) {
         selectedStartOffset =
-          replacementStartOffset + replacementText.length + codeMarker.length
+          replacementStartOffset +
+          replacementText.length +
+          markers.openingMarker.length
         replacementText += selectedText
         insertedSelectedText = true
       }
@@ -656,13 +678,27 @@ function getToggleSingleLineInlineFormatEdits(
       return { edits: [], nextSelection: normalizedSelection.originalRange }
     }
 
-    if (format === 'inlineCode') {
-      const codeMarker = getInlineCodeMarkerForText(coreText)
-      const appliedInlineCode = getApplyInlineCodeEdits(value, coreRange)
+    if (format === 'inlineCode' || format === 'spoiler') {
+      const isolationMarkers =
+        format === 'inlineCode'
+          ? {
+              closingMarker: getInlineCodeMarkerForText(coreText),
+              openingMarker: getInlineCodeMarkerForText(coreText),
+            }
+          : markers
+      const appliedInlineFormat = getApplyIsolatedInlineFormatEdits(
+        value,
+        coreRange,
+        format,
+      )
 
       return (
-        appliedInlineCode ??
-        getSimpleWrapEdits(coreRange, codeMarker, codeMarker)
+        appliedInlineFormat ??
+        getSimpleWrapEdits(
+          coreRange,
+          isolationMarkers.openingMarker,
+          isolationMarkers.closingMarker,
+        )
       )
     }
 
@@ -800,9 +836,10 @@ export function isSelectionComposedOfAdjacentInlineCodeSpans(
   selection: MarkdownSelectionOffsetRange,
 ) {
   const ranges = parseInlineFormatRangesForSelection(value, selection)
-  const { ranges: selectedRanges } = getInlineCodeReplacementRanges(
+  const { ranges: selectedRanges } = getIsolatedInlineFormatReplacementRanges(
     ranges,
     selection,
+    shouldIncludeInlineCodeIsolationRange,
   )
 
   return selectedRanges.some((range) => range.type === 'inlineCode')
