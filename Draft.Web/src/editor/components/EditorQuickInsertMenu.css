@@ -612,12 +612,28 @@
   padding: 0 8px;
 }
 
-.editor-quick-insert-tag-color-preview {
+.editor-quick-insert-tag-color-preview-button {
   display: block;
   width: 20px;
   height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  outline: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.editor-quick-insert-tag-color-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
   border-radius: 4px;
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+
+.editor-quick-insert-tag-color-preview-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--quick-insert-control-border-hover);
 }
 
 .editor-quick-insert-tag-color-input input {
@@ -644,6 +660,36 @@
   border-color: var(--quick-insert-control-border-hover);
   background: var(--quick-insert-control-background);
   box-shadow: none;
+}
+
+.editor-quick-insert-tag-color-picker {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 8px;
+  background: var(--quick-insert-control-background);
+}
+
+.editor-quick-insert-tag-color-picker .react-colorful {
+  width: 100%;
+  height: 154px;
+}
+
+.editor-quick-insert-tag-color-picker .react-colorful__saturation {
+  border-radius: 6px 6px 4px 4px;
+}
+
+.editor-quick-insert-tag-color-picker .react-colorful__hue {
+  height: 16px;
+  margin-top: 8px;
+  border-radius: 999px;
+}
+
+.editor-quick-insert-tag-color-picker .react-colorful__pointer {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
 }
 
 .editor-quick-insert-tag-confirm {

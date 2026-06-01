@@ -1,10 +1,15 @@
 import {
+  useCallback,
+  useEffect,
+  useId,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type KeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from 'react'
+import { HexColorPicker } from 'react-colorful'
 import type { CreateInlineTagMarkdownData } from '../commands/createInlineLinkMarkdown'
 
 type EditorQuickInsertTagControlsProps = {
@@ -29,15 +34,59 @@ function getTagPreviewColor(value: string) {
 function EditorQuickInsertTagControls({
   onConfirm,
 }: EditorQuickInsertTagControlsProps) {
+  const colorInputId = useId()
+  const colorFieldRef = useRef<HTMLDivElement | null>(null)
   const [text, setText] = useState('')
   const [color, setColor] = useState(DEFAULT_TAG_COLOR)
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false)
+  const pickerColor = getTagPreviewColor(color)
   const previewStyle = useMemo(
     () =>
       ({
-        background: getTagPreviewColor(color),
+        background: pickerColor,
       }) satisfies CSSProperties,
-    [color],
+    [pickerColor],
   )
+
+  useEffect(() => {
+    if (!isColorPickerOpen) {
+      return
+    }
+
+    const closePickerOnOutsidePointerDown = (event: PointerEvent) => {
+      const { target } = event
+
+      if (
+        target instanceof Node &&
+        colorFieldRef.current?.contains(target)
+      ) {
+        return
+      }
+
+      setIsColorPickerOpen(false)
+    }
+
+    document.addEventListener('pointerdown', closePickerOnOutsidePointerDown)
+
+    return () => {
+      document.removeEventListener(
+        'pointerdown',
+        closePickerOnOutsidePointerDown,
+      )
+    }
+  }, [isColorPickerOpen])
+
+  const toggleColorPicker = useCallback(
+    (event: ReactMouseEvent<HTMLButtonElement>) => {
+      event.preventDefault()
+      setIsColorPickerOpen((currentValue) => !currentValue)
+    },
+    [],
+  )
+
+  const handlePickerColorChange = useCallback((nextColor: string) => {
+    setColor(nextColor.toUpperCase())
+  }, [])
 
   const confirm = (keepOpen = false) => {
     onConfirm({ color, text }, keepOpen)
@@ -66,15 +115,29 @@ function EditorQuickInsertTagControls({
           onKeyDown={handleInputKeyDown}
         />
       </label>
-      <label className="editor-quick-insert-tag-field">
-        <span className="editor-quick-insert-tag-label">Color</span>
+      <div
+        className="editor-quick-insert-tag-field editor-quick-insert-tag-color-field"
+        ref={colorFieldRef}
+      >
+        <label className="editor-quick-insert-tag-label" htmlFor={colorInputId}>
+          Color
+        </label>
         <span className="editor-quick-insert-tag-color-input">
-          <span
-            aria-hidden="true"
-            className="editor-quick-insert-tag-color-preview"
-            style={previewStyle}
-          />
+          <button
+            type="button"
+            className="editor-quick-insert-tag-color-preview-button"
+            aria-label="Toggle tag color picker"
+            aria-expanded={isColorPickerOpen}
+            onClick={toggleColorPicker}
+          >
+            <span
+              aria-hidden="true"
+              className="editor-quick-insert-tag-color-preview"
+              style={previewStyle}
+            />
+          </button>
           <input
+            id={colorInputId}
             type="text"
             value={color}
             placeholder="Color Code"
@@ -84,7 +147,15 @@ function EditorQuickInsertTagControls({
             onKeyDown={handleInputKeyDown}
           />
         </span>
-      </label>
+        {isColorPickerOpen ? (
+          <div className="editor-quick-insert-tag-color-picker">
+            <HexColorPicker
+              color={pickerColor}
+              onChange={handlePickerColorChange}
+            />
+          </div>
+        ) : null}
+      </div>
       <button
         type="button"
         className="editor-quick-insert-tag-confirm"
