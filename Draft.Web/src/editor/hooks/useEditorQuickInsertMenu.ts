@@ -6,9 +6,17 @@ import {
   useState,
   type RefObject,
 } from 'react'
-import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { clamp } from '../../shared/utils/clamp'
-import { isEditorQuickInsertTargetLine } from '../commands/editorQuickInsertCommands'
+import {
+  getEditorQuickInsertTargetFromPosition,
+  isEditorQuickInsertTarget,
+  type EditorQuickInsertTarget,
+} from '../commands/editorQuickInsertCommands'
+import {
+  EDITOR_EMPTY_LINE_INSERT_BUTTON_LEFT,
+  EDITOR_QUICK_INSERT_CURSOR_BUTTON_GAP,
+} from '../monaco/editorOptions'
 
 const BUTTON_SIZE = 24
 const MENU_EDGE_PADDING = 8
@@ -16,9 +24,8 @@ const MENU_GAP = 8
 const MENU_ESTIMATED_WIDTH = 294
 const MENU_ESTIMATED_HEIGHT = 324
 
-export type EditorQuickInsertMenuAnchor = {
-  left: number
-  lineNumber: number
+export type EditorQuickInsertMenuAnchor = EditorQuickInsertTarget & {
+  anchor: 'cursor' | 'gutter'
 }
 
 export type EditorQuickInsertMenuPosition = {
@@ -32,12 +39,12 @@ function getQuickInsertMenuPreferredPosition(
   editor: monaco.editor.IStandaloneCodeEditor,
   target: EditorQuickInsertMenuTarget,
 ): EditorQuickInsertMenuPosition | null {
-  if (!isEditorQuickInsertTargetLine(editor, target.lineNumber)) {
+  if (!isEditorQuickInsertTarget(editor, target)) {
     return null
   }
 
   const visiblePosition = editor.getScrolledVisiblePosition({
-    column: 1,
+    column: target.anchor === 'gutter' ? 1 : target.column,
     lineNumber: target.lineNumber,
   })
 
@@ -45,8 +52,13 @@ function getQuickInsertMenuPreferredPosition(
     return null
   }
 
+  const buttonLeft =
+    target.anchor === 'gutter'
+      ? EDITOR_EMPTY_LINE_INSERT_BUTTON_LEFT
+      : visiblePosition.left + EDITOR_QUICK_INSERT_CURSOR_BUTTON_GAP
+
   return {
-    left: target.left + BUTTON_SIZE + MENU_GAP,
+    left: buttonLeft + BUTTON_SIZE + MENU_GAP,
     top: visiblePosition.top - MENU_GAP,
   }
 }
@@ -214,6 +226,27 @@ export function useEditorQuickInsertMenu(
     [closeMenu, editor, editorBodyRef, scheduleMenuPositionUpdate],
   )
 
+  const openMenuAtCursor = useCallback(() => {
+    if (!editor) {
+      return
+    }
+
+    const target = getEditorQuickInsertTargetFromPosition(
+      editor,
+      editor.getPosition(),
+    )
+
+    if (!target) {
+      closeMenu()
+      return
+    }
+
+    openMenu({
+      ...target,
+      anchor: 'cursor',
+    })
+  }, [closeMenu, editor, openMenu])
+
   const moveMenuToLine = useCallback(
     (lineNumber: number) => {
       const currentTarget = menuTargetRef.current
@@ -225,10 +258,12 @@ export function useEditorQuickInsertMenu(
 
       const nextTarget = {
         ...currentTarget,
+        column: 1,
         lineNumber,
+        mode: 'replace-line' as const,
       }
 
-      if (!isEditorQuickInsertTargetLine(editor, nextTarget.lineNumber)) {
+      if (!isEditorQuickInsertTarget(editor, nextTarget)) {
         closeMenu()
         return
       }
@@ -294,6 +329,25 @@ export function useEditorQuickInsertMenu(
   }, [editorBodyRef, menuTarget, scheduleMenuBoundsUpdate])
 
   useEffect(() => {
+    if (!editor) {
+      return
+    }
+
+    const action = editor.addAction({
+      id: 'draft.editorQuickInsert.openMenu',
+      label: 'Quick Insert: Open Menu',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space],
+      run: () => {
+        openMenuAtCursor()
+      },
+    })
+
+    return () => {
+      action.dispose()
+    }
+  }, [editor, openMenuAtCursor])
+
+  useEffect(() => {
     if (!editor || !menuTarget) {
       return
     }
@@ -310,7 +364,7 @@ export function useEditorQuickInsertMenu(
         return
       }
 
-      if (!isEditorQuickInsertTargetLine(editor, currentTarget.lineNumber)) {
+      if (!isEditorQuickInsertTarget(editor, currentTarget)) {
         closeMenu()
         return
       }
@@ -374,7 +428,8 @@ export function useEditorQuickInsertMenu(
     menuPosition,
     menuRef,
     openMenu,
+    openMenuAtCursor,
     runMenuActionKeepingOpen,
-    targetLineNumber: menuTarget?.lineNumber ?? null,
+    target: menuTarget,
   }
 }

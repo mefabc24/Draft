@@ -29,7 +29,7 @@ function EmptyLineInsertButton({
     menuRef,
     openMenu,
     runMenuActionKeepingOpen,
-    targetLineNumber,
+    target,
   } = useEditorQuickInsertMenu(editor, editorBodyRef)
   const buttonStyle = useMemo(
     () =>
@@ -54,8 +54,10 @@ function EmptyLineInsertButton({
           className="empty-line-insert-button"
           onClick={() => {
             openMenu({
-              left: hoveredLine.left,
+              anchor: hoveredLine.anchor,
+              column: hoveredLine.column,
               lineNumber: hoveredLine.lineNumber,
+              mode: hoveredLine.mode,
             })
           }}
           onMouseDown={(event) => {
@@ -94,12 +96,16 @@ function EmptyLineInsertButton({
       ) : null}
       <EditorQuickInsertMenu
         editor={editor}
-        key={targetLineNumber === null ? 'closed' : 'open'}
-        lineNumber={targetLineNumber}
+        key={
+          target === null
+            ? 'closed'
+            : `${target.lineNumber}:${target.column}:${target.mode}`
+        }
         menuRef={menuRef}
         onClose={closeMenu}
         onKeepOpenAction={runMenuActionKeepingOpen}
         position={menuPosition}
+        target={target}
       />
     </>
   )

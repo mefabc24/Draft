@@ -117,6 +117,7 @@ Ctrl + Shift + E      Edit the Markdown behind selected preview content
 
 #### Quick Insert Menu (QIM)
 ```text
+Ctrl + Space         Open Quick Insert Menu at the cursor position
 Shift + Left Click    Insert from Quick Insert and keep the menu open
 ```
 

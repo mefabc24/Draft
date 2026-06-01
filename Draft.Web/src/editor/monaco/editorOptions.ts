@@ -28,6 +28,7 @@ export const EDITOR_GUTTER_OPTIONS = {
 >
 
 export const EDITOR_EMPTY_LINE_INSERT_BUTTON_LEFT = 50
+export const EDITOR_QUICK_INSERT_CURSOR_BUTTON_GAP = 6
 
 export function getEditorFontFamilyCss(fontFamily: string) {
   switch (fontFamily) {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import { getEditorQuickInsertTargetFromPosition } from '../commands/editorQuickInsertCommands'
 import { EDITOR_EMPTY_LINE_INSERT_BUTTON_LEFT } from '../monaco/editorOptions'
 
 const BUTTON_SIZE = 24
@@ -7,8 +8,11 @@ const HIDE_DELAY_MS = 80
 const INSERT_BUTTON_SELECTOR = '.empty-line-insert-button'
 
 export type HoveredEditorLine = {
+  anchor: 'cursor' | 'gutter'
+  column: number
   lineNumber: number
   left: number
+  mode: 'insert-at-cursor' | 'replace-line'
   top: number
 }
 
@@ -30,17 +34,13 @@ function getTargetLineNumber(target: monaco.editor.IMouseTarget | null) {
   }
 }
 
-function getEmptyLinePosition(
+function getQuickInsertButtonPosition(
   editor: monaco.editor.IStandaloneCodeEditor,
   lineNumber: number,
 ): HoveredEditorLine | null {
   const model = editor.getModel()
 
   if (!model || lineNumber < 1 || lineNumber > model.getLineCount()) {
-    return null
-  }
-
-  if (model.getLineContent(lineNumber).trim().length > 0) {
     return null
   }
 
@@ -53,9 +53,35 @@ function getEmptyLinePosition(
     return null
   }
 
+  const lineContent = model.getLineContent(lineNumber)
+
+  if (lineContent.trim().length === 0) {
+    return {
+      anchor: 'gutter',
+      column: 1,
+      lineNumber,
+      left: EDITOR_EMPTY_LINE_INSERT_BUTTON_LEFT,
+      mode: 'replace-line',
+      top: visiblePosition.top + (visiblePosition.height - BUTTON_SIZE) / 2,
+    }
+  }
+
+  const cursorTarget = getEditorQuickInsertTargetFromPosition(
+    editor,
+    editor.getPosition(),
+  )
+  const column =
+    cursorTarget?.lineNumber === lineNumber &&
+    cursorTarget.mode === 'insert-at-cursor'
+      ? cursorTarget.column
+      : model.getLineMaxColumn(lineNumber)
+
   return {
+    anchor: 'gutter',
+    column,
     lineNumber,
     left: EDITOR_EMPTY_LINE_INSERT_BUTTON_LEFT,
+    mode: 'insert-at-cursor',
     top: visiblePosition.top + (visiblePosition.height - BUTTON_SIZE) / 2,
   }
 }
@@ -65,8 +91,11 @@ function isSameHoveredLine(
   second: HoveredEditorLine | null,
 ) {
   return (
+    first?.anchor === second?.anchor &&
+    first?.column === second?.column &&
     first?.lineNumber === second?.lineNumber &&
     first?.left === second?.left &&
+    first?.mode === second?.mode &&
     first?.top === second?.top
   )
 }
@@ -148,7 +177,7 @@ export function useHoveredEditorLine(
       setHoveredLine(
         lineNumber === null
           ? null
-          : getEmptyLinePosition(activeEditor, lineNumber),
+          : getQuickInsertButtonPosition(activeEditor, lineNumber),
       )
     },
     [setHoveredLine],
@@ -215,6 +244,9 @@ export function useHoveredEditorLine(
     const contentDisposable = editor.onDidChangeModelContent(
       schedulePositionUpdate,
     )
+    const cursorDisposable = editor.onDidChangeCursorPosition(
+      schedulePositionUpdate,
+    )
     const modelDisposable = editor.onDidChangeModel(schedulePositionUpdate)
     const configurationDisposable = editor.onDidChangeConfiguration(
       schedulePositionUpdate,
@@ -226,6 +258,7 @@ export function useHoveredEditorLine(
       scrollDisposable.dispose()
       layoutDisposable.dispose()
       contentDisposable.dispose()
+      cursorDisposable.dispose()
       modelDisposable.dispose()
       configurationDisposable.dispose()
       lastMousePointRef.current = null

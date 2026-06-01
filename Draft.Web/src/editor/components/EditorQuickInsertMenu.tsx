@@ -22,7 +22,10 @@ import type {
   CreateInlineLinkMarkdownData,
 } from '../commands/createInlineLinkMarkdown'
 import type { CreateTableMarkdownData } from '../commands/createTableMarkdown'
-import type { EditorQuickInsertMenuPosition } from '../hooks/useEditorQuickInsertMenu'
+import type {
+  EditorQuickInsertMenuAnchor,
+  EditorQuickInsertMenuPosition,
+} from '../hooks/useEditorQuickInsertMenu'
 import {
   editorQuickInsertMenuEntries,
   type EditorQuickInsertIconName,
@@ -37,11 +40,11 @@ import './EditorQuickInsertMenu.css'
 
 type EditorQuickInsertMenuProps = {
   editor: monaco.editor.IStandaloneCodeEditor | null
-  lineNumber: number | null
   menuRef: RefObject<HTMLDivElement | null>
   onClose: () => void
   onKeepOpenAction: (action: () => number | false | null) => void
   position: EditorQuickInsertMenuPosition | null
+  target: EditorQuickInsertMenuAnchor | null
 }
 
 type EditorQuickInsertCommandEntry = Extract<
@@ -100,13 +103,20 @@ function shouldKeepMenuOpen(event: ReactMouseEvent<HTMLElement>) {
   return event.shiftKey && event.button === 0
 }
 
+function shouldAdvanceToNextEmptyLine(
+  target: EditorQuickInsertMenuAnchor | null,
+  keepOpen: boolean,
+) {
+  return keepOpen && target?.mode === 'replace-line'
+}
+
 function EditorQuickInsertMenu({
   editor,
-  lineNumber,
   menuRef,
   onClose,
   onKeepOpenAction,
   position,
+  target,
 }: EditorQuickInsertMenuProps) {
   const [expandedSections, setExpandedSections] = useState(
     getInitialExpandedSections,
@@ -123,7 +133,7 @@ function EditorQuickInsertMenu({
   )
 
   useEffect(() => {
-    if (lineNumber === null) {
+    if (target === null) {
       return
     }
 
@@ -155,23 +165,27 @@ function EditorQuickInsertMenu({
       document.removeEventListener('pointerdown', handlePointerDown, true)
       document.removeEventListener('keydown', handleKeyDown, true)
     }
-  }, [lineNumber, menuRef, onClose])
+  }, [menuRef, onClose, target])
 
   const runCommand = useCallback(
     (command: EditorQuickInsertCommand, keepOpen = false) => {
+      const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
+        target,
+        keepOpen,
+      )
       const runAction = () => {
-        if (!editor || lineNumber === null) {
+        if (!editor || target === null) {
           return null
         }
 
-        const result = runEditorQuickInsertCommand(editor, lineNumber, command, {
-          advanceToNextEmptyLine: keepOpen,
+        const result = runEditorQuickInsertCommand(editor, target, command, {
+          advanceToNextEmptyLine,
         })
 
         return result ? result.nextLineNumber : null
       }
 
-      if (keepOpen) {
+      if (advanceToNextEmptyLine) {
         onKeepOpenAction(runAction)
         return
       }
@@ -179,29 +193,33 @@ function EditorQuickInsertMenu({
       runAction()
       onClose()
     },
-    [editor, lineNumber, onClose, onKeepOpenAction],
+    [editor, onClose, onKeepOpenAction, target],
   )
 
   const confirmTable = useCallback(
     (tableData: CreateTableMarkdownData, keepOpen = false) => {
+      const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
+        target,
+        keepOpen,
+      )
       const runAction = () => {
-        if (!editor || lineNumber === null) {
+        if (!editor || target === null) {
           return null
         }
 
         const result = insertEditorQuickInsertTable(
           editor,
-          lineNumber,
+          target,
           tableData,
           {
-            advanceToNextEmptyLine: keepOpen,
+            advanceToNextEmptyLine,
           },
         )
 
         return result ? result.nextLineNumber : null
       }
 
-      if (keepOpen) {
+      if (advanceToNextEmptyLine) {
         onKeepOpenAction(runAction)
         return
       }
@@ -209,29 +227,33 @@ function EditorQuickInsertMenu({
       runAction()
       onClose()
     },
-    [editor, lineNumber, onClose, onKeepOpenAction],
+    [editor, onClose, onKeepOpenAction, target],
   )
 
   const confirmCodeBlock = useCallback(
     (codeBlockData: CreateCodeBlockMarkdownData, keepOpen = false) => {
+      const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
+        target,
+        keepOpen,
+      )
       const runAction = () => {
-        if (!editor || lineNumber === null) {
+        if (!editor || target === null) {
           return null
         }
 
         const result = insertEditorQuickInsertCodeBlock(
           editor,
-          lineNumber,
+          target,
           codeBlockData,
           {
-            advanceToNextEmptyLine: keepOpen,
+            advanceToNextEmptyLine,
           },
         )
 
         return result ? result.nextLineNumber : null
       }
 
-      if (keepOpen) {
+      if (advanceToNextEmptyLine) {
         onKeepOpenAction(runAction)
         return
       }
@@ -239,29 +261,33 @@ function EditorQuickInsertMenu({
       runAction()
       onClose()
     },
-    [editor, lineNumber, onClose, onKeepOpenAction],
+    [editor, onClose, onKeepOpenAction, target],
   )
 
   const confirmImage = useCallback(
     (imageData: CreateInlineImageMarkdownData, keepOpen = false) => {
+      const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
+        target,
+        keepOpen,
+      )
       const runAction = () => {
-        if (!editor || lineNumber === null) {
+        if (!editor || target === null) {
           return null
         }
 
         const result = insertEditorQuickInsertImage(
           editor,
-          lineNumber,
+          target,
           imageData,
           {
-            advanceToNextEmptyLine: keepOpen,
+            advanceToNextEmptyLine,
           },
         )
 
         return result ? result.nextLineNumber : null
       }
 
-      if (keepOpen) {
+      if (advanceToNextEmptyLine) {
         onKeepOpenAction(runAction)
         return
       }
@@ -269,29 +295,33 @@ function EditorQuickInsertMenu({
       runAction()
       onClose()
     },
-    [editor, lineNumber, onClose, onKeepOpenAction],
+    [editor, onClose, onKeepOpenAction, target],
   )
 
   const confirmLink = useCallback(
     (linkData: CreateInlineLinkMarkdownData, keepOpen = false) => {
+      const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
+        target,
+        keepOpen,
+      )
       const runAction = () => {
-        if (!editor || lineNumber === null) {
+        if (!editor || target === null) {
           return null
         }
 
         const result = insertEditorQuickInsertLink(
           editor,
-          lineNumber,
+          target,
           linkData,
           {
-            advanceToNextEmptyLine: keepOpen,
+            advanceToNextEmptyLine,
           },
         )
 
         return result ? result.nextLineNumber : null
       }
 
-      if (keepOpen) {
+      if (advanceToNextEmptyLine) {
         onKeepOpenAction(runAction)
         return
       }
@@ -299,7 +329,7 @@ function EditorQuickInsertMenu({
       runAction()
       onClose()
     },
-    [editor, lineNumber, onClose, onKeepOpenAction],
+    [editor, onClose, onKeepOpenAction, target],
   )
 
   const renderCommandItem = useCallback(
@@ -371,7 +401,7 @@ function EditorQuickInsertMenu({
     ],
   )
 
-  if (!editor || lineNumber === null || !position) {
+  if (!editor || target === null || !position) {
     return null
   }
 

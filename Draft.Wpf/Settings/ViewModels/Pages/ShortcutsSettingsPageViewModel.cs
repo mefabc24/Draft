@@ -126,6 +126,10 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
                 new[]
                 {
                     new ShortcutItemViewModel(
+                        "Open Quick Insert Menu",
+                        "Open the Quick Insert Menu at the current editor cursor position.",
+                        "Ctrl + Space"),
+                    new ShortcutItemViewModel(
                         "Insert and keep menu open",
                         "Insert the selected Quick Insert item and keep the menu open for the next empty line.",
                         "Shift + Left Click"),
