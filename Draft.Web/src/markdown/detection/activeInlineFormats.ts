@@ -15,6 +15,8 @@ export const EMPTY_ACTIVE_FORMATS: ActiveFormats = {
   strikethrough: false,
   code: false,
   spoiler: false,
+  highlight: false,
+  comment: false,
   link: false,
   image: false,
 }
@@ -47,6 +49,12 @@ export function detectActiveInlineFormats(
     spoiler:
       !selectionSpansLines &&
       getInlineFormatState(value, selection, 'spoiler', selectedText) ===
+      'active',
+    highlight:
+      getInlineFormatState(value, selection, 'highlight', selectedText) ===
+      'active',
+    comment:
+      getInlineFormatState(value, selection, 'comment', selectedText) ===
       'active',
     link:
       !selectionSpansLines &&

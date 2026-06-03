@@ -46,6 +46,18 @@ export const inlineFormatConfig = {
     openingMarker: '||',
     parseInsideInlineCode: false,
   },
+  highlight: {
+    closingMarker: '==',
+    mergeAdjacent: true,
+    openingMarker: '==',
+    parseInsideInlineCode: false,
+  },
+  comment: {
+    closingMarker: '%%',
+    mergeAdjacent: true,
+    openingMarker: '%%',
+    parseInsideInlineCode: false,
+  },
 } satisfies Record<WrappableInlineFormat, InlineFormatConfig>
 
 export const wrappableInlineFormats = Object.keys(
@@ -84,6 +96,8 @@ export function isParsedInlineFormat(
 ): value is ParsedInlineFormat {
   return (
     value === 'bold' ||
+    value === 'comment' ||
+    value === 'highlight' ||
     value === 'image' ||
     value === 'inlineCode' ||
     value === 'italic' ||

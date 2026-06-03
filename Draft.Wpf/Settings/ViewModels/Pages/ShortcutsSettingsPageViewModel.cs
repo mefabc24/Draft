@@ -73,6 +73,14 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
                         "Toggle spoiler Markdown around the current selection.",
                         "Ctrl + Shift + S"),
                     new ShortcutItemViewModel(
+                        "Highlight",
+                        "Toggle highlight Markdown around the current selection.",
+                        "Ctrl + Shift + H"),
+                    new ShortcutItemViewModel(
+                        "Comment",
+                        "Toggle hidden comment Markdown around the current selection.",
+                        "Ctrl + /"),
+                    new ShortcutItemViewModel(
                         "Strikethrough",
                         "Toggle strikethrough Markdown around the current selection.",
                         "Ctrl + Shift + X"),

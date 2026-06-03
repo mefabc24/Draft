@@ -444,6 +444,8 @@ export function parseInlineFormatRanges(
       'strike',
       'underline',
       'spoiler',
+      'highlight',
+      'comment',
     ] satisfies WrappableInlineFormat[]
   ).flatMap((type) =>
     parseWrappedRanges(value, lineRange, type, excludedRanges),

@@ -5,6 +5,8 @@ import type {
 
 export type ParsedInlineFormat =
   | 'bold'
+  | 'comment'
+  | 'highlight'
   | 'image'
   | 'inlineCode'
   | 'italic'

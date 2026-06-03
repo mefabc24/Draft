@@ -96,6 +96,28 @@ export function useToolbarKeyboardCommands({
         },
       }),
       editor.addAction({
+        id: 'draft.markdownToolbar.highlight',
+        label: 'Markdown: Toggle Highlight',
+        keybindings: [
+          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyH,
+        ],
+        run: () => {
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '==', '==', commandOptions)
+          })
+        },
+      }),
+      editor.addAction({
+        id: 'draft.markdownToolbar.comment',
+        label: 'Markdown: Toggle Comment',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Slash],
+        run: () => {
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '%%', '%%', commandOptions)
+          })
+        },
+      }),
+      editor.addAction({
         id: 'draft.markdownToolbar.strikethrough',
         label: 'Markdown: Toggle Strikethrough',
         keybindings: [
@@ -250,6 +272,18 @@ export function useToolbarKeyboardCommands({
       } else if (event.shiftKey && !event.altKey && key === 's') {
         command = (activeEditor, commandOptions) => {
           toggleWrappedSelection(activeEditor, '||', '||', commandOptions)
+        }
+      } else if (event.shiftKey && !event.altKey && key === 'h') {
+        command = (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '==', '==', commandOptions)
+        }
+      } else if (
+        !event.shiftKey &&
+        !event.altKey &&
+        (key === '/' || code === 'Slash')
+      ) {
+        command = (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '%%', '%%', commandOptions)
         }
       } else if (event.shiftKey && !event.altKey && key === 'x') {
         command = (activeEditor, commandOptions) => {

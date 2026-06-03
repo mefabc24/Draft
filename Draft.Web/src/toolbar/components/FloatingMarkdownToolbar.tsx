@@ -286,6 +286,30 @@ function FloatingMarkdownToolbar({
       >
         <ToolbarIcon name="spoiler" />
       </ToolbarButton>
+      <ToolbarButton
+        ariaLabel="Highlight"
+        active={activeFormats.highlight}
+        onTooltipHide={hideToolbarTooltip}
+        onTooltipShow={showToolbarTooltip}
+        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '==', '==', commandOptions)
+        })}
+        tooltip={inlineTooltips.highlight}
+      >
+        <ToolbarIcon name="highlight" />
+      </ToolbarButton>
+      <ToolbarButton
+        ariaLabel="Comment"
+        active={activeFormats.comment}
+        onTooltipHide={hideToolbarTooltip}
+        onTooltipShow={showToolbarTooltip}
+        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '%%', '%%', commandOptions)
+        })}
+        tooltip={inlineTooltips.comment}
+      >
+        <ToolbarIcon name="comment" />
+      </ToolbarButton>
       {linkEdit.available ? (
         <LinkEditMenu
           active={activeFormats.link}
