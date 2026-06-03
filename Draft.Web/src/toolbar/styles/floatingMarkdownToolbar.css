@@ -50,6 +50,71 @@
   padding: 0;
 }
 
+.markdown-toolbar-format-tools,
+.markdown-toolbar-primary-tools,
+.markdown-toolbar-extra-tools-inner {
+  display: inline-flex;
+  align-items: center;
+}
+
+.markdown-toolbar-format-tools {
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.markdown-toolbar-primary-tools,
+.markdown-toolbar-extra-tools-inner {
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.markdown-toolbar-extra-tools {
+  max-width: 0;
+  margin-left: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    max-width 190ms ease,
+    margin-left 190ms ease,
+    opacity 160ms ease,
+    visibility 0ms linear 190ms;
+  visibility: hidden;
+}
+
+.markdown-toolbar-extra-tools.is-expanded {
+  max-width: var(--markdown-toolbar-extra-tools-width);
+  margin-left: 8px;
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    max-width 190ms ease,
+    margin-left 190ms ease,
+    opacity 160ms ease;
+  visibility: visible;
+}
+
+.markdown-toolbar-extra-tools-inner {
+  width: max-content;
+}
+
+.markdown-toolbar-expand-button {
+  width: 18px;
+  flex-basis: 18px;
+  margin-left: 8px;
+}
+
+.markdown-toolbar-expand-chevron {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  transition: transform 180ms ease;
+}
+
+.markdown-toolbar-expand-chevron.is-expanded {
+  transform: rotate(180deg);
+}
+
 .markdown-toolbar-asset-icon {
   display: block;
   width: 26px;

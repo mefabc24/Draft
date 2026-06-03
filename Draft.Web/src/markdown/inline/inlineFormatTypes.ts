@@ -4,6 +4,7 @@ import type {
 } from '../markdownTypes'
 
 export type ParsedInlineFormat =
+  | 'badge'
   | 'bold'
   | 'comment'
   | 'highlight'

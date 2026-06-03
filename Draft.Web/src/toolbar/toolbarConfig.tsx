@@ -75,7 +75,142 @@ export const inlineTooltips: Record<InlineFormat, ToolbarTooltipContent> = {
   comment: { label: 'Comment', shortcut: 'CTRL + /' },
   link: { label: 'Link', shortcut: 'CTRL + K' },
   image: { label: 'Image', shortcut: 'CTRL + ALT + I' },
+  badge: { label: 'Badge' },
 }
+
+export type ToolbarButtonVisibility = 'primary' | 'extra'
+
+type WrappedInlineToolbarAction = {
+  activeFormat: InlineFormat
+  ariaLabel: string
+  command: {
+    prefix: string
+    suffix?: string
+    type: 'wrap'
+  }
+  icon: ToolbarIconName
+  id: InlineFormat
+  tooltip: ToolbarTooltipContent
+  visibility: ToolbarButtonVisibility
+}
+
+type ResourceInlineToolbarAction = {
+  activeFormat: Extract<InlineFormat, 'image' | 'link'>
+  ariaLabel: string
+  command: {
+    type: Extract<InlineFormat, 'image' | 'link'>
+  }
+  icon: ToolbarIconName
+  id: Extract<InlineFormat, 'image' | 'link'>
+  tooltip: ToolbarTooltipContent
+  visibility: ToolbarButtonVisibility
+}
+
+export type InlineToolbarAction =
+  | ResourceInlineToolbarAction
+  | WrappedInlineToolbarAction
+
+export const inlineToolbarActions = [
+  {
+    activeFormat: 'bold',
+    ariaLabel: 'Bold',
+    command: { prefix: '**', type: 'wrap' },
+    icon: 'bold',
+    id: 'bold',
+    tooltip: inlineTooltips.bold,
+    visibility: 'primary',
+  },
+  {
+    activeFormat: 'italic',
+    ariaLabel: 'Italic',
+    command: { prefix: '*', type: 'wrap' },
+    icon: 'italic',
+    id: 'italic',
+    tooltip: inlineTooltips.italic,
+    visibility: 'primary',
+  },
+  {
+    activeFormat: 'underline',
+    ariaLabel: 'Underline',
+    command: { prefix: '<u>', suffix: '</u>', type: 'wrap' },
+    icon: 'underline',
+    id: 'underline',
+    tooltip: inlineTooltips.underline,
+    visibility: 'primary',
+  },
+  {
+    activeFormat: 'strikethrough',
+    ariaLabel: 'Strikethrough',
+    command: { prefix: '~~', type: 'wrap' },
+    icon: 'strikethrough',
+    id: 'strikethrough',
+    tooltip: inlineTooltips.strikethrough,
+    visibility: 'primary',
+  },
+  {
+    activeFormat: 'code',
+    ariaLabel: 'Inline code',
+    command: { prefix: '`', type: 'wrap' },
+    icon: 'code',
+    id: 'code',
+    tooltip: inlineTooltips.code,
+    visibility: 'primary',
+  },
+  {
+    activeFormat: 'link',
+    ariaLabel: 'Link',
+    command: { type: 'link' },
+    icon: 'link',
+    id: 'link',
+    tooltip: inlineTooltips.link,
+    visibility: 'primary',
+  },
+  {
+    activeFormat: 'image',
+    ariaLabel: 'Image',
+    command: { type: 'image' },
+    icon: 'image',
+    id: 'image',
+    tooltip: inlineTooltips.image,
+    visibility: 'primary',
+  },
+  {
+    activeFormat: 'comment',
+    ariaLabel: 'Comment',
+    command: { prefix: '%%', type: 'wrap' },
+    icon: 'comment',
+    id: 'comment',
+    tooltip: inlineTooltips.comment,
+    visibility: 'extra',
+  },
+  {
+    activeFormat: 'spoiler',
+    ariaLabel: 'Spoiler',
+    command: { prefix: '||', type: 'wrap' },
+    icon: 'spoiler',
+    id: 'spoiler',
+    tooltip: inlineTooltips.spoiler,
+    visibility: 'extra',
+  },
+  {
+    activeFormat: 'highlight',
+    ariaLabel: 'Highlight',
+    command: { prefix: '==', type: 'wrap' },
+    icon: 'highlight',
+    id: 'highlight',
+    tooltip: inlineTooltips.highlight,
+    visibility: 'extra',
+  },
+  {
+    activeFormat: 'badge',
+    ariaLabel: 'Badge',
+    command: { prefix: '[badge:', suffix: ']', type: 'wrap' },
+    icon: 'tag',
+    id: 'badge',
+    tooltip: inlineTooltips.badge,
+    visibility: 'extra',
+  },
+] satisfies InlineToolbarAction[]
 
 export const listItems: ToolbarDropdownMenuEntry[] = [
   { value: 'none', label: 'None', icon: <ToolbarIcon name="noneList" /> },

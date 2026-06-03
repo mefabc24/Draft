@@ -19,6 +19,7 @@ export const EMPTY_ACTIVE_FORMATS: ActiveFormats = {
   comment: false,
   link: false,
   image: false,
+  badge: false,
 }
 
 export function detectActiveInlineFormats(
@@ -62,5 +63,8 @@ export function detectActiveInlineFormats(
     image:
       !selectionSpansLines &&
       isImageSelectionActive(value, selection, selectedText),
+    badge:
+      getInlineFormatState(value, selection, 'badge', selectedText) ===
+      'active',
   }
 }

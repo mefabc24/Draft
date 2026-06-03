@@ -21,6 +21,7 @@ export type InlineFormat =
   | 'comment'
   | 'link'
   | 'image'
+  | 'badge'
 export type ActiveFormats = Record<InlineFormat, boolean>
 
 export type MarkdownCommandOptions = {

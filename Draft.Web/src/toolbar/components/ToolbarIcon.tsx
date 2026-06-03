@@ -14,6 +14,7 @@ export type ToolbarIconName =
   | 'numberedList'
   | 'spoiler'
   | 'strikethrough'
+  | 'tag'
   | 'taskList'
   | 'underline'
 
@@ -22,7 +23,7 @@ const toolbarIconPaths: Record<ToolbarIconName, string> = {
   bold: 'icons/Bold.svg',
   bulletList: 'icons/BulletList.svg',
   code: 'icons/Code.svg',
-  codeBlock: 'icons/Code%20Block.svg',
+  codeBlock: 'icons/Codeblock.svg',
   comment: 'icons/Comment.svg',
   edit: 'icons/Edit.svg',
   highlight: 'icons/Highlight.svg',
@@ -33,6 +34,7 @@ const toolbarIconPaths: Record<ToolbarIconName, string> = {
   numberedList: 'icons/NumberedList.svg',
   spoiler: 'icons/Spoiler.svg',
   strikethrough: 'icons/Strikethrough.svg',
+  tag: 'icons/Tag.svg',
   taskList: 'icons/Tasklist.svg',
   underline: 'icons/Underline.svg',
 }

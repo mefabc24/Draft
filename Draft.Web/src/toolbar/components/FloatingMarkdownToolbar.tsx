@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -13,17 +14,19 @@ import {
   toggleWrappedSelection,
 } from '../../editor/monaco/markdownCommandAdapter'
 import type { HeadingValue, ListValue } from '../../markdown'
+import { clamp } from '../../shared/utils/clamp'
 import { useFloatingToolbarState } from '../hooks/useFloatingToolbarState'
 import { useToolbarTooltip } from '../hooks/useToolbarTooltip'
 import {
   headingItems,
   headingLabels,
   headingShortcuts,
-  inlineTooltips,
+  inlineToolbarActions,
   listIcons,
   listItems,
   listLabels,
 } from '../toolbarConfig'
+import type { InlineToolbarAction } from '../toolbarConfig'
 import type {
   FloatingMarkdownToolbarProps,
   ToolbarPosition,
@@ -36,6 +39,21 @@ import ToolbarIcon from './ToolbarIcon'
 import ToolbarTooltip from './ToolbarTooltip'
 import '../styles/floatingMarkdownToolbar.css'
 
+type ExtraToolsStyle = CSSProperties & {
+  '--markdown-toolbar-extra-tools-width': string
+}
+
+const TOOLBAR_EDGE_PADDING = 8
+const TOOLBAR_BUTTON_WIDTH = 36
+const TOOLBAR_BUTTON_GAP = 8
+
+const primaryInlineToolbarActions = inlineToolbarActions.filter(
+  (action) => action.visibility === 'primary',
+)
+const extraInlineToolbarActions = inlineToolbarActions.filter(
+  (action) => action.visibility === 'extra',
+)
+
 function isToolbarPopupTarget(target: EventTarget | null) {
   const element =
     target instanceof Element
@@ -45,6 +63,38 @@ function isToolbarPopupTarget(target: EventTarget | null) {
         : null
 
   return !!element?.closest('[data-toolbar-popup]')
+}
+
+function getExtraToolsWidth(actionCount: number) {
+  if (actionCount <= 0) {
+    return 0
+  }
+
+  return (
+    actionCount * TOOLBAR_BUTTON_WIDTH +
+    (actionCount - 1) * TOOLBAR_BUTTON_GAP
+  )
+}
+
+function MoreToolsChevron({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      className={`markdown-toolbar-expand-chevron${
+        expanded ? ' is-expanded' : ''
+      }`}
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+    >
+      <path
+        d="M6.25 4 10 8l-3.75 4"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  )
 }
 
 function FloatingMarkdownToolbar({
@@ -59,6 +109,7 @@ function FloatingMarkdownToolbar({
 }: FloatingMarkdownToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null)
   const [position, setPosition] = useState<ToolbarPosition | null>(null)
+  const [extraToolsExpanded, setExtraToolsExpanded] = useState(false)
   const {
     activeTooltip,
     clearToolbarTooltip,
@@ -103,8 +154,8 @@ function FloatingMarkdownToolbar({
     () =>
       position
         ? ({
-            left: `${position.left}px`,
-            top: `${position.top}px`,
+            left: `${Math.round(position.left)}px`,
+            top: `${Math.round(position.top)}px`,
           }) satisfies CSSProperties
         : undefined,
     [position],
@@ -162,6 +213,65 @@ function FloatingMarkdownToolbar({
     }),
     [listValue],
   )
+  const extraToolCount =
+    extraInlineToolbarActions.length + (previewEdit.available ? 1 : 0)
+  const extraToolsStyle = useMemo(
+    () =>
+      ({
+        '--markdown-toolbar-extra-tools-width': `${getExtraToolsWidth(
+          extraToolCount,
+        )}px`,
+      }) as ExtraToolsStyle,
+    [extraToolCount],
+  )
+  const hiddenExtraToolActive =
+    !extraToolsExpanded &&
+    (previewEdit.open ||
+      extraInlineToolbarActions.some(
+        (action) => activeFormats[action.activeFormat],
+      ))
+  useEffect(() => {
+    if (!position) {
+      setExtraToolsExpanded(false)
+    }
+  }, [position])
+  useEffect(() => {
+    if (!extraToolsExpanded || !position) {
+      return
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      const toolbar = toolbarRef.current
+      const workspace = workspaceRef.current
+
+      if (!toolbar || !workspace) {
+        return
+      }
+
+      const nextLeft = clamp(
+        position.left,
+        TOOLBAR_EDGE_PADDING,
+        workspace.clientWidth - toolbar.offsetWidth - TOOLBAR_EDGE_PADDING,
+      )
+
+      if (nextLeft === position.left) {
+        return
+      }
+
+      setPosition((currentPosition) =>
+        currentPosition
+          ? {
+              ...currentPosition,
+              left: nextLeft,
+            }
+          : currentPosition,
+      )
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [extraToolsExpanded, position, workspaceRef])
   const handleListSelect = useCallback(
     (value: string) => {
       runEditorCommand((activeEditor, commandOptions) => {
@@ -170,6 +280,112 @@ function FloatingMarkdownToolbar({
     },
     [runEditorCommand],
   )
+  const handleExtraToolsToggle = useCallback(() => {
+    closePreviewEditMenu()
+    closeLinkEditMenu()
+    closeImageEditMenu()
+    setOpenDropdown(null)
+    setExtraToolsExpanded((expanded) => !expanded)
+  }, [
+    closeImageEditMenu,
+    closeLinkEditMenu,
+    closePreviewEditMenu,
+    setOpenDropdown,
+  ])
+  const renderInlineToolbarAction = (action: InlineToolbarAction) => {
+    const active = activeFormats[action.activeFormat]
+    const command = action.command
+
+    if (command.type === 'link') {
+      return linkEdit.available ? (
+        <LinkEditMenu
+          key={action.id}
+          active={active}
+          initialState={linkEdit.initialState}
+          open={linkEdit.open}
+          toolbarRef={toolbarRef}
+          workspaceRef={workspaceRef}
+          onCancel={linkEdit.cancel}
+          onClose={linkEdit.close}
+          onConfirm={linkEdit.confirm}
+          onOpen={linkEdit.openMenu}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+        />
+      ) : (
+        <ToolbarButton
+          key={action.id}
+          ariaLabel={action.ariaLabel}
+          active={active}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+          onClick={() => runEditorCommand(toggleLinkSelection)}
+          tooltip={action.tooltip}
+        >
+          <ToolbarIcon name={action.icon} />
+        </ToolbarButton>
+      )
+    }
+
+    if (command.type === 'image') {
+      return imageEdit.available ? (
+        <LinkEditMenu
+          key={action.id}
+          active={active}
+          initialState={imageEdit.initialState}
+          kind="image"
+          open={imageEdit.open}
+          toolbarRef={toolbarRef}
+          workspaceRef={workspaceRef}
+          onCancel={imageEdit.cancel}
+          onClose={imageEdit.close}
+          onConfirm={imageEdit.confirm}
+          onOpen={imageEdit.openMenu}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+        />
+      ) : (
+        <ToolbarButton
+          key={action.id}
+          ariaLabel={action.ariaLabel}
+          active={active}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+          onClick={() => runEditorCommand(toggleImageSelection)}
+          tooltip={action.tooltip}
+        >
+          <ToolbarIcon name={action.icon} />
+        </ToolbarButton>
+      )
+    }
+
+    if (command.type !== 'wrap') {
+      return null
+    }
+
+    return (
+      <ToolbarButton
+        key={action.id}
+        ariaLabel={action.ariaLabel}
+        active={active}
+        onTooltipHide={hideToolbarTooltip}
+        onTooltipShow={showToolbarTooltip}
+        onClick={() =>
+          runEditorCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(
+              activeEditor,
+              command.prefix,
+              command.suffix,
+              commandOptions,
+            )
+          })
+        }
+        tooltip={action.tooltip}
+      >
+        <ToolbarIcon name={action.icon} />
+      </ToolbarButton>
+    )
+  }
 
   if (!editor || !position) {
     return null
@@ -214,169 +430,52 @@ function FloatingMarkdownToolbar({
 
       <div className="markdown-toolbar-divider" aria-hidden="true" />
 
-      <ToolbarButton
-        ariaLabel="Bold"
-        active={activeFormats.bold}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '**', '**', commandOptions)
-        })}
-        tooltip={inlineTooltips.bold}
-      >
-        <ToolbarIcon name="bold" />
-      </ToolbarButton>
-      <ToolbarButton
-        ariaLabel="Italic"
-        active={activeFormats.italic}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
-        })}
-        tooltip={inlineTooltips.italic}
-      >
-        <ToolbarIcon name="italic" />
-      </ToolbarButton>
-      <ToolbarButton
-        ariaLabel="Underline"
-        active={activeFormats.underline}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '<u>', '</u>', commandOptions)
-        })}
-        tooltip={inlineTooltips.underline}
-      >
-        <ToolbarIcon name="underline" />
-      </ToolbarButton>
-      <ToolbarButton
-        ariaLabel="Strikethrough"
-        active={activeFormats.strikethrough}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '~~', '~~', commandOptions)
-        })}
-        tooltip={inlineTooltips.strikethrough}
-      >
-        <ToolbarIcon name="strikethrough" />
-      </ToolbarButton>
-      <ToolbarButton
-        ariaLabel="Inline code"
-        active={activeFormats.code}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
-        })}
-        tooltip={inlineTooltips.code}
-      >
-        <ToolbarIcon name="code" />
-      </ToolbarButton>
-      <ToolbarButton
-        ariaLabel="Spoiler"
-        active={activeFormats.spoiler}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '||', '||', commandOptions)
-        })}
-        tooltip={inlineTooltips.spoiler}
-      >
-        <ToolbarIcon name="spoiler" />
-      </ToolbarButton>
-      <ToolbarButton
-        ariaLabel="Highlight"
-        active={activeFormats.highlight}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '==', '==', commandOptions)
-        })}
-        tooltip={inlineTooltips.highlight}
-      >
-        <ToolbarIcon name="highlight" />
-      </ToolbarButton>
-      <ToolbarButton
-        ariaLabel="Comment"
-        active={activeFormats.comment}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        onClick={() => runEditorCommand((activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '%%', '%%', commandOptions)
-        })}
-        tooltip={inlineTooltips.comment}
-      >
-        <ToolbarIcon name="comment" />
-      </ToolbarButton>
-      {linkEdit.available ? (
-        <LinkEditMenu
-          active={activeFormats.link}
-          initialState={linkEdit.initialState}
-          open={linkEdit.open}
-          toolbarRef={toolbarRef}
-          workspaceRef={workspaceRef}
-          onCancel={linkEdit.cancel}
-          onClose={linkEdit.close}
-          onConfirm={linkEdit.confirm}
-          onOpen={linkEdit.openMenu}
-          onTooltipHide={hideToolbarTooltip}
-          onTooltipShow={showToolbarTooltip}
-        />
-      ) : (
-        <ToolbarButton
-          ariaLabel="Link"
-          active={activeFormats.link}
-          onTooltipHide={hideToolbarTooltip}
-          onTooltipShow={showToolbarTooltip}
-          onClick={() => runEditorCommand(toggleLinkSelection)}
-          tooltip={inlineTooltips.link}
+      <div className="markdown-toolbar-format-tools">
+        <div className="markdown-toolbar-primary-tools">
+          {primaryInlineToolbarActions.map(renderInlineToolbarAction)}
+        </div>
+        <div
+          className={`markdown-toolbar-extra-tools${
+            extraToolsExpanded ? ' is-expanded' : ''
+          }`}
+          aria-hidden={!extraToolsExpanded}
+          style={extraToolsStyle}
         >
-          <ToolbarIcon name="link" />
-        </ToolbarButton>
-      )}
-      {imageEdit.available ? (
-        <LinkEditMenu
-          active={activeFormats.image}
-          initialState={imageEdit.initialState}
-          kind="image"
-          open={imageEdit.open}
-          toolbarRef={toolbarRef}
-          workspaceRef={workspaceRef}
-          onCancel={imageEdit.cancel}
-          onClose={imageEdit.close}
-          onConfirm={imageEdit.confirm}
-          onOpen={imageEdit.openMenu}
-          onTooltipHide={hideToolbarTooltip}
-          onTooltipShow={showToolbarTooltip}
-        />
-      ) : (
+          <div className="markdown-toolbar-extra-tools-inner">
+            {extraInlineToolbarActions.map(renderInlineToolbarAction)}
+            {previewEdit.available ? (
+              <PreviewEditMenu
+                open={previewEdit.open}
+                sourceText={previewEdit.sourceText}
+                toolbarRef={toolbarRef}
+                workspaceRef={workspaceRef}
+                onCancel={previewEdit.cancel}
+                onClose={previewEdit.close}
+                onConfirm={previewEdit.confirm}
+                onOpen={previewEdit.openMenu}
+                onTooltipHide={hideToolbarTooltip}
+                onTooltipShow={showToolbarTooltip}
+              />
+            ) : null}
+          </div>
+        </div>
         <ToolbarButton
-          ariaLabel="Image"
-          active={activeFormats.image}
+          active={hiddenExtraToolActive}
+          ariaExpanded={extraToolsExpanded}
+          ariaLabel={
+            extraToolsExpanded ? 'Hide extra tools' : 'Show more tools'
+          }
+          className="markdown-toolbar-expand-button"
           onTooltipHide={hideToolbarTooltip}
           onTooltipShow={showToolbarTooltip}
-          onClick={() => runEditorCommand(toggleImageSelection)}
-          tooltip={inlineTooltips.image}
+          onClick={handleExtraToolsToggle}
+          tooltip={{
+            label: extraToolsExpanded ? 'Hide extra tools' : 'Show more tools',
+          }}
         >
-          <ToolbarIcon name="image" />
+          <MoreToolsChevron expanded={extraToolsExpanded} />
         </ToolbarButton>
-      )}
-      {previewEdit.available ? (
-        <PreviewEditMenu
-          open={previewEdit.open}
-          sourceText={previewEdit.sourceText}
-          toolbarRef={toolbarRef}
-          workspaceRef={workspaceRef}
-          onCancel={previewEdit.cancel}
-          onClose={previewEdit.close}
-          onConfirm={previewEdit.confirm}
-          onOpen={previewEdit.openMenu}
-          onTooltipHide={hideToolbarTooltip}
-          onTooltipShow={showToolbarTooltip}
-        />
-      ) : null}
+      </div>
 
       <div className="markdown-toolbar-divider" aria-hidden="true" />
 

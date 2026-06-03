@@ -10,6 +10,12 @@ export type InlineFormatConfig = InlineFormatMarkerPair & {
 }
 
 export const inlineFormatConfig = {
+  badge: {
+    closingMarker: ']',
+    mergeAdjacent: false,
+    openingMarker: '[badge:',
+    parseInsideInlineCode: false,
+  },
   bold: {
     closingMarker: '**',
     mergeAdjacent: true,
@@ -95,6 +101,7 @@ export function isParsedInlineFormat(
   value: string,
 ): value is ParsedInlineFormat {
   return (
+    value === 'badge' ||
     value === 'bold' ||
     value === 'comment' ||
     value === 'highlight' ||
