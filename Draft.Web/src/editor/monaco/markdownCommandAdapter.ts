@@ -1,7 +1,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import {
   addBlockquotePrefix,
-  addCalloutBlockquotePrefix,
   addHeadingPrefix,
   addListPrefix,
   detectActiveHeadingValue,
@@ -64,6 +63,7 @@ export type MarkdownEditorCommand = (
 const BLOCKQUOTE_LINE_PATTERN = /^\s{0,3}>\s?(.*)$/u
 const CALLOUT_MARKER_PATTERN = /^\[!([A-Za-z]+)\](?:\s|$)/u
 const CALLOUT_MARKER_DETAIL_PATTERN = /^\s*\[!([A-Za-z]+)\]([ \t]*)(.*)$/u
+const FENCED_CODE_BLOCK_PATTERN = /^\s{0,3}(`{3,}|~{3,})\s*([^\s`]*)?.*$/u
 
 function createMonacoEditFromMarkdownEdit(
   model: monaco.editor.ITextModel,
@@ -206,10 +206,38 @@ type BlockquoteBlockRange = {
   startLineNumber: number
 }
 
+type FencedCodeBlockRange = {
+  endLineNumber: number
+  hasClosingFence: boolean
+  startLineNumber: number
+}
+
 type CalloutMarkerLine = {
   lineNumber: number
   remainder: string
 }
+
+type BlockStyleLineRange = {
+  endLineNumber: number
+  kind: 'blockquote' | 'codeblock' | 'plain'
+  startLineNumber: number
+}
+
+type ExclusiveBlockStyle =
+  | {
+      type: 'blockquote'
+      calloutType: CalloutType
+    }
+  | {
+      type: 'codeblock'
+    }
+  | {
+      type: 'heading'
+      level: number
+    }
+  | {
+      type: 'normal'
+    }
 
 function getBlockquoteBlockRange(
   model: monaco.editor.ITextModel,
@@ -237,6 +265,74 @@ function getBlockquoteBlockRange(
   }
 
   return { endLineNumber, startLineNumber }
+}
+
+function getFencedCodeBlockRange(
+  model: monaco.editor.ITextModel,
+  lineNumber: number,
+): FencedCodeBlockRange | null {
+  let openingFence:
+    | {
+        character: string
+        length: number
+        lineNumber: number
+      }
+    | null = null
+
+  for (
+    let currentLineNumber = 1;
+    currentLineNumber <= model.getLineCount();
+    currentLineNumber += 1
+  ) {
+    const line = model.getLineContent(currentLineNumber)
+    const fenceMatch = FENCED_CODE_BLOCK_PATTERN.exec(line)
+
+    if (!fenceMatch) {
+      continue
+    }
+
+    const fence = fenceMatch[1] ?? ''
+    const fenceCharacter = fence[0] ?? ''
+
+    if (!openingFence) {
+      openingFence = {
+        character: fenceCharacter,
+        length: fence.length,
+        lineNumber: currentLineNumber,
+      }
+      continue
+    }
+
+    if (
+      fenceCharacter !== openingFence.character ||
+      fence.length < openingFence.length
+    ) {
+      continue
+    }
+
+    if (
+      lineNumber >= openingFence.lineNumber &&
+      lineNumber <= currentLineNumber
+    ) {
+      return {
+        endLineNumber: currentLineNumber,
+        hasClosingFence: true,
+        startLineNumber: openingFence.lineNumber,
+      }
+    }
+
+    openingFence = null
+  }
+
+  if (openingFence && lineNumber >= openingFence.lineNumber) {
+    return {
+      endLineNumber: model.getLineCount(),
+      hasClosingFence: false,
+      startLineNumber: openingFence.lineNumber,
+    }
+  }
+
+  return null
 }
 
 function getCalloutMarkerLineInfo(line: string) {
@@ -330,42 +426,22 @@ function getLineDeleteEdit(model: monaco.editor.ITextModel, lineNumber: number) 
   return getLineReplaceEdit(model, lineNumber, '')
 }
 
-function getCalloutMarkerEdit(
+function getLineRangeReplaceEdit(
   model: monaco.editor.ITextModel,
-  range: BlockquoteBlockRange,
-  markerLine: CalloutMarkerLine,
-  calloutType: CalloutType,
+  startLineNumber: number,
+  endLineNumber: number,
+  text: string,
 ) {
-  const line = model.getLineContent(markerLine.lineNumber)
-  const normalizedLine = removeBlockquotePrefix(line)
-  const indentation = normalizedLine.match(/^(\s*)/u)?.[1] ?? ''
-
-  if (calloutType !== 'default') {
-    return getLineReplaceEdit(
-      model,
-      markerLine.lineNumber,
-      `${indentation}> ${getCalloutMarker(calloutType)}`,
-    )
-  }
-
-  const defaultContent = markerLine.remainder.trimStart()
-
-  if (defaultContent.length > 0) {
-    return getLineReplaceEdit(
-      model,
-      markerLine.lineNumber,
-      `${indentation}> ${defaultContent}`,
-    )
-  }
-
-  if (
-    range.startLineNumber === markerLine.lineNumber &&
-    range.endLineNumber === markerLine.lineNumber
-  ) {
-    return getLineReplaceEdit(model, markerLine.lineNumber, `${indentation}> `)
-  }
-
-  return getLineDeleteEdit(model, markerLine.lineNumber)
+  return {
+    range: new monaco.Range(
+      startLineNumber,
+      1,
+      endLineNumber,
+      model.getLineMaxColumn(endLineNumber),
+    ),
+    text,
+    forceMoveMarkers: true,
+  } satisfies monaco.editor.IIdentifiedSingleEditOperation
 }
 
 function isLineNumberInRange(
@@ -377,36 +453,232 @@ function isLineNumberInRange(
   )
 }
 
-export function applyHeadingStyle(
-  editor: monaco.editor.IStandaloneCodeEditor,
-  value: HeadingValue,
-  options?: MarkdownCommandOptions,
+function isLineNumberInAnyRange(
+  lineNumber: number,
+  ranges: Pick<BlockStyleLineRange, 'endLineNumber' | 'startLineNumber'>[],
 ) {
-  if (value === 'codeblock') {
-    toggleCodeBlock(editor, options)
-    return
-  }
-
-  if (value === 'blockquote') {
-    replaceSelectedLines(editor, addBlockquotePrefix, options)
-    return
-  }
-
-  if (value === 'normal') {
-    replaceSelectedLines(editor, (line) =>
-      removeBlockquotePrefix(removeHeadingPrefix(line)),
-      options,
-    )
-    return
-  }
-
-  const level = Number(value.replace('h', ''))
-  replaceSelectedLines(editor, (line) => addHeadingPrefix(line, level), options)
+  return ranges.some((range) => isLineNumberInRange(lineNumber, range))
 }
 
-export function applyCalloutBlockquoteStyle(
-  editor: monaco.editor.IStandaloneCodeEditor,
+function getSelectedBlockStyleLineRanges(
+  model: monaco.editor.ITextModel,
+  lineNumbers: number[],
+) {
+  const ranges: BlockStyleLineRange[] = []
+
+  for (const lineNumber of lineNumbers) {
+    if (isLineNumberInAnyRange(lineNumber, ranges)) {
+      continue
+    }
+
+    const blockquoteRange = getBlockquoteBlockRange(model, lineNumber)
+
+    if (blockquoteRange) {
+      ranges.push({
+        ...blockquoteRange,
+        kind: 'blockquote',
+      })
+      continue
+    }
+
+    const codeBlockRange = getFencedCodeBlockRange(model, lineNumber)
+
+    if (codeBlockRange) {
+      ranges.push({
+        ...codeBlockRange,
+        kind: 'codeblock',
+      })
+      continue
+    }
+
+    ranges.push({
+      endLineNumber: lineNumber,
+      kind: 'plain',
+      startLineNumber: lineNumber,
+    })
+  }
+
+  return ranges.sort((a, b) => a.startLineNumber - b.startLineNumber)
+}
+
+function normalizePlainBlockStyleLine(line: string) {
+  return removeHeadingPrefix(removeBlockquotePrefix(line))
+}
+
+function getNormalizedBlockquoteLines(
+  model: monaco.editor.ITextModel,
+  range: BlockStyleLineRange,
+) {
+  const markerLine = getCalloutMarkerLineInBlock(model, range)
+  const lines: string[] = []
+
+  for (
+    let lineNumber = range.startLineNumber;
+    lineNumber <= range.endLineNumber;
+    lineNumber += 1
+  ) {
+    const line = model.getLineContent(lineNumber)
+
+    if (markerLine?.lineNumber === lineNumber) {
+      const markerContent = markerLine.remainder.trimStart()
+
+      if (markerContent.length > 0) {
+        const normalizedLine = removeBlockquotePrefix(line)
+        const indentation = normalizedLine.match(/^(\s*)/u)?.[1] ?? ''
+
+        lines.push(normalizePlainBlockStyleLine(`${indentation}${markerContent}`))
+      }
+
+      continue
+    }
+
+    lines.push(normalizePlainBlockStyleLine(line))
+  }
+
+  return lines
+}
+
+function getNormalizedCodeBlockLines(
+  model: monaco.editor.ITextModel,
+  range: BlockStyleLineRange,
+) {
+  const codeBlockRange = getFencedCodeBlockRange(model, range.startLineNumber)
+  const endLineNumber =
+    codeBlockRange?.hasClosingFence && range.endLineNumber > range.startLineNumber
+      ? range.endLineNumber - 1
+      : range.endLineNumber
+  const lines: string[] = []
+
+  for (
+    let lineNumber = range.startLineNumber + 1;
+    lineNumber <= endLineNumber;
+    lineNumber += 1
+  ) {
+    lines.push(model.getLineContent(lineNumber))
+  }
+
+  return lines
+}
+
+function getNormalizedBlockStyleLines(
+  model: monaco.editor.ITextModel,
+  range: BlockStyleLineRange,
+) {
+  if (range.kind === 'blockquote') {
+    return getNormalizedBlockquoteLines(model, range)
+  }
+
+  if (range.kind === 'codeblock') {
+    return getNormalizedCodeBlockLines(model, range)
+  }
+
+  return [normalizePlainBlockStyleLine(model.getLineContent(range.startLineNumber))]
+}
+
+function getBlockquoteLineText(
+  line: string,
   calloutType: CalloutType,
+  lineIndex: number,
+) {
+  if (calloutType === 'default') {
+    return [addBlockquotePrefix(line)]
+  }
+
+  const quotedLine = addBlockquotePrefix(line)
+
+  if (lineIndex !== 0) {
+    return [quotedLine]
+  }
+
+  const indentation = line.match(/^(\s*)/u)?.[1] ?? ''
+
+  return [`${indentation}> ${getCalloutMarker(calloutType)}`, quotedLine]
+}
+
+function getTransformedBlockStyleText(
+  lines: string[],
+  style: ExclusiveBlockStyle,
+  firstLineIndex: number,
+) {
+  const contentLines = lines.length > 0 ? lines : ['']
+
+  if (style.type === 'normal') {
+    return lines.join('\n')
+  }
+
+  if (style.type === 'heading') {
+    return contentLines
+      .map((line) => addHeadingPrefix(line, style.level))
+      .join('\n')
+  }
+
+  if (style.type === 'blockquote') {
+    return contentLines
+      .flatMap((line, index) =>
+        getBlockquoteLineText(line, style.calloutType, firstLineIndex + index),
+      )
+      .join('\n')
+  }
+
+  return `\`\`\`\n${contentLines.join('\n')}\n\`\`\``
+}
+
+function getBlockStyleRangeEdit(
+  model: monaco.editor.ITextModel,
+  range: BlockStyleLineRange,
+  style: ExclusiveBlockStyle,
+  firstLineIndex: number,
+) {
+  const lines = getNormalizedBlockStyleLines(model, range)
+  const text = getTransformedBlockStyleText(lines, style, firstLineIndex)
+
+  if (text.length === 0) {
+    return getLineDeleteEdit(model, range.startLineNumber)
+  }
+
+  return getLineRangeReplaceEdit(
+    model,
+    range.startLineNumber,
+    range.endLineNumber,
+    text,
+  )
+}
+
+function mergeAdjacentBlockStyleRanges(ranges: BlockStyleLineRange[]) {
+  const mergedRanges: BlockStyleLineRange[][] = []
+
+  for (const range of ranges) {
+    const previousRangeGroup = mergedRanges[mergedRanges.length - 1]
+    const previousRange = previousRangeGroup?.[previousRangeGroup.length - 1]
+
+    if (previousRange && range.startLineNumber <= previousRange.endLineNumber + 1) {
+      previousRangeGroup.push(range)
+      continue
+    }
+
+    mergedRanges.push([range])
+  }
+
+  return mergedRanges
+}
+
+function getCodeBlockRangeEdit(
+  model: monaco.editor.ITextModel,
+  ranges: BlockStyleLineRange[],
+) {
+  const startLineNumber = ranges[0]?.startLineNumber ?? 1
+  const endLineNumber = ranges[ranges.length - 1]?.endLineNumber ?? startLineNumber
+  const contentLines = ranges.flatMap((range) =>
+    getNormalizedBlockStyleLines(model, range),
+  )
+  const text = getTransformedBlockStyleText(contentLines, { type: 'codeblock' }, 0)
+
+  return getLineRangeReplaceEdit(model, startLineNumber, endLineNumber, text)
+}
+
+function applyExclusiveBlockStyle(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  style: ExclusiveBlockStyle,
   options?: MarkdownCommandOptions,
 ) {
   const model = editor.getModel()
@@ -417,57 +689,82 @@ export function applyCalloutBlockquoteStyle(
   }
 
   const lineNumbers = getSelectedLineNumbers(model, selections)
-  const handledBlockquoteRanges: BlockquoteBlockRange[] = []
-  const handledMarkerLines = new Set<number>()
-  const markerEdits: monaco.editor.IIdentifiedSingleEditOperation[] = []
+  const ranges = getSelectedBlockStyleLineRanges(model, lineNumbers)
 
-  for (const lineNumber of lineNumbers) {
-    const blockquoteRange = getBlockquoteBlockRange(model, lineNumber)
+  if (style.type === 'codeblock') {
+    const edits = mergeAdjacentBlockStyleRanges(ranges)
+      .filter(
+        (rangeGroup) =>
+          rangeGroup.length !== 1 || rangeGroup[0]?.kind !== 'codeblock',
+      )
+      .map((rangeGroup) => getCodeBlockRangeEdit(model, rangeGroup))
 
-    if (!blockquoteRange) {
-      continue
-    }
-
-    const markerLine = getCalloutMarkerLineInBlock(model, blockquoteRange)
-
-    if (!markerLine || handledMarkerLines.has(markerLine.lineNumber)) {
-      continue
-    }
-
-    handledBlockquoteRanges.push(blockquoteRange)
-    handledMarkerLines.add(markerLine.lineNumber)
-    markerEdits.push(
-      getCalloutMarkerEdit(model, blockquoteRange, markerLine, calloutType),
-    )
+    executeEditorEdits(editor, edits, undefined, options)
+    return
   }
 
-  if (markerEdits.length === 0) {
-    replaceSelectedLines(
+  let lineIndex = 0
+  let previousRange: BlockStyleLineRange | null = null
+  const edits = ranges.map((range) => {
+    if (
+      style.type === 'blockquote' &&
+      style.calloutType !== 'default' &&
+      previousRange &&
+      range.startLineNumber > previousRange.endLineNumber + 1
+    ) {
+      lineIndex = 0
+    }
+
+    const lines = getNormalizedBlockStyleLines(model, range)
+    const edit = getBlockStyleRangeEdit(model, range, style, lineIndex)
+
+    lineIndex += Math.max(1, lines.length)
+    previousRange = range
+
+    return edit
+  })
+
+  executeEditorEdits(editor, edits, undefined, options)
+}
+
+export function applyHeadingStyle(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  value: HeadingValue,
+  options?: MarkdownCommandOptions,
+) {
+  if (value === 'codeblock') {
+    applyExclusiveBlockStyle(editor, { type: 'codeblock' }, options)
+    return
+  }
+
+  if (value === 'blockquote') {
+    applyExclusiveBlockStyle(
       editor,
-      (line, index) => addCalloutBlockquotePrefix(line, index, calloutType),
+      { calloutType: 'default', type: 'blockquote' },
       options,
     )
     return
   }
 
-  const unhandledLineNumbers = lineNumbers.filter(
-    (lineNumber) =>
-      !handledBlockquoteRanges.some((range) =>
-        isLineNumberInRange(lineNumber, range),
-      ),
+  if (value === 'normal') {
+    applyExclusiveBlockStyle(editor, { type: 'normal' }, options)
+    return
+  }
+
+  const level = Number(value.replace('h', ''))
+  applyExclusiveBlockStyle(editor, { level, type: 'heading' }, options)
+}
+
+export function applyCalloutBlockquoteStyle(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  calloutType: CalloutType,
+  options?: MarkdownCommandOptions,
+) {
+  applyExclusiveBlockStyle(
+    editor,
+    { calloutType, type: 'blockquote' },
+    options,
   )
-  const lineEdits = unhandledLineNumbers.flatMap((lineNumber, index) => {
-    const line = model.getLineContent(lineNumber)
-    const nextLine = addCalloutBlockquotePrefix(line, index, calloutType)
-
-    if (nextLine === line) {
-      return []
-    }
-
-    return [getLineReplaceEdit(model, lineNumber, nextLine)]
-  })
-
-  executeEditorEdits(editor, [...markerEdits, ...lineEdits], undefined, options)
 }
 
 export function applyListStyle(

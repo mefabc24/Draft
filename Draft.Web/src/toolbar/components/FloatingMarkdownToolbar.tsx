@@ -113,6 +113,7 @@ function FloatingMarkdownToolbar({
   workspaceRef,
 }: FloatingMarkdownToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null)
+  const toolbarBoundsFrameRef = useRef<number | null>(null)
   const [position, setPosition] = useState<ToolbarPosition | null>(null)
   const [extraToolsExpanded, setExtraToolsExpanded] = useState(false)
   const {
@@ -156,6 +157,7 @@ function FloatingMarkdownToolbar({
   const closePreviewEditMenu = previewEdit.close
   const closeLinkEditMenu = linkEdit.close
   const closeImageEditMenu = imageEdit.close
+  const toolbarVisible = position !== null
   const toolbarStyle = useMemo(
     () =>
       position
@@ -237,58 +239,91 @@ function FloatingMarkdownToolbar({
     [extraToolCount],
   )
   useEffect(() => {
-    if (!position) {
+    if (!toolbarVisible) {
       setExtraToolsExpanded(false)
     }
-  }, [position])
-  useEffect(() => {
-    if (
-      (!extraToolsExpanded &&
-        promotedExtraInlineToolbarActions.length === 0 &&
-        !promotedPreviewEdit) ||
-      !position
-    ) {
+  }, [toolbarVisible])
+  const clampToolbarPositionToFrame = useCallback(() => {
+    const toolbar = toolbarRef.current
+    const workspace = workspaceRef.current
+
+    if (!toolbar || !workspace) {
       return
     }
 
-    const frameId = window.requestAnimationFrame(() => {
-      const toolbar = toolbarRef.current
-      const workspace = workspaceRef.current
-
-      if (!toolbar || !workspace) {
-        return
+    setPosition((currentPosition) => {
+      if (!currentPosition) {
+        return currentPosition
       }
 
+      const targetLeft = currentPosition.preferredLeft ?? currentPosition.left
       const nextLeft = clamp(
-        position.left,
+        targetLeft,
         TOOLBAR_EDGE_PADDING,
         workspace.clientWidth - toolbar.offsetWidth - TOOLBAR_EDGE_PADDING,
       )
 
-      if (nextLeft === position.left) {
-        return
+      if (nextLeft === currentPosition.left) {
+        return currentPosition
       }
 
-      setPosition((currentPosition) =>
-        currentPosition
-          ? {
-              ...currentPosition,
-              left: nextLeft,
-            }
-          : currentPosition,
-      )
+      return {
+        ...currentPosition,
+        left: nextLeft,
+      }
     })
-
-    return () => {
-      window.cancelAnimationFrame(frameId)
+  }, [workspaceRef])
+  const scheduleToolbarBoundsUpdate = useCallback(() => {
+    if (toolbarBoundsFrameRef.current !== null) {
+      window.cancelAnimationFrame(toolbarBoundsFrameRef.current)
     }
+
+    toolbarBoundsFrameRef.current = window.requestAnimationFrame(() => {
+      toolbarBoundsFrameRef.current = null
+      clampToolbarPositionToFrame()
+    })
+  }, [clampToolbarPositionToFrame])
+  useEffect(() => {
+    if (!toolbarVisible) {
+      return
+    }
+
+    scheduleToolbarBoundsUpdate()
   }, [
     extraToolsExpanded,
-    position,
+    position?.preferredLeft,
+    position?.top,
     promotedExtraInlineToolbarActions.length,
     promotedPreviewEdit,
-    workspaceRef,
+    scheduleToolbarBoundsUpdate,
+    toolbarVisible,
   ])
+  useEffect(() => {
+    const toolbar = toolbarRef.current
+    const workspace = workspaceRef.current
+
+    if (!toolbarVisible || !toolbar || !workspace) {
+      return
+    }
+
+    const resizeObserver = new ResizeObserver(scheduleToolbarBoundsUpdate)
+    resizeObserver.observe(toolbar)
+    resizeObserver.observe(workspace)
+    scheduleToolbarBoundsUpdate()
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [scheduleToolbarBoundsUpdate, toolbarVisible, workspaceRef])
+  useEffect(
+    () => () => {
+      if (toolbarBoundsFrameRef.current !== null) {
+        window.cancelAnimationFrame(toolbarBoundsFrameRef.current)
+        toolbarBoundsFrameRef.current = null
+      }
+    },
+    [],
+  )
   const handleListSelect = useCallback(
     (value: string) => {
       runEditorCommand((activeEditor, commandOptions) => {

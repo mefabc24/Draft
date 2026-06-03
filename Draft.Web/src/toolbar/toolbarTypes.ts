@@ -11,6 +11,7 @@ export type ToolbarSelectionSource = 'editor' | 'preview'
 
 export type ToolbarPosition = {
   left: number
+  preferredLeft?: number
   top: number
 }
 

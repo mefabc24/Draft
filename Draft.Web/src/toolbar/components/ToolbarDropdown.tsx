@@ -64,6 +64,7 @@ type ToolbarMenuGeometry = {
 
 const MENU_EDGE_PADDING = 8
 const MENU_GAP = 8
+const MENU_ANIMATION_DURATION_MS = 210
 
 function isDropdownItem(entry: ToolbarDropdownMenuEntry): entry is ToolbarDropdownItem {
   return !('type' in entry)
@@ -174,6 +175,8 @@ function ToolbarDropdown({
   const [menuGeometry, setMenuGeometry] = useState<ToolbarMenuGeometry>({
     placement: 'bottom',
   })
+  const [menuVisible, setMenuVisible] = useState(open)
+  const [shouldRenderMenu, setShouldRenderMenu] = useState(open)
   const [openSubmenuValue, setOpenSubmenuValue] = useState<string | null>(null)
 
   const updateMenuGeometry = useCallback(() => {
@@ -215,7 +218,32 @@ function ToolbarDropdown({
   }, [menuScrollRef])
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setShouldRenderMenu(true)
+
+      const frameId = window.requestAnimationFrame(() => {
+        setMenuVisible(true)
+      })
+
+      return () => {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
+
+    setMenuVisible(false)
+    setOpenSubmenuValue(null)
+
+    const timeoutId = window.setTimeout(() => {
+      setShouldRenderMenu(false)
+    }, MENU_ANIMATION_DURATION_MS)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!shouldRenderMenu) {
       setOpenSubmenuValue(null)
       return
     }
@@ -225,7 +253,7 @@ function ToolbarDropdown({
     return () => {
       window.cancelAnimationFrame(frameId)
     }
-  }, [open, updateMenuGeometry])
+  }, [shouldRenderMenu, updateMenuGeometry])
 
   useEffect(() => {
     if (!open) {
@@ -332,10 +360,12 @@ function ToolbarDropdown({
         <ChevronIcon open={open} />
       </button>
 
-      {open ? (
+      {shouldRenderMenu ? (
         <div
           ref={menuRef}
-          className={`markdown-toolbar-menu align-${align} place-${menuGeometry.placement}`}
+          className={`markdown-toolbar-menu align-${align} place-${menuGeometry.placement}${
+            menuVisible ? ' is-visible' : ''
+          }`}
           role="menu"
           aria-label={menuLabel}
           style={menuStyle}
@@ -409,13 +439,6 @@ function ToolbarDropdown({
               )
             })}
           </div>
-          {openSubmenuEntry && renderSubmenu
-            ? renderSubmenu(openSubmenuEntry.submenuId, {
-                anchorRef: submenuAnchorRef,
-                closeMenu,
-                closeSubmenu,
-              })
-            : null}
           <div
             ref={menuScrollbarRef}
             className="markdown-toolbar-menu-scrollbar"
@@ -435,6 +458,13 @@ function ToolbarDropdown({
           </div>
         </div>
       ) : null}
+      {shouldRenderMenu && openSubmenuEntry && renderSubmenu
+        ? renderSubmenu(openSubmenuEntry.submenuId, {
+            anchorRef: submenuAnchorRef,
+            closeMenu,
+            closeSubmenu,
+          })
+        : null}
     </div>
   )
 }
