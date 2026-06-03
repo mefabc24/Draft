@@ -12,6 +12,7 @@ import {
   canRunMarkdownToolbarCommand,
   cloneSelections,
   createSelectionFromOffsets,
+  detectCalloutType,
   detectHeadingValue,
   detectInlineFormats,
   detectListValue,
@@ -33,6 +34,7 @@ import type {
   MarkdownLinkContext,
   ListValue,
 } from '../../markdown'
+import type { CalloutType } from '../../markdown/callouts'
 import {
   createMarkdownImageText,
   createMarkdownLinkText,
@@ -181,6 +183,7 @@ export function useFloatingToolbarState({
   const restoreEditorFocusOnNextToolbarUpdateRef = useRef(false)
   const [openDropdown, setOpenDropdown] = useState<DropdownId | null>(null)
   const [headingValue, setHeadingValue] = useState<HeadingValue>('normal')
+  const [calloutType, setCalloutType] = useState<CalloutType | null>(null)
   const [listValue, setListValue] = useState<ListValue>('none')
   const [selectionSource, setSelectionSource] =
     useState<ToolbarSelectionSource | null>(null)
@@ -227,6 +230,7 @@ export function useFloatingToolbarState({
     savedSelectionsRef.current = null
     savedSelectionSourceRef.current = null
     setSelectionSource(null)
+    setCalloutType(null)
     setPreviewEditRange(null)
     setPreviewEditSession(null)
     setLinkEditRange(null)
@@ -554,8 +558,15 @@ export function useFloatingToolbarState({
             toolbarRef.current,
           )
 
+    const nextHeadingValue = detectHeadingValue(editor, currentSelections)
+
     setActiveFormats(detectInlineFormats(editor, currentSelections))
-    setHeadingValue(detectHeadingValue(editor, currentSelections))
+    setHeadingValue(nextHeadingValue)
+    setCalloutType(
+      nextHeadingValue === 'blockquote'
+        ? detectCalloutType(editor, currentSelections)
+        : null,
+    )
     setListValue(detectListValue(editor, currentSelections))
     setPosition((currentPosition) => {
       if (
@@ -1524,6 +1535,7 @@ export function useFloatingToolbarState({
 
   return {
     activeFormats,
+    calloutType,
     headingValue,
     listValue,
     markToolbarInteraction,

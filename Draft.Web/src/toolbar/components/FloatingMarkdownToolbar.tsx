@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from 'react'
 import {
+  applyCalloutBlockquoteStyle,
   applyHeadingStyle,
   applyListStyle,
   toggleImageSelection,
@@ -14,6 +15,7 @@ import {
   toggleWrappedSelection,
 } from '../../editor/monaco/markdownCommandAdapter'
 import type { HeadingValue, ListValue } from '../../markdown'
+import type { CalloutType } from '../../markdown/callouts'
 import { clamp } from '../../shared/utils/clamp'
 import { useFloatingToolbarState } from '../hooks/useFloatingToolbarState'
 import { useToolbarTooltip } from '../hooks/useToolbarTooltip'
@@ -31,10 +33,13 @@ import type {
   FloatingMarkdownToolbarProps,
   ToolbarPosition,
 } from '../toolbarTypes'
+import CalloutSubmenu from './CalloutSubmenu'
 import LinkEditMenu from './LinkEditMenu'
 import PreviewEditMenu from './PreviewEditMenu'
 import ToolbarButton from './ToolbarButton'
-import ToolbarDropdown from './ToolbarDropdown'
+import ToolbarDropdown, {
+  type ToolbarDropdownSubmenuRenderProps,
+} from './ToolbarDropdown'
 import ToolbarIcon from './ToolbarIcon'
 import ToolbarTooltip from './ToolbarTooltip'
 import '../styles/floatingMarkdownToolbar.css'
@@ -123,6 +128,7 @@ function FloatingMarkdownToolbar({
   })
   const {
     activeFormats,
+    calloutType,
     headingValue,
     imageEdit,
     listValue,
@@ -215,6 +221,12 @@ function FloatingMarkdownToolbar({
   )
   const extraToolCount =
     extraInlineToolbarActions.length + (previewEdit.available ? 1 : 0)
+  const promotedExtraInlineToolbarActions = !extraToolsExpanded
+    ? extraInlineToolbarActions.filter(
+        (action) => activeFormats[action.activeFormat],
+      )
+    : []
+  const promotedPreviewEdit = !extraToolsExpanded && previewEdit.open
   const extraToolsStyle = useMemo(
     () =>
       ({
@@ -224,19 +236,18 @@ function FloatingMarkdownToolbar({
       }) as ExtraToolsStyle,
     [extraToolCount],
   )
-  const hiddenExtraToolActive =
-    !extraToolsExpanded &&
-    (previewEdit.open ||
-      extraInlineToolbarActions.some(
-        (action) => activeFormats[action.activeFormat],
-      ))
   useEffect(() => {
     if (!position) {
       setExtraToolsExpanded(false)
     }
   }, [position])
   useEffect(() => {
-    if (!extraToolsExpanded || !position) {
+    if (
+      (!extraToolsExpanded &&
+        promotedExtraInlineToolbarActions.length === 0 &&
+        !promotedPreviewEdit) ||
+      !position
+    ) {
       return
     }
 
@@ -271,7 +282,13 @@ function FloatingMarkdownToolbar({
     return () => {
       window.cancelAnimationFrame(frameId)
     }
-  }, [extraToolsExpanded, position, workspaceRef])
+  }, [
+    extraToolsExpanded,
+    position,
+    promotedExtraInlineToolbarActions.length,
+    promotedPreviewEdit,
+    workspaceRef,
+  ])
   const handleListSelect = useCallback(
     (value: string) => {
       runEditorCommand((activeEditor, commandOptions) => {
@@ -279,6 +296,40 @@ function FloatingMarkdownToolbar({
       })
     },
     [runEditorCommand],
+  )
+  const handleCalloutSelect = useCallback(
+    (calloutType: CalloutType) => {
+      runEditorCommand((activeEditor, commandOptions) => {
+        applyCalloutBlockquoteStyle(
+          activeEditor,
+          calloutType,
+          commandOptions,
+        )
+      })
+    },
+    [runEditorCommand],
+  )
+  const renderHeadingSubmenu = useCallback(
+    (
+      submenuId: string,
+      { anchorRef, closeMenu }: ToolbarDropdownSubmenuRenderProps,
+    ) => {
+      if (submenuId !== 'callouts') {
+        return null
+      }
+
+      return (
+        <CalloutSubmenu
+          anchorRef={anchorRef}
+          selectedCalloutType={calloutType}
+          onSelect={(calloutType) => {
+            handleCalloutSelect(calloutType)
+            closeMenu()
+          }}
+        />
+      )
+    },
+    [calloutType, handleCalloutSelect],
   )
   const handleExtraToolsToggle = useCallback(() => {
     closePreviewEditMenu()
@@ -386,6 +437,21 @@ function FloatingMarkdownToolbar({
       </ToolbarButton>
     )
   }
+  const renderPreviewEditMenu = () =>
+    previewEdit.available ? (
+      <PreviewEditMenu
+        open={previewEdit.open}
+        sourceText={previewEdit.sourceText}
+        toolbarRef={toolbarRef}
+        workspaceRef={workspaceRef}
+        onCancel={previewEdit.cancel}
+        onClose={previewEdit.close}
+        onConfirm={previewEdit.confirm}
+        onOpen={previewEdit.openMenu}
+        onTooltipHide={hideToolbarTooltip}
+        onTooltipShow={showToolbarTooltip}
+      />
+    ) : null
 
   if (!editor || !position) {
     return null
@@ -426,6 +492,7 @@ function FloatingMarkdownToolbar({
         triggerTooltip={headingTooltip}
         triggerLabel={headingLabels[headingValue]}
         onSelect={handleHeadingSelect}
+        renderSubmenu={renderHeadingSubmenu}
       />
 
       <div className="markdown-toolbar-divider" aria-hidden="true" />
@@ -433,6 +500,8 @@ function FloatingMarkdownToolbar({
       <div className="markdown-toolbar-format-tools">
         <div className="markdown-toolbar-primary-tools">
           {primaryInlineToolbarActions.map(renderInlineToolbarAction)}
+          {promotedExtraInlineToolbarActions.map(renderInlineToolbarAction)}
+          {promotedPreviewEdit ? renderPreviewEditMenu() : null}
         </div>
         <div
           className={`markdown-toolbar-extra-tools${
@@ -443,24 +512,11 @@ function FloatingMarkdownToolbar({
         >
           <div className="markdown-toolbar-extra-tools-inner">
             {extraInlineToolbarActions.map(renderInlineToolbarAction)}
-            {previewEdit.available ? (
-              <PreviewEditMenu
-                open={previewEdit.open}
-                sourceText={previewEdit.sourceText}
-                toolbarRef={toolbarRef}
-                workspaceRef={workspaceRef}
-                onCancel={previewEdit.cancel}
-                onClose={previewEdit.close}
-                onConfirm={previewEdit.confirm}
-                onOpen={previewEdit.openMenu}
-                onTooltipHide={hideToolbarTooltip}
-                onTooltipShow={showToolbarTooltip}
-              />
-            ) : null}
+            {promotedPreviewEdit ? null : renderPreviewEditMenu()}
           </div>
         </div>
         <ToolbarButton
-          active={hiddenExtraToolActive}
+          active={false}
           ariaExpanded={extraToolsExpanded}
           ariaLabel={
             extraToolsExpanded ? 'Hide extra tools' : 'Show more tools'

@@ -29,6 +29,7 @@ export const headingItems: ToolbarDropdownMenuEntry[] = [
     value: 'blockquote',
     label: 'Blockquote',
     icon: <ToolbarIcon name="blockquote" />,
+    submenuId: 'callouts',
   },
   {
     value: 'codeblock',

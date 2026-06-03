@@ -5,6 +5,7 @@ import {
   useState,
   type CSSProperties,
   type ReactNode,
+  type RefObject,
 } from 'react'
 import { useToolbarMenuScrollbar } from '../hooks/useToolbarMenuScrollbar'
 import type { ToolbarTooltipContent } from './ToolbarTooltip'
@@ -13,7 +14,11 @@ export type ToolbarDropdownItem = {
   icon?: ReactNode
   label: string
   shortcut?: string
+  submenuId?: string
   value: string
+}
+type ToolbarDropdownSubmenuItem = ToolbarDropdownItem & {
+  submenuId: string
 }
 
 export type ToolbarDropdownMenuEntry =
@@ -32,6 +37,10 @@ type ToolbarDropdownProps = {
   onOpenChange: (open: boolean) => void
   onSelect: (value: string) => void
   open: boolean
+  renderSubmenu?: (
+    submenuId: string,
+    props: ToolbarDropdownSubmenuRenderProps,
+  ) => ReactNode
   selectedValue: string
   triggerIcon?: ReactNode
   triggerLabel: string
@@ -41,6 +50,11 @@ type ToolbarDropdownProps = {
     target: HTMLButtonElement,
     tooltip: ToolbarTooltipContent,
   ) => void
+}
+export type ToolbarDropdownSubmenuRenderProps = {
+  anchorRef: RefObject<HTMLButtonElement | null>
+  closeMenu: () => void
+  closeSubmenu: () => void
 }
 type ToolbarMenuPlacement = 'top' | 'bottom'
 type ToolbarMenuGeometry = {
@@ -106,6 +120,25 @@ function CheckIcon() {
   )
 }
 
+function SubmenuChevronIcon() {
+  return (
+    <svg
+      className="markdown-toolbar-submenu-chevron"
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+    >
+      <path
+        d="M6.25 4 10 8l-3.75 4"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  )
+}
+
 function ToolbarDropdown({
   align = 'left',
   ariaLabel,
@@ -115,6 +148,7 @@ function ToolbarDropdown({
   onOpenChange,
   onSelect,
   open,
+  renderSubmenu,
   selectedValue,
   triggerIcon,
   triggerLabel,
@@ -122,7 +156,9 @@ function ToolbarDropdown({
   onTooltipHide,
   onTooltipShow,
 }: ToolbarDropdownProps) {
+  const dropdownRef = useRef<HTMLDivElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const submenuAnchorRef = useRef<HTMLButtonElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const {
     scrollRef: menuScrollRef,
@@ -138,6 +174,7 @@ function ToolbarDropdown({
   const [menuGeometry, setMenuGeometry] = useState<ToolbarMenuGeometry>({
     placement: 'bottom',
   })
+  const [openSubmenuValue, setOpenSubmenuValue] = useState<string | null>(null)
 
   const updateMenuGeometry = useCallback(() => {
     const menu = menuRef.current
@@ -179,6 +216,7 @@ function ToolbarDropdown({
 
   useEffect(() => {
     if (!open) {
+      setOpenSubmenuValue(null)
       return
     }
 
@@ -188,6 +226,29 @@ function ToolbarDropdown({
       window.cancelAnimationFrame(frameId)
     }
   }, [open, updateMenuGeometry])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target
+
+      if (target instanceof Node && dropdownRef.current?.contains(target)) {
+        return
+      }
+
+      setOpenSubmenuValue(null)
+      onOpenChange(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, true)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true)
+    }
+  }, [onOpenChange, open])
 
   useEffect(() => {
     if (!open) {
@@ -220,9 +281,25 @@ function ToolbarDropdown({
       ? `${menuGeometry.maxHeight}px`
       : undefined,
   } satisfies CSSProperties
+  const closeSubmenu = useCallback(() => {
+    setOpenSubmenuValue(null)
+  }, [])
+  const closeMenu = useCallback(() => {
+    setOpenSubmenuValue(null)
+    onOpenChange(false)
+  }, [onOpenChange])
+  const openSubmenuEntry = items.find(
+    (entry): entry is ToolbarDropdownSubmenuItem =>
+      isDropdownItem(entry) &&
+      !!entry.submenuId &&
+      entry.value === openSubmenuValue,
+  )
 
   return (
-    <div className={`markdown-toolbar-dropdown ${className}`.trim()}>
+    <div
+      ref={dropdownRef}
+      className={`markdown-toolbar-dropdown ${className}`.trim()}
+    >
       <button
         ref={triggerRef}
         type="button"
@@ -280,18 +357,32 @@ function ToolbarDropdown({
               }
 
               const selected = entry.value === selectedValue
+              const hasSubmenu = !!entry.submenuId
+              const submenuOpen = openSubmenuValue === entry.value
 
               return (
                 <button
                   key={entry.value}
+                  ref={submenuOpen ? submenuAnchorRef : undefined}
                   type="button"
                   className={`markdown-toolbar-menu-item${
                     selected ? ' is-selected' : ''
-                  }${entry.icon ? ' has-icon' : ' no-icon'}`}
-                  role="menuitemradio"
-                  aria-checked={selected}
+                  }${entry.icon ? ' has-icon' : ' no-icon'}${
+                    hasSubmenu ? ' has-submenu' : ''
+                  }${submenuOpen ? ' is-submenu-open' : ''}`}
+                  role={hasSubmenu ? 'menuitem' : 'menuitemradio'}
+                  aria-checked={hasSubmenu ? undefined : selected}
+                  aria-expanded={hasSubmenu ? submenuOpen : undefined}
+                  aria-haspopup={hasSubmenu ? 'menu' : undefined}
                   onClick={() => {
                     onTooltipHide?.()
+                    if (hasSubmenu) {
+                      setOpenSubmenuValue((currentValue) =>
+                        currentValue === entry.value ? null : entry.value,
+                      )
+                      return
+                    }
+
                     onSelect(entry.value)
                     onOpenChange(false)
                   }}
@@ -305,13 +396,26 @@ function ToolbarDropdown({
                       {entry.shortcut}
                     </span>
                   ) : null}
-                  <span className="markdown-toolbar-item-check">
-                    {selected ? <CheckIcon /> : null}
-                  </span>
+                  {hasSubmenu ? (
+                    <span className="markdown-toolbar-item-submenu">
+                      <SubmenuChevronIcon />
+                    </span>
+                  ) : (
+                    <span className="markdown-toolbar-item-check">
+                      {selected ? <CheckIcon /> : null}
+                    </span>
+                  )}
                 </button>
               )
             })}
           </div>
+          {openSubmenuEntry && renderSubmenu
+            ? renderSubmenu(openSubmenuEntry.submenuId, {
+                anchorRef: submenuAnchorRef,
+                closeMenu,
+                closeSubmenu,
+              })
+            : null}
           <div
             ref={menuScrollbarRef}
             className="markdown-toolbar-menu-scrollbar"

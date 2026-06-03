@@ -1,6 +1,7 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import {
   addBlockquotePrefix,
+  addCalloutBlockquotePrefix,
   addHeadingPrefix,
   addListPrefix,
   detectActiveHeadingValue,
@@ -23,6 +24,11 @@ import {
   type MarkdownTextEdit,
   type ToggleWrappedMode,
 } from '../../markdown'
+import {
+  getCalloutMarker,
+  normalizeCalloutType,
+  type CalloutType,
+} from '../../markdown/callouts'
 import {
   createRangeFromOffsets,
   createSelectionFromOffsets,
@@ -54,6 +60,10 @@ export type MarkdownEditorCommand = (
   activeEditor: monaco.editor.IStandaloneCodeEditor,
   commandOptions: MarkdownCommandOptions,
 ) => void
+
+const BLOCKQUOTE_LINE_PATTERN = /^\s{0,3}>\s?(.*)$/u
+const CALLOUT_MARKER_PATTERN = /^\[!([A-Za-z]+)\](?:\s|$)/u
+const CALLOUT_MARKER_DETAIL_PATTERN = /^\s*\[!([A-Za-z]+)\]([ \t]*)(.*)$/u
 
 function createMonacoEditFromMarkdownEdit(
   model: monaco.editor.ITextModel,
@@ -175,6 +185,198 @@ function replaceSelectedLines(
   executeEditorEdits(editor, edits, undefined, options)
 }
 
+function getBlockquoteLineContent(line: string) {
+  return BLOCKQUOTE_LINE_PATTERN.exec(line)?.[1] ?? null
+}
+
+function getCalloutTypeFromBlockquoteLine(line: string) {
+  const content = getBlockquoteLineContent(line)
+
+  if (content === null) {
+    return null
+  }
+
+  const markerMatch = CALLOUT_MARKER_PATTERN.exec(content.trimStart())
+
+  return markerMatch ? normalizeCalloutType(markerMatch[1] ?? '') : null
+}
+
+type BlockquoteBlockRange = {
+  endLineNumber: number
+  startLineNumber: number
+}
+
+type CalloutMarkerLine = {
+  lineNumber: number
+  remainder: string
+}
+
+function getBlockquoteBlockRange(
+  model: monaco.editor.ITextModel,
+  lineNumber: number,
+): BlockquoteBlockRange | null {
+  if (getBlockquoteLineContent(model.getLineContent(lineNumber)) === null) {
+    return null
+  }
+
+  let startLineNumber = lineNumber
+  let endLineNumber = lineNumber
+
+  while (
+    startLineNumber > 1 &&
+    getBlockquoteLineContent(model.getLineContent(startLineNumber - 1)) !== null
+  ) {
+    startLineNumber -= 1
+  }
+
+  while (
+    endLineNumber < model.getLineCount() &&
+    getBlockquoteLineContent(model.getLineContent(endLineNumber + 1)) !== null
+  ) {
+    endLineNumber += 1
+  }
+
+  return { endLineNumber, startLineNumber }
+}
+
+function getCalloutMarkerLineInfo(line: string) {
+  const content = getBlockquoteLineContent(line)
+
+  if (content === null) {
+    return null
+  }
+
+  const markerMatch = CALLOUT_MARKER_DETAIL_PATTERN.exec(content)
+
+  if (!markerMatch) {
+    return null
+  }
+
+  const spacingAfterMarker = markerMatch[2] ?? ''
+  const remainder = markerMatch[3] ?? ''
+
+  if (remainder.length > 0 && spacingAfterMarker.length === 0) {
+    return null
+  }
+
+  return {
+    remainder,
+  }
+}
+
+function getCalloutMarkerLineInBlock(
+  model: monaco.editor.ITextModel,
+  range: BlockquoteBlockRange,
+): CalloutMarkerLine | null {
+  for (
+    let lineNumber = range.startLineNumber;
+    lineNumber <= range.endLineNumber;
+    lineNumber += 1
+  ) {
+    const markerLineInfo = getCalloutMarkerLineInfo(
+      model.getLineContent(lineNumber),
+    )
+
+    if (markerLineInfo) {
+      return {
+        lineNumber,
+        remainder: markerLineInfo.remainder,
+      }
+    }
+  }
+
+  return null
+}
+
+function getLineReplaceEdit(
+  model: monaco.editor.ITextModel,
+  lineNumber: number,
+  text: string,
+) {
+  return {
+    range: new monaco.Range(
+      lineNumber,
+      1,
+      lineNumber,
+      model.getLineMaxColumn(lineNumber),
+    ),
+    text,
+    forceMoveMarkers: true,
+  } satisfies monaco.editor.IIdentifiedSingleEditOperation
+}
+
+function getLineDeleteEdit(model: monaco.editor.ITextModel, lineNumber: number) {
+  if (lineNumber < model.getLineCount()) {
+    return {
+      range: new monaco.Range(lineNumber, 1, lineNumber + 1, 1),
+      text: '',
+      forceMoveMarkers: true,
+    } satisfies monaco.editor.IIdentifiedSingleEditOperation
+  }
+
+  if (lineNumber > 1) {
+    return {
+      range: new monaco.Range(
+        lineNumber - 1,
+        model.getLineMaxColumn(lineNumber - 1),
+        lineNumber,
+        model.getLineMaxColumn(lineNumber),
+      ),
+      text: '',
+      forceMoveMarkers: true,
+    } satisfies monaco.editor.IIdentifiedSingleEditOperation
+  }
+
+  return getLineReplaceEdit(model, lineNumber, '')
+}
+
+function getCalloutMarkerEdit(
+  model: monaco.editor.ITextModel,
+  range: BlockquoteBlockRange,
+  markerLine: CalloutMarkerLine,
+  calloutType: CalloutType,
+) {
+  const line = model.getLineContent(markerLine.lineNumber)
+  const normalizedLine = removeBlockquotePrefix(line)
+  const indentation = normalizedLine.match(/^(\s*)/u)?.[1] ?? ''
+
+  if (calloutType !== 'default') {
+    return getLineReplaceEdit(
+      model,
+      markerLine.lineNumber,
+      `${indentation}> ${getCalloutMarker(calloutType)}`,
+    )
+  }
+
+  const defaultContent = markerLine.remainder.trimStart()
+
+  if (defaultContent.length > 0) {
+    return getLineReplaceEdit(
+      model,
+      markerLine.lineNumber,
+      `${indentation}> ${defaultContent}`,
+    )
+  }
+
+  if (
+    range.startLineNumber === markerLine.lineNumber &&
+    range.endLineNumber === markerLine.lineNumber
+  ) {
+    return getLineReplaceEdit(model, markerLine.lineNumber, `${indentation}> `)
+  }
+
+  return getLineDeleteEdit(model, markerLine.lineNumber)
+}
+
+function isLineNumberInRange(
+  lineNumber: number,
+  range: BlockquoteBlockRange,
+) {
+  return (
+    lineNumber >= range.startLineNumber && lineNumber <= range.endLineNumber
+  )
+}
+
 export function applyHeadingStyle(
   editor: monaco.editor.IStandaloneCodeEditor,
   value: HeadingValue,
@@ -200,6 +402,72 @@ export function applyHeadingStyle(
 
   const level = Number(value.replace('h', ''))
   replaceSelectedLines(editor, (line) => addHeadingPrefix(line, level), options)
+}
+
+export function applyCalloutBlockquoteStyle(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  calloutType: CalloutType,
+  options?: MarkdownCommandOptions,
+) {
+  const model = editor.getModel()
+  const selections = editor.getSelections()
+
+  if (!model || !selections || selections.length === 0) {
+    return
+  }
+
+  const lineNumbers = getSelectedLineNumbers(model, selections)
+  const handledBlockquoteRanges: BlockquoteBlockRange[] = []
+  const handledMarkerLines = new Set<number>()
+  const markerEdits: monaco.editor.IIdentifiedSingleEditOperation[] = []
+
+  for (const lineNumber of lineNumbers) {
+    const blockquoteRange = getBlockquoteBlockRange(model, lineNumber)
+
+    if (!blockquoteRange) {
+      continue
+    }
+
+    const markerLine = getCalloutMarkerLineInBlock(model, blockquoteRange)
+
+    if (!markerLine || handledMarkerLines.has(markerLine.lineNumber)) {
+      continue
+    }
+
+    handledBlockquoteRanges.push(blockquoteRange)
+    handledMarkerLines.add(markerLine.lineNumber)
+    markerEdits.push(
+      getCalloutMarkerEdit(model, blockquoteRange, markerLine, calloutType),
+    )
+  }
+
+  if (markerEdits.length === 0) {
+    replaceSelectedLines(
+      editor,
+      (line, index) => addCalloutBlockquotePrefix(line, index, calloutType),
+      options,
+    )
+    return
+  }
+
+  const unhandledLineNumbers = lineNumbers.filter(
+    (lineNumber) =>
+      !handledBlockquoteRanges.some((range) =>
+        isLineNumberInRange(lineNumber, range),
+      ),
+  )
+  const lineEdits = unhandledLineNumbers.flatMap((lineNumber, index) => {
+    const line = model.getLineContent(lineNumber)
+    const nextLine = addCalloutBlockquotePrefix(line, index, calloutType)
+
+    if (nextLine === line) {
+      return []
+    }
+
+    return [getLineReplaceEdit(model, lineNumber, nextLine)]
+  })
+
+  executeEditorEdits(editor, [...markerEdits, ...lineEdits], undefined, options)
 }
 
 export function applyListStyle(
@@ -475,6 +743,44 @@ export function detectHeadingValue(
     model.getLineContent(lineNumber),
     getFencedCodeBlockContext(model, lineNumber),
   )
+}
+
+export function detectCalloutType(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  selections?: monaco.Selection[],
+): CalloutType | null {
+  const model = editor.getModel()
+  const selection = getPrimarySelection(editor, selections)
+
+  if (!model || !selection) {
+    return null
+  }
+
+  const lineNumber = selection.getStartPosition().lineNumber
+
+  if (getBlockquoteLineContent(model.getLineContent(lineNumber)) === null) {
+    return null
+  }
+
+  for (
+    let currentLineNumber = lineNumber;
+    currentLineNumber >= 1;
+    currentLineNumber -= 1
+  ) {
+    const line = model.getLineContent(currentLineNumber)
+
+    if (getBlockquoteLineContent(line) === null) {
+      break
+    }
+
+    const calloutType = getCalloutTypeFromBlockquoteLine(line)
+
+    if (calloutType) {
+      return calloutType
+    }
+  }
+
+  return 'default'
 }
 
 export function detectListValue(
