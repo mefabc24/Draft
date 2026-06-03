@@ -20,6 +20,10 @@ import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
 import type { PluggableList } from 'unified'
 import { postOpenExternalUrl } from '../../app/webview/draftWebViewMessages'
+import {
+  isCalloutType,
+  type CalloutType,
+} from '../../markdown/callouts'
 import type { DraftPreviewTheme } from '../../themes/preview/support/previewThemeTypes'
 import {
   getOrderedListMarkerStyle,
@@ -35,6 +39,9 @@ type PreviewMarkdownRendererProps = {
 }
 
 type PreviewCodeBlockProps = ComponentPropsWithoutRef<'pre'> & {
+  sourceLine?: number
+}
+type PreviewBlockquoteProps = ComponentPropsWithoutRef<'blockquote'> & {
   sourceLine?: number
 }
 
@@ -61,6 +68,30 @@ const remarkPlugins: PluggableList = [remarkGfm]
 const ListDepthContext = createContext(0)
 const PreviewThemeContext = createContext<DraftPreviewTheme | null>(null)
 const revealedSpoilerIds = new Set<string>()
+const previewCalloutIconPaths = {
+  default: 'icons/Blockquote.svg',
+  note: 'icons/callouts/Note.svg',
+  info: 'icons/callouts/Info.svg',
+  tip: 'icons/callouts/Tip.svg',
+  important: 'icons/callouts/Important.svg',
+  warning: 'icons/callouts/Warning.svg',
+  caution: 'icons/callouts/Caution.svg',
+  error: 'icons/callouts/Error.svg',
+  success: 'icons/callouts/Success.svg',
+  question: 'icons/callouts/Question.svg',
+  todo: 'icons/callouts/Todo.svg',
+} satisfies Record<CalloutType, string>
+const blockquoteIconPositions = [
+  'top-left',
+  'left',
+  'bottom-left',
+  'bottom',
+  'bottom-right',
+  'right',
+  'top-right',
+  'top',
+] as const
+const blockquoteIconPositionSet = new Set<string>(blockquoteIconPositions)
 
 function getSourceLine(node: SourceMappedNode | undefined) {
   const line = node?.position?.start?.line
@@ -103,6 +134,40 @@ function getSpanHtmlProps(props: Record<string, unknown>) {
 
   return spanProps as ComponentPropsWithoutRef<'span'> &
     Record<string, unknown>
+}
+
+function getPreviewAssetUrl(path: string) {
+  return `${import.meta.env.BASE_URL}${path}`
+}
+
+function getCalloutTypeAttribute(props: Record<string, unknown>) {
+  const calloutType = getStringAttribute(props, 'data-callout-type')
+
+  return calloutType && isCalloutType(calloutType) ? calloutType : null
+}
+
+function getBlockquoteIconPosition(previewTheme: DraftPreviewTheme | null) {
+  const position =
+    previewTheme?.cssVariables['--preview-blockquote-icon-position']
+
+  return position && blockquoteIconPositionSet.has(position)
+    ? position
+    : 'left'
+}
+
+function getBlockquoteBoldUsesCalloutColor(
+  previewTheme: DraftPreviewTheme | null,
+) {
+  const value =
+    previewTheme?.cssVariables['--preview-blockquote-bold-uses-callout-color']
+      ?.trim()
+      .toLowerCase()
+
+  if (value === 'false' || value === '0') {
+    return 'false'
+  }
+
+  return 'true'
 }
 
 function copyTextWithTextarea(text: string) {
@@ -361,6 +426,50 @@ function PreviewCodeBlock({
   )
 }
 
+function PreviewBlockquote({
+  children,
+  className,
+  sourceLine,
+  ...props
+}: PreviewBlockquoteProps) {
+  const previewTheme = useContext(PreviewThemeContext)
+  const calloutType = getCalloutTypeAttribute(props)
+
+  if (!calloutType) {
+    return (
+      <blockquote
+        {...props}
+        className={className}
+        data-source-line={sourceLine}
+      >
+        {children}
+      </blockquote>
+    )
+  }
+
+  const iconUrl = getPreviewAssetUrl(previewCalloutIconPaths[calloutType])
+
+  return (
+    <blockquote
+      {...props}
+      className={className}
+      data-callout-bold-color={getBlockquoteBoldUsesCalloutColor(previewTheme)}
+      data-callout-icon-position={getBlockquoteIconPosition(previewTheme)}
+      data-source-line={sourceLine}
+    >
+      <span
+        className="preview-callout-icon"
+        aria-hidden="true"
+        style={{
+          WebkitMaskImage: `url("${iconUrl}")`,
+          maskImage: `url("${iconUrl}")`,
+        }}
+      />
+      <div className="preview-callout-body">{children}</div>
+    </blockquote>
+  )
+}
+
 function getOrderedListStyle(
   previewTheme: DraftPreviewTheme | null,
   depth: number,
@@ -486,7 +595,7 @@ const previewComponents: Components = {
     return <PreviewUnorderedList {...props} sourceLine={getSourceLine(node)} />
   },
   blockquote({ node, ...props }) {
-    return <blockquote {...props} data-source-line={getSourceLine(node)} />
+    return <PreviewBlockquote {...props} sourceLine={getSourceLine(node)} />
   },
   a({ node, href, onClick, ...props }) {
     const normalizedHref = getNormalizedExternalHref(href)

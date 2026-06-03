@@ -81,10 +81,22 @@ const theHubPreviewColorVariables = {
   '--preview-code-block-copy-icon-foreground': '#000',
   '--preview-code-block-foreground': '#000',
 
-  // Blockquotes
-  '--preview-blockquote-background': 'rgba(247, 152, 23, 10%)',
-  '--preview-blockquote-border': draftDarkTokens.theHubAccent,
-  '--preview-blockquote-foreground': '#fff',
+  // Blockquote colors
+  '--preview-blockquote-default-color': draftDarkTokens.theHubAccent,
+  '--preview-blockquote-note-color': '#A5C8FF',
+  '--preview-blockquote-info-color': '#339CFF',
+  '--preview-blockquote-tip-color': '#79A986',
+  '--preview-blockquote-important-color': '#BD7561',
+  '--preview-blockquote-warning-color': draftDarkTokens.theHubAccent,
+  '--preview-blockquote-caution-color': '#F97316',
+  '--preview-blockquote-error-color': '#E25E5E',
+  '--preview-blockquote-success-color': '#31C559',
+  '--preview-blockquote-question-color': '#8AE9F8',
+  '--preview-blockquote-todo-color': '#ACABAA',
+  // background-opacity is a decimal alpha used to tint the blockquote color.
+  '--preview-blockquote-background-opacity': '0.1',
+  // true colors bold callout text with the callout color. false keeps normal text color.
+  '--preview-blockquote-bold-uses-callout-color': 'true',
 
   // Tables
   '--preview-table-border': 'blue',
@@ -221,12 +233,14 @@ const theHubPreviewLayoutVariables = {
   '--preview-code-block-copy-button-border-radius': '6px',
   '--preview-code-block-padding': '14px',
 
-  // Blockquotes
+  // Blockquote layout
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.
   '--preview-blockquote-border-inset': '0',
   '--preview-blockquote-border-line-radius': '2px',
   '--preview-blockquote-border-radius': '0 8px 8px 0',
   '--preview-blockquote-border-width': '4px',
+  '--preview-blockquote-icon-position': 'left',
+  '--preview-blockquote-icon-size': '44px',
   '--preview-blockquote-padding': '8px 16px',
 
   // Tables

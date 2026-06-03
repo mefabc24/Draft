@@ -163,13 +163,25 @@
   --preview-code-block-line-height: 1.55;
   --preview-code-block-padding: 14px;
 
-  --preview-blockquote-background: rgba(121, 169, 134, 0.08);
-  --preview-blockquote-border: #79a986;
+  --preview-blockquote-default-color: #79a986;
+  --preview-blockquote-note-color: #a5c8ff;
+  --preview-blockquote-info-color: #339cff;
+  --preview-blockquote-tip-color: #79a986;
+  --preview-blockquote-important-color: #bd7561;
+  --preview-blockquote-warning-color: #d9a441;
+  --preview-blockquote-caution-color: #f97316;
+  --preview-blockquote-error-color: #e25e5e;
+  --preview-blockquote-success-color: #31c559;
+  --preview-blockquote-question-color: #8ae9f8;
+  --preview-blockquote-todo-color: #acabaa;
+  --preview-blockquote-background-opacity: 0.1;
+  --preview-blockquote-bold-uses-callout-color: true;
   --preview-blockquote-border-inset: 0;
   --preview-blockquote-border-line-radius: 0;
   --preview-blockquote-border-radius: 0;
   --preview-blockquote-border-width: 4px;
-  --preview-blockquote-foreground: #cbd5e1;
+  --preview-blockquote-icon-position: left;
+  --preview-blockquote-icon-size: 48px;
   --preview-blockquote-padding: 8px 16px;
 
   --preview-table-border: #374151;

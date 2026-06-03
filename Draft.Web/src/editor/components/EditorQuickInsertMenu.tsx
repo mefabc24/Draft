@@ -8,6 +8,7 @@ import {
   type RefObject,
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import type { CalloutType } from '../../markdown/callouts'
 import {
   insertEditorQuickInsertCodeBlock,
   insertEditorQuickInsertImage,
@@ -65,6 +66,23 @@ const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
   tag: 'icons/Tag.svg',
   table: 'icons/Tables.svg',
 }
+const quickInsertCalloutIconPaths = {
+  default: 'icons/Blockquote.svg',
+  note: 'icons/callouts/Note.svg',
+  info: 'icons/callouts/Info.svg',
+  tip: 'icons/callouts/Tip.svg',
+  important: 'icons/callouts/Important.svg',
+  warning: 'icons/callouts/Warning.svg',
+  caution: 'icons/callouts/Caution.svg',
+  error: 'icons/callouts/Error.svg',
+  success: 'icons/callouts/Success.svg',
+  question: 'icons/callouts/Question.svg',
+  todo: 'icons/callouts/Todo.svg',
+} satisfies Record<CalloutType, string>
+
+function getQuickInsertAssetUrl(path: string) {
+  return `${import.meta.env.BASE_URL}${path}`
+}
 
 function getQuickInsertIcon(icon: EditorQuickInsertIconName | undefined) {
   if (!icon) {
@@ -76,10 +94,45 @@ function getQuickInsertIcon(icon: EditorQuickInsertIconName | undefined) {
       aria-hidden="true"
       className="editor-quick-insert-icon-glyph"
       style={{
-        WebkitMaskImage: `url("${quickInsertIconPaths[icon]}")`,
-        maskImage: `url("${quickInsertIconPaths[icon]}")`,
+        WebkitMaskImage:
+          `url("${getQuickInsertAssetUrl(quickInsertIconPaths[icon])}")`,
+        maskImage:
+          `url("${getQuickInsertAssetUrl(quickInsertIconPaths[icon])}")`,
       }}
     />
+  )
+}
+
+function getQuickInsertCalloutIcon(calloutType: CalloutType | undefined) {
+  if (!calloutType) {
+    return undefined
+  }
+
+  const iconUrl = getQuickInsertAssetUrl(
+    quickInsertCalloutIconPaths[calloutType],
+  )
+  const color =
+    calloutType === 'default'
+      ? undefined
+      : `var(--preview-blockquote-${calloutType}-color, currentColor)`
+
+  return (
+    <span
+      aria-hidden="true"
+      className="editor-quick-insert-icon-glyph editor-quick-insert-callout-icon"
+      style={{
+        color,
+        WebkitMaskImage: `url("${iconUrl}")`,
+        maskImage: `url("${iconUrl}")`,
+      }}
+    />
+  )
+}
+
+function getQuickInsertEntryIcon(entry: EditorQuickInsertCommandEntry) {
+  return (
+    getQuickInsertCalloutIcon(entry.calloutType) ??
+    getQuickInsertIcon(entry.icon)
   )
 }
 
@@ -380,7 +433,7 @@ function EditorQuickInsertMenu({
   const renderCommandItem = useCallback(
     (entry: EditorQuickInsertCommandEntry, nested = false) => (
       <EditorQuickInsertMenuItem
-        icon={getQuickInsertIcon(entry.icon)}
+        icon={getQuickInsertEntryIcon(entry)}
         key={entry.id}
         label={entry.label}
         nested={nested}
