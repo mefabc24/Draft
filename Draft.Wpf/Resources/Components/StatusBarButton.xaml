@@ -18,6 +18,9 @@
                     </Border>
 
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Muted}" />
+                        </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.Secondary}" />
                             <Setter Property="Cursor" Value="Hand" />
