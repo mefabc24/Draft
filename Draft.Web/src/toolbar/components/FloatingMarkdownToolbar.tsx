@@ -51,6 +51,7 @@ type ExtraToolsStyle = CSSProperties & {
 const TOOLBAR_EDGE_PADDING = 8
 const TOOLBAR_BUTTON_WIDTH = 36
 const TOOLBAR_BUTTON_GAP = 8
+const TOOLBAR_EXTRA_TOOLS_TRANSITION_MS = 190
 
 const primaryInlineToolbarActions = inlineToolbarActions.filter(
   (action) => action.visibility === 'primary',
@@ -79,6 +80,34 @@ function getExtraToolsWidth(actionCount: number) {
     actionCount * TOOLBAR_BUTTON_WIDTH +
     (actionCount - 1) * TOOLBAR_BUTTON_GAP
   )
+}
+
+function getToolbarActionGroupWidth(actionCount: number) {
+  if (actionCount <= 0) {
+    return 0
+  }
+
+  return (
+    actionCount * TOOLBAR_BUTTON_WIDTH +
+    (actionCount - 1) * TOOLBAR_BUTTON_GAP
+  )
+}
+
+function getPromotedToolsWidth(primaryCount: number, promotedCount: number) {
+  if (promotedCount <= 0) {
+    return 0
+  }
+
+  return (
+    getToolbarActionGroupWidth(primaryCount + promotedCount) -
+    getToolbarActionGroupWidth(primaryCount)
+  )
+}
+
+function getExpandedExtraToolsOuterWidth(actionCount: number) {
+  const toolsWidth = getExtraToolsWidth(actionCount)
+
+  return toolsWidth > 0 ? toolsWidth + TOOLBAR_BUTTON_GAP : 0
 }
 
 function MoreToolsChevron({ expanded }: { expanded: boolean }) {
@@ -114,6 +143,8 @@ function FloatingMarkdownToolbar({
 }: FloatingMarkdownToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null)
   const toolbarBoundsFrameRef = useRef<number | null>(null)
+  const toolbarProjectedWidthRef = useRef<number | null>(null)
+  const toolbarProjectionTimeoutRef = useRef<number | null>(null)
   const [position, setPosition] = useState<ToolbarPosition | null>(null)
   const [extraToolsExpanded, setExtraToolsExpanded] = useState(false)
   const {
@@ -257,10 +288,11 @@ function FloatingMarkdownToolbar({
       }
 
       const targetLeft = currentPosition.preferredLeft ?? currentPosition.left
+      const toolbarWidth = toolbarProjectedWidthRef.current ?? toolbar.offsetWidth
       const nextLeft = clamp(
         targetLeft,
         TOOLBAR_EDGE_PADDING,
-        workspace.clientWidth - toolbar.offsetWidth - TOOLBAR_EDGE_PADDING,
+        workspace.clientWidth - toolbarWidth - TOOLBAR_EDGE_PADDING,
       )
 
       if (nextLeft === currentPosition.left) {
@@ -321,6 +353,11 @@ function FloatingMarkdownToolbar({
         window.cancelAnimationFrame(toolbarBoundsFrameRef.current)
         toolbarBoundsFrameRef.current = null
       }
+
+      if (toolbarProjectionTimeoutRef.current !== null) {
+        window.clearTimeout(toolbarProjectionTimeoutRef.current)
+        toolbarProjectionTimeoutRef.current = null
+      }
     },
     [],
   )
@@ -367,16 +404,84 @@ function FloatingMarkdownToolbar({
     [calloutType, handleCalloutSelect],
   )
   const handleExtraToolsToggle = useCallback(() => {
+    const toolbar = toolbarRef.current
+    const workspace = workspaceRef.current
+    const expanding = !extraToolsExpanded
+
     closePreviewEditMenu()
     closeLinkEditMenu()
     closeImageEditMenu()
     setOpenDropdown(null)
+
+    if (toolbar && workspace) {
+      const currentWidth = toolbar.offsetWidth
+      const expandedExtraWidth = getExpandedExtraToolsOuterWidth(extraToolCount)
+      const activeExtraToolCount = extraInlineToolbarActions.filter(
+        (action) => activeFormats[action.activeFormat],
+      ).length
+      const currentPromotedCount =
+        promotedExtraInlineToolbarActions.length + (promotedPreviewEdit ? 1 : 0)
+      const nextPromotedCount = expanding ? 0 : activeExtraToolCount
+      const currentPromotedWidth = getPromotedToolsWidth(
+        primaryInlineToolbarActions.length,
+        currentPromotedCount,
+      )
+      const nextPromotedWidth = getPromotedToolsWidth(
+        primaryInlineToolbarActions.length,
+        nextPromotedCount,
+      )
+      const projectedWidth = expanding
+        ? currentWidth + expandedExtraWidth - currentPromotedWidth
+        : currentWidth - expandedExtraWidth + nextPromotedWidth
+
+      toolbarProjectedWidthRef.current = projectedWidth
+
+      if (toolbarProjectionTimeoutRef.current !== null) {
+        window.clearTimeout(toolbarProjectionTimeoutRef.current)
+      }
+
+      toolbarProjectionTimeoutRef.current = window.setTimeout(() => {
+        toolbarProjectedWidthRef.current = null
+        toolbarProjectionTimeoutRef.current = null
+        scheduleToolbarBoundsUpdate()
+      }, TOOLBAR_EXTRA_TOOLS_TRANSITION_MS + 40)
+
+      setPosition((currentPosition) => {
+        if (!currentPosition) {
+          return currentPosition
+        }
+
+        const targetLeft = currentPosition.preferredLeft ?? currentPosition.left
+        const nextLeft = clamp(
+          targetLeft,
+          TOOLBAR_EDGE_PADDING,
+          workspace.clientWidth - projectedWidth - TOOLBAR_EDGE_PADDING,
+        )
+
+        if (nextLeft === currentPosition.left) {
+          return currentPosition
+        }
+
+        return {
+          ...currentPosition,
+          left: nextLeft,
+        }
+      })
+    }
+
     setExtraToolsExpanded((expanded) => !expanded)
   }, [
+    activeFormats,
     closeImageEditMenu,
     closeLinkEditMenu,
     closePreviewEditMenu,
+    extraToolCount,
+    extraToolsExpanded,
+    promotedExtraInlineToolbarActions.length,
+    promotedPreviewEdit,
+    scheduleToolbarBoundsUpdate,
     setOpenDropdown,
+    workspaceRef,
   ])
   const renderInlineToolbarAction = (action: InlineToolbarAction) => {
     const active = activeFormats[action.activeFormat]
