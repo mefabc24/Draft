@@ -49,6 +49,7 @@ type ExtraToolsStyle = CSSProperties & {
 }
 
 const TOOLBAR_EDGE_PADDING = 8
+const TOOLBAR_EDGE_JUMP_TOLERANCE = 4
 const TOOLBAR_BUTTON_WIDTH = 36
 const TOOLBAR_BUTTON_GAP = 8
 const TOOLBAR_EXTRA_TOOLS_TRANSITION_MS = 190
@@ -110,6 +111,20 @@ function getExpandedExtraToolsOuterWidth(actionCount: number) {
   return toolsWidth > 0 ? toolsWidth + TOOLBAR_BUTTON_GAP : 0
 }
 
+function getClampedToolbarLeft(
+  targetLeft: number,
+  toolbarWidth: number,
+  workspaceWidth: number,
+) {
+  return Math.round(
+    clamp(
+      targetLeft,
+      TOOLBAR_EDGE_PADDING,
+      workspaceWidth - toolbarWidth - TOOLBAR_EDGE_PADDING,
+    ),
+  )
+}
+
 function MoreToolsChevron({ expanded }: { expanded: boolean }) {
   return (
     <svg
@@ -143,10 +158,14 @@ function FloatingMarkdownToolbar({
 }: FloatingMarkdownToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null)
   const toolbarBoundsFrameRef = useRef<number | null>(null)
+  const toolbarPinReleaseTimeoutRef = useRef<number | null>(null)
   const toolbarProjectedWidthRef = useRef<number | null>(null)
   const toolbarProjectionTimeoutRef = useRef<number | null>(null)
   const [position, setPosition] = useState<ToolbarPosition | null>(null)
   const [extraToolsExpanded, setExtraToolsExpanded] = useState(false)
+  const [toolbarPinnedRight, setToolbarPinnedRight] = useState<number | null>(
+    null,
+  )
   const {
     activeTooltip,
     clearToolbarTooltip,
@@ -193,11 +212,18 @@ function FloatingMarkdownToolbar({
     () =>
       position
         ? ({
-            left: `${Math.round(position.left)}px`,
+            ...(toolbarPinnedRight !== null
+              ? {
+                  left: 'auto',
+                  right: `${toolbarPinnedRight}px`,
+                }
+              : {
+                  left: `${Math.round(position.left)}px`,
+                }),
             top: `${Math.round(position.top)}px`,
-          }) satisfies CSSProperties
+          } satisfies CSSProperties)
         : undefined,
-    [position],
+    [position, toolbarPinnedRight],
   )
   const handleHeadingSelect = useCallback(
     (value: string) => {
@@ -272,6 +298,7 @@ function FloatingMarkdownToolbar({
   useEffect(() => {
     if (!toolbarVisible) {
       setExtraToolsExpanded(false)
+      setToolbarPinnedRight(null)
     }
   }, [toolbarVisible])
   const clampToolbarPositionToFrame = useCallback(() => {
@@ -289,13 +316,13 @@ function FloatingMarkdownToolbar({
 
       const targetLeft = currentPosition.preferredLeft ?? currentPosition.left
       const toolbarWidth = toolbarProjectedWidthRef.current ?? toolbar.offsetWidth
-      const nextLeft = clamp(
+      const nextLeft = getClampedToolbarLeft(
         targetLeft,
-        TOOLBAR_EDGE_PADDING,
-        workspace.clientWidth - toolbarWidth - TOOLBAR_EDGE_PADDING,
+        toolbarWidth,
+        workspace.clientWidth,
       )
 
-      if (nextLeft === currentPosition.left) {
+      if (nextLeft === Math.round(currentPosition.left)) {
         return currentPosition
       }
 
@@ -357,6 +384,11 @@ function FloatingMarkdownToolbar({
       if (toolbarProjectionTimeoutRef.current !== null) {
         window.clearTimeout(toolbarProjectionTimeoutRef.current)
         toolbarProjectionTimeoutRef.current = null
+      }
+
+      if (toolbarPinReleaseTimeoutRef.current !== null) {
+        window.clearTimeout(toolbarPinReleaseTimeoutRef.current)
+        toolbarPinReleaseTimeoutRef.current = null
       }
     },
     [],
@@ -433,6 +465,19 @@ function FloatingMarkdownToolbar({
       const projectedWidth = expanding
         ? currentWidth + expandedExtraWidth - currentPromotedWidth
         : currentWidth - expandedExtraWidth + nextPromotedWidth
+      const workspaceRect = workspace.getBoundingClientRect()
+      const toolbarRect = toolbar.getBoundingClientRect()
+      const currentRightGap = workspaceRect.right - toolbarRect.right
+      const widthDelta = projectedWidth - currentWidth
+      const isNearRightEdge =
+        currentRightGap <= TOOLBAR_EDGE_PADDING + TOOLBAR_EDGE_JUMP_TOLERANCE
+      const wouldOverflowRight =
+        currentRightGap + TOOLBAR_EDGE_JUMP_TOLERANCE <
+        widthDelta + TOOLBAR_EDGE_PADDING
+      const shouldPinRightWhileExpanding =
+        expanding &&
+        widthDelta > 0 &&
+        (isNearRightEdge || wouldOverflowRight)
 
       toolbarProjectedWidthRef.current = projectedWidth
 
@@ -446,19 +491,38 @@ function FloatingMarkdownToolbar({
         scheduleToolbarBoundsUpdate()
       }, TOOLBAR_EXTRA_TOOLS_TRANSITION_MS + 40)
 
+      if (toolbarPinReleaseTimeoutRef.current !== null) {
+        window.clearTimeout(toolbarPinReleaseTimeoutRef.current)
+        toolbarPinReleaseTimeoutRef.current = null
+      }
+
+      if (shouldPinRightWhileExpanding) {
+        setToolbarPinnedRight(
+          Math.max(TOOLBAR_EDGE_PADDING, Math.round(currentRightGap)),
+        )
+      } else if (!expanding && toolbarPinnedRight !== null) {
+        toolbarPinReleaseTimeoutRef.current = window.setTimeout(() => {
+          toolbarPinReleaseTimeoutRef.current = null
+          setToolbarPinnedRight(null)
+          scheduleToolbarBoundsUpdate()
+        }, TOOLBAR_EXTRA_TOOLS_TRANSITION_MS + 40)
+      } else if (expanding) {
+        setToolbarPinnedRight(null)
+      }
+
       setPosition((currentPosition) => {
         if (!currentPosition) {
           return currentPosition
         }
 
         const targetLeft = currentPosition.preferredLeft ?? currentPosition.left
-        const nextLeft = clamp(
+        const nextLeft = getClampedToolbarLeft(
           targetLeft,
-          TOOLBAR_EDGE_PADDING,
-          workspace.clientWidth - projectedWidth - TOOLBAR_EDGE_PADDING,
+          projectedWidth,
+          workspace.clientWidth,
         )
 
-        if (nextLeft === currentPosition.left) {
+        if (nextLeft === Math.round(currentPosition.left)) {
           return currentPosition
         }
 
@@ -481,6 +545,7 @@ function FloatingMarkdownToolbar({
     promotedPreviewEdit,
     scheduleToolbarBoundsUpdate,
     setOpenDropdown,
+    toolbarPinnedRight,
     workspaceRef,
   ])
   const renderInlineToolbarAction = (action: InlineToolbarAction) => {
