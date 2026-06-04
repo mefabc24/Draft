@@ -239,6 +239,90 @@
   stroke-width: 2;
 }
 
+.editor-quick-insert-callout-extra-frame {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    grid-template-rows 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 120ms ease;
+}
+
+.editor-quick-insert-callout-extra-frame.is-expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.editor-quick-insert-callout-extra-list {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  transform: translateY(-4px);
+  transition: transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.editor-quick-insert-callout-extra-frame.is-expanded
+  .editor-quick-insert-callout-extra-list {
+  transform: translateY(0);
+}
+
+.editor-quick-insert-callout-expand-button {
+  display: flex;
+  width: 100%;
+  height: 20px;
+  min-height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 82%,
+    transparent
+  );
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-callout-expand-button:hover,
+.editor-quick-insert-callout-expand-button:focus-visible {
+  background: var(--markdown-toolbar-hover-background);
+  color: var(--markdown-toolbar-foreground);
+  outline: none;
+}
+
+.editor-quick-insert-callout-expand-chevron {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 180ms ease;
+}
+
+.editor-quick-insert-callout-expand-chevron.is-expanded {
+  transform: rotate(180deg);
+}
+
+.editor-quick-insert-callout-expand-chevron svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
 .editor-quick-insert-table-controls {
   display: grid;
   gap: 8px;
@@ -1054,6 +1138,10 @@
   .editor-quick-insert-section-content,
   .editor-quick-insert-section-content .editor-quick-insert-menu-item,
   .editor-quick-insert-chevron,
+  .editor-quick-insert-callout-extra-frame,
+  .editor-quick-insert-callout-extra-list,
+  .editor-quick-insert-callout-expand-button,
+  .editor-quick-insert-callout-expand-chevron,
   .number-spinner-button,
   .editor-quick-insert-table-sample-box,
   .editor-quick-insert-table-sample-box svg,

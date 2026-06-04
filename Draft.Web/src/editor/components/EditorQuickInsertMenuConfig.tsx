@@ -2,6 +2,7 @@ import type { EditorQuickInsertCommand } from '../commands/editorQuickInsertComm
 import { calloutLabels, type CalloutType } from '../../markdown/callouts'
 
 export type EditorQuickInsertIconName =
+  | 'blockquote'
   | 'callout'
   | 'codeblock'
   | 'heading'
@@ -150,30 +151,21 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     type: 'section',
   },
   {
+    canInsertIntoNonEmptyLine: false,
+    command: 'blockquote',
+    icon: 'blockquote',
+    id: 'blockquote',
+    label: 'Blockquote',
+    type: 'item',
+  },
+  {
     children: [
-      {
-        calloutType: 'default',
-        canInsertIntoNonEmptyLine: false,
-        command: 'blockquote',
-        id: 'blockquote',
-        label: 'Normal',
-        shortcut: '>',
-        type: 'item',
-      },
       {
         calloutType: 'note',
         canInsertIntoNonEmptyLine: false,
         command: 'callout-note',
         id: 'callout-note',
         label: calloutLabels.note,
-        type: 'item',
-      },
-      {
-        calloutType: 'info',
-        canInsertIntoNonEmptyLine: false,
-        command: 'callout-info',
-        id: 'callout-info',
-        label: calloutLabels.info,
         type: 'item',
       },
       {
@@ -209,19 +201,11 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         type: 'item',
       },
       {
-        calloutType: 'error',
+        calloutType: 'info',
         canInsertIntoNonEmptyLine: false,
-        command: 'callout-error',
-        id: 'callout-error',
-        label: calloutLabels.error,
-        type: 'item',
-      },
-      {
-        calloutType: 'success',
-        canInsertIntoNonEmptyLine: false,
-        command: 'callout-success',
-        id: 'callout-success',
-        label: calloutLabels.success,
+        command: 'callout-info',
+        id: 'callout-info',
+        label: calloutLabels.info,
         type: 'item',
       },
       {
@@ -240,12 +224,28 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         label: calloutLabels.todo,
         type: 'item',
       },
+      {
+        calloutType: 'success',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-success',
+        id: 'callout-success',
+        label: calloutLabels.success,
+        type: 'item',
+      },
+      {
+        calloutType: 'error',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-error',
+        id: 'callout-error',
+        label: calloutLabels.error,
+        type: 'item',
+      },
     ],
     canInsertIntoNonEmptyLine: false,
     defaultExpanded: false,
     icon: 'callout',
-    id: 'blockquotes',
-    label: 'Blockquote',
+    id: 'callouts',
+    label: 'Callouts',
     type: 'section',
   },
   {

@@ -55,8 +55,14 @@ type EditorQuickInsertCommandEntry = Extract<
   EditorQuickInsertMenuEntry,
   { type: 'item' }
 >
+type EditorQuickInsertSectionEntry = Extract<
+  EditorQuickInsertMenuEntry,
+  { type: 'section' }
+>
 
+const QUICK_INSERT_VISIBLE_CALLOUT_COUNT = 5
 const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
+  blockquote: 'icons/Blockquote2.svg',
   callout: 'icons/Callout.svg',
   codeblock: 'icons/Codeblock2.svg',
   heading: 'icons/Headline.svg',
@@ -137,6 +143,21 @@ function getQuickInsertEntryIcon(entry: EditorQuickInsertCommandEntry) {
   )
 }
 
+function QuickInsertCalloutExpandIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <span
+      className={`editor-quick-insert-callout-expand-chevron${
+        expanded ? ' is-expanded' : ''
+      }`}
+      aria-hidden="true"
+    >
+      <svg focusable="false" viewBox="0 0 16 16">
+        <path d="M3.75 6.25 8 10.5l4.25-4.25" />
+      </svg>
+    </span>
+  )
+}
+
 function getInitialExpandedSections() {
   return editorQuickInsertMenuEntries.reduce<Record<string, boolean>>(
     (sections, entry) => {
@@ -186,6 +207,7 @@ function EditorQuickInsertMenu({
   const [expandedSections, setExpandedSections] = useState(
     getInitialExpandedSections,
   )
+  const [extraCalloutsExpanded, setExtraCalloutsExpanded] = useState(false)
   const menuStyle = useMemo(
     () =>
       position
@@ -447,6 +469,67 @@ function EditorQuickInsertMenu({
     [runCommand],
   )
 
+  const renderCalloutSectionChildren = useCallback(
+    (entry: EditorQuickInsertSectionEntry) => {
+      const visibleChildren = entry.children.filter((childEntry) =>
+        canShowQuickInsertEntry(childEntry, target),
+      )
+      const primaryChildren = visibleChildren.slice(
+        0,
+        QUICK_INSERT_VISIBLE_CALLOUT_COUNT,
+      )
+      const extraChildren = visibleChildren.slice(
+        QUICK_INSERT_VISIBLE_CALLOUT_COUNT,
+      )
+
+      return (
+        <>
+          {primaryChildren.map((childEntry) =>
+            renderCommandItem(childEntry, true),
+          )}
+          {extraChildren.length > 0 ? (
+            <>
+              <div
+                className={`editor-quick-insert-callout-extra-frame${
+                  extraCalloutsExpanded ? ' is-expanded' : ''
+                }`}
+                aria-hidden={!extraCalloutsExpanded}
+                inert={extraCalloutsExpanded ? undefined : true}
+              >
+                <div className="editor-quick-insert-callout-extra-list">
+                  {extraChildren.map((childEntry) =>
+                    renderCommandItem(childEntry, true),
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="editor-quick-insert-callout-expand-button"
+                aria-label={
+                  extraCalloutsExpanded
+                    ? 'Hide extra callouts'
+                    : 'Show extra callouts'
+                }
+                aria-expanded={extraCalloutsExpanded}
+                onClick={() => {
+                  setExtraCalloutsExpanded((currentExpanded) => !currentExpanded)
+                }}
+                onMouseDown={(event) => {
+                  event.preventDefault()
+                }}
+              >
+                <QuickInsertCalloutExpandIcon
+                  expanded={extraCalloutsExpanded}
+                />
+              </button>
+            </>
+          ) : null}
+        </>
+      )
+    },
+    [extraCalloutsExpanded, renderCommandItem, target],
+  )
+
   const renderMenuEntry = useCallback(
     (entry: EditorQuickInsertMenuEntry) => {
       if (!canShowQuickInsertEntry(entry, target)) {
@@ -488,6 +571,8 @@ function EditorQuickInsertMenu({
             />
           ) : entry.id === 'tag' ? (
             <EditorQuickInsertTagControls onConfirm={confirmTag} />
+          ) : entry.id === 'callouts' ? (
+            renderCalloutSectionChildren(entry)
           ) : (
             entry.children
               .filter((childEntry) =>
@@ -505,6 +590,7 @@ function EditorQuickInsertMenu({
       confirmTag,
       confirmTable,
       expandedSections,
+      renderCalloutSectionChildren,
       renderCommandItem,
       target,
     ],
