@@ -4,6 +4,7 @@ const combiningMarkPattern = /\p{M}/gu
 const nonSlugTextPattern = /[^\p{L}\p{N}]+/gu
 const repeatedHyphenPattern = /-{2,}/gu
 const edgeHyphenPattern = /^-|-$/gu
+const sharpSPattern = /ß/gu
 
 export function createHeadingSlug(text: string) {
   const slug = text
@@ -11,6 +12,7 @@ export function createHeadingSlug(text: string) {
     .replace(combiningMarkPattern, '')
     .trim()
     .toLowerCase()
+    .replace(sharpSPattern, 'ss')
     .replace(apostropheLikePattern, '')
     .replace(nonSlugTextPattern, '-')
     .replace(repeatedHyphenPattern, '-')

@@ -1,3 +1,5 @@
+import { createHeadingSlug } from './headingAnchorUtils'
+
 function decodeAnchorId(anchorId: string) {
   try {
     return decodeURIComponent(anchorId)
@@ -14,7 +16,7 @@ function getCssEscapedId(id: string) {
   return CSS.escape(id)
 }
 
-function findElementById(root: HTMLElement, id: string) {
+function findElementByExactId(root: HTMLElement, id: string) {
   if (root.id === id) {
     return root
   }
@@ -30,6 +32,24 @@ function findElementById(root: HTMLElement, id: string) {
       (element) => element.id === id,
     ) ?? null
   )
+}
+
+function findElementByNormalizedId(root: HTMLElement, id: string) {
+  const normalizedId = createHeadingSlug(id)
+
+  if (root.id && createHeadingSlug(root.id) === normalizedId) {
+    return root
+  }
+
+  return (
+    Array.from(root.querySelectorAll<HTMLElement>('[id]')).find(
+      (element) => element.id && createHeadingSlug(element.id) === normalizedId,
+    ) ?? null
+  )
+}
+
+function findElementById(root: HTMLElement, id: string) {
+  return findElementByExactId(root, id) ?? findElementByNormalizedId(root, id)
 }
 
 function getScrollablePreviewElement(previewContentElement: HTMLElement) {
