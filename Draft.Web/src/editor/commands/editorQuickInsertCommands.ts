@@ -9,9 +9,11 @@ import {
   type CreateCodeBlockMarkdownData,
 } from './createCodeBlockMarkdown'
 import {
+  createExpanderMarkdown,
   createInlineImageMarkdown,
   createInlineLinkMarkdown,
   createInlineTagMarkdown,
+  type CreateExpanderMarkdownData,
   type CreateInlineImageMarkdownData,
   type CreateInlineLinkMarkdownData,
   type CreateInlineTagMarkdownData,
@@ -401,6 +403,21 @@ export function insertEditorQuickInsertTag(
     editor,
     target,
     createInlineTagMarkdown(tagData),
+    undefined,
+    options,
+  )
+}
+
+export function insertEditorQuickInsertExpander(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  target: EditorQuickInsertTarget,
+  expanderData: CreateExpanderMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
+) {
+  return insertQuickInsertText(
+    editor,
+    target,
+    createExpanderMarkdown(expanderData),
     undefined,
     options,
   )

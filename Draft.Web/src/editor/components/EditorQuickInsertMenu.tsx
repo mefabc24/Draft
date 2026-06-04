@@ -11,6 +11,7 @@ import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { CalloutType } from '../../markdown/callouts'
 import {
   insertEditorQuickInsertCodeBlock,
+  insertEditorQuickInsertExpander,
   insertEditorQuickInsertImage,
   insertEditorQuickInsertLink,
   insertEditorQuickInsertTag,
@@ -20,6 +21,7 @@ import {
 } from '../commands/editorQuickInsertCommands'
 import type { CreateCodeBlockMarkdownData } from '../commands/createCodeBlockMarkdown'
 import type {
+  CreateExpanderMarkdownData,
   CreateInlineImageMarkdownData,
   CreateInlineLinkMarkdownData,
   CreateInlineTagMarkdownData,
@@ -35,6 +37,7 @@ import {
   type EditorQuickInsertMenuEntry,
 } from './EditorQuickInsertMenuConfig'
 import EditorQuickInsertCodeblockControls from './EditorQuickInsertCodeblockControls'
+import EditorQuickInsertExpanderControls from './EditorQuickInsertExpanderControls'
 import EditorQuickInsertInlineMediaControls from './EditorQuickInsertInlineMediaControls'
 import EditorQuickInsertMenuItem from './EditorQuickInsertMenuItem'
 import EditorQuickInsertMenuSection from './EditorQuickInsertMenuSection'
@@ -65,6 +68,7 @@ const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
   blockquote: 'icons/Blockquote2.svg',
   callout: 'icons/Callout.svg',
   codeblock: 'icons/Codeblock2.svg',
+  expander: 'icons/Expander.svg',
   heading: 'icons/Headline.svg',
   image: 'icons/Image.svg',
   link: 'icons/Link2.svg',
@@ -453,6 +457,40 @@ function EditorQuickInsertMenu({
     [editor, onClose, onKeepOpenAction, target],
   )
 
+  const confirmExpander = useCallback(
+    (expanderData: CreateExpanderMarkdownData, keepOpen = false) => {
+      const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
+        target,
+        keepOpen,
+      )
+      const runAction = () => {
+        if (!editor || target === null) {
+          return null
+        }
+
+        const result = insertEditorQuickInsertExpander(
+          editor,
+          target,
+          expanderData,
+          {
+            advanceToNextEmptyLine,
+          },
+        )
+
+        return result ? result.nextLineNumber : null
+      }
+
+      if (advanceToNextEmptyLine) {
+        onKeepOpenAction(runAction)
+        return
+      }
+
+      runAction()
+      onClose()
+    },
+    [editor, onClose, onKeepOpenAction, target],
+  )
+
   const renderCommandItem = useCallback(
     (entry: EditorQuickInsertCommandEntry, nested = false) => (
       <EditorQuickInsertMenuItem
@@ -569,6 +607,8 @@ function EditorQuickInsertMenu({
               type="link"
               onConfirm={confirmLink}
             />
+          ) : entry.id === 'expander' ? (
+            <EditorQuickInsertExpanderControls onConfirm={confirmExpander} />
           ) : entry.id === 'tag' ? (
             <EditorQuickInsertTagControls onConfirm={confirmTag} />
           ) : entry.id === 'callouts' ? (
@@ -585,6 +625,7 @@ function EditorQuickInsertMenu({
     },
     [
       confirmCodeBlock,
+      confirmExpander,
       confirmImage,
       confirmLink,
       confirmTag,

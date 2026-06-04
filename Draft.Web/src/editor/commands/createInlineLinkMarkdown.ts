@@ -43,3 +43,33 @@ export function createInlineTagMarkdown({
 }: CreateInlineTagMarkdownData) {
   return `[tag:${text.trim() || 'Text'}|${normalizeInlineTagColor(color)}]`
 }
+
+export type CreateExpanderMarkdownData = {
+  content: string
+  title: string
+}
+
+function escapeHtmlText(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function createExpanderContentHtml(content: string) {
+  const trimmedContent = content.trim()
+  const safeContent = escapeHtmlText(trimmedContent || 'Content')
+
+  return safeContent.replace(/\r?\n/g, '<br />\n')
+}
+
+export function createExpanderMarkdown({
+  content,
+  title,
+}: CreateExpanderMarkdownData) {
+  const safeTitle = escapeHtmlText(title.trim() || 'Title')
+
+  return `<details>\n<summary>${safeTitle}</summary>\n\n<div>\n${createExpanderContentHtml(content)}\n</div>\n</details>`
+}

@@ -5,6 +5,7 @@ export type EditorQuickInsertIconName =
   | 'blockquote'
   | 'callout'
   | 'codeblock'
+  | 'expander'
   | 'heading'
   | 'image'
   | 'link'
@@ -139,6 +140,15 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'link',
     id: 'link',
     label: 'Link',
+    type: 'section',
+  },
+  {
+    canInsertIntoNonEmptyLine: false,
+    children: [],
+    defaultExpanded: false,
+    icon: 'expander',
+    id: 'expander',
+    label: 'Expander',
     type: 'section',
   },
   {
