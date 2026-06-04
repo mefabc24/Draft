@@ -83,6 +83,7 @@ function CalloutSubmenu({
   selectedCalloutType,
 }: CalloutSubmenuProps) {
   const submenuRef = useRef<HTMLDivElement | null>(null)
+  const geometryFrameRef = useRef<number | null>(null)
   const [expanded, setExpanded] = useState(false)
   const [geometry, setGeometry] = useState<CalloutSubmenuGeometry | null>(null)
   const promotedExtraCalloutOption = !expanded
@@ -141,30 +142,75 @@ function CalloutSubmenu({
       boundaryRect.bottom - clampedHeight - CALLOUT_SUBMENU_EDGE_PADDING
     const preferredTop = anchorRect.top - CALLOUT_SUBMENU_ITEM_INSET
 
-    setGeometry({
+    const nextGeometry = {
       left: clamp(preferredLeft, minLeft, maxLeft),
       maxHeight,
       side,
       top: clamp(preferredTop, minTop, maxTop),
+    } satisfies CalloutSubmenuGeometry
+
+    setGeometry((currentGeometry) => {
+      if (
+        currentGeometry &&
+        currentGeometry.left === nextGeometry.left &&
+        currentGeometry.maxHeight === nextGeometry.maxHeight &&
+        currentGeometry.side === nextGeometry.side &&
+        currentGeometry.top === nextGeometry.top
+      ) {
+        return currentGeometry
+      }
+
+      return nextGeometry
     })
   }, [anchorRef])
+
+  const scheduleGeometryUpdate = useCallback(() => {
+    if (geometryFrameRef.current !== null) {
+      window.cancelAnimationFrame(geometryFrameRef.current)
+    }
+
+    geometryFrameRef.current = window.requestAnimationFrame(() => {
+      geometryFrameRef.current = null
+      updateGeometry()
+    })
+  }, [updateGeometry])
 
   useLayoutEffect(() => {
     updateGeometry()
   }, [expanded, selectedCalloutType, updateGeometry])
 
   useEffect(() => {
-    const frameId = window.requestAnimationFrame(updateGeometry)
+    scheduleGeometryUpdate()
 
     window.addEventListener('resize', updateGeometry)
     window.addEventListener('scroll', updateGeometry, true)
 
     return () => {
-      window.cancelAnimationFrame(frameId)
+      if (geometryFrameRef.current !== null) {
+        window.cancelAnimationFrame(geometryFrameRef.current)
+        geometryFrameRef.current = null
+      }
+
       window.removeEventListener('resize', updateGeometry)
       window.removeEventListener('scroll', updateGeometry, true)
     }
-  }, [expanded, selectedCalloutType, updateGeometry])
+  }, [scheduleGeometryUpdate, updateGeometry])
+
+  useEffect(() => {
+    const submenu = submenuRef.current
+
+    if (!submenu) {
+      return
+    }
+
+    const resizeObserver = new ResizeObserver(scheduleGeometryUpdate)
+
+    resizeObserver.observe(submenu)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [scheduleGeometryUpdate])
 
   const submenuStyle = geometry
     ? ({
