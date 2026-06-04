@@ -30,8 +30,13 @@ import {
   getUnorderedListMarkerStyle,
 } from '../../themes/preview/support/previewThemeStyles'
 import { rehypeDraftMarkdownExtensions } from '../markdownExtensions/draftMarkdownExtensionsPlugin'
+import { rehypeHeadingAnchors } from '../markdownExtensions/headingAnchorsPlugin'
 import { rehypeSourceTextSpans } from '../sourceMapping/sourceTextSpansPlugin'
 import type { SourceMappedNode } from '../previewTypes'
+import {
+  getPreviewAnchorIdFromHref,
+  scrollToPreviewAnchor,
+} from '../anchors/scrollToPreviewAnchor'
 
 type PreviewMarkdownRendererProps = {
   markdown: string
@@ -234,6 +239,20 @@ function openExternalHref(href: string) {
   window.open(href, '_blank', 'noopener,noreferrer')
 }
 
+function scrollToInternalAnchor(
+  anchorElement: HTMLAnchorElement,
+  anchorId: string,
+) {
+  const previewContentElement =
+    anchorElement.closest<HTMLElement>('.preview-content')
+
+  if (!previewContentElement) {
+    return false
+  }
+
+  return scrollToPreviewAnchor(previewContentElement, anchorId)
+}
+
 function selectPreviewElement(element: HTMLElement) {
   const selection = window.getSelection()
 
@@ -262,6 +281,7 @@ function getRehypePlugins(previewTheme: DraftPreviewTheme): PluggableList {
   }
 
   plugins.push(rehypeDraftMarkdownExtensions)
+  plugins.push(rehypeHeadingAnchors)
   plugins.push(rehypeSourceTextSpans)
 
   return plugins
@@ -599,6 +619,7 @@ const previewComponents: Components = {
   },
   a({ node, href, onClick, ...props }) {
     const normalizedHref = getNormalizedExternalHref(href)
+    const anchorId = getPreviewAnchorIdFromHref(href)
 
     return (
       <a
@@ -612,11 +633,18 @@ const previewComponents: Components = {
             return
           }
 
-          if (!normalizedHref) {
-            if (!href?.startsWith('#')) {
-              event.preventDefault()
+          if (anchorId !== null) {
+            event.preventDefault()
+
+            if (anchorId) {
+              scrollToInternalAnchor(event.currentTarget, anchorId)
             }
 
+            return
+          }
+
+          if (!normalizedHref) {
+            event.preventDefault()
             return
           }
 
