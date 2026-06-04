@@ -57,6 +57,7 @@ type EditorQuickInsertCommandEntry = Extract<
 >
 
 const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
+  callout: 'icons/Callout.svg',
   codeblock: 'icons/Codeblock2.svg',
   heading: 'icons/Headline.svg',
   image: 'icons/Image.svg',

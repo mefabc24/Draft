@@ -2,6 +2,7 @@ import type { EditorQuickInsertCommand } from '../commands/editorQuickInsertComm
 import { calloutLabels, type CalloutType } from '../../markdown/callouts'
 
 export type EditorQuickInsertIconName =
+  | 'callout'
   | 'codeblock'
   | 'heading'
   | 'image'
@@ -149,31 +150,13 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     type: 'section',
   },
   {
-    canInsertIntoNonEmptyLine: false,
-    children: [],
-    defaultExpanded: false,
-    icon: 'table',
-    id: 'table',
-    label: 'Table',
-    type: 'section',
-  },
-  {
-    canInsertIntoNonEmptyLine: false,
-    children: [],
-    defaultExpanded: false,
-    icon: 'codeblock',
-    id: 'codeblocks',
-    label: 'Codeblocks',
-    type: 'section',
-  },
-  {
     children: [
       {
         calloutType: 'default',
         canInsertIntoNonEmptyLine: false,
         command: 'blockquote',
         id: 'blockquote',
-        label: calloutLabels.default,
+        label: 'Normal',
         shortcut: '>',
         type: 'item',
       },
@@ -257,6 +240,34 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
         label: calloutLabels.todo,
         type: 'item',
       },
+    ],
+    canInsertIntoNonEmptyLine: false,
+    defaultExpanded: false,
+    icon: 'callout',
+    id: 'blockquotes',
+    label: 'Blockquote',
+    type: 'section',
+  },
+  {
+    canInsertIntoNonEmptyLine: false,
+    children: [],
+    defaultExpanded: false,
+    icon: 'table',
+    id: 'table',
+    label: 'Table',
+    type: 'section',
+  },
+  {
+    canInsertIntoNonEmptyLine: false,
+    children: [],
+    defaultExpanded: false,
+    icon: 'codeblock',
+    id: 'codeblocks',
+    label: 'Codeblocks',
+    type: 'section',
+  },
+  {
+    children: [
       {
         canInsertIntoNonEmptyLine: false,
         command: 'horizontal-rule',
