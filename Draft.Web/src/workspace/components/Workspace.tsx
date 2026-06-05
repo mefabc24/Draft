@@ -235,8 +235,11 @@ function Workspace() {
   }, [fileName])
 
   useEffect(() => {
-    return setPreviewExportHtmlHandler(() =>
-      createPreviewExportHtml({ fileName: fileNameRef.current }),
+    return setPreviewExportHtmlHandler((options) =>
+      createPreviewExportHtml({
+        fileName: fileNameRef.current,
+        layout: options?.layout,
+      }),
     )
   }, [])
 

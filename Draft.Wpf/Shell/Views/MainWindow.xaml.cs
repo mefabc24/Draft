@@ -310,7 +310,8 @@ public partial class MainWindow : Window
         try
         {
             string htmlDocument = await _webViewMessageBridge.GetPreviewExportHtmlAsync(
-                WorkspaceWebView.CoreWebView2);
+                WorkspaceWebView.CoreWebView2,
+                result.Format == ExportFormat.Pdf);
 
             await _documentExportService.ExportAsync(
                 new DocumentExportRequest(

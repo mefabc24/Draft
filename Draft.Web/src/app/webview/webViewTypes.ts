@@ -14,8 +14,12 @@ export type DraftWebView = {
   postMessage: (message: string) => void
 }
 
+export type DraftPreviewExportOptions = {
+  layout?: 'html' | 'pdf'
+}
+
 export type DraftExportApi = {
-  createPreviewHtml: () => string
+  createPreviewHtml: (options?: DraftPreviewExportOptions) => string
 }
 
 declare global {

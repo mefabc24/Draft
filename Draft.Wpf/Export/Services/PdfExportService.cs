@@ -46,10 +46,10 @@ public sealed class PdfExportService
         printSettings.Orientation = CoreWebView2PrintOrientation.Portrait;
         printSettings.ShouldPrintBackgrounds = true;
         printSettings.ShouldPrintHeaderAndFooter = false;
-        printSettings.MarginTop = 0.45;
-        printSettings.MarginRight = 0.45;
-        printSettings.MarginBottom = 0.45;
-        printSettings.MarginLeft = 0.45;
+        printSettings.MarginTop = 0;
+        printSettings.MarginRight = 0;
+        printSettings.MarginBottom = 0;
+        printSettings.MarginLeft = 0;
 
         bool didPrint = await webView.CoreWebView2.PrintToPdfAsync(request.FilePath, printSettings);
         if (!didPrint)
