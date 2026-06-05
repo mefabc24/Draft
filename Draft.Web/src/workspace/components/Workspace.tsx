@@ -24,6 +24,7 @@ import type {
 } from '../../settings/settingsTypes'
 import {
   addWebViewMessageListener,
+  setPreviewExportHtmlHandler,
   setDraftViewModeHandler,
 } from '../../app/webview/draftWebViewBridge'
 import {
@@ -40,6 +41,7 @@ import {
   type LoadDocumentMessage,
 } from '../../app/webview/draftWebViewMessages'
 import type { WebViewMessageEvent } from '../../app/webview/webViewTypes'
+import { createPreviewExportHtml } from '../../export/previewExport'
 import { usePreviewScrollSync } from '../hooks/usePreviewScrollSync'
 import { useSplitSizing } from '../hooks/useSplitSizing'
 import { isViewMode, type ViewMode } from '../workspaceTypes'
@@ -94,6 +96,7 @@ function Workspace() {
   const initialMarkdownRef = useRef(markdown)
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
+  const fileNameRef = useRef(fileName)
   const workspaceRef = useRef<HTMLElement | null>(null)
   const editorBodyRef = useRef<HTMLDivElement | null>(null)
   const editorHostRef = useRef<HTMLDivElement | null>(null)
@@ -226,6 +229,16 @@ function Workspace() {
   useEffect(() => {
     viewModeRef.current = viewMode
   }, [viewMode])
+
+  useEffect(() => {
+    fileNameRef.current = fileName
+  }, [fileName])
+
+  useEffect(() => {
+    return setPreviewExportHtmlHandler(() =>
+      createPreviewExportHtml({ fileName: fileNameRef.current }),
+    )
+  }, [])
 
   useEffect(() => {
     return setDraftViewModeHandler((mode) => {

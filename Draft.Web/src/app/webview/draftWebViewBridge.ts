@@ -25,6 +25,16 @@ export function setDraftViewModeHandler(handler: (mode: ViewMode) => void) {
   }
 }
 
+export function setPreviewExportHtmlHandler(handler: () => string) {
+  window.draftExport = {
+    createPreviewHtml: handler,
+  }
+
+  return () => {
+    window.draftExport = undefined
+  }
+}
+
 export function postWebViewMessage(message: unknown) {
   window.chrome?.webview?.postMessage(JSON.stringify(message))
 }

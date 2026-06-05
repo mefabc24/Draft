@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Security;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -260,7 +261,7 @@ public partial class MainWindow : Window
         PostDocumentToWebView();
     }
 
-    private void ViewModel_OpenExportPromptRequested(object? sender, EventArgs e)
+    private async void ViewModel_OpenExportPromptRequested(object? sender, EventArgs e)
     {
         if (ViewModel is not MainWindowViewModel viewModel)
             return;
@@ -288,20 +289,38 @@ public partial class MainWindow : Window
         if (filePath is null)
             return;
 
+        if (result.Format == ExportFormat.Png)
+        {
+            _dialogCoordinator.ShowMessage(
+                "Export",
+                "PNG export is not implemented yet.",
+                MessageDialogType.Info);
+            return;
+        }
+
+        if (!_isWebViewReady || WorkspaceWebView.CoreWebView2 is null)
+        {
+            _dialogCoordinator.ShowMessage(
+                "Export",
+                "The Markdown preview is not ready yet. Try exporting again after the workspace finishes loading.",
+                MessageDialogType.Warning);
+            return;
+        }
+
         try
         {
-            _documentExportService.Export(
+            string htmlDocument = await _webViewMessageBridge.GetPreviewExportHtmlAsync(
+                WorkspaceWebView.CoreWebView2);
+
+            await _documentExportService.ExportAsync(
                 new DocumentExportRequest(
                     result.Format,
                     filePath,
-                    viewModel.CurrentContent));
-
-            _dialogCoordinator.ShowMessage(
-                "Export",
-                "Export is not implemented yet.",
-                MessageDialogType.Info);
+                    htmlDocument),
+                ExportWebView,
+                WebHostName);
         }
-        catch (Exception ex) when (IsFileOperationException(ex))
+        catch (Exception ex) when (IsExportException(ex))
         {
             _dialogCoordinator.ShowMessage(
                 "Export",
@@ -695,6 +714,13 @@ public partial class MainWindow : Window
             or PathTooLongException
             or SecurityException
             or InvalidOperationException;
+    }
+
+    private static bool IsExportException(Exception ex)
+    {
+        return IsFileOperationException(ex)
+            || ex is JsonException
+            or NotSupportedException;
     }
 
 }

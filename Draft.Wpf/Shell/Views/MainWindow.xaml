@@ -165,5 +165,16 @@
             <uc:WindowControls HorizontalAlignment="Right" />
         </Grid>
 
+        <wv2:WebView2
+            x:Name="ExportWebView"
+            Width="1"
+            Height="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            DefaultBackgroundColor="Transparent"
+            Focusable="False"
+            IsHitTestVisible="False"
+            Panel.ZIndex="-1" />
+
     </Grid>
 </Window>

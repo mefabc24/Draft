@@ -8,6 +8,7 @@ namespace Draft.WebWorkspace.Services;
 public sealed class DraftWebViewMessageBridge
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private const string PreviewExportHtmlScript = "window.draftExport?.createPreviewHtml?.() ?? null";
 
     public void PostSettings(CoreWebView2? webView, DraftSettings settings)
     {
@@ -67,6 +68,20 @@ public sealed class DraftWebViewMessageBridge
             JsonOptions);
 
         webView?.PostWebMessageAsString(message);
+    }
+
+    public async Task<string> GetPreviewExportHtmlAsync(CoreWebView2? webView)
+    {
+        if (webView is null)
+            throw new InvalidOperationException("The preview WebView is not ready.");
+
+        string scriptResult = await webView.ExecuteScriptAsync(PreviewExportHtmlScript);
+        string? htmlDocument = JsonSerializer.Deserialize<string?>(scriptResult, JsonOptions);
+
+        if (string.IsNullOrWhiteSpace(htmlDocument))
+            throw new InvalidOperationException("The preview export HTML could not be created.");
+
+        return htmlDocument;
     }
 
     public void DispatchIncomingMessage(
