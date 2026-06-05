@@ -58,7 +58,6 @@ public sealed class ProgressDialogService : IProgressDialogService
                 return;
 
             _viewModel = new ProgressDialogViewModel(_request);
-            _viewModel.CloseRequested += ViewModel_CloseRequested;
 
             ProgressDialogView view = new()
             {
@@ -75,11 +74,6 @@ public sealed class ProgressDialogService : IProgressDialogService
             DialogWindowService.Show(_window, _owner);
         }
 
-        private void ViewModel_CloseRequested(object? sender, EventArgs e)
-        {
-            CloseWindow();
-        }
-
         private void Window_Closed(object? sender, EventArgs e)
         {
             if (_window is not null)
@@ -90,7 +84,6 @@ public sealed class ProgressDialogService : IProgressDialogService
 
             if (_viewModel is not null)
             {
-                _viewModel.CloseRequested -= ViewModel_CloseRequested;
                 _viewModel = null;
             }
         }

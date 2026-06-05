@@ -9,29 +9,6 @@
     <Grid Width="460">
         <Border Padding="16">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="40" />
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="40" />
-                    </Grid.ColumnDefinitions>
-
-                    <Button
-                        Grid.Column="2"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Command="{Binding CloseCommand}"
-                        Style="{StaticResource DraftCloseButton}"
-                        WindowChrome.IsHitTestVisibleInChrome="True">
-                        <Path
-                            Width="12"
-                            Height="12"
-                            Data="{StaticResource Icon.Close}"
-                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                            Stretch="Uniform" />
-                    </Button>
-                </Grid>
-
                 <Path
                     x:Name="SpinnerIcon"
                     Width="52"
