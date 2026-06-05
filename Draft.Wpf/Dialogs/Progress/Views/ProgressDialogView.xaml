@@ -6,27 +6,36 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Border Width="720" Padding="20,20,20,48">
-        <Grid>
-            <Button
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Command="{Binding CloseCommand}"
-                Style="{StaticResource DraftCloseButton}"
-                WindowChrome.IsHitTestVisibleInChrome="True">
-                <Path
-                    Width="12"
-                    Height="12"
-                    Data="{StaticResource Icon.Close}"
-                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                    Stretch="Uniform" />
-            </Button>
+    <Grid Width="460">
+        <Border Padding="16">
+            <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="40" />
+                    </Grid.ColumnDefinitions>
 
-            <StackPanel Margin="40,44,40,0" HorizontalAlignment="Stretch">
+                    <Button
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Command="{Binding CloseCommand}"
+                        Style="{StaticResource DraftCloseButton}"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Path
+                            Width="12"
+                            Height="12"
+                            Data="{StaticResource Icon.Close}"
+                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Stretch="Uniform" />
+                    </Button>
+                </Grid>
+
                 <Path
                     x:Name="SpinnerIcon"
-                    Width="72"
-                    Height="72"
+                    Width="52"
+                    Height="52"
                     HorizontalAlignment="Center"
                     Data="{StaticResource Icon.Spinner}"
                     Fill="{StaticResource Brush.Accent.Primary}"
@@ -52,11 +61,11 @@
                 </Path>
 
                 <TextBlock
-                    MaxWidth="640"
-                    Margin="0,28,0,16"
+                    MaxWidth="400"
+                    Margin="0,24,0,8"
                     HorizontalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
-                    FontSize="34"
+                    FontSize="24"
                     FontWeight="Bold"
                     Foreground="{StaticResource Brush.Text.Primary}"
                     Text="{Binding Title}"
@@ -64,15 +73,16 @@
                     TextWrapping="Wrap" />
 
                 <TextBlock
-                    MaxWidth="640"
+                    MaxWidth="400"
+                    Margin="0,0,0,16"
                     HorizontalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
-                    FontSize="22"
+                    FontSize="16"
                     Foreground="{StaticResource Brush.Text.Secondary}"
                     Text="{Binding Description}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
             </StackPanel>
-        </Grid>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>
