@@ -9,7 +9,7 @@ public sealed class PdfExportService
 {
     private const double PdfPageWidthInches = 8.5;
     private const double PdfPageHeightInches = 11;
-    private const int PdfLayoutTimeoutMilliseconds = 30000;
+    private const int PdfLayoutTimeoutMilliseconds = 10000;
     private const int PdfLayoutPollDelayMilliseconds = 50;
     private readonly WebWorkspacePathResolver _pathResolver;
 
@@ -92,7 +92,13 @@ public sealed class PdfExportService
     {
         try
         {
-            await webView.CoreWebView2.ExecuteScriptAsync("window.draftPreparePdfExport?.()");
+            string hasLayoutPreparation = await webView.CoreWebView2.ExecuteScriptAsync(
+                "Boolean(window.draftPreparePdfExport)");
+
+            if (!string.Equals(hasLayoutPreparation, "true", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            await webView.CoreWebView2.ExecuteScriptAsync("window.draftPreparePdfExport()");
 
             using CancellationTokenSource timeout = new(PdfLayoutTimeoutMilliseconds);
 

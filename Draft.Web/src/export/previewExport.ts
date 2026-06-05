@@ -322,7 +322,8 @@ function getPdfExportScript() {
   const PAGE_HEIGHT = ${pdfPageHeightCssPixels};
   const PAGE_PADDING = ${pdfPagePaddingCssPixels};
   const PAGE_SAFETY = 10;
-  const MAX_PASSES = 8;
+  const MAX_BLOCK_PASSES = 4;
+  const MAX_INLINE_PASSES = 2;
   const MIN_SPACER_HEIGHT = 1;
   const MAX_KEEP_TOGETHER_HEIGHT = PAGE_HEIGHT - PAGE_PADDING * 2 - PAGE_SAFETY * 2;
   const PAGE_SPACER_CLASS = 'draft-pdf-page-spacer';
@@ -506,35 +507,68 @@ function getPdfExportScript() {
       .forEach((spacer) => spacer.remove());
   }
 
-  function wrapInlineTextFragments(content) {
-    const textNodes = [];
-    const walker = document.createTreeWalker(
-      content,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode(node) {
-          const text = node.nodeValue || '';
-          const parentElement = node.parentElement;
-
-          if (!text.trim() ||
-              !parentElement ||
-              parentElement.closest(INLINE_SKIP_SELECTOR) ||
-              parentElement.closest(INLINE_ATOMIC_SELECTOR) ||
-              parentElement.closest('.' + INLINE_FRAGMENT_CLASS) ||
-              !parentElement.closest(INLINE_CONTAINER_SELECTOR)) {
-            return NodeFilter.FILTER_REJECT;
-          }
-
-          return NodeFilter.FILTER_ACCEPT;
+  function getInlinePaginationContainers(content) {
+    const containers = Array.from(content.querySelectorAll(INLINE_CONTAINER_SELECTOR))
+      .filter((element) => element instanceof HTMLElement)
+      .filter((element) => {
+        if (!(element instanceof HTMLElement) || !isVisibleElement(element)) {
+          return false;
         }
+
+        return getDocumentRect(element).height > MAX_KEEP_TOGETHER_HEIGHT;
+      });
+
+    return containers.filter((container) => {
+      if (!(container instanceof HTMLElement)) {
+        return false;
       }
-    );
 
-    let currentNode = walker.nextNode();
+      return !containers.some((otherContainer) => {
+        return otherContainer instanceof HTMLElement &&
+          otherContainer !== container &&
+          otherContainer.contains(container);
+      });
+    });
+  }
 
-    while (currentNode) {
-      textNodes.push(currentNode);
-      currentNode = walker.nextNode();
+  function wrapInlineTextFragments(content) {
+    const containers = getInlinePaginationContainers(content);
+
+    if (containers.length === 0) {
+      return false;
+    }
+
+    const textNodes = [];
+
+    for (const container of containers) {
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode(node) {
+            const text = node.nodeValue || '';
+            const parentElement = node.parentElement;
+
+            if (!text.trim() ||
+                !parentElement ||
+                parentElement.closest(INLINE_SKIP_SELECTOR) ||
+                parentElement.closest(INLINE_ATOMIC_SELECTOR) ||
+                parentElement.closest('.' + INLINE_FRAGMENT_CLASS) ||
+                !parentElement.closest(INLINE_CONTAINER_SELECTOR)) {
+              return NodeFilter.FILTER_REJECT;
+            }
+
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        }
+      );
+
+      let currentNode = walker.nextNode();
+
+      while (currentNode) {
+        textNodes.push(currentNode);
+        currentNode = walker.nextNode();
+      }
     }
 
     for (const textNode of textNodes) {
@@ -556,6 +590,8 @@ function getPdfExportScript() {
 
       textNode.replaceWith(fragment);
     }
+
+    return textNodes.length > 0;
   }
 
   function isKeepTogetherElement(element) {
@@ -742,19 +778,31 @@ function getPdfExportScript() {
         return true;
       }
 
-      wrapInlineTextFragments(content);
-      await nextFrame();
-
-      for (let pass = 0; pass < MAX_PASSES; pass += 1) {
+      for (let pass = 0; pass < MAX_BLOCK_PASSES; pass += 1) {
         const changedBlocks = paginateKeepTogetherElements(content);
         const changedCodeLines = paginateCodeLines(content);
-        const changedInlineFragments = paginateInlineFragments(content);
-        const changed = changedBlocks || changedCodeLines || changedInlineFragments;
+        const changed = changedBlocks || changedCodeLines;
 
         await nextFrame();
 
         if (!changed) {
           break;
+        }
+      }
+
+      if (wrapInlineTextFragments(content)) {
+        await nextFrame();
+
+        for (let pass = 0; pass < MAX_INLINE_PASSES; pass += 1) {
+          const changedCodeLines = paginateCodeLines(content);
+          const changedInlineFragments = paginateInlineFragments(content);
+          const changed = changedCodeLines || changedInlineFragments;
+
+          await nextFrame();
+
+          if (!changed) {
+            break;
+          }
         }
       }
 

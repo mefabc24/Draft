@@ -95,6 +95,24 @@ public partial class MainWindow : Window
             WorkspaceWebView_NavigationStarting,
             WorkspaceWebView_NewWindowRequested,
             WorkspaceWebView_NavigationCompleted);
+
+        _ = WarmUpExportWebViewAsync();
+    }
+
+    private async Task WarmUpExportWebViewAsync()
+    {
+        try
+        {
+            await ExportWebView.EnsureCoreWebView2Async();
+
+            ExportWebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            ExportWebView.CoreWebView2.Settings.IsZoomControlEnabled = false;
+            ExportWebView.ZoomFactor = 1.0;
+        }
+        catch
+        {
+            // The export WebView is still initialized on demand if background warm-up is unavailable.
+        }
     }
 
     protected override void OnActivated(EventArgs e)
@@ -320,6 +338,11 @@ public partial class MainWindow : Window
                     htmlDocument),
                 ExportWebView,
                 WebHostName);
+
+            _dialogCoordinator.ShowMessage(
+                "Export Complete",
+                $"The document was exported successfully as {GetExportFormatDisplayName(result.Format)}.",
+                MessageDialogType.Success);
         }
         catch (Exception ex) when (IsExportException(ex))
         {
@@ -722,6 +745,17 @@ public partial class MainWindow : Window
         return IsFileOperationException(ex)
             || ex is JsonException
             or NotSupportedException;
+    }
+
+    private static string GetExportFormatDisplayName(ExportFormat format)
+    {
+        return format switch
+        {
+            ExportFormat.Pdf => "PDF",
+            ExportFormat.Html => "HTML",
+            ExportFormat.Png => "PNG",
+            _ => "the selected format",
+        };
     }
 
 }
