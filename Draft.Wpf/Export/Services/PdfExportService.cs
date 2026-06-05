@@ -7,6 +7,10 @@ namespace Draft.Export.Services;
 
 public sealed class PdfExportService
 {
+    private const double PdfPageWidthInches = 8.5;
+    private const double PdfPageHeightInches = 11;
+    private const int PdfLayoutTimeoutMilliseconds = 30000;
+    private const int PdfLayoutPollDelayMilliseconds = 50;
     private readonly WebWorkspacePathResolver _pathResolver;
 
     public PdfExportService()
@@ -41,9 +45,13 @@ public sealed class PdfExportService
             CoreWebView2HostResourceAccessKind.Allow);
 
         await NavigateToExportHtmlAsync(webView, request.HtmlDocument);
+        await PreparePdfExportLayoutAsync(webView);
 
         CoreWebView2PrintSettings printSettings = webView.CoreWebView2.Environment.CreatePrintSettings();
         printSettings.Orientation = CoreWebView2PrintOrientation.Portrait;
+        printSettings.PageWidth = PdfPageWidthInches;
+        printSettings.PageHeight = PdfPageHeightInches;
+        printSettings.ScaleFactor = 1;
         printSettings.ShouldPrintBackgrounds = true;
         printSettings.ShouldPrintHeaderAndFooter = false;
         printSettings.MarginTop = 0;
@@ -78,5 +86,36 @@ public sealed class PdfExportService
         webView.NavigateToString(htmlDocument);
 
         return navigationCompleted.Task;
+    }
+
+    private static async Task PreparePdfExportLayoutAsync(WebView2 webView)
+    {
+        try
+        {
+            await webView.CoreWebView2.ExecuteScriptAsync("window.draftPreparePdfExport?.()");
+
+            using CancellationTokenSource timeout = new(PdfLayoutTimeoutMilliseconds);
+
+            while (!timeout.IsCancellationRequested)
+            {
+                string isReady = await webView.CoreWebView2.ExecuteScriptAsync("Boolean(window.draftPdfExportReady)");
+
+                if (string.Equals(isReady, "true", StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                try
+                {
+                    await Task.Delay(PdfLayoutPollDelayMilliseconds, timeout.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+        }
+        catch
+        {
+            // Pagination is an export layout enhancement. If it cannot run, keep PDF export usable.
+        }
     }
 }
