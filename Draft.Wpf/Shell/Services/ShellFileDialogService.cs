@@ -1,4 +1,5 @@
 using Draft.Documents.Models;
+using Draft.Export.Models;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows;
@@ -43,6 +44,82 @@ public sealed class ShellFileDialogService
 
         return dialog.ShowDialog(owner) == true
             ? dialog.FileName
+            : null;
+    }
+
+    public string? ShowExportSaveFileDialog(
+        Window owner,
+        ExportFormat format,
+        string? currentFilePath,
+        string? defaultSaveLocation)
+    {
+        SaveFileDialog dialog = new()
+        {
+            Filter = GetExportFilter(format),
+            DefaultExt = GetExportDefaultExtension(format),
+            AddExtension = true,
+            OverwritePrompt = true,
+            FileName = CreateExportFileName(format, currentFilePath),
+        };
+
+        string? initialDirectory = GetExportInitialDirectory(currentFilePath, defaultSaveLocation);
+        if (initialDirectory is not null)
+        {
+            dialog.InitialDirectory = initialDirectory;
+        }
+
+        return dialog.ShowDialog(owner) == true
+            ? dialog.FileName
+            : null;
+    }
+
+    private static string GetExportFilter(ExportFormat format)
+    {
+        return format switch
+        {
+            ExportFormat.Html => "HTML files (*.html)|*.html",
+            ExportFormat.Png => "PNG files (*.png)|*.png",
+            _ => "PDF files (*.pdf)|*.pdf",
+        };
+    }
+
+    private static string GetExportDefaultExtension(ExportFormat format)
+    {
+        return format switch
+        {
+            ExportFormat.Html => ".html",
+            ExportFormat.Png => ".png",
+            _ => ".pdf",
+        };
+    }
+
+    private static string CreateExportFileName(ExportFormat format, string? currentFilePath)
+    {
+        string? baseFileName = !string.IsNullOrWhiteSpace(currentFilePath)
+            ? Path.GetFileNameWithoutExtension(currentFilePath)
+            : null;
+
+        if (string.IsNullOrWhiteSpace(baseFileName))
+        {
+            baseFileName = "Draft-Export";
+        }
+
+        return $"{baseFileName}{GetExportDefaultExtension(format)}";
+    }
+
+    private static string? GetExportInitialDirectory(string? currentFilePath, string? defaultSaveLocation)
+    {
+        if (!string.IsNullOrWhiteSpace(currentFilePath))
+        {
+            string? currentDirectory = Path.GetDirectoryName(currentFilePath);
+            if (!string.IsNullOrWhiteSpace(currentDirectory) && Directory.Exists(currentDirectory))
+            {
+                return currentDirectory;
+            }
+        }
+
+        return !string.IsNullOrWhiteSpace(defaultSaveLocation) && Directory.Exists(defaultSaveLocation)
+            ? defaultSaveLocation
             : null;
     }
 }

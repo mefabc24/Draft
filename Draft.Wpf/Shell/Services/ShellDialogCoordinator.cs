@@ -2,6 +2,8 @@ using Draft.Dialogs.Message.Models;
 using Draft.Dialogs.Message.Services;
 using Draft.Dialogs.Prompts.Autosave.Models;
 using Draft.Dialogs.Prompts.Autosave.Services;
+using Draft.Dialogs.Prompts.Export.Models;
+using Draft.Dialogs.Prompts.Export.Services;
 using Draft.Dialogs.Prompts.GoToPosition.Models;
 using Draft.Dialogs.Prompts.GoToPosition.Services;
 using Draft.Dialogs.Prompts.RevertSave.Models;
@@ -17,6 +19,7 @@ namespace Draft.Shell.Services;
 public sealed class ShellDialogCoordinator
 {
     private readonly IAutosavePromptService _autosavePromptService;
+    private readonly IExportPromptService _exportPromptService;
     private readonly IGoToPositionPromptService _goToPositionPromptService;
     private readonly IMessageDialogService _messageDialogService;
     private readonly IRevertSavePromptService _revertSavePromptService;
@@ -26,6 +29,7 @@ public sealed class ShellDialogCoordinator
             new MessageDialogService(),
             new GoToPositionPromptService(),
             new AutosavePromptService(),
+            new ExportPromptService(),
             new RevertSavePromptService())
     {
     }
@@ -34,11 +38,13 @@ public sealed class ShellDialogCoordinator
         IMessageDialogService messageDialogService,
         IGoToPositionPromptService goToPositionPromptService,
         IAutosavePromptService autosavePromptService,
+        IExportPromptService exportPromptService,
         IRevertSavePromptService revertSavePromptService)
     {
         _messageDialogService = messageDialogService;
         _goToPositionPromptService = goToPositionPromptService;
         _autosavePromptService = autosavePromptService;
+        _exportPromptService = exportPromptService;
         _revertSavePromptService = revertSavePromptService;
     }
 
@@ -74,6 +80,11 @@ public sealed class ShellDialogCoordinator
         return _autosavePromptService.Show(
             new AutosavePromptRequest(settings.AutosaveEnabled, settings.AutosaveInterval),
             owner);
+    }
+
+    public ExportPromptResult ShowExportPrompt(Window owner)
+    {
+        return _exportPromptService.Show(new ExportPromptRequest(), owner);
     }
 
     public RevertSavePromptResult ShowRevertSavePrompt(

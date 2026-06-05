@@ -1,7 +1,10 @@
 using Draft.Dialogs.Message.Models;
 using Draft.Dialogs.Prompts.Autosave.Models;
+using Draft.Dialogs.Prompts.Export.Models;
 using Draft.Dialogs.Prompts.GoToPosition.Models;
 using Draft.Dialogs.Prompts.RevertSave.Models;
+using Draft.Export.Models;
+using Draft.Export.Services;
 using Draft.Save.Models;
 using Draft.Shell.Services;
 using Draft.Shell.ViewModels;
@@ -30,6 +33,7 @@ public partial class MainWindow : Window
     private readonly MainWindowSessionService _sessionService = new();
     private readonly ShellDialogCoordinator _dialogCoordinator = new();
     private readonly ShellFileDialogService _fileDialogService = new();
+    private readonly DocumentExportService _documentExportService = new();
     private readonly DraftWebViewHostService _webViewHostService = new();
     private readonly DraftWebViewMessageBridge _webViewMessageBridge = new();
     private readonly WindowSizingService _windowSizingService = new();
@@ -184,6 +188,7 @@ public partial class MainWindow : Window
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         viewModel.OpenFileRequested += ViewModel_OpenFileRequested;
         viewModel.SaveFileAsRequested += ViewModel_SaveFileAsRequested;
+        viewModel.OpenExportPromptRequested += ViewModel_OpenExportPromptRequested;
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
         viewModel.OpenAboutSettingsRequested += ViewModel_OpenAboutSettingsRequested;
@@ -198,6 +203,7 @@ public partial class MainWindow : Window
         viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         viewModel.OpenFileRequested -= ViewModel_OpenFileRequested;
         viewModel.SaveFileAsRequested -= ViewModel_SaveFileAsRequested;
+        viewModel.OpenExportPromptRequested -= ViewModel_OpenExportPromptRequested;
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
         viewModel.OpenAboutSettingsRequested -= ViewModel_OpenAboutSettingsRequested;
@@ -252,6 +258,56 @@ public partial class MainWindow : Window
             "Unable to save the current file.",
             DocumentSaveKind.Manual);
         PostDocumentToWebView();
+    }
+
+    private void ViewModel_OpenExportPromptRequested(object? sender, EventArgs e)
+    {
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        _isPromptWindowOpen = true;
+        ExportPromptResult result;
+
+        try
+        {
+            result = _dialogCoordinator.ShowExportPrompt(this);
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
+        }
+
+        if (!result.IsConfirmed)
+            return;
+
+        string? filePath = _fileDialogService.ShowExportSaveFileDialog(
+            this,
+            result.Format,
+            viewModel.CurrentFilePath,
+            viewModel.DefaultSaveLocation);
+        if (filePath is null)
+            return;
+
+        try
+        {
+            _documentExportService.Export(
+                new DocumentExportRequest(
+                    result.Format,
+                    filePath,
+                    viewModel.CurrentContent));
+
+            _dialogCoordinator.ShowMessage(
+                "Export",
+                "Export is not implemented yet.",
+                MessageDialogType.Info);
+        }
+        catch (Exception ex) when (IsFileOperationException(ex))
+        {
+            _dialogCoordinator.ShowMessage(
+                "Export",
+                ex.Message,
+                MessageDialogType.Error);
+        }
     }
 
     private void ViewModel_NewFileRequested(object? sender, EventArgs e)

@@ -374,6 +374,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand CopyMarkdownCommand { get; }
 
+    public ICommand OpenExportPromptCommand { get; }
+
     public ICommand NewFileCommand { get; }
 
     public ICommand OpenSettingsCommand { get; }
@@ -389,6 +391,8 @@ public class MainWindowViewModel : BaseViewModel
     public event EventHandler? OpenFileRequested;
 
     public event EventHandler? SaveFileAsRequested;
+
+    public event EventHandler? OpenExportPromptRequested;
 
     public event EventHandler? NewFileRequested;
 
@@ -428,6 +432,7 @@ public class MainWindowViewModel : BaseViewModel
         CopyMarkdownCommand = new RelayCommand(
             CopyMarkdownToClipboard,
             () => !string.IsNullOrEmpty(CurrentContent));
+        OpenExportPromptCommand = new RelayCommand(() => OpenExportPromptRequested?.Invoke(this, EventArgs.Empty));
         NewFileCommand = new RelayCommand(() => NewFileRequested?.Invoke(this, EventArgs.Empty));
         OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
         OpenAboutSettingsCommand = new RelayCommand(

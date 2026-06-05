@@ -261,7 +261,10 @@
                     </Grid>
                 </Button>
                 <!-- Export File Button -->
-                <Button Style="{StaticResource ControlButton}" ToolTip="New">
+                <Button
+                    Command="{Binding OpenExportPromptCommand}"
+                    Style="{StaticResource ControlButton}"
+                    ToolTip="Export document">
                     <Path
                         Width="16"
                         Height="16"
