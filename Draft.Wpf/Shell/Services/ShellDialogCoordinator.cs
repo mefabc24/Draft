@@ -1,5 +1,7 @@
 using Draft.Dialogs.Message.Models;
 using Draft.Dialogs.Message.Services;
+using Draft.Dialogs.Progress.Models;
+using Draft.Dialogs.Progress.Services;
 using Draft.Dialogs.Prompts.Autosave.Models;
 using Draft.Dialogs.Prompts.Autosave.Services;
 using Draft.Dialogs.Prompts.Export.Models;
@@ -22,11 +24,13 @@ public sealed class ShellDialogCoordinator
     private readonly IExportPromptService _exportPromptService;
     private readonly IGoToPositionPromptService _goToPositionPromptService;
     private readonly IMessageDialogService _messageDialogService;
+    private readonly IProgressDialogService _progressDialogService;
     private readonly IRevertSavePromptService _revertSavePromptService;
 
     public ShellDialogCoordinator()
         : this(
             new MessageDialogService(),
+            new ProgressDialogService(),
             new GoToPositionPromptService(),
             new AutosavePromptService(),
             new ExportPromptService(),
@@ -36,12 +40,14 @@ public sealed class ShellDialogCoordinator
 
     public ShellDialogCoordinator(
         IMessageDialogService messageDialogService,
+        IProgressDialogService progressDialogService,
         IGoToPositionPromptService goToPositionPromptService,
         IAutosavePromptService autosavePromptService,
         IExportPromptService exportPromptService,
         IRevertSavePromptService revertSavePromptService)
     {
         _messageDialogService = messageDialogService;
+        _progressDialogService = progressDialogService;
         _goToPositionPromptService = goToPositionPromptService;
         _autosavePromptService = autosavePromptService;
         _exportPromptService = exportPromptService;
@@ -85,6 +91,17 @@ public sealed class ShellDialogCoordinator
     public ExportPromptResult ShowExportPrompt(Window owner)
     {
         return _exportPromptService.Show(new ExportPromptRequest(), owner);
+    }
+
+    public IDisposable ShowDelayedProgress(
+        Window owner,
+        string title,
+        string description,
+        TimeSpan delay)
+    {
+        return _progressDialogService.ShowDelayed(
+            new ProgressDialogRequest(title, description, delay),
+            owner);
     }
 
     public RevertSavePromptResult ShowRevertSavePrompt(

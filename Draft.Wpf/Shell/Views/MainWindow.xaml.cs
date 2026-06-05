@@ -325,19 +325,28 @@ public partial class MainWindow : Window
             return;
         }
 
+        _isPromptWindowOpen = true;
+
         try
         {
-            string htmlDocument = await _webViewMessageBridge.GetPreviewExportHtmlAsync(
-                WorkspaceWebView.CoreWebView2,
-                result.Format == ExportFormat.Pdf);
+            using (IDisposable exportProgress = _dialogCoordinator.ShowDelayedProgress(
+                this,
+                "Exporting...",
+                "Preparing your document for export.",
+                TimeSpan.FromSeconds(1)))
+            {
+                string htmlDocument = await _webViewMessageBridge.GetPreviewExportHtmlAsync(
+                    WorkspaceWebView.CoreWebView2,
+                    result.Format == ExportFormat.Pdf);
 
-            await _documentExportService.ExportAsync(
-                new DocumentExportRequest(
-                    result.Format,
-                    filePath,
-                    htmlDocument),
-                ExportWebView,
-                WebHostName);
+                await _documentExportService.ExportAsync(
+                    new DocumentExportRequest(
+                        result.Format,
+                        filePath,
+                        htmlDocument),
+                    ExportWebView,
+                    WebHostName);
+            }
 
             _dialogCoordinator.ShowMessage(
                 "Export Complete",
@@ -350,6 +359,10 @@ public partial class MainWindow : Window
                 "Export",
                 ex.Message,
                 MessageDialogType.Error);
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
         }
     }
 
