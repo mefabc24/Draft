@@ -174,7 +174,8 @@
             DefaultBackgroundColor="Transparent"
             Focusable="False"
             IsHitTestVisible="False"
-            Panel.ZIndex="-1" />
+            Panel.ZIndex="-1"
+            Visibility="Hidden" />
 
     </Grid>
 </Window>
