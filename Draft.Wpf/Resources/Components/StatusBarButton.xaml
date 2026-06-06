@@ -22,7 +22,7 @@
                             <Setter Property="Foreground" Value="{StaticResource Brush.Text.Muted}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.Secondary}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.Hover}" />
                             <Setter Property="Cursor" Value="Hand" />
                         </Trigger>
                     </ControlTemplate.Triggers>
