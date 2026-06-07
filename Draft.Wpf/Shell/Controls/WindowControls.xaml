@@ -5,10 +5,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Draft.Shell.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Draft.Shared.UI.Controls"
     x:Name="root"
     mc:Ignorable="d">
     <UniformGrid Columns="3" Rows="1">
-        <Button Click="Minimize_Click" Style="{StaticResource WindowControlButton}">
+        <Button
+            Click="Minimize_Click"
+            Style="{StaticResource WindowControlButton}"
+            ui:ToolTipAssist.Text="Minimize">
             <Path
                 Width="12"
                 Height="12"
@@ -19,7 +23,10 @@
                 StrokeStartLineCap="Round"
                 StrokeThickness="2" />
         </Button>
-        <Button Click="MaxRestore_Click" Style="{StaticResource WindowControlButton}">
+        <Button
+            Click="MaxRestore_Click"
+            Style="{StaticResource WindowControlButton}"
+            ui:ToolTipAssist.Text="Maximize or restore">
             <Path
                 Width="12"
                 Height="12"
@@ -39,7 +46,7 @@
                 </Path.Style>
             </Path>
         </Button>
-        <Button Click="Close_Click">
+        <Button Click="Close_Click" ui:ToolTipAssist.Text="Close">
             <Button.Style>
                 <Style BasedOn="{StaticResource WindowControlButton}" TargetType="Button">
                     <Setter Property="Tag" Value="Close" />

@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Draft.Shell.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Draft.Shared.UI.Controls"
     mc:Ignorable="d">
     <Border
         Padding="8"
@@ -72,7 +73,7 @@
                 <Button
                     Command="{Binding OpenFileCommand}"
                     Style="{StaticResource ControlButton}"
-                    ToolTip="Open">
+                    ui:ToolTipAssist.Text="Open">
                     <Path
                         Width="16"
                         Height="16"
@@ -85,7 +86,8 @@
                     Margin="8,0,0,0"
                     Command="{Binding SaveFileCommand}"
                     Style="{StaticResource ControlButton}"
-                    ToolTip="Save">
+                    ui:ToolTipAssist.Shortcut="Ctrl+S"
+                    ui:ToolTipAssist.Text="Save">
                     <Grid>
                         <Path
                             Width="16"
@@ -143,7 +145,7 @@
                     Margin="8,0,8,0"
                     Command="{Binding CopyMarkdownCommand}"
                     Style="{StaticResource ControlButton}"
-                    ToolTip="Copy Markdown">
+                    ui:ToolTipAssist.Text="Copy Markdown">
                     <Grid Width="16" Height="16">
                         <Path
                             Data="{StaticResource Icon.Copy}"
@@ -264,7 +266,7 @@
                 <Button
                     Command="{Binding OpenExportPromptCommand}"
                     Style="{StaticResource ControlButton}"
-                    ToolTip="Export document">
+                    ui:ToolTipAssist.Text="Export document">
                     <Path
                         Width="16"
                         Height="16"
@@ -276,7 +278,7 @@
                 <Button
                     Command="{Binding NewFileCommand}"
                     Style="{StaticResource ControlButton}"
-                    ToolTip="New">
+                    ui:ToolTipAssist.Text="New">
                     <Path
                         Width="16"
                         Height="16"
@@ -295,7 +297,7 @@
                 Margin="8,0,0,0"
                 Command="{Binding OpenSettingsCommand}"
                 Style="{StaticResource ControlButton}"
-                ToolTip="Settings">
+                ui:ToolTipAssist.Text="Settings">
                 <Path
                     Width="16"
                     Height="16"
