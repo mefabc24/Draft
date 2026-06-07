@@ -9,7 +9,7 @@ public static class AppSettingsStore
 {
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";
-    public const string DefaultMarkdownTheme = "Draft Theme";
+    public const string DefaultMarkdownTheme = SettingsDefaults.DefaultMarkdownTheme;
     public const string DefaultToolbarPosition = "Top";
     public const string PreviewScrollSyncOff = "Off";
     public const string PreviewScrollSyncEditorToPreview = "EditorToPreview";

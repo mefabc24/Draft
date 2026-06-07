@@ -7,7 +7,7 @@ public static class SettingsDefaults
 {
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";
-    public const string DefaultMarkdownTheme = "Draft Theme";
+    public const string DefaultMarkdownTheme = "Draft Dark";
     public const string DefaultToolbarPosition = "Top";
     public const string PreviewScrollSyncOff = "Off";
     public const string PreviewScrollSyncEditorToPreview = "EditorToPreview";
