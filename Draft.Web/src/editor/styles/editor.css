@@ -45,6 +45,10 @@
   color: var(--draft-muted-foreground) !important;
 }
 
+.editor-host .monaco-editor .line-numbers.active-line-number {
+  color: var(--markdown-toolbar-primary) !important;
+}
+
 .editor-host .monaco-editor .current-line-margin {
   background-color: var(--editor-current-line-background) !important;
 }
