@@ -13,7 +13,7 @@ export const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
   cursorStyle: 'Line',
   editorFontFamily: 'JetBrains Mono',
   editorFontSize: 16,
-  floatingMarkdownToolbarMode: 'EditorAndPreview',
+  floatingMarkdownToolbarMode: 'Editor',
   highlightCurrentLine: true,
   insertSpacesInsteadOfTabs: true,
   lineHeight: 1.6,

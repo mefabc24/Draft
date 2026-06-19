@@ -121,12 +121,8 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
                         "Apply the sixth Markdown heading level.",
                         "Ctrl + 6"),
                     new ShortcutItemViewModel(
-                        "Edit preview source",
-                        "Edit the Markdown source behind the selected preview content.",
-                        "Ctrl + Shift + E"),
-                    new ShortcutItemViewModel(
                         "Confirm toolbar edit",
-                        "Apply changes in the toolbar's link, image, or source edit menu.",
+                        "Apply changes in the toolbar's link or image edit menu.",
                         "Enter"),
                     new ShortcutItemViewModel(
                         "Close toolbar or edit menu",

@@ -55,8 +55,7 @@ public static class SettingsDisplayValueMapper
         return displayName switch
         {
             "Editor" => SettingsDefaults.FloatingMarkdownToolbarEditor,
-            "Preview" => SettingsDefaults.FloatingMarkdownToolbarPreview,
-            "Always" => SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview,
+            "Always" => SettingsDefaults.FloatingMarkdownToolbarEditor,
             _ => SettingsDefaults.FloatingMarkdownToolbarDisabled,
         };
     }
@@ -66,8 +65,7 @@ public static class SettingsDisplayValueMapper
         return value switch
         {
             SettingsDefaults.FloatingMarkdownToolbarEditor => "Editor",
-            SettingsDefaults.FloatingMarkdownToolbarPreview => "Preview",
-            SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview => "Always",
+            SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview => "Editor",
             _ => "Disabled",
         };
     }

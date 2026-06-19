@@ -1,10 +1,6 @@
 export type ShowWhitespaceCharacters = 'Always' | 'Never' | 'Highlighted Only'
 export type CursorStyle = 'Line' | 'Block' | 'Underline'
-export type FloatingMarkdownToolbarMode =
-  | 'Disabled'
-  | 'Editor'
-  | 'Preview'
-  | 'EditorAndPreview'
+export type FloatingMarkdownToolbarMode = 'Disabled' | 'Editor'
 export type PreviewScrollSyncMode =
   | 'Off'
   | 'EditorToPreview'

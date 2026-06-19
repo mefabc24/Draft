@@ -17,9 +17,10 @@ public static class SettingsDefaults
     public const string DefaultPreviewScrollSyncMode = PreviewScrollSyncTwoWay;
     public const string FloatingMarkdownToolbarDisabled = "Disabled";
     public const string FloatingMarkdownToolbarEditor = "Editor";
+    // Legacy values kept so existing settings can be normalized.
     public const string FloatingMarkdownToolbarPreview = "Preview";
     public const string FloatingMarkdownToolbarEditorAndPreview = "EditorAndPreview";
-    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditorAndPreview;
+    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditor;
     public const string WindowBorderAccentDisabled = "Disabled";
     public const string WindowBorderAccentAlways = "Always";
     public const string WindowBorderAccentFocusedOnly = "FocusedWindowOnly";

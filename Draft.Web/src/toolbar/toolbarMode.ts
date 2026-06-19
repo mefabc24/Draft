@@ -3,11 +3,11 @@ import type { FloatingMarkdownToolbarMode } from '../settings/settingsTypes'
 export function isFloatingToolbarEnabledInEditor(
   mode: FloatingMarkdownToolbarMode,
 ) {
-  return mode === 'Editor' || mode === 'EditorAndPreview'
+  return mode === 'Editor'
 }
 
 export function isFloatingToolbarEnabledInPreview(
-  mode: FloatingMarkdownToolbarMode,
+  _mode: FloatingMarkdownToolbarMode,
 ) {
-  return mode === 'Preview' || mode === 'EditorAndPreview'
+  return false
 }

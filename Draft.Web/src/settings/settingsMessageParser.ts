@@ -90,16 +90,16 @@ function readFloatingMarkdownToolbarMode(
   const value = readRecordValue(record, 'floatingMarkdownToolbarMode')
 
   if (
-    value === 'Disabled' ||
     value === 'Editor' ||
-    value === 'Preview' ||
-    value === 'EditorAndPreview'
+    value === 'EditorAndPreview' ||
+    value === 'Always' ||
+    value === 'Editor & Preview'
   ) {
-    return value
+    return 'Editor'
   }
 
-  if (value === 'Always' || value === 'Editor & Preview') {
-    return 'EditorAndPreview'
+  if (value === 'Disabled' || value === 'Preview') {
+    return 'Disabled'
   }
 
   return DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarMode

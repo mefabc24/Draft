@@ -19,9 +19,10 @@ public static class AppSettingsStore
     public const string DefaultPreviewScrollSyncMode = PreviewScrollSyncTwoWay;
     public const string FloatingMarkdownToolbarDisabled = "Disabled";
     public const string FloatingMarkdownToolbarEditor = "Editor";
+    // Legacy values kept so existing settings can be normalized.
     public const string FloatingMarkdownToolbarPreview = "Preview";
     public const string FloatingMarkdownToolbarEditorAndPreview = "EditorAndPreview";
-    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditorAndPreview;
+    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditor;
     public const string WindowBorderAccentDisabled = "Disabled";
     public const string WindowBorderAccentAlways = "Always";
     public const string WindowBorderAccentFocusedOnly = "FocusedWindowOnly";
@@ -130,9 +131,8 @@ public static class AppSettingsStore
             settings.ScrollPreviewToEditedSection = false;
         }
 
-        settings.FloatingMarkdownToolbarMode = IsFloatingMarkdownToolbarMode(settings.FloatingMarkdownToolbarMode)
-            ? settings.FloatingMarkdownToolbarMode
-            : DefaultFloatingMarkdownToolbarMode;
+        settings.FloatingMarkdownToolbarMode = NormalizeFloatingMarkdownToolbarMode(
+            settings.FloatingMarkdownToolbarMode);
 
         TryEnsureDefaultSaveLocationDirectory(settings.DefaultSaveLocation);
 
@@ -288,12 +288,14 @@ public static class AppSettingsStore
             or PreviewScrollSyncFollowEditedSection;
     }
 
-    private static bool IsFloatingMarkdownToolbarMode(string value)
+    private static string NormalizeFloatingMarkdownToolbarMode(string value)
     {
-        return value is FloatingMarkdownToolbarDisabled
-            or FloatingMarkdownToolbarEditor
-            or FloatingMarkdownToolbarPreview
-            or FloatingMarkdownToolbarEditorAndPreview;
+        return value switch
+        {
+            FloatingMarkdownToolbarEditor or FloatingMarkdownToolbarEditorAndPreview => FloatingMarkdownToolbarEditor,
+            FloatingMarkdownToolbarDisabled or FloatingMarkdownToolbarPreview => FloatingMarkdownToolbarDisabled,
+            _ => DefaultFloatingMarkdownToolbarMode,
+        };
     }
 
     private static bool IsWindowMinimumSizeScale(double value)
