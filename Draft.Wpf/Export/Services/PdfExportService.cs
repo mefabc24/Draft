@@ -44,7 +44,7 @@ public sealed class PdfExportService
             _pathResolver.GetWebRootPath(),
             CoreWebView2HostResourceAccessKind.Allow);
 
-        await NavigateToExportHtmlAsync(webView, request.HtmlDocument);
+        await ExportWebViewNavigator.NavigateToExportHtmlAsync(webView, request.HtmlDocument);
         await PreparePdfExportLayoutAsync(webView);
 
         CoreWebView2PrintSettings printSettings = webView.CoreWebView2.Environment.CreatePrintSettings();
@@ -62,30 +62,6 @@ public sealed class PdfExportService
         bool didPrint = await webView.CoreWebView2.PrintToPdfAsync(request.FilePath, printSettings);
         if (!didPrint)
             throw new InvalidOperationException("The PDF export could not be completed.");
-    }
-
-    private static Task NavigateToExportHtmlAsync(WebView2 webView, string htmlDocument)
-    {
-        TaskCompletionSource<bool> navigationCompleted = new();
-
-        void NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
-        {
-            webView.NavigationCompleted -= NavigationCompleted;
-
-            if (e.IsSuccess)
-            {
-                navigationCompleted.TrySetResult(true);
-                return;
-            }
-
-            navigationCompleted.TrySetException(
-                new InvalidOperationException($"The export preview could not be loaded: {e.WebErrorStatus}."));
-        }
-
-        webView.NavigationCompleted += NavigationCompleted;
-        webView.NavigateToString(htmlDocument);
-
-        return navigationCompleted.Task;
     }
 
     private static async Task PreparePdfExportLayoutAsync(WebView2 webView)

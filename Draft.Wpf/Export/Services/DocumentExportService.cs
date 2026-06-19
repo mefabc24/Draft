@@ -7,23 +7,33 @@ public sealed class DocumentExportService
 {
     private readonly HtmlExportService _htmlExportService;
     private readonly PdfExportService _pdfExportService;
+    private readonly PngExportService _pngExportService;
 
     public DocumentExportService()
-        : this(new HtmlExportService(), new PdfExportService())
+        : this(new HtmlExportService(), new PdfExportService(), new PngExportService())
     {
     }
 
     public DocumentExportService(
         HtmlExportService htmlExportService,
         PdfExportService pdfExportService)
+        : this(htmlExportService, pdfExportService, new PngExportService())
+    {
+    }
+
+    public DocumentExportService(
+        HtmlExportService htmlExportService,
+        PdfExportService pdfExportService,
+        PngExportService pngExportService)
     {
         _htmlExportService = htmlExportService;
         _pdfExportService = pdfExportService;
+        _pngExportService = pngExportService;
     }
 
     public Task ExportAsync(
         DocumentExportRequest request,
-        WebView2? pdfExportWebView = null,
+        WebView2? exportWebView = null,
         string? webHostName = null)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -34,8 +44,8 @@ public sealed class DocumentExportService
         return request.Format switch
         {
             ExportFormat.Html => _htmlExportService.ExportAsync(request),
-            ExportFormat.Pdf => ExportPdfAsync(request, pdfExportWebView, webHostName),
-            ExportFormat.Png => throw new NotSupportedException("PNG export is not implemented yet."),
+            ExportFormat.Pdf => ExportPdfAsync(request, exportWebView, webHostName),
+            ExportFormat.Png => ExportPngAsync(request, exportWebView, webHostName),
             _ => throw new NotSupportedException("The selected export format is not supported."),
         };
     }
@@ -52,5 +62,19 @@ public sealed class DocumentExportService
             throw new InvalidOperationException("A WebView host name is required.");
 
         return _pdfExportService.ExportAsync(pdfExportWebView, webHostName, request);
+    }
+
+    private Task ExportPngAsync(
+        DocumentExportRequest request,
+        WebView2? pngExportWebView,
+        string? webHostName)
+    {
+        if (pngExportWebView is null)
+            throw new InvalidOperationException("A PNG export WebView is required.");
+
+        if (string.IsNullOrWhiteSpace(webHostName))
+            throw new InvalidOperationException("A WebView host name is required.");
+
+        return _pngExportService.ExportAsync(pngExportWebView, webHostName, request);
     }
 }

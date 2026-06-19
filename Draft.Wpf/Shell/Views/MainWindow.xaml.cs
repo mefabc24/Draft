@@ -307,15 +307,6 @@ public partial class MainWindow : Window
         if (filePath is null)
             return;
 
-        if (result.Format == ExportFormat.Png)
-        {
-            _dialogCoordinator.ShowMessage(
-                "Export",
-                "PNG export is not implemented yet.",
-                MessageDialogType.Info);
-            return;
-        }
-
         if (!_isWebViewReady || WorkspaceWebView.CoreWebView2 is null)
         {
             _dialogCoordinator.ShowMessage(
@@ -331,8 +322,8 @@ public partial class MainWindow : Window
         {
             using (IDisposable exportProgress = _dialogCoordinator.ShowDelayedProgress(
                 this,
-                "Exporting...",
-                "Preparing your document for export.",
+                GetExportProgressTitle(result.Format),
+                GetExportProgressMessage(result.Format),
                 TimeSpan.FromSeconds(1)))
             {
                 string htmlDocument = await _webViewMessageBridge.GetPreviewExportHtmlAsync(
@@ -769,6 +760,20 @@ public partial class MainWindow : Window
             ExportFormat.Png => "PNG",
             _ => "the selected format",
         };
+    }
+
+    private static string GetExportProgressTitle(ExportFormat format)
+    {
+        return format == ExportFormat.Png
+            ? "Exporting PNG..."
+            : "Exporting...";
+    }
+
+    private static string GetExportProgressMessage(ExportFormat format)
+    {
+        return format == ExportFormat.Png
+            ? "Preparing your document image."
+            : "Preparing your document for export.";
     }
 
 }
