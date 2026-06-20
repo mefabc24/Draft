@@ -328,7 +328,7 @@ public partial class MainWindow : Window
             {
                 string htmlDocument = await _webViewMessageBridge.GetPreviewExportHtmlAsync(
                     WorkspaceWebView.CoreWebView2,
-                    result.Format == ExportFormat.Pdf);
+                    GetPreviewExportLayout(result.Format));
 
                 await _documentExportService.ExportAsync(
                     new DocumentExportRequest(
@@ -759,6 +759,16 @@ public partial class MainWindow : Window
             ExportFormat.Html => "HTML",
             ExportFormat.Png => "PNG",
             _ => "the selected format",
+        };
+    }
+
+    private static string GetPreviewExportLayout(ExportFormat format)
+    {
+        return format switch
+        {
+            ExportFormat.Pdf => "pdf",
+            ExportFormat.Png => "png",
+            _ => "html",
         };
     }
 

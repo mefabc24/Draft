@@ -1,6 +1,6 @@
 type PreviewExportOptions = {
   fileName: string
-  layout?: 'html' | 'pdf'
+  layout?: 'html' | 'pdf' | 'png'
 }
 
 const pdfPageWidthInches = 8.5
@@ -838,6 +838,71 @@ function getPdfExportScript() {
 </script>`
 }
 
+function getPngExportCss() {
+  return `
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background: var(--preview-background) !important;
+  color: var(--preview-foreground);
+}
+
+.draft-png-export.preview-pane {
+  width: 100%;
+  min-width: 100%;
+  min-height: 100vh;
+  background: var(--preview-background);
+  color: var(--preview-foreground);
+  overflow: visible;
+}
+
+.draft-png-export .preview-scroll {
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+  padding: 32px;
+  background: var(--preview-background);
+  scrollbar-width: auto;
+}
+
+.draft-png-export .preview-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  background: var(--preview-background);
+  color: var(--preview-foreground);
+}
+
+.draft-png-export .preview-content :is(
+  blockquote,
+  figure,
+  pre,
+  table,
+  .preview-code-block,
+  [data-rehype-pretty-code-figure]
+) {
+  max-width: 100%;
+}
+
+.draft-png-export .preview-content img {
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+}
+
+.draft-png-export .preview-content table {
+  width: 100%;
+  max-width: 100%;
+}
+`
+}
+
 function getExportCss(layout: PreviewExportOptions['layout']) {
   const cssRules: string[] = []
 
@@ -924,6 +989,10 @@ body {
     cssRules.push(getPdfExportCss())
   }
 
+  if (layout === 'png') {
+    cssRules.push(getPngExportCss())
+  }
+
   return cssRules.join('\n\n')
 }
 
@@ -991,11 +1060,14 @@ export function createPreviewExportHtml({
   const previewHtml = clonePreviewContent()
   const css = getExportCss(layout)
   const script = layout === 'pdf' ? getPdfExportScript() : ''
-  const htmlStyleAttribute = layout === 'pdf' ? ` style="${escapedThemeStyle}"` : ''
+  const usesFullWidthExportLayout = layout === 'pdf' || layout === 'png'
+  const htmlStyleAttribute = usesFullWidthExportLayout ? ` style="${escapedThemeStyle}"` : ''
   const bodyClassAttribute = layout === 'pdf' ? ' class="draft-pdf-export-body"' : ''
   const exportRootClass = layout === 'pdf'
     ? 'draft-export-preview draft-pdf-export preview-pane'
-    : 'draft-export-preview preview-pane'
+    : layout === 'png'
+      ? 'draft-export-preview draft-png-export preview-pane'
+      : 'draft-export-preview preview-pane'
 
   return `<!doctype html>
 <html lang="en"${htmlStyleAttribute}>
