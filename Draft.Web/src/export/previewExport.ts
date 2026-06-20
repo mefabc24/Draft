@@ -900,6 +900,37 @@ body {
   width: 100%;
   max-width: 100%;
 }
+
+.draft-png-export .preview-content .preview-code-block,
+.draft-png-export .preview-content pre,
+.draft-png-export .preview-content pre code {
+  min-width: 0;
+}
+
+.draft-png-export .preview-content pre {
+  overflow: visible;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.draft-png-export .preview-content pre code {
+  display: block !important;
+  max-width: 100%;
+  white-space: inherit;
+  overflow-wrap: inherit;
+  word-break: inherit;
+}
+
+.draft-png-export .preview-content pre code [data-line],
+.draft-png-export .preview-content pre code > span,
+.draft-png-export .preview-content pre code * {
+  min-width: 0;
+  max-width: 100%;
+  white-space: inherit;
+  overflow-wrap: inherit;
+  word-break: inherit;
+}
 `
 }
 
