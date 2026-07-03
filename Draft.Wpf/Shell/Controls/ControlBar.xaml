@@ -71,6 +71,7 @@
                 Orientation="Horizontal">
                 <!-- Open Button -->
                 <Button
+                    Margin="0,0,8,0"
                     Command="{Binding OpenFileCommand}"
                     Style="{StaticResource ControlButton}"
                     ui:ToolTipAssist.Text="Open">
@@ -83,7 +84,7 @@
                 </Button>
                 <!-- Save Button -->
                 <Button
-                    Margin="8,0,0,0"
+                    Margin="0,0,8,0"
                     Command="{Binding SaveFileCommand}"
                     Style="{StaticResource ControlButton}"
                     ui:ToolTipAssist.Shortcut="Ctrl+S"
@@ -142,7 +143,7 @@
                 </Button>
                 <!-- Copy Markdown Button -->
                 <Button
-                    Margin="8,0,8,0"
+                    Margin="0,0,8,0"
                     Command="{Binding CopyMarkdownCommand}"
                     Style="{StaticResource ControlButton}"
                     ui:ToolTipAssist.Text="Copy Markdown">
@@ -264,6 +265,7 @@
                 </Button>
                 <!-- Export File Button -->
                 <Button
+                    Margin="0,0,8,0"
                     Command="{Binding OpenExportPromptCommand}"
                     Style="{StaticResource ControlButton}"
                     ui:ToolTipAssist.Text="Export document">
