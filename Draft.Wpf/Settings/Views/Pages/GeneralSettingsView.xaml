@@ -115,8 +115,33 @@
                         Height="36"
                         HorizontalAlignment="Stretch"
                         ItemsSource="{Binding FloatingMarkdownToolbarModeOptions}"
-                        SelectedItem="{Binding Settings.FloatingMarkdownToolbarMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsComboBox}" />
+                        SelectedItem="{Binding Settings.FloatingMarkdownToolbarMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=Editor, TargetNullValue=Editor}"
+                        Style="{StaticResource SettingsComboBox}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding}" />
+                                    <settings:BetaBadge
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center">
+                                        <settings:BetaBadge.Style>
+                                            <Style TargetType="{x:Type settings:BetaBadge}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding}" Value="Preview">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding}" Value="Both">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </settings:BetaBadge.Style>
+                                    </settings:BetaBadge>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                 </settings:SettingFieldCard>
 
                 <section:SectionHeader Title="FILE MANAGEMENT" />

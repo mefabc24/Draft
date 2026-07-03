@@ -46,7 +46,7 @@ public static class SettingsOptionCatalog
         };
 
     public static IReadOnlyList<string> FloatingMarkdownToolbarModeOptions { get; } =
-        new[] { "Disabled", "Editor" };
+        new[] { "Disabled", "Editor", "Preview", "Both" };
 
     public static IReadOnlyList<string> AppThemeOptions { get; } =
         new[] { "Dark" };
@@ -72,6 +72,8 @@ public static class SettingsOptionCatalog
         {
             SettingsDefaults.FloatingMarkdownToolbarDisabled,
             SettingsDefaults.FloatingMarkdownToolbarEditor,
+            SettingsDefaults.FloatingMarkdownToolbarPreview,
+            SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview,
         };
 
     public static IReadOnlyList<string> WindowBorderAccentModeValues { get; } =
