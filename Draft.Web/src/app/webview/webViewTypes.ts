@@ -16,6 +16,7 @@ export type DraftWebView = {
 
 export type DraftPreviewExportOptions = {
   layout?: 'html' | 'pdf' | 'png'
+  previewThemeId?: string | null
 }
 
 export type DraftExportApi = {

@@ -88,9 +88,9 @@ public sealed class ShellDialogCoordinator
             owner);
     }
 
-    public ExportPromptResult ShowExportPrompt(Window owner)
+    public ExportPromptResult ShowExportPrompt(Window owner, string defaultPreviewTheme)
     {
-        return _exportPromptService.Show(new ExportPromptRequest(), owner);
+        return _exportPromptService.Show(new ExportPromptRequest(defaultPreviewTheme: defaultPreviewTheme), owner);
     }
 
     public IDisposable ShowDelayedProgress(

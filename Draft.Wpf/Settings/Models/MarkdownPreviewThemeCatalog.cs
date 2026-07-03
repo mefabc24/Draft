@@ -243,4 +243,10 @@ public static class MarkdownPreviewThemeCatalog
     private sealed record PreviewThemeManifestOption(string? Id, string? Label);
 }
 
-public sealed record MarkdownPreviewThemeOption(string Id, string Label);
+public sealed record MarkdownPreviewThemeOption(string Id, string Label)
+{
+    public override string ToString()
+    {
+        return Label;
+    }
+}

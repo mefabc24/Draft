@@ -289,7 +289,7 @@ public partial class MainWindow : Window
 
         try
         {
-            result = _dialogCoordinator.ShowExportPrompt(this);
+            result = _dialogCoordinator.ShowExportPrompt(this, _settings.MarkdownTheme);
         }
         finally
         {
@@ -328,7 +328,8 @@ public partial class MainWindow : Window
             {
                 string htmlDocument = await _webViewMessageBridge.GetPreviewExportHtmlAsync(
                     WorkspaceWebView.CoreWebView2,
-                    GetPreviewExportLayout(result.Format));
+                    GetPreviewExportLayout(result.Format),
+                    result.PreviewThemeId);
 
                 await _documentExportService.ExportAsync(
                     new DocumentExportRequest(

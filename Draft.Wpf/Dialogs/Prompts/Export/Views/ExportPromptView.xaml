@@ -67,13 +67,33 @@
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
 
-                <ComboBox
-                    Height="40"
-                    Margin="0,32,0,0"
-                    DisplayMemberPath="DisplayName"
-                    ItemsSource="{Binding FormatOptions}"
-                    SelectedItem="{Binding SelectedFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    Style="{StaticResource SettingsComboBox}" />
+                <StackPanel Margin="0,32,0,0">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        FontFamily="{StaticResource Font.Inter}"
+                        FontSize="11"
+                        Foreground="{StaticResource Brush.Text.Secondary}"
+                        Text="Format" />
+                    <ComboBox
+                        Height="40"
+                        DisplayMemberPath="DisplayName"
+                        ItemsSource="{Binding FormatOptions}"
+                        SelectedItem="{Binding SelectedFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+
+                    <TextBlock
+                        Margin="0,16,0,8"
+                        FontFamily="{StaticResource Font.Inter}"
+                        FontSize="11"
+                        Foreground="{StaticResource Brush.Text.Secondary}"
+                        Text="Theme" />
+                    <ComboBox
+                        Height="40"
+                        DisplayMemberPath="Label"
+                        ItemsSource="{Binding PreviewThemeOptions}"
+                        SelectedItem="{Binding SelectedPreviewTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </StackPanel>
             </StackPanel>
         </Border>
 

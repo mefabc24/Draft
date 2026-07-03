@@ -1,6 +1,9 @@
+import { getPreviewTheme, getPreviewThemeStyle } from '../themes'
+
 type PreviewExportOptions = {
   fileName: string
   layout?: 'html' | 'pdf' | 'png'
+  previewThemeId?: string | null
 }
 
 const pdfPageWidthInches = 8.5
@@ -1081,12 +1084,23 @@ function getPreviewThemeStyleAttribute() {
   return previewPane?.getAttribute('style') ?? ''
 }
 
+function getPreviewThemeStyleAttributeForTheme(themeId: string | null | undefined) {
+  if (!themeId) {
+    return getPreviewThemeStyleAttribute()
+  }
+
+  return Object.entries(getPreviewThemeStyle(getPreviewTheme(themeId)))
+    .map(([name, value]) => `${name}: ${String(value)}`)
+    .join('; ')
+}
+
 export function createPreviewExportHtml({
   fileName,
   layout = 'html',
+  previewThemeId,
 }: PreviewExportOptions) {
   const title = getDocumentTitle(fileName)
-  const themeStyle = getPreviewThemeStyleAttribute()
+  const themeStyle = getPreviewThemeStyleAttributeForTheme(previewThemeId)
   const escapedThemeStyle = escapeHtml(themeStyle)
   const previewHtml = clonePreviewContent()
   const css = getExportCss(layout)

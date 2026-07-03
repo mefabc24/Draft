@@ -73,14 +73,21 @@ public sealed class DraftWebViewMessageBridge
         => await GetPreviewExportHtmlAsync(webView, usePdfLayout ? "pdf" : "html");
 
     public async Task<string> GetPreviewExportHtmlAsync(CoreWebView2? webView, string layout)
+        => await GetPreviewExportHtmlAsync(webView, layout, null);
+
+    public async Task<string> GetPreviewExportHtmlAsync(
+        CoreWebView2? webView,
+        string layout,
+        string? previewThemeId)
     {
         if (webView is null)
             throw new InvalidOperationException("The preview WebView is not ready.");
 
         string normalizedLayout = NormalizePreviewExportLayout(layout);
         string layoutJson = JsonSerializer.Serialize(normalizedLayout, JsonOptions);
+        string previewThemeIdJson = JsonSerializer.Serialize(previewThemeId, JsonOptions);
         string scriptResult = await webView.ExecuteScriptAsync(
-            $"window.draftExport?.createPreviewHtml?.({{ layout: {layoutJson} }}) ?? null");
+            $"window.draftExport?.createPreviewHtml?.({{ layout: {layoutJson}, previewThemeId: {previewThemeIdJson} }}) ?? null");
         string? htmlDocument = JsonSerializer.Deserialize<string?>(scriptResult, JsonOptions);
 
         if (string.IsNullOrWhiteSpace(htmlDocument))
