@@ -1,4 +1,7 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Draft.Settings.Controls">
 
     <Style x:Key="SettingsComboBoxItem" TargetType="ComboBoxItem">
         <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
@@ -159,6 +162,7 @@
                                 </Border.Effect>
 
                                 <ScrollViewer
+                                    controls:ComboBoxScrollAssist.UseSingleItemMouseWheel="True"
                                     MaxHeight="240"
                                     CanContentScroll="True"
                                     HorizontalScrollBarVisibility="Disabled"
