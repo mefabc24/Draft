@@ -75,7 +75,7 @@
                             VerticalAlignment="Stretch"
                             Background="Transparent"
                             BorderThickness="0"
-                            ClickMode="Press"
+                            ClickMode="Release"
                             Focusable="False"
                             IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
 
@@ -146,7 +146,6 @@
 
                             <Border
                                 MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
-                                Margin="40,40,40,40"
                                 Background="{StaticResource Brush.Background.Surface}"
                                 BorderBrush="{StaticResource Brush.Background.Secondary}"
                                 BorderThickness="1"
@@ -161,10 +160,9 @@
 
                                 <ScrollViewer
                                     MaxHeight="240"
-                                    Padding="0,4"
                                     CanContentScroll="True"
                                     HorizontalScrollBarVisibility="Disabled"
-                                    VerticalScrollBarVisibility="Disabled">
+                                    VerticalScrollBarVisibility="Hidden">
 
                                     <ItemsPresenter />
                                 </ScrollViewer>
