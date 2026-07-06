@@ -27,6 +27,7 @@
                         Height="52"
                         Data="{StaticResource Icon.Export}"
                         Fill="{StaticResource Brush.Accent.Primary}"
+                        Margin="4,0,-4,0"
                         Stretch="Uniform" />
 
                     <Button

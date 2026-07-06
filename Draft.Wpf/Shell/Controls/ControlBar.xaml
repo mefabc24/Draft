@@ -274,6 +274,7 @@
                         Height="16"
                         Data="{StaticResource Icon.Export}"
                         Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                        Margin="1.5,0,-1.5,0"
                         Stretch="Uniform" />
                 </Button>
                 <!-- New File Button -->
