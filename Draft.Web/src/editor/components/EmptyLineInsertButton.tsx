@@ -25,6 +25,7 @@ function EmptyLineInsertButton({
   } = useHoveredEditorLine(editor)
   const {
     closeMenu,
+    menuInstanceKey,
     menuPosition,
     menuRef,
     openMenu,
@@ -96,11 +97,7 @@ function EmptyLineInsertButton({
       ) : null}
       <EditorQuickInsertMenu
         editor={editor}
-        key={
-          target === null
-            ? 'closed'
-            : `${target.lineNumber}:${target.column}:${target.mode}`
-        }
+        key={target === null ? 'closed' : `open:${menuInstanceKey}`}
         menuRef={menuRef}
         onClose={closeMenu}
         onKeepOpenAction={runMenuActionKeepingOpen}

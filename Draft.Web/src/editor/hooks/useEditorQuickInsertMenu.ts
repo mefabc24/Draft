@@ -87,6 +87,7 @@ export function useEditorQuickInsertMenu(
     useState<EditorQuickInsertMenuTarget | null>(null)
   const [menuPosition, setMenuPosition] =
     useState<EditorQuickInsertMenuPosition | null>(null)
+  const [menuInstanceKey, setMenuInstanceKey] = useState(0)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const menuPreferredPositionRef =
     useRef<EditorQuickInsertMenuPosition | null>(null)
@@ -219,6 +220,7 @@ export function useEditorQuickInsertMenu(
       menuPreferredPositionRef.current = preferredPosition
       menuTargetRef.current = anchor
       lockMenuPositionRef.current = false
+      setMenuInstanceKey((currentKey) => currentKey + 1)
       setMenuTarget(anchor)
       setMenuPosition(nextPosition)
       scheduleMenuPositionUpdate()
@@ -425,6 +427,7 @@ export function useEditorQuickInsertMenu(
 
   return {
     closeMenu,
+    menuInstanceKey,
     menuPosition,
     menuRef,
     openMenu,
