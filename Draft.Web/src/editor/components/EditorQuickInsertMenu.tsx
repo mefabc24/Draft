@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type CSSProperties,
@@ -50,6 +51,7 @@ type EditorQuickInsertMenuProps = {
   editor: monaco.editor.IStandaloneCodeEditor | null
   menuRef: RefObject<HTMLDivElement | null>
   onClose: () => void
+  onContentLayoutChange: () => void
   onKeepOpenAction: (action: () => number | false | null) => void
   position: EditorQuickInsertMenuPosition | null
   target: EditorQuickInsertMenuAnchor | null
@@ -205,6 +207,7 @@ function EditorQuickInsertMenu({
   editor,
   menuRef,
   onClose,
+  onContentLayoutChange,
   onKeepOpenAction,
   position,
   target,
@@ -236,6 +239,20 @@ function EditorQuickInsertMenu({
     handleThumbPointerMove,
     handleThumbPointerUp,
   } = useToolbarMenuScrollbar(menuOpen)
+
+  useLayoutEffect(() => {
+    if (!menuOpen) {
+      return
+    }
+
+    onContentLayoutChange()
+  }, [
+    expandedSections,
+    extraCalloutsExpanded,
+    menuOpen,
+    onContentLayoutChange,
+    target,
+  ])
 
   useEffect(() => {
     if (target === null) {
@@ -277,8 +294,14 @@ function EditorQuickInsertMenu({
       return
     }
 
-    const frameId = window.requestAnimationFrame(syncScrollbarPosition)
-    const transitionFrameId = window.setTimeout(syncScrollbarPosition, 220)
+    const frameId = window.requestAnimationFrame(() => {
+      onContentLayoutChange()
+      syncScrollbarPosition()
+    })
+    const transitionFrameId = window.setTimeout(() => {
+      onContentLayoutChange()
+      syncScrollbarPosition()
+    }, 220)
 
     return () => {
       window.cancelAnimationFrame(frameId)
@@ -288,6 +311,7 @@ function EditorQuickInsertMenu({
     expandedSections,
     extraCalloutsExpanded,
     menuOpen,
+    onContentLayoutChange,
     syncScrollbarPosition,
     target,
   ])

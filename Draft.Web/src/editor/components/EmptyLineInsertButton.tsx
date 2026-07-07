@@ -31,6 +31,7 @@ function EmptyLineInsertButton({
     openMenu,
     runMenuActionKeepingOpen,
     target,
+    updateMenuBounds,
   } = useEditorQuickInsertMenu(editor, editorBodyRef)
   const buttonStyle = useMemo(
     () =>
@@ -100,6 +101,7 @@ function EmptyLineInsertButton({
         key={target === null ? 'closed' : `open:${menuInstanceKey}`}
         menuRef={menuRef}
         onClose={closeMenu}
+        onContentLayoutChange={updateMenuBounds}
         onKeepOpenAction={runMenuActionKeepingOpen}
         position={menuPosition}
         target={target}

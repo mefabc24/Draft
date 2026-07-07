@@ -23,6 +23,8 @@ const MENU_EDGE_PADDING = 8
 const MENU_GAP = 8
 const MENU_ESTIMATED_WIDTH = 294
 const MENU_ESTIMATED_HEIGHT = 324
+const MENU_LIST_SELECTOR = '.editor-quick-insert-menu-list'
+const MENU_SCROLL_SELECTOR = '.editor-quick-insert-menu-scroll'
 
 export type EditorQuickInsertMenuAnchor = EditorQuickInsertTarget & {
   anchor: 'cursor' | 'gutter'
@@ -68,13 +70,36 @@ function getQuickInsertMenuPreferredPosition(
   }
 }
 
+function getQuickInsertMenuNaturalHeight(menu: HTMLDivElement | null) {
+  if (!menu) {
+    return MENU_ESTIMATED_HEIGHT
+  }
+
+  const scrollElement =
+    menu.querySelector<HTMLDivElement>(MENU_SCROLL_SELECTOR)
+
+  if (!scrollElement) {
+    return menu.offsetHeight
+  }
+
+  const menuChromeHeight = Math.max(
+    menu.offsetHeight - scrollElement.clientHeight,
+    0,
+  )
+
+  return Math.max(
+    menu.offsetHeight,
+    scrollElement.scrollHeight + menuChromeHeight,
+  )
+}
+
 function clampQuickInsertMenuPosition(
   editorBody: HTMLDivElement,
   menu: HTMLDivElement | null,
   position: EditorQuickInsertMenuPreferredPosition,
 ) {
   const menuWidth = menu?.offsetWidth ?? MENU_ESTIMATED_WIDTH
-  const menuHeight = menu?.offsetHeight ?? MENU_ESTIMATED_HEIGHT
+  const menuHeight = getQuickInsertMenuNaturalHeight(menu)
   const maxLeft = editorBody.clientWidth - menuWidth - MENU_EDGE_PADDING
   const maxTop = editorBody.clientHeight - menuHeight - MENU_EDGE_PADDING
 
@@ -326,7 +351,13 @@ export function useEditorQuickInsertMenu(
     }
 
     const resizeObserver = new ResizeObserver(scheduleMenuBoundsUpdate)
+    const menuList = menu.querySelector<HTMLDivElement>(MENU_LIST_SELECTOR)
+
     resizeObserver.observe(menu)
+
+    if (menuList) {
+      resizeObserver.observe(menuList)
+    }
 
     if (editorBody) {
       resizeObserver.observe(editorBody)
@@ -443,5 +474,6 @@ export function useEditorQuickInsertMenu(
     openMenuAtCursor,
     runMenuActionKeepingOpen,
     target: menuTarget,
+    updateMenuBounds: clampMenuPositionToViewport,
   }
 }
