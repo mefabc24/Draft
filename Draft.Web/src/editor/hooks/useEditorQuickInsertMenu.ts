@@ -30,15 +30,20 @@ export type EditorQuickInsertMenuAnchor = EditorQuickInsertTarget & {
 
 export type EditorQuickInsertMenuPosition = {
   left: number
+  maxHeight: number
   top: number
 }
 
 type EditorQuickInsertMenuTarget = EditorQuickInsertMenuAnchor
+type EditorQuickInsertMenuPreferredPosition = Omit<
+  EditorQuickInsertMenuPosition,
+  'maxHeight'
+>
 
 function getQuickInsertMenuPreferredPosition(
   editor: monaco.editor.IStandaloneCodeEditor,
   target: EditorQuickInsertMenuTarget,
-): EditorQuickInsertMenuPosition | null {
+): EditorQuickInsertMenuPreferredPosition | null {
   if (!isEditorQuickInsertTarget(editor, target)) {
     return null
   }
@@ -66,16 +71,19 @@ function getQuickInsertMenuPreferredPosition(
 function clampQuickInsertMenuPosition(
   editorBody: HTMLDivElement,
   menu: HTMLDivElement | null,
-  position: EditorQuickInsertMenuPosition,
+  position: EditorQuickInsertMenuPreferredPosition,
 ) {
   const menuWidth = menu?.offsetWidth ?? MENU_ESTIMATED_WIDTH
   const menuHeight = menu?.offsetHeight ?? MENU_ESTIMATED_HEIGHT
   const maxLeft = editorBody.clientWidth - menuWidth - MENU_EDGE_PADDING
   const maxTop = editorBody.clientHeight - menuHeight - MENU_EDGE_PADDING
 
+  const top = clamp(position.top, MENU_EDGE_PADDING, maxTop)
+
   return {
     left: clamp(position.left, MENU_EDGE_PADDING, maxLeft),
-    top: clamp(position.top, MENU_EDGE_PADDING, maxTop),
+    maxHeight: Math.max(editorBody.clientHeight - top - MENU_EDGE_PADDING, 0),
+    top,
   }
 }
 
@@ -90,7 +98,7 @@ export function useEditorQuickInsertMenu(
   const [menuInstanceKey, setMenuInstanceKey] = useState(0)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const menuPreferredPositionRef =
-    useRef<EditorQuickInsertMenuPosition | null>(null)
+    useRef<EditorQuickInsertMenuPreferredPosition | null>(null)
   const menuTargetRef = useRef<EditorQuickInsertMenuTarget | null>(null)
   const keepOpenActionRef = useRef(false)
   const lockMenuPositionRef = useRef(false)
@@ -173,6 +181,7 @@ export function useEditorQuickInsertMenu(
 
       if (
         nextPosition.left === currentPosition.left &&
+        nextPosition.maxHeight === currentPosition.maxHeight &&
         nextPosition.top === currentPosition.top
       ) {
         return currentPosition
