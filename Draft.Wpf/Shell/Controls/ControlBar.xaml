@@ -29,8 +29,10 @@
             <!-- Logo -->
             <Button
                 Margin="0,0,8,0"
+                Click="LogoButton_Click"
                 Content="Draft"
-                Style="{StaticResource LogoButton}" />
+                Style="{StaticResource LogoButton}"
+                ui:ToolTipAssist.Text="Open GitHub" />
 
             <!-- Divider -->
             <Border Grid.Column="1" Background="{StaticResource Brush.Background.Hover}" />
