@@ -38,6 +38,15 @@ public class MainWindowViewModel : BaseViewModel
     private bool _includeMarkdownSyntaxInCharacterCount;
     private bool _confirmBeforeClosingUnsavedFiles = true;
     private bool _isStatusBarVisible = true;
+    private bool _isStatusBarFileTypeVisible = true;
+    private bool _isStatusBarEncodingVisible = true;
+    private bool _isStatusBarWordCountVisible = true;
+    private bool _isStatusBarCharacterCountVisible = true;
+    private bool _isStatusBarCursorPositionVisible = true;
+    private bool _isStatusBarRevertButtonVisible = true;
+    private bool _isStatusBarSaveStatusVisible = true;
+    private bool _isStatusBarAutosaveStatusVisible = true;
+    private bool _isStatusBarAppVersionVisible = true;
     private bool _isCopyMarkdownFeedbackVisible;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _defaultSaveLocation = string.Empty;
@@ -304,6 +313,60 @@ public class MainWindowViewModel : BaseViewModel
         }
     }
 
+    public bool IsStatusBarFileTypeVisible
+    {
+        get => _isStatusBarFileTypeVisible;
+        private set => SetProperty(ref _isStatusBarFileTypeVisible, value);
+    }
+
+    public bool IsStatusBarEncodingVisible
+    {
+        get => _isStatusBarEncodingVisible;
+        private set => SetProperty(ref _isStatusBarEncodingVisible, value);
+    }
+
+    public bool IsStatusBarWordCountVisible
+    {
+        get => _isStatusBarWordCountVisible;
+        private set => SetProperty(ref _isStatusBarWordCountVisible, value);
+    }
+
+    public bool IsStatusBarCharacterCountVisible
+    {
+        get => _isStatusBarCharacterCountVisible;
+        private set => SetProperty(ref _isStatusBarCharacterCountVisible, value);
+    }
+
+    public bool IsStatusBarCursorPositionVisible
+    {
+        get => _isStatusBarCursorPositionVisible;
+        private set => SetProperty(ref _isStatusBarCursorPositionVisible, value);
+    }
+
+    public bool IsStatusBarRevertButtonVisible
+    {
+        get => _isStatusBarRevertButtonVisible;
+        private set => SetProperty(ref _isStatusBarRevertButtonVisible, value);
+    }
+
+    public bool IsStatusBarSaveStatusVisible
+    {
+        get => _isStatusBarSaveStatusVisible;
+        private set => SetProperty(ref _isStatusBarSaveStatusVisible, value);
+    }
+
+    public bool IsStatusBarAutosaveStatusVisible
+    {
+        get => _isStatusBarAutosaveStatusVisible;
+        private set => SetProperty(ref _isStatusBarAutosaveStatusVisible, value);
+    }
+
+    public bool IsStatusBarAppVersionVisible
+    {
+        get => _isStatusBarAppVersionVisible;
+        private set => SetProperty(ref _isStatusBarAppVersionVisible, value);
+    }
+
     public string WindowBorderAccentMode
     {
         get => _windowBorderAccentMode;
@@ -490,6 +553,15 @@ public class MainWindowViewModel : BaseViewModel
         ConfirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles;
         DefaultSaveLocation = settings.DefaultSaveLocation;
         IsStatusBarVisible = settings.IsStatusBarVisible;
+        IsStatusBarFileTypeVisible = settings.IsStatusBarFileTypeVisible;
+        IsStatusBarEncodingVisible = settings.IsStatusBarEncodingVisible;
+        IsStatusBarWordCountVisible = settings.IsStatusBarWordCountVisible;
+        IsStatusBarCharacterCountVisible = settings.IsStatusBarCharacterCountVisible;
+        IsStatusBarCursorPositionVisible = settings.IsStatusBarCursorPositionVisible;
+        IsStatusBarRevertButtonVisible = settings.IsStatusBarRevertButtonVisible;
+        IsStatusBarSaveStatusVisible = settings.IsStatusBarSaveStatusVisible;
+        IsStatusBarAutosaveStatusVisible = settings.IsStatusBarAutosaveStatusVisible;
+        IsStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible;
         WindowBorderAccentMode = settings.WindowBorderAccentMode;
 
         // TODO: Wire ToolbarControlbarPosition when alternate control bar layouts exist.

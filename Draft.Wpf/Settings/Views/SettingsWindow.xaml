@@ -28,6 +28,9 @@
             <DataTemplate DataType="{x:Type settingsVm:AppearanceSettingsPageViewModel}">
                 <settings:AppearanceSettingsView />
             </DataTemplate>
+            <DataTemplate DataType="{x:Type settingsVm:StatusBarSettingsPageViewModel}">
+                <settings:StatusBarSettingsView />
+            </DataTemplate>
             <DataTemplate DataType="{x:Type settingsVm:ShortcutsSettingsPageViewModel}">
                 <settings:ShortcutsSettingsView />
             </DataTemplate>
@@ -271,6 +274,23 @@
                                     Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                     Stretch="Uniform" />
                                 <TextBlock Margin="12,0,0,0" Text="Appearance" />
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton
+                            Height="36"
+                            Margin="0,0,0,4"
+                            GroupName="SettingsMenu"
+                            IsChecked="{Binding IsStatusBarSettingsSelected, Mode=TwoWay}"
+                            Style="{StaticResource SettingsMenuRadioButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path
+                                    Width="16"
+                                    Height="16"
+                                    Data="{StaticResource Icon.File}"
+                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                    Stretch="Uniform" />
+                                <TextBlock Margin="12,0,0,0" Text="Status Bar" />
                             </StackPanel>
                         </RadioButton>
 

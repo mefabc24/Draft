@@ -6,6 +6,7 @@ public enum SettingsPage
     Editor,
     Preview,
     Appearance,
+    StatusBar,
     Shortcuts,
     Develop,
     About

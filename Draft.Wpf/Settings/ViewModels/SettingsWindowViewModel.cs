@@ -9,6 +9,7 @@ public class SettingsWindowViewModel : BaseViewModel
     private readonly EditorSettingsPageViewModel _editorSettingsPage;
     private readonly PreviewSettingsPageViewModel _previewSettingsPage;
     private readonly AppearanceSettingsPageViewModel _appearanceSettingsPage;
+    private readonly StatusBarSettingsPageViewModel _statusBarSettingsPage;
     private readonly ShortcutsSettingsPageViewModel _shortcutsSettingsPage;
     private readonly DevelopSettingsPageViewModel _developSettingsPage;
     private readonly AboutSettingsPageViewModel _aboutSettingsPage;
@@ -51,6 +52,15 @@ public class SettingsWindowViewModel : BaseViewModel
     private string _floatingMarkdownToolbarMode = AppSettingsStore.DefaultFloatingMarkdownToolbarMode;
     private string _appTheme = "Dark";
     private bool _isStatusBarVisible = true;
+    private bool _isStatusBarFileTypeVisible = true;
+    private bool _isStatusBarEncodingVisible = true;
+    private bool _isStatusBarWordCountVisible = true;
+    private bool _isStatusBarCharacterCountVisible = true;
+    private bool _isStatusBarCursorPositionVisible = true;
+    private bool _isStatusBarRevertButtonVisible = true;
+    private bool _isStatusBarSaveStatusVisible = true;
+    private bool _isStatusBarAutosaveStatusVisible = true;
+    private bool _isStatusBarAppVersionVisible = true;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _toolbarControlbarPosition = AppSettingsStore.DefaultToolbarPosition;
 
@@ -68,6 +78,7 @@ public class SettingsWindowViewModel : BaseViewModel
         _editorSettingsPage = new EditorSettingsPageViewModel(this);
         _previewSettingsPage = new PreviewSettingsPageViewModel(this);
         _appearanceSettingsPage = new AppearanceSettingsPageViewModel(this);
+        _statusBarSettingsPage = new StatusBarSettingsPageViewModel(this);
         _shortcutsSettingsPage = new ShortcutsSettingsPageViewModel(this);
         _developSettingsPage = new DevelopSettingsPageViewModel(this);
         _aboutSettingsPage = new AboutSettingsPageViewModel(this);
@@ -188,6 +199,16 @@ public class SettingsWindowViewModel : BaseViewModel
         {
             if (value)
                 SelectSettingsPage(SettingsPage.Appearance);
+        }
+    }
+
+    public bool IsStatusBarSettingsSelected
+    {
+        get => _selectedPage == SettingsPage.StatusBar;
+        set
+        {
+            if (value)
+                SelectSettingsPage(SettingsPage.StatusBar);
         }
     }
 
@@ -482,6 +503,60 @@ public class SettingsWindowViewModel : BaseViewModel
         set => SetSetting(ref _isStatusBarVisible, value);
     }
 
+    public bool IsStatusBarFileTypeVisible
+    {
+        get => _isStatusBarFileTypeVisible;
+        set => SetSetting(ref _isStatusBarFileTypeVisible, value);
+    }
+
+    public bool IsStatusBarEncodingVisible
+    {
+        get => _isStatusBarEncodingVisible;
+        set => SetSetting(ref _isStatusBarEncodingVisible, value);
+    }
+
+    public bool IsStatusBarWordCountVisible
+    {
+        get => _isStatusBarWordCountVisible;
+        set => SetSetting(ref _isStatusBarWordCountVisible, value);
+    }
+
+    public bool IsStatusBarCharacterCountVisible
+    {
+        get => _isStatusBarCharacterCountVisible;
+        set => SetSetting(ref _isStatusBarCharacterCountVisible, value);
+    }
+
+    public bool IsStatusBarCursorPositionVisible
+    {
+        get => _isStatusBarCursorPositionVisible;
+        set => SetSetting(ref _isStatusBarCursorPositionVisible, value);
+    }
+
+    public bool IsStatusBarRevertButtonVisible
+    {
+        get => _isStatusBarRevertButtonVisible;
+        set => SetSetting(ref _isStatusBarRevertButtonVisible, value);
+    }
+
+    public bool IsStatusBarSaveStatusVisible
+    {
+        get => _isStatusBarSaveStatusVisible;
+        set => SetSetting(ref _isStatusBarSaveStatusVisible, value);
+    }
+
+    public bool IsStatusBarAutosaveStatusVisible
+    {
+        get => _isStatusBarAutosaveStatusVisible;
+        set => SetSetting(ref _isStatusBarAutosaveStatusVisible, value);
+    }
+
+    public bool IsStatusBarAppVersionVisible
+    {
+        get => _isStatusBarAppVersionVisible;
+        set => SetSetting(ref _isStatusBarAppVersionVisible, value);
+    }
+
     public string WindowBorderAccentMode
     {
         get => GetWindowBorderAccentModeDisplayName(_windowBorderAccentMode);
@@ -518,6 +593,7 @@ public class SettingsWindowViewModel : BaseViewModel
             SettingsPage.Editor => _editorSettingsPage,
             SettingsPage.Preview => _previewSettingsPage,
             SettingsPage.Appearance => _appearanceSettingsPage,
+            SettingsPage.StatusBar => _statusBarSettingsPage,
             SettingsPage.Shortcuts => _shortcutsSettingsPage,
             SettingsPage.Develop => IsDevelopSettingsVisible
                 ? _developSettingsPage
@@ -530,6 +606,7 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsEditorSettingsSelected));
         OnPropertyChanged(nameof(IsPreviewSettingsSelected));
         OnPropertyChanged(nameof(IsAppearanceSettingsSelected));
+        OnPropertyChanged(nameof(IsStatusBarSettingsSelected));
         OnPropertyChanged(nameof(IsShortcutsSettingsSelected));
         OnPropertyChanged(nameof(IsDevelopSettingsSelected));
         OnPropertyChanged(nameof(IsAboutSettingsSelected));
@@ -586,6 +663,15 @@ public class SettingsWindowViewModel : BaseViewModel
             AppSettingsStore.DefaultFloatingMarkdownToolbarMode);
         _appTheme = EnsureOption(AppThemeOptions, settings.AppTheme, "Dark");
         _isStatusBarVisible = settings.IsStatusBarVisible;
+        _isStatusBarFileTypeVisible = settings.IsStatusBarFileTypeVisible;
+        _isStatusBarEncodingVisible = settings.IsStatusBarEncodingVisible;
+        _isStatusBarWordCountVisible = settings.IsStatusBarWordCountVisible;
+        _isStatusBarCharacterCountVisible = settings.IsStatusBarCharacterCountVisible;
+        _isStatusBarCursorPositionVisible = settings.IsStatusBarCursorPositionVisible;
+        _isStatusBarRevertButtonVisible = settings.IsStatusBarRevertButtonVisible;
+        _isStatusBarSaveStatusVisible = settings.IsStatusBarSaveStatusVisible;
+        _isStatusBarAutosaveStatusVisible = settings.IsStatusBarAutosaveStatusVisible;
+        _isStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible;
         _windowBorderAccentMode = EnsureOptionValue(
             GetWindowBorderAccentModeValues(),
             settings.WindowBorderAccentMode,
@@ -684,6 +770,15 @@ public class SettingsWindowViewModel : BaseViewModel
             ScrollPreviewToEditedSection = false,
             AppTheme = AppTheme,
             IsStatusBarVisible = IsStatusBarVisible,
+            IsStatusBarFileTypeVisible = IsStatusBarFileTypeVisible,
+            IsStatusBarEncodingVisible = IsStatusBarEncodingVisible,
+            IsStatusBarWordCountVisible = IsStatusBarWordCountVisible,
+            IsStatusBarCharacterCountVisible = IsStatusBarCharacterCountVisible,
+            IsStatusBarCursorPositionVisible = IsStatusBarCursorPositionVisible,
+            IsStatusBarRevertButtonVisible = IsStatusBarRevertButtonVisible,
+            IsStatusBarSaveStatusVisible = IsStatusBarSaveStatusVisible,
+            IsStatusBarAutosaveStatusVisible = IsStatusBarAutosaveStatusVisible,
+            IsStatusBarAppVersionVisible = IsStatusBarAppVersionVisible,
             WindowBorderAccentMode = _windowBorderAccentMode,
             ToolbarControlbarPosition = ToolbarControlbarPosition,
         });
@@ -794,6 +889,15 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(FloatingMarkdownToolbarMode));
         OnPropertyChanged(nameof(AppTheme));
         OnPropertyChanged(nameof(IsStatusBarVisible));
+        OnPropertyChanged(nameof(IsStatusBarFileTypeVisible));
+        OnPropertyChanged(nameof(IsStatusBarEncodingVisible));
+        OnPropertyChanged(nameof(IsStatusBarWordCountVisible));
+        OnPropertyChanged(nameof(IsStatusBarCharacterCountVisible));
+        OnPropertyChanged(nameof(IsStatusBarCursorPositionVisible));
+        OnPropertyChanged(nameof(IsStatusBarRevertButtonVisible));
+        OnPropertyChanged(nameof(IsStatusBarSaveStatusVisible));
+        OnPropertyChanged(nameof(IsStatusBarAutosaveStatusVisible));
+        OnPropertyChanged(nameof(IsStatusBarAppVersionVisible));
         OnPropertyChanged(nameof(WindowBorderAccentMode));
         OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         OnPropertyChanged(nameof(ToolbarControlbarPosition));

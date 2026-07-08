@@ -33,15 +33,8 @@
                 <section:SectionHeader Title="LAYOUT" />
 
                 <settings:SettingCard
-                    Title="Status bar visibility"
-                    Margin="0,0,0,12"
-                    Description="Show or hide the status bar at the bottom of the app.">
-                    <CheckBox IsChecked="{Binding Settings.IsStatusBarVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
-                </settings:SettingCard>
-
-                <settings:SettingCard
                     Title="Toolbar position"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,32"
                     Description="Choose where the main controls should be placed.">
                     <ComboBox
                         Width="160"

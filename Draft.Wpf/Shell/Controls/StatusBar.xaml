@@ -7,6 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignWidth="1200"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="StatusBarVisibilityConverter" />
+    </UserControl.Resources>
+
     <Grid Margin="0,0,0,1">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
@@ -21,7 +25,8 @@
             <StackPanel
                 Height="16"
                 Margin="8,0,32,0"
-                Orientation="Horizontal">
+                Orientation="Horizontal"
+                Visibility="{Binding IsStatusBarFileTypeVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <Path
                     Width="16"
                     Height="16"
@@ -39,7 +44,10 @@
             </StackPanel>
 
             <!-- Encoding Type -->
-            <StackPanel Height="16" Orientation="Horizontal">
+            <StackPanel
+                Height="16"
+                Orientation="Horizontal"
+                Visibility="{Binding IsStatusBarEncodingVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <Path
                     Width="14"
                     Height="14"
@@ -62,7 +70,8 @@
             <StackPanel
                 Height="16"
                 Margin="32,0"
-                Orientation="Horizontal">
+                Orientation="Horizontal"
+                Visibility="{Binding IsStatusBarWordCountVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <Path
                     Width="14"
                     Height="14"
@@ -81,7 +90,10 @@
 
 
             <!-- Character Count -->
-            <StackPanel Height="16" Orientation="Horizontal">
+            <StackPanel
+                Height="16"
+                Orientation="Horizontal"
+                Visibility="{Binding IsStatusBarCharacterCountVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <Path
                     Width="16"
                     Height="16"
@@ -108,7 +120,8 @@
                 Padding="8,4"
                 Command="{Binding OpenCursorPositionPromptCommand}"
                 Style="{StaticResource StatusBarButton}"
-                ToolTip="Go to line or column">
+                ToolTip="Go to line or column"
+                Visibility="{Binding IsStatusBarCursorPositionVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
@@ -123,7 +136,8 @@
                 Padding="8,4"
                 Command="{Binding OpenRevertSavePromptCommand}"
                 Style="{StaticResource StatusBarButton}"
-                ToolTip="Revert to a saved version">
+                ToolTip="Revert to a saved version"
+                Visibility="{Binding IsStatusBarRevertButtonVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <StackPanel Height="16" Orientation="Horizontal">
                     <Path
                         Width="14"
@@ -148,7 +162,8 @@
                 Padding="8,4"
                 Command="{Binding SaveFileCommand}"
                 Style="{StaticResource StatusBarButton}"
-                ToolTip="Save file">
+                ToolTip="Save file"
+                Visibility="{Binding IsStatusBarSaveStatusVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <StackPanel Height="16" Orientation="Horizontal">
                     <Path
                         Width="14"
@@ -172,7 +187,8 @@
                 x:Name="AutosaveModeButton"
                 Padding="8,4"
                 Command="{Binding OpenAutosavePromptCommand}"
-                Style="{StaticResource StatusBarButton}">
+                Style="{StaticResource StatusBarButton}"
+                Visibility="{Binding IsStatusBarAutosaveStatusVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <StackPanel Height="16" Orientation="Horizontal">
                     <Path
                         Width="16"
@@ -197,7 +213,8 @@
                 Padding="8,4"
                 Command="{Binding OpenAboutSettingsCommand}"
                 Style="{StaticResource StatusBarButton}"
-                ToolTip="Open About settings">
+                ToolTip="Open About settings"
+                Visibility="{Binding IsStatusBarAppVersionVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
