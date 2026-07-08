@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -31,14 +32,18 @@ import {
   DEFAULT_FILE_NAME,
   parseGoToPositionMessage,
   parseLoadDocumentMessage,
+  parseStartupStateMessage,
   parseWebViewRecord,
   parseWorkspaceModeMessage,
   postCursorPositionChanged as postCursorPositionChangedMessage,
   postDocumentChanged,
   postSaveRequested,
+  postStartupStateApplied,
+  postWorkspaceReady,
   postWorkspaceMode,
   type GoToPositionMessage,
   type LoadDocumentMessage,
+  type StartupStateMessage,
 } from '../../app/webview/draftWebViewMessages'
 import type { WebViewMessageEvent } from '../../app/webview/webViewTypes'
 import { createPreviewExportHtml } from '../../export/previewExport'
@@ -108,6 +113,11 @@ function Workspace() {
   const draftEditorSettingsRef = useRef<DraftEditorSettings>(DEFAULT_EDITOR_SETTINGS)
   const viewModeRef = useRef<ViewMode>(viewMode)
   const suppressNextWorkspaceModePostRef = useRef(false)
+  const hasAppliedStartupStateRef = useRef(false)
+  const documentGenerationRef = useRef<number | null>(null)
+  const postCurrentDocumentChanged = useCallback((content: string) => {
+    postDocumentChanged(content, documentGenerationRef.current)
+  }, [])
   const {
     clampedSplitEditorRatio,
     isSplitResizing,
@@ -141,7 +151,7 @@ function Workspace() {
     initialMarkdownRef,
     isApplyingDocumentFromHostRef,
     onCursorPositionChanged: postCursorPositionChanged,
-    onDocumentChanged: postDocumentChanged,
+    onDocumentChanged: postCurrentDocumentChanged,
     onFollowEditedSection: scheduleFollowEditedSection,
     onMarkdownChange: setMarkdown,
     onSyncEditorScrollbar: syncEditorScrollbarPosition,
@@ -179,10 +189,16 @@ function Workspace() {
     applyEditorSettings(settings)
   }
 
-  const applyDocumentFromHost = (message: LoadDocumentMessage) => {
+  const applyDocumentContentFromHost = (message: {
+    content: string
+    documentGeneration: number | null
+    fileName: string
+  }) => {
     const editor = editorInstanceRef.current
 
     hasReceivedDocumentFromHostRef.current = true
+    hasAppliedStartupStateRef.current = true
+    documentGenerationRef.current = message.documentGeneration
     isApplyingDocumentFromHostRef.current = true
     initialMarkdownRef.current = message.content
     setFileName(message.fileName)
@@ -199,6 +215,28 @@ function Workspace() {
     } else {
       isApplyingDocumentFromHostRef.current = false
     }
+  }
+
+  const applyDocumentFromHost = (message: LoadDocumentMessage) => {
+    applyDocumentContentFromHost(message)
+  }
+
+  const applyStartupStateFromHost = (message: StartupStateMessage) => {
+    applyDraftEditorSettings(message.settings)
+    hasAppliedStartupStateRef.current = true
+    documentGenerationRef.current = message.documentGeneration
+
+    if (message.workspaceMode !== viewModeRef.current) {
+      suppressNextWorkspaceModePostRef.current = true
+      setViewMode(message.workspaceMode)
+    }
+
+    applyDocumentContentFromHost({
+      content: message.document.content,
+      documentGeneration: message.documentGeneration,
+      fileName: message.document.displayFileName,
+    })
+    postStartupStateApplied(message.documentGeneration)
   }
 
   const applyGoToPositionFromHost = (message: GoToPositionMessage) => {
@@ -260,6 +298,13 @@ function Workspace() {
         return
       }
 
+      const startupStateMessage = parseStartupStateMessage(record)
+
+      if (startupStateMessage) {
+        applyStartupStateFromHost(startupStateMessage)
+        return
+      }
+
       const settingsMessage = parseSettingsChangedMessage(record)
 
       if (settingsMessage) {
@@ -291,12 +336,37 @@ function Workspace() {
       }
     }
 
-    return addWebViewMessageListener(handleWebViewMessage)
+    const removeWebViewMessageListener = addWebViewMessageListener(handleWebViewMessage)
+    const readyFrameId = window.requestAnimationFrame(() => {
+      postWorkspaceReady()
+    })
+    const fallbackTimeoutId = window.setTimeout(() => {
+      if (
+        hasAppliedStartupStateRef.current ||
+        hasReceivedDocumentFromHostRef.current
+      ) {
+        return
+      }
+
+      hasAppliedStartupStateRef.current = true
+      hasReceivedDocumentFromHostRef.current = true
+      documentGenerationRef.current = null
+    }, 5000)
+
+    return () => {
+      window.cancelAnimationFrame(readyFrameId)
+      window.clearTimeout(fallbackTimeoutId)
+      removeWebViewMessageListener()
+    }
     // WebView messages read current editor/session state through refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
+    if (!hasAppliedStartupStateRef.current) {
+      return
+    }
+
     if (suppressNextWorkspaceModePostRef.current) {
       suppressNextWorkspaceModePostRef.current = false
       return

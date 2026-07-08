@@ -1,6 +1,7 @@
 import { DEFAULT_EDITOR_SETTINGS } from './defaultEditorSettings'
 import type {
   CursorStyle,
+  DraftEditorSettings,
   FloatingMarkdownToolbarMode,
   PreviewScrollSyncMode,
   SettingsChangedMessage,
@@ -113,17 +114,10 @@ function readFloatingMarkdownToolbarMode(
   return DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarMode
 }
 
-export function parseSettingsChangedMessage(
+export function parseDraftEditorSettings(
   record: Record<string, unknown>,
-): SettingsChangedMessage | null {
-  const type = record.type ?? record.Type
-
-  if (type !== SETTINGS_CHANGED_MESSAGE_TYPE) {
-    return null
-  }
-
+): DraftEditorSettings {
   return {
-    type: SETTINGS_CHANGED_MESSAGE_TYPE,
     activeEditorThemeId: readString(
       record,
       'activeEditorThemeId',
@@ -195,5 +189,20 @@ export function parseSettingsChangedMessage(
     showWhitespaceCharacters: readShowWhitespaceCharacters(record),
     tabSize: readNumber(record, 'tabSize', DEFAULT_EDITOR_SETTINGS.tabSize),
     wordWrap: readBoolean(record, 'wordWrap', DEFAULT_EDITOR_SETTINGS.wordWrap),
+  }
+}
+
+export function parseSettingsChangedMessage(
+  record: Record<string, unknown>,
+): SettingsChangedMessage | null {
+  const type = record.type ?? record.Type
+
+  if (type !== SETTINGS_CHANGED_MESSAGE_TYPE) {
+    return null
+  }
+
+  return {
+    type: SETTINGS_CHANGED_MESSAGE_TYPE,
+    ...parseDraftEditorSettings(record),
   }
 }

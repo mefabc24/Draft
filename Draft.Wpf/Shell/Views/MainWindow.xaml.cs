@@ -39,11 +39,20 @@ public partial class MainWindow : Window
     private readonly DraftWebViewMessageBridge _webViewMessageBridge = new();
     private readonly WindowSizingService _windowSizingService = new();
     private DraftSettings _settings;
-    private bool _isWebViewReady;
+    private bool _isWebViewNavigationReady;
+    private bool _isWebWorkspaceReady;
+    private bool _hasSentStartupState;
+    private bool _hasWebAppliedStartupState;
+    private int _documentGeneration = 1;
     private bool _isSettingsWindowOpen;
     private bool _isPromptWindowOpen;
     private bool _hasHandledFocusLostSave;
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+    private bool CanPostToWebWorkspace => _isWebViewNavigationReady
+        && _isWebWorkspaceReady
+        && WorkspaceWebView.CoreWebView2 is not null;
+    private bool CanPostRuntimeWorkspaceMessage => CanPostToWebWorkspace
+        && _hasWebAppliedStartupState;
 
     public bool IsWindowSnapped
     {
@@ -252,6 +261,7 @@ public partial class MainWindow : Window
         try
         {
             ViewModel.LoadDocumentFromPath(filePath);
+            AdvanceDocumentGeneration();
             PostDocumentToWebView();
         }
         catch (Exception ex) when (IsFileOperationException(ex))
@@ -276,6 +286,10 @@ public partial class MainWindow : Window
             filePath,
             "Unable to save the current file.",
             DocumentSaveKind.Manual);
+        if (IsCurrentDocumentPath(filePath))
+        {
+            AdvanceDocumentGeneration();
+        }
         PostDocumentToWebView();
     }
 
@@ -307,7 +321,7 @@ public partial class MainWindow : Window
         if (filePath is null)
             return;
 
-        if (!_isWebViewReady || WorkspaceWebView.CoreWebView2 is null)
+        if (!CanPostRuntimeWorkspaceMessage)
         {
             _dialogCoordinator.ShowMessage(
                 "Export",
@@ -364,6 +378,7 @@ public partial class MainWindow : Window
             return;
 
         ViewModel.CreateNewDocument();
+        AdvanceDocumentGeneration();
         PostDocumentToWebView();
     }
 
@@ -511,6 +526,7 @@ public partial class MainWindow : Window
         try
         {
             viewModel.RestoreContentFromSnapshot(result.RestoredContent);
+            AdvanceDocumentGeneration();
             PostDocumentToWebView();
         }
         catch (Exception ex) when (IsFileOperationException(ex))
@@ -524,8 +540,15 @@ public partial class MainWindow : Window
 
     private void SyncWebViewWithWorkspaceState()
     {
-        if (ViewModel is null || !_isWebViewReady)
+        if (ViewModel is null)
             return;
+
+        if (!CanPostRuntimeWorkspaceMessage)
+        {
+            MarkStartupStatePending();
+            TrySendStartupStateToWebWorkspace();
+            return;
+        }
 
         PostWorkspaceMode(ViewModel.WorkspaceMode);
     }
@@ -582,27 +605,40 @@ public partial class MainWindow : Window
 
     private void PostSettingsToWebView()
     {
-        if (!_isWebViewReady)
+        if (!CanPostRuntimeWorkspaceMessage)
+        {
+            MarkStartupStatePending();
+            TrySendStartupStateToWebWorkspace();
             return;
+        }
 
         _webViewMessageBridge.PostSettings(WorkspaceWebView.CoreWebView2, _settings);
-
     }
 
     private void PostDocumentToWebView()
     {
-        if (ViewModel is null || !_isWebViewReady)
+        if (ViewModel is null)
             return;
+
+        if (!CanPostRuntimeWorkspaceMessage)
+        {
+            MarkStartupStatePending();
+            TrySendStartupStateToWebWorkspace();
+            return;
+        }
 
         _webViewMessageBridge.PostDocument(
             WorkspaceWebView.CoreWebView2,
             ViewModel.CurrentContent,
-            ViewModel.DisplayFileName);
+            ViewModel.DisplayFileName,
+            ViewModel.CurrentFilePath,
+            !ViewModel.HasFilePath,
+            _documentGeneration);
     }
 
     private void PostGoToPosition(int line, int column)
     {
-        if (!_isWebViewReady)
+        if (!CanPostRuntimeWorkspaceMessage)
             return;
 
         _webViewMessageBridge.PostGoToPosition(
@@ -613,7 +649,7 @@ public partial class MainWindow : Window
 
     private void FocusWorkspaceWebView()
     {
-        if (!_isWebViewReady || _isSettingsWindowOpen || _isPromptWindowOpen)
+        if (!_isWebViewNavigationReady || _isSettingsWindowOpen || _isPromptWindowOpen)
             return;
 
         WorkspaceWebView.Focus();
@@ -625,23 +661,131 @@ public partial class MainWindow : Window
         _sessionService.Apply(this, sessionState);
     }
 
-    private void WorkspaceWebView_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+    private void ResetWebWorkspaceReadiness()
     {
-        _isWebViewReady = e.IsSuccess;
-        if (e.IsSuccess)
+        _isWebViewNavigationReady = false;
+        _isWebWorkspaceReady = false;
+        _hasSentStartupState = false;
+        _hasWebAppliedStartupState = false;
+        WorkspaceLoaderOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void HandleWebWorkspaceReady()
+    {
+        _isWebWorkspaceReady = true;
+        TrySendStartupStateToWebWorkspace();
+    }
+
+    private void HandleStartupStateApplied(int? documentGeneration)
+    {
+        if (!IsCurrentDocumentGeneration(documentGeneration))
+            return;
+
+        _hasWebAppliedStartupState = true;
+        WorkspaceLoaderOverlay.Visibility = Visibility.Collapsed;
+        FocusWorkspaceWebView();
+    }
+
+    private void TrySendStartupStateToWebWorkspace()
+    {
+        if (!CanPostToWebWorkspace || _hasSentStartupState || ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        _hasSentStartupState = true;
+        _hasWebAppliedStartupState = false;
+
+        _webViewMessageBridge.PostStartupState(
+            WorkspaceWebView.CoreWebView2,
+            _settings,
+            viewModel.CurrentContent,
+            viewModel.DisplayFileName,
+            viewModel.CurrentFilePath,
+            !viewModel.HasFilePath,
+            viewModel.IsDirty,
+            viewModel.WorkspaceMode,
+            _documentGeneration);
+    }
+
+    private void MarkStartupStatePending()
+    {
+        if (_hasWebAppliedStartupState)
+            return;
+
+        _hasSentStartupState = false;
+    }
+
+    private void AdvanceDocumentGeneration()
+    {
+        unchecked
         {
-            WorkspaceLoaderOverlay.Visibility = Visibility.Collapsed;
+            _documentGeneration = _documentGeneration == int.MaxValue
+                ? 1
+                : _documentGeneration + 1;
         }
 
-        PostSettingsToWebView();
-        SyncWebViewWithWorkspaceState();
-        PostDocumentToWebView();
+        if (!_hasWebAppliedStartupState)
+        {
+            _hasSentStartupState = false;
+        }
+    }
+
+    private void ApplyWorkspaceModeFromWeb(string mode)
+    {
+        if (!_hasWebAppliedStartupState || ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        viewModel.SetWorkspaceMode(mode);
+    }
+
+    private void UpdateContentFromWeb(string content, int? documentGeneration)
+    {
+        if (!_hasWebAppliedStartupState || !IsCurrentDocumentGeneration(documentGeneration))
+            return;
+
+        ViewModel?.UpdateContentFromWeb(content);
+    }
+
+    private bool IsCurrentDocumentGeneration(int? documentGeneration)
+    {
+        return !documentGeneration.HasValue
+            || documentGeneration.Value <= 0
+            || documentGeneration.Value == _documentGeneration;
+    }
+
+    private bool IsCurrentDocumentPath(string path)
+    {
+        if (ViewModel?.CurrentFilePath is not string currentFilePath)
+            return false;
+
+        try
+        {
+            return string.Equals(
+                Path.GetFullPath(path),
+                Path.GetFullPath(currentFilePath),
+                StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (IsFileOperationException(ex))
+        {
+            return string.Equals(path, currentFilePath, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private void WorkspaceWebView_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+    {
+        _isWebViewNavigationReady = e.IsSuccess;
+        if (e.IsSuccess)
+        {
+            TrySendStartupStateToWebWorkspace();
+        }
     }
 
     private void WorkspaceWebView_NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
     {
         if (IsInternalWebViewUri(e.Uri))
+        {
+            ResetWebWorkspaceReadiness();
             return;
+        }
 
         e.Cancel = true;
         OpenExternalUrl(e.Uri);
@@ -665,8 +809,10 @@ public partial class MainWindow : Window
 
         _webViewMessageBridge.DispatchIncomingMessage(
             e.TryGetWebMessageAsString(),
-            viewModel.SetWorkspaceMode,
-            viewModel.UpdateContentFromWeb,
+            HandleWebWorkspaceReady,
+            HandleStartupStateApplied,
+            ApplyWorkspaceModeFromWeb,
+            UpdateContentFromWeb,
             viewModel.UpdateCursorPosition,
             () => viewModel.SaveFileCommand.Execute(null),
             OpenExternalUrl);

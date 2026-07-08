@@ -11,7 +11,41 @@ public sealed class DraftWebViewMessageBridge
 
     public void PostSettings(CoreWebView2? webView, DraftSettings settings)
     {
-        string message = JsonSerializer.Serialize(new SettingsChangedMessage(
+        string message = JsonSerializer.Serialize(CreateSettingsMessage(settings), JsonOptions);
+
+        webView?.PostWebMessageAsString(message);
+    }
+
+    public void PostStartupState(
+        CoreWebView2? webView,
+        DraftSettings settings,
+        string content,
+        string displayFileName,
+        string? filePath,
+        bool isUntitled,
+        bool isModified,
+        string workspaceMode,
+        int documentGeneration)
+    {
+        string message = JsonSerializer.Serialize(new StartupStateMessage(
+            DraftWebViewMessageTypes.StartupState,
+            new StartupDocumentMessage(
+                content,
+                displayFileName,
+                filePath,
+                isUntitled,
+                isModified),
+            workspaceMode,
+            documentGeneration,
+            CreateSettingsMessage(settings)),
+            JsonOptions);
+
+        webView?.PostWebMessageAsString(message);
+    }
+
+    private static SettingsChangedMessage CreateSettingsMessage(DraftSettings settings)
+    {
+        return new SettingsChangedMessage(
             DraftWebViewMessageTypes.SettingsChanged,
             "draftDark",
             MarkdownPreviewThemeCatalog.GetThemeId(settings.MarkdownTheme),
@@ -31,18 +65,24 @@ public sealed class DraftWebViewMessageBridge
             settings.CursorStyle,
             settings.CursorBlinking,
             settings.PreviewScrollSyncMode,
-            settings.FloatingMarkdownToolbarMode),
-            JsonOptions);
-
-        webView?.PostWebMessageAsString(message);
+            settings.FloatingMarkdownToolbarMode);
     }
 
-    public void PostDocument(CoreWebView2? webView, string content, string fileName)
+    public void PostDocument(
+        CoreWebView2? webView,
+        string content,
+        string fileName,
+        string? filePath,
+        bool isUntitled,
+        int documentGeneration)
     {
         string message = JsonSerializer.Serialize(new LoadDocumentMessage(
             DraftWebViewMessageTypes.LoadDocument,
             content,
-            fileName),
+            fileName,
+            filePath,
+            isUntitled,
+            documentGeneration),
             JsonOptions);
 
         webView?.PostWebMessageAsString(message);
@@ -105,8 +145,10 @@ public sealed class DraftWebViewMessageBridge
 
     public void DispatchIncomingMessage(
         string? message,
+        Action workspaceReady,
+        Action<int?> startupStateApplied,
         Action<string> workspaceModeChanged,
-        Action<string> documentChanged,
+        Action<string, int?> documentChanged,
         Action<int, int, int> cursorPositionChanged,
         Action saveRequested,
         Action<string> openExternalUrl)
@@ -126,6 +168,12 @@ public sealed class DraftWebViewMessageBridge
 
             switch (type)
             {
+                case DraftWebViewMessageTypes.WorkspaceReady:
+                    workspaceReady();
+                    break;
+                case DraftWebViewMessageTypes.StartupStateApplied:
+                    DispatchStartupStateAppliedMessage(root, startupStateApplied);
+                    break;
                 case DraftWebViewMessageTypes.WorkspaceModeChanged:
                     DispatchWorkspaceModeMessage(root, workspaceModeChanged);
                     break;
@@ -149,6 +197,13 @@ public sealed class DraftWebViewMessageBridge
         }
     }
 
+    private static void DispatchStartupStateAppliedMessage(
+        JsonElement root,
+        Action<int?> startupStateApplied)
+    {
+        startupStateApplied(ReadOptionalInt32(root, "documentGeneration"));
+    }
+
     private static void DispatchWorkspaceModeMessage(
         JsonElement root,
         Action<string> workspaceModeChanged)
@@ -166,12 +221,14 @@ public sealed class DraftWebViewMessageBridge
 
     private static void DispatchDocumentChangedMessage(
         JsonElement root,
-        Action<string> documentChanged)
+        Action<string, int?> documentChanged)
     {
         if (!root.TryGetProperty("content", out JsonElement contentElement))
             return;
 
-        documentChanged(contentElement.GetString() ?? string.Empty);
+        documentChanged(
+            contentElement.GetString() ?? string.Empty,
+            ReadOptionalInt32(root, "documentGeneration"));
     }
 
     private static void DispatchCursorPositionChangedMessage(
@@ -211,5 +268,15 @@ public sealed class DraftWebViewMessageBridge
         {
             openExternalUrl(url);
         }
+    }
+
+    private static int? ReadOptionalInt32(JsonElement root, string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out JsonElement propertyElement))
+            return null;
+
+        return propertyElement.TryGetInt32(out int value)
+            ? value
+            : null;
     }
 }
