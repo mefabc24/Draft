@@ -5,8 +5,7 @@
 
     <SolidColorBrush
         x:Key="ShortcutRecorderActiveBackground"
-        Opacity="0.14"
-        Color="{StaticResource Color.Function.Critical}" />
+        Color="#202020" />
 
     <SolidColorBrush
         x:Key="ShortcutRecorderButtonHoverBackground"
@@ -29,18 +28,15 @@
 
     <Style x:Key="ShortcutRecorderBorder" TargetType="{x:Type Border}">
         <Setter Property="MinHeight" Value="36" />
-        <Setter Property="Padding" Value="0" />
+        <Setter Property="Padding" Value="12,0,4,0" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Background" Value="{StaticResource Brush.Background.Input}" />
         <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Input}" />
         <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4"/>
         <Setter Property="CornerRadius" Value="3" />
         <Setter Property="Effect" Value="{x:Null}" />
         <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource Brush.Background.InputSubtleHover}" />
-            </Trigger>
-
             <DataTrigger Binding="{Binding IsRecording, RelativeSource={RelativeSource AncestorType={x:Type controls:ShortcutRecorder}}}" Value="True">
                 <Setter Property="Background" Value="{StaticResource ShortcutRecorderActiveBackground}" />
                 <Setter Property="BorderBrush" Value="{StaticResource Brush.Function.Critical}" />
@@ -48,7 +44,7 @@
                     <Setter.Value>
                         <DropShadowEffect
                             BlurRadius="14"
-                            Opacity="0.34"
+                            Opacity="0.8"
                             ShadowDepth="0"
                             Color="{StaticResource Color.Function.Critical}" />
                     </Setter.Value>
@@ -58,7 +54,6 @@
     </Style>
 
     <Style x:Key="ShortcutRecorderText" TargetType="{x:Type TextBlock}">
-        <Setter Property="Margin" Value="12,0,8,0" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="FontFamily" Value="{StaticResource Font.SpaceGrotesk}" />
         <Setter Property="FontSize" Value="14" />
@@ -74,8 +69,8 @@
     </Style>
 
     <Style x:Key="ShortcutRecordButton" TargetType="{x:Type Button}">
-        <Setter Property="Width" Value="36" />
-        <Setter Property="Height" Value="34" />
+        <Setter Property="Width" Value="26" />
+        <Setter Property="Height" Value="26" />
         <Setter Property="Margin" Value="0,0,1,0" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Background" Value="Transparent" />
