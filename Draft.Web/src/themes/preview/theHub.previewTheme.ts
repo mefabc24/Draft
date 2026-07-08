@@ -55,6 +55,10 @@ const theHubPreviewColorVariables = {
   '--preview-inline-code-background': draftDarkTokens.theHubAccent,
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#000',
+  '--preview-kbd-background': '#000',
+  '--preview-kbd-foreground': draftDarkTokens.theHubAccent,
+  '--preview-kbd-border': '#5A3708',
+  '--preview-kbd-border-bottom': draftDarkTokens.theHubAccent,
 
   // Draft inline extensions
   '--preview-highlight-background': 'rgba(247, 152, 23, 0.32)',
@@ -186,6 +190,14 @@ const theHubPreviewLayoutVariables = {
   '--preview-inline-code-border-radius': '6px',
   '--preview-inline-code-border-width': '0',
   '--preview-inline-code-padding': '2px 6px',
+  '--preview-kbd-border-radius': '5px',
+  '--preview-kbd-border-width': '1px',
+  '--preview-kbd-border-bottom-width': '2px',
+  '--preview-kbd-min-width': '1.65em',
+  '--preview-kbd-padding': '1px 6px 2px',
+  '--preview-kbd-margin': '0 0.08em',
+  '--preview-kbd-line-height': '1.25',
+  '--preview-kbd-vertical-align': '0.08em',
 
   // Draft inline extensions
   // Padding inline/block controls how far the highlight or pill extends beyond text.
@@ -257,9 +269,12 @@ const theHubPreviewLayoutVariables = {
 // Typography tokens: font stacks used inside rendered markdown.
 const theHubPreviewTypographyVariables = {
   // Code
-  // CSS font-family stack used by inline code and code blocks.
+  // CSS font-family stack used by inline code, keyboard input, and code blocks.
   '--font-mono':
     "'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace",
+  '--preview-kbd-font-family': 'var(--font-mono)',
+  '--preview-kbd-font-size': '0.78em',
+  '--preview-kbd-font-weight': '700',
 
   // Markdown body
   // CSS font-family stack used by normal markdown text.

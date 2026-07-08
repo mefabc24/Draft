@@ -163,6 +163,30 @@
   font-family: var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace);
 }
 
+/* Keyboard input */
+.preview-content kbd {
+  box-sizing: border-box;
+  display: inline-flex;
+  min-width: var(--preview-kbd-min-width, 1.65em);
+  align-items: center;
+  justify-content: center;
+  margin: var(--preview-kbd-margin, 0 0.08em);
+  padding: var(--preview-kbd-padding, 1px 6px 2px);
+  border: var(--preview-kbd-border-width, 1px) solid var(--preview-kbd-border, var(--preview-inline-code-border));
+  border-bottom-color: var(--preview-kbd-border-bottom, var(--preview-kbd-border, var(--preview-inline-code-border)));
+  border-bottom-width: var(--preview-kbd-border-bottom-width, 2px);
+  border-radius: var(--preview-kbd-border-radius, 5px);
+  background: var(--preview-kbd-background, var(--preview-inline-code-background));
+  color: var(--preview-kbd-foreground, var(--preview-inline-code-foreground));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--preview-kbd-foreground, currentColor) 12%, transparent);
+  font-family: var(--preview-kbd-font-family, var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace));
+  font-size: var(--preview-kbd-font-size, 0.82em);
+  font-weight: var(--preview-kbd-font-weight, 600);
+  line-height: var(--preview-kbd-line-height, 1.25);
+  white-space: nowrap;
+  vertical-align: var(--preview-kbd-vertical-align, 0.08em);
+}
+
 /* Draft inline extensions */
 .preview-content .preview-highlight,
 .preview-content .preview-spoiler {
