@@ -105,6 +105,45 @@ function resolveInlineStyleUrls(styleText: string) {
   })
 }
 
+function getHtmlExportCss() {
+  return `
+@media screen {
+  .draft-html-export.preview-pane {
+    width: 100%;
+    min-width: 0;
+    background: var(--preview-background);
+    color: var(--preview-foreground);
+  }
+
+  .draft-html-export .preview-scroll {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 100vh;
+    padding: 48px 32px;
+    background: var(--preview-background);
+  }
+
+  .draft-html-export .preview-content {
+    box-sizing: border-box;
+    width: min(100%, 1100px);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+}
+
+@media screen and (max-width: 720px) {
+  .draft-html-export .preview-scroll {
+    padding: 32px 20px;
+  }
+
+  .draft-html-export .preview-content {
+    width: 100%;
+    max-width: none;
+  }
+}
+`
+}
+
 function getPdfExportCss() {
   return `
 @page {
@@ -1023,6 +1062,10 @@ body {
     cssRules.push(getPdfExportCss())
   }
 
+  if (layout === 'html') {
+    cssRules.push(getHtmlExportCss())
+  }
+
   if (layout === 'png') {
     cssRules.push(getPngExportCss())
   }
@@ -1112,7 +1155,7 @@ export function createPreviewExportHtml({
     ? 'draft-export-preview draft-pdf-export preview-pane'
     : layout === 'png'
       ? 'draft-export-preview draft-png-export preview-pane'
-      : 'draft-export-preview preview-pane'
+      : 'draft-export-preview draft-html-export preview-pane'
 
   return `<!doctype html>
 <html lang="en"${htmlStyleAttribute}>
