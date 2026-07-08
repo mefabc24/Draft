@@ -152,7 +152,24 @@ public sealed record ShortcutCategoryViewModel(
     string Title,
     IReadOnlyList<ShortcutItemViewModel> Shortcuts);
 
-public sealed record ShortcutItemViewModel(
-    string Title,
-    string Description,
-    string Shortcut);
+public sealed class ShortcutItemViewModel : BaseViewModel
+{
+    private string _shortcut;
+
+    public ShortcutItemViewModel(string title, string description, string shortcut)
+    {
+        Title = title;
+        Description = description;
+        _shortcut = shortcut;
+    }
+
+    public string Title { get; }
+
+    public string Description { get; }
+
+    public string Shortcut
+    {
+        get => _shortcut;
+        set => SetProperty(ref _shortcut, value);
+    }
+}

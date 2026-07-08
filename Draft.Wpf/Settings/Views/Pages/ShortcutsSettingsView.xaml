@@ -11,25 +11,16 @@
     d:DesignWidth="540"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <Style x:Key="ShortcutKeyText" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource Font.CascadiaMono}" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="ExtraBold" />
-            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
-            <Setter Property="TextAlignment" Value="Right" />
-            <Setter Property="TextWrapping" Value="NoWrap" />
-        </Style>
-
         <DataTemplate x:Key="ShortcutCardTemplate" DataType="{x:Type settingsVm:ShortcutItemViewModel}">
             <settings:SettingCard
                 Title="{Binding Title}"
                 Margin="0,0,0,12"
                 Description="{Binding Description}">
-                <TextBlock
-                    MinWidth="116"
+                <settings:ShortcutRecorder
+                    Width="220"
+                    Height="36"
                     HorizontalAlignment="Right"
-                    Style="{StaticResource ShortcutKeyText}"
-                    Text="{Binding Shortcut}" />
+                    ShortcutText="{Binding Shortcut, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             </settings:SettingCard>
         </DataTemplate>
     </UserControl.Resources>
