@@ -162,8 +162,8 @@
                                 </Border.Effect>
 
                                 <ScrollViewer
-                                    controls:ComboBoxScrollAssist.UseSingleItemMouseWheel="True"
                                     MaxHeight="240"
+                                    controls:ComboBoxScrollAssist.UseSingleItemMouseWheel="True"
                                     CanContentScroll="True"
                                     HorizontalScrollBarVisibility="Disabled"
                                     VerticalScrollBarVisibility="Hidden">
