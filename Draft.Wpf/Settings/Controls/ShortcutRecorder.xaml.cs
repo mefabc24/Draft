@@ -7,6 +7,8 @@ namespace Draft.Settings.Controls;
 
 public partial class ShortcutRecorder : UserControl
 {
+    private static ShortcutRecorder? activeRecorder;
+
     private static readonly DependencyPropertyKey IsRecordingPropertyKey =
         DependencyProperty.RegisterReadOnly(
             nameof(IsRecording),
@@ -135,6 +137,11 @@ public partial class ShortcutRecorder : UserControl
         if (IsRecording || !IsEnabled)
             return;
 
+        if (activeRecorder is not null && !ReferenceEquals(activeRecorder, this))
+            activeRecorder.StopRecording(commit: false);
+
+        activeRecorder = this;
+
         _pressedKeys.Clear();
         _pressedKeyOrder.Clear();
         _pendingShortcutText = string.Empty;
@@ -161,6 +168,9 @@ public partial class ShortcutRecorder : UserControl
         _pendingShortcutText = string.Empty;
         _hasRecordedKey = false;
         IsRecording = false;
+
+        if (ReferenceEquals(activeRecorder, this))
+            activeRecorder = null;
 
         if (commit && !string.IsNullOrWhiteSpace(shortcutToCommit))
         {
