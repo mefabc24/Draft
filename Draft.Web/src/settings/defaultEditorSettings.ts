@@ -3,6 +3,7 @@ import {
   DEFAULT_PREVIEW_THEME_ID,
 } from './themeSettings'
 import type { DraftEditorSettings } from './settingsTypes'
+import { defaultShortcutBindings } from '../shortcuts/shortcutSettings'
 
 export const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
   activeEditorThemeId: DEFAULT_EDITOR_THEME_ID,
@@ -19,6 +20,7 @@ export const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
   lineHeight: 1.6,
   markdownSyntaxHighlighting: true,
   previewScrollSyncMode: 'TwoWay',
+  shortcuts: defaultShortcutBindings,
   showIndentationGuides: false,
   showLineNumbers: true,
   showWhitespaceCharacters: 'Never',

@@ -1,4 +1,5 @@
 import { DEFAULT_EDITOR_SETTINGS } from './defaultEditorSettings'
+import { normalizeShortcutBindings } from '../shortcuts/shortcutSettings'
 import type {
   CursorStyle,
   DraftEditorSettings,
@@ -176,6 +177,7 @@ export function parseDraftEditorSettings(
       DEFAULT_EDITOR_SETTINGS.markdownSyntaxHighlighting,
     ),
     previewScrollSyncMode: readPreviewScrollSyncMode(record),
+    shortcuts: normalizeShortcutBindings(readRecordValue(record, 'shortcuts')),
     showIndentationGuides: readBoolean(
       record,
       'showIndentationGuides',

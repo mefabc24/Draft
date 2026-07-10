@@ -4,6 +4,7 @@ import {
   type RefObject,
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import type { ShortcutBindings } from '../../shortcuts/shortcutSettings'
 import { useEditorQuickInsertMenu } from '../hooks/useEditorQuickInsertMenu'
 import { useHoveredEditorLine } from '../hooks/useHoveredEditorLine'
 import EditorQuickInsertMenu from './EditorQuickInsertMenu'
@@ -11,11 +12,13 @@ import EditorQuickInsertMenu from './EditorQuickInsertMenu'
 type EmptyLineInsertButtonProps = {
   editor: monaco.editor.IStandaloneCodeEditor | null
   editorBodyRef: RefObject<HTMLDivElement | null>
+  shortcutBindings: ShortcutBindings
 }
 
 function EmptyLineInsertButton({
   editor,
   editorBodyRef,
+  shortcutBindings,
 }: EmptyLineInsertButtonProps) {
   const {
     clearPendingHide,
@@ -32,7 +35,7 @@ function EmptyLineInsertButton({
     runMenuActionKeepingOpen,
     target,
     updateMenuBounds,
-  } = useEditorQuickInsertMenu(editor, editorBodyRef)
+  } = useEditorQuickInsertMenu(editor, editorBodyRef, shortcutBindings)
   const buttonStyle = useMemo(
     () =>
       hoveredLine
@@ -104,6 +107,7 @@ function EmptyLineInsertButton({
         onContentLayoutChange={updateMenuBounds}
         onKeepOpenAction={runMenuActionKeepingOpen}
         position={menuPosition}
+        shortcutBindings={shortcutBindings}
         target={target}
       />
     </>

@@ -1,5 +1,6 @@
 import type { HTMLAttributes, ReactNode, RefObject } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import type { ShortcutBindings } from '../../shortcuts/shortcutSettings'
 import EmptyLineInsertButton from './EmptyLineInsertButton'
 import EditorScrollbar from './EditorScrollbar'
 
@@ -11,6 +12,7 @@ type MarkdownEditorPaneProps = {
   header: ReactNode
   scrollbarProps: HTMLAttributes<HTMLDivElement>
   scrollbarRef: RefObject<HTMLDivElement | null>
+  shortcutBindings: ShortcutBindings
   thumbProps: HTMLAttributes<HTMLDivElement>
   thumbRef: RefObject<HTMLDivElement | null>
 }
@@ -23,6 +25,7 @@ function MarkdownEditorPane({
   header,
   scrollbarProps,
   scrollbarRef,
+  shortcutBindings,
   thumbProps,
   thumbRef,
 }: MarkdownEditorPaneProps) {
@@ -39,6 +42,7 @@ function MarkdownEditorPane({
           <EmptyLineInsertButton
             editor={editor}
             editorBodyRef={editorBodyRef}
+            shortcutBindings={shortcutBindings}
           />
         )}
         <EditorScrollbar

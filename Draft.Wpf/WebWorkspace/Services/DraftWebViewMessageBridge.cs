@@ -1,4 +1,5 @@
 using Draft.Settings.Models;
+using Draft.Settings.Shortcuts;
 using Draft.WebWorkspace.Messages;
 using Microsoft.Web.WebView2.Core;
 using System.Text.Json;
@@ -65,7 +66,8 @@ public sealed class DraftWebViewMessageBridge
             settings.CursorStyle,
             settings.CursorBlinking,
             settings.PreviewScrollSyncMode,
-            settings.FloatingMarkdownToolbarMode);
+            settings.FloatingMarkdownToolbarMode,
+            ShortcutSettingsCatalog.Normalize(settings.Shortcuts));
     }
 
     public void PostDocument(

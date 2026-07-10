@@ -76,6 +76,7 @@
                     Margin="0,0,8,0"
                     Command="{Binding OpenFileCommand}"
                     Style="{StaticResource ControlButton}"
+                    ui:ToolTipAssist.Shortcut="{Binding OpenShortcut}"
                     ui:ToolTipAssist.Text="Open">
                     <Path
                         Width="16"
@@ -89,7 +90,7 @@
                     Margin="0,0,8,0"
                     Command="{Binding SaveFileCommand}"
                     Style="{StaticResource ControlButton}"
-                    ui:ToolTipAssist.Shortcut="Ctrl+S"
+                    ui:ToolTipAssist.Shortcut="{Binding SaveShortcut}"
                     ui:ToolTipAssist.Text="Save">
                     <Grid>
                         <Path

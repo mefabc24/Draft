@@ -119,4 +119,11 @@
         <Setter Property="Data" Value="{StaticResource Icon.Record}" />
         <Setter Property="Stretch" Value="Uniform" />
     </Style>
+
+    <Style x:Key="ShortcutRestoreIcon" TargetType="{x:Type Path}">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="Data" Value="{StaticResource Icon.Undo}" />
+        <Setter Property="Stretch" Value="Uniform" />
+    </Style>
 </ResourceDictionary>

@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Draft.Settings.Shortcuts;
 
 namespace Draft.Settings.ViewModels;
 
@@ -63,6 +64,8 @@ public class SettingsWindowViewModel : BaseViewModel
     private bool _isStatusBarAppVersionVisible = true;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _toolbarControlbarPosition = AppSettingsStore.DefaultToolbarPosition;
+    private Dictionary<string, string> _shortcuts =
+        ShortcutSettingsCatalog.CreateDefaultShortcuts();
 
     public SettingsWindowViewModel()
     {
@@ -578,6 +581,24 @@ public class SettingsWindowViewModel : BaseViewModel
                 AppSettingsStore.DefaultToolbarPosition));
     }
 
+    public string GetShortcut(string actionId)
+    {
+        return ShortcutSettingsCatalog.GetShortcut(_shortcuts, actionId);
+    }
+
+    public void SetShortcut(string actionId, string shortcut)
+    {
+        if (string.IsNullOrWhiteSpace(actionId) || !ShortcutSettingsCatalog.IsValidShortcut(shortcut))
+            return;
+
+        string normalizedShortcut = shortcut.Trim();
+
+        if (string.Equals(GetShortcut(actionId), normalizedShortcut, StringComparison.Ordinal))
+            return;
+
+        _shortcuts[actionId] = normalizedShortcut;
+    }
+
     public void SelectSettingsPage(SettingsPage page)
     {
         if (page == SettingsPage.Develop && !IsDevelopSettingsVisible)
@@ -680,6 +701,8 @@ public class SettingsWindowViewModel : BaseViewModel
             ToolbarControlbarPositionOptions,
             settings.ToolbarControlbarPosition,
             AppSettingsStore.DefaultToolbarPosition);
+        _shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts);
+        _shortcutsSettingsPage?.RefreshShortcuts();
     }
 
     private void BrowseDefaultSaveLocation()
@@ -781,6 +804,7 @@ public class SettingsWindowViewModel : BaseViewModel
             IsStatusBarAppVersionVisible = IsStatusBarAppVersionVisible,
             WindowBorderAccentMode = _windowBorderAccentMode,
             ToolbarControlbarPosition = ToolbarControlbarPosition,
+            Shortcuts = ShortcutSettingsCatalog.Normalize(_shortcuts),
         });
     }
 
@@ -901,5 +925,6 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(WindowBorderAccentMode));
         OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         OnPropertyChanged(nameof(ToolbarControlbarPosition));
+        _shortcutsSettingsPage.RefreshShortcuts();
     }
 }

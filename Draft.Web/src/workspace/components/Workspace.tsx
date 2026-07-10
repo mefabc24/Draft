@@ -52,6 +52,7 @@ import {
   addBrowserShortcutGuard,
   type BrowserShortcutDraftCommand,
 } from '../../shortcuts/browserShortcutGuard'
+import { defaultShortcutBindings } from '../../shortcuts/shortcutSettings'
 import { usePreviewScrollSync } from '../hooks/usePreviewScrollSync'
 import { useSplitSizing } from '../hooks/useSplitSizing'
 import { isViewMode, type ViewMode } from '../workspaceTypes'
@@ -107,6 +108,7 @@ function Workspace() {
   const [activePreviewThemeId, setActivePreviewThemeId] = useState(
     DEFAULT_EDITOR_SETTINGS.activePreviewThemeId,
   )
+  const [shortcutBindings, setShortcutBindings] = useState(defaultShortcutBindings)
   const initialMarkdownRef = useRef(markdown)
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
@@ -167,6 +169,7 @@ function Workspace() {
     onSyncPreviewScrollFromEditor: syncPreviewScrollFromEditor,
     setEditorInstance,
     settingsRef: draftEditorSettingsRef,
+    shortcutBindings,
   })
   const activeEditorTheme = useMemo(
     () => getEditorTheme(activeEditorThemeId),
@@ -195,6 +198,7 @@ function Workspace() {
     setFloatingMarkdownToolbarMode(settings.floatingMarkdownToolbarMode)
     setActiveEditorThemeId(settings.activeEditorThemeId)
     setActivePreviewThemeId(settings.activePreviewThemeId)
+    setShortcutBindings(settings.shortcuts)
     applyEditorSettings(settings)
   }
 
@@ -398,6 +402,7 @@ function Workspace() {
 
     return addBrowserShortcutGuard({
       allowDeveloperShortcuts: import.meta.env.DEV && !isDraftWebViewHost(),
+      getShortcutBindings: () => draftEditorSettingsRef.current.shortcuts,
       onDraftCommand: handleDraftShortcutCommand,
     })
   }, [])
@@ -435,6 +440,7 @@ function Workspace() {
           ariaHidden={viewMode === 'preview'}
           editor={editorInstance}
           editorBodyRef={editorBodyRef}
+          shortcutBindings={shortcutBindings}
           editorHostRef={editorHostRef}
           header={(
             <PaneHeader
@@ -479,6 +485,7 @@ function Workspace() {
           }}
           previewContentRef={previewContentRef}
           previewScrollElementRef={previewScrollRef}
+          shortcutBindings={shortcutBindings}
           toolbarMode={floatingMarkdownToolbarMode}
           viewMode={viewMode}
           workspaceRef={workspaceRef}

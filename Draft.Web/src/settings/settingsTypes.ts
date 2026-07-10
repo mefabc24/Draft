@@ -1,3 +1,5 @@
+import type { ShortcutBindings } from '../shortcuts/shortcutSettings'
+
 export type ShowWhitespaceCharacters = 'Always' | 'Never' | 'Highlighted Only'
 export type CursorStyle = 'Line' | 'Block' | 'Underline'
 export type FloatingMarkdownToolbarMode =
@@ -27,6 +29,7 @@ export type DraftEditorSettings = {
   lineHeight: number
   markdownSyntaxHighlighting: boolean
   previewScrollSyncMode: PreviewScrollSyncMode
+  shortcuts: ShortcutBindings
   showIndentationGuides: boolean
   showLineNumbers: boolean
   showWhitespaceCharacters: ShowWhitespaceCharacters

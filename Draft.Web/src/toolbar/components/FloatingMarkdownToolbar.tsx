@@ -16,13 +16,18 @@ import {
 } from '../../editor/monaco/markdownCommandAdapter'
 import type { HeadingValue, ListValue } from '../../markdown'
 import type { CalloutType } from '../../markdown/callouts'
+import {
+  formatShortcutForDisplay,
+  getShortcutBinding,
+  shortcutActionIds,
+  type ShortcutActionId,
+} from '../../shortcuts/shortcutSettings'
 import { clamp } from '../../shared/utils/clamp'
 import { useFloatingToolbarState } from '../hooks/useFloatingToolbarState'
 import { useToolbarTooltip } from '../hooks/useToolbarTooltip'
 import {
   headingItems,
   headingLabels,
-  headingShortcuts,
   inlineToolbarActions,
   listIcons,
   listItems,
@@ -60,6 +65,32 @@ const primaryInlineToolbarActions = inlineToolbarActions.filter(
 const extraInlineToolbarActions = inlineToolbarActions.filter(
   (action) => action.visibility === 'extra',
 )
+
+const inlineShortcutActionIds: Partial<
+  Record<InlineToolbarAction['id'], ShortcutActionId>
+> = {
+  bold: shortcutActionIds.toolbarBold,
+  code: shortcutActionIds.toolbarInlineCode,
+  comment: shortcutActionIds.toolbarComment,
+  highlight: shortcutActionIds.toolbarHighlight,
+  image: shortcutActionIds.toolbarImage,
+  italic: shortcutActionIds.toolbarItalic,
+  link: shortcutActionIds.toolbarLink,
+  spoiler: shortcutActionIds.toolbarSpoiler,
+  strikethrough: shortcutActionIds.toolbarStrikethrough,
+  underline: shortcutActionIds.toolbarUnderline,
+}
+
+const headingShortcutActionIds: Partial<Record<HeadingValue, ShortcutActionId>> =
+  {
+    h1: shortcutActionIds.toolbarHeading1,
+    h2: shortcutActionIds.toolbarHeading2,
+    h3: shortcutActionIds.toolbarHeading3,
+    h4: shortcutActionIds.toolbarHeading4,
+    h5: shortcutActionIds.toolbarHeading5,
+    h6: shortcutActionIds.toolbarHeading6,
+    normal: shortcutActionIds.toolbarNormalText,
+  }
 
 function isToolbarPopupTarget(target: EventTarget | null) {
   const element =
@@ -152,6 +183,7 @@ function FloatingMarkdownToolbar({
   onRequestEditorMode,
   previewContentRef,
   previewScrollElementRef,
+  shortcutBindings,
   toolbarMode,
   viewMode,
   workspaceRef,
@@ -199,6 +231,7 @@ function FloatingMarkdownToolbar({
     previewContentRef,
     previewScrollElementRef,
     setPosition,
+    shortcutBindings,
     toolbarMode,
     toolbarRef,
     viewMode,
@@ -265,12 +298,39 @@ function FloatingMarkdownToolbar({
       setOpenDropdown,
     ],
   )
+  const getShortcutLabel = useCallback(
+    (actionId: ShortcutActionId) =>
+      formatShortcutForDisplay(getShortcutBinding(shortcutBindings, actionId)),
+    [shortcutBindings],
+  )
+  const headingMenuItems = useMemo(
+    () =>
+      headingItems.map((item) => {
+        if (!('value' in item)) {
+          return item
+        }
+
+        const actionId = headingShortcutActionIds[item.value as HeadingValue]
+
+        return actionId
+          ? {
+              ...item,
+              shortcut: getShortcutLabel(actionId),
+            }
+          : item
+      }),
+    [getShortcutLabel],
+  )
   const headingTooltip = useMemo(
-    () => ({
-      label: headingLabels[headingValue],
-      shortcut: headingShortcuts[headingValue],
-    }),
-    [headingValue],
+    () => {
+      const actionId = headingShortcutActionIds[headingValue]
+
+      return {
+        label: headingLabels[headingValue],
+        shortcut: actionId ? getShortcutLabel(actionId) : undefined,
+      }
+    },
+    [getShortcutLabel, headingValue],
   )
   const listTooltip = useMemo(
     () => ({
@@ -551,6 +611,14 @@ function FloatingMarkdownToolbar({
   const renderInlineToolbarAction = (action: InlineToolbarAction) => {
     const active = activeFormats[action.activeFormat]
     const command = action.command
+    const actionId = inlineShortcutActionIds[action.id]
+    const shortcut = actionId ? getShortcutLabel(actionId) : undefined
+    const tooltip = shortcut
+      ? {
+          ...action.tooltip,
+          shortcut,
+        }
+      : action.tooltip
 
     if (command.type === 'link') {
       return linkEdit.available ? (
@@ -559,7 +627,9 @@ function FloatingMarkdownToolbar({
           active={active}
           initialState={linkEdit.initialState}
           open={linkEdit.open}
+          shortcutBindings={shortcutBindings}
           toolbarRef={toolbarRef}
+          triggerShortcut={shortcut}
           workspaceRef={workspaceRef}
           onCancel={linkEdit.cancel}
           onClose={linkEdit.close}
@@ -576,7 +646,7 @@ function FloatingMarkdownToolbar({
           onTooltipHide={hideToolbarTooltip}
           onTooltipShow={showToolbarTooltip}
           onClick={() => runEditorCommand(toggleLinkSelection)}
-          tooltip={action.tooltip}
+          tooltip={tooltip}
         >
           <ToolbarIcon name={action.icon} />
         </ToolbarButton>
@@ -591,7 +661,9 @@ function FloatingMarkdownToolbar({
           initialState={imageEdit.initialState}
           kind="image"
           open={imageEdit.open}
+          shortcutBindings={shortcutBindings}
           toolbarRef={toolbarRef}
+          triggerShortcut={shortcut}
           workspaceRef={workspaceRef}
           onCancel={imageEdit.cancel}
           onClose={imageEdit.close}
@@ -608,7 +680,7 @@ function FloatingMarkdownToolbar({
           onTooltipHide={hideToolbarTooltip}
           onTooltipShow={showToolbarTooltip}
           onClick={() => runEditorCommand(toggleImageSelection)}
-          tooltip={action.tooltip}
+          tooltip={tooltip}
         >
           <ToolbarIcon name={action.icon} />
         </ToolbarButton>
@@ -636,7 +708,7 @@ function FloatingMarkdownToolbar({
             )
           })
         }
-        tooltip={action.tooltip}
+        tooltip={tooltip}
       >
         <ToolbarIcon name={action.icon} />
       </ToolbarButton>
@@ -646,8 +718,12 @@ function FloatingMarkdownToolbar({
     previewEdit.available ? (
       <PreviewEditMenu
         open={previewEdit.open}
+        shortcutBindings={shortcutBindings}
         sourceText={previewEdit.sourceText}
         toolbarRef={toolbarRef}
+        triggerShortcut={getShortcutLabel(
+          shortcutActionIds.toolbarEditPreviewSelection,
+        )}
         workspaceRef={workspaceRef}
         onCancel={previewEdit.cancel}
         onClose={previewEdit.close}
@@ -688,7 +764,7 @@ function FloatingMarkdownToolbar({
         className="heading-dropdown"
         ariaLabel="Select text style"
         menuLabel="Text styles"
-        items={headingItems}
+        items={headingMenuItems}
         open={openDropdown === 'heading'}
         onOpenChange={handleHeadingOpenChange}
         onTooltipHide={hideToolbarTooltip}

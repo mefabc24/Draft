@@ -24,13 +24,6 @@
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
 
-    <Window.InputBindings>
-        <KeyBinding
-            Key="S"
-            Command="{Binding SaveFileCommand}"
-            Modifiers="Control" />
-    </Window.InputBindings>
-
     <!-- Root: App Logic + Window Logic overlay -->
     <Grid x:Name="RootGrid">
         <!-- App Logic -->

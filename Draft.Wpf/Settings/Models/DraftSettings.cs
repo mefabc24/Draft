@@ -1,4 +1,5 @@
 using Draft.Settings.Services;
+using Draft.Settings.Shortcuts;
 
 namespace Draft.Settings.Models;
 
@@ -93,4 +94,7 @@ public sealed class DraftSettings
     public string WindowBorderAccentMode { get; set; } = SettingsDefaults.WindowBorderAccentDisabled;
 
     public string ToolbarControlbarPosition { get; set; } = "Top";
+
+    public Dictionary<string, string> Shortcuts { get; set; } =
+        ShortcutSettingsCatalog.CreateDefaultShortcuts();
 }

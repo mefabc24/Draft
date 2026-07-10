@@ -11,16 +11,34 @@
     d:DesignWidth="540"
     mc:Ignorable="d">
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <DataTemplate x:Key="ShortcutCardTemplate" DataType="{x:Type settingsVm:ShortcutItemViewModel}">
             <settings:SettingCard
                 Title="{Binding Title}"
                 Margin="0,0,0,12"
                 Description="{Binding Description}">
-                <settings:ShortcutRecorder
-                    Width="220"
-                    Height="36"
-                    HorizontalAlignment="Right"
-                    ShortcutText="{Binding Shortcut, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <Grid Width="220" Height="36" HorizontalAlignment="Right">
+                    <settings:ShortcutRecorder
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ShortcutText="{Binding Shortcut, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Visibility="{Binding IsEditable, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <Border>
+                        <Border.Style>
+                            <Style BasedOn="{StaticResource ShortcutRecorderBorder}" TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsEditable}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock
+                            Style="{StaticResource ShortcutRecorderText}"
+                            Text="{Binding Shortcut}" />
+                    </Border>
+                </Grid>
             </settings:SettingCard>
         </DataTemplate>
     </UserControl.Resources>

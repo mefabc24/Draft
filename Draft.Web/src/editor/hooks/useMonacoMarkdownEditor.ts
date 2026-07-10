@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useRef, type Dispatch, type RefObject } from 'react'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { DraftEditorSettings } from '../../settings/settingsTypes'
+import {
+  defaultShortcutBindings,
+  getShortcutBinding,
+  shortcutActionIds,
+  type ShortcutActionId,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
+import {
+  eventMatchesShortcutAction,
+  getMonacoShortcutKeybinding,
+} from '../../shortcuts/shortcutMatching'
 import { getEditorTheme, registerEditorThemes } from '../../themes'
 import { syncCurrentLineDecorations } from '../monaco/currentLineDecorations'
 import { duplicateCurrentLine } from '../monaco/duplicateLine'
@@ -11,7 +22,7 @@ import {
   getEditorFontLoadTarget,
   getEditorSettingsOptions,
 } from '../monaco/editorOptions'
-import { moveEditorLines, type LineMovementDirection } from '../monaco/lineMovement'
+import { moveEditorLines } from '../monaco/lineMovement'
 import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
 import { indentEmptyMarkdownListItemOnTab } from '../monaco/markdownListIndentation'
 import { moveSelectionsByWord } from '../monaco/wordNavigation'
@@ -34,6 +45,7 @@ type UseMonacoMarkdownEditorOptions = {
   onSyncPreviewScrollFromEditor: () => void
   setEditorInstance: Dispatch<monaco.editor.IStandaloneCodeEditor | null>
   settingsRef: CurrentRef<DraftEditorSettings>
+  shortcutBindings: ShortcutBindings
 }
 
 function remeasureEditor(editor: monaco.editor.IStandaloneCodeEditor) {
@@ -64,34 +76,34 @@ function shouldAllowSelectionDragAndDrop(event: MouseEvent) {
   return event.button === 0 && event.shiftKey
 }
 
-function getLineMovementDirection(
-  event: monaco.IKeyboardEvent,
-): LineMovementDirection | null {
-  const browserEvent = event.browserEvent
-  const hasControlModifier =
-    event.ctrlKey || event.metaKey || browserEvent.ctrlKey || browserEvent.metaKey
-  const hasShiftModifier = event.shiftKey || browserEvent.shiftKey
-  const hasAltModifier = event.altKey || browserEvent.altKey
+function getEditorActionKeybindings(
+  bindings: ShortcutBindings,
+  actionId: ShortcutActionId,
+) {
+  const keybinding = getMonacoShortcutKeybinding(bindings, actionId)
 
-  if (hasAltModifier || !hasShiftModifier || !hasControlModifier) {
-    return null
-  }
+  return keybinding === null ? [] : [keybinding]
+}
+
+function normalizeShortcutText(shortcut: string) {
+  return shortcut.replace(/\s+/gu, '').toLowerCase()
+}
+
+function getChangedDefaultKeybindings(
+  bindings: ShortcutBindings,
+  actionId: ShortcutActionId,
+) {
+  const defaultShortcut = getShortcutBinding(defaultShortcutBindings, actionId)
+  const currentShortcut = getShortcutBinding(bindings, actionId)
 
   if (
-    event.keyCode === monaco.KeyCode.UpArrow ||
-    browserEvent.key === 'ArrowUp'
+    normalizeShortcutText(defaultShortcut) ===
+    normalizeShortcutText(currentShortcut)
   ) {
-    return 'up'
+    return []
   }
 
-  if (
-    event.keyCode === monaco.KeyCode.DownArrow ||
-    browserEvent.key === 'ArrowDown'
-  ) {
-    return 'down'
-  }
-
-  return null
+  return getEditorActionKeybindings(defaultShortcutBindings, actionId)
 }
 
 export function useMonacoMarkdownEditor({
@@ -108,6 +120,7 @@ export function useMonacoMarkdownEditor({
   onSyncPreviewScrollFromEditor,
   setEditorInstance,
   settingsRef,
+  shortcutBindings,
 }: UseMonacoMarkdownEditorOptions) {
   const currentLineDecorationsRef =
     useRef<monaco.editor.IEditorDecorationsCollection | null>(null)
@@ -233,70 +246,30 @@ export function useMonacoMarkdownEditor({
 
     syncPersistentCurrentLine()
 
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
-      () => {
-        duplicateCurrentLine(editor)
-      },
-    )
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.UpArrow,
-      () => {
-        moveEditorLines(editor, 'up')
-      },
-    )
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.DownArrow,
-      () => {
-        moveEditorLines(editor, 'down')
-      },
-    )
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.LeftArrow,
-      () => {
-        moveSelectionsByWord(editor, 'left', false)
-      },
-    )
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.RightArrow,
-      () => {
-        moveSelectionsByWord(editor, 'right', false)
-      },
-    )
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.LeftArrow,
-      () => {
-        moveSelectionsByWord(editor, 'left', true)
-      },
-    )
-    editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.RightArrow,
-      () => {
-        moveSelectionsByWord(editor, 'right', true)
-      },
-    )
     const markdownKeyboardSub = editor.onKeyDown((event) => {
-      const lineMovementDirection = getLineMovementDirection(event)
+      const browserEvent = event.browserEvent
+      const shortcuts = settingsRef.current.shortcuts
 
-      if (lineMovementDirection) {
-        event.preventDefault()
-        event.stopPropagation()
-        moveEditorLines(editor, lineMovementDirection)
-        return
-      }
-
-      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
-        return
-      }
-
-      if (event.keyCode === monaco.KeyCode.Enter) {
+      if (
+        eventMatchesShortcutAction(
+          browserEvent,
+          shortcuts,
+          shortcutActionIds.editorContinueMarkdownBlock,
+        )
+      ) {
         if (continueMarkdownBlockOnEnter(editor)) {
           event.preventDefault()
         }
         return
       }
 
-      if (event.keyCode === monaco.KeyCode.Tab) {
+      if (
+        eventMatchesShortcutAction(
+          browserEvent,
+          shortcuts,
+          shortcutActionIds.editorIndentListItem,
+        )
+      ) {
         const consumeTabEvent = () => {
           event.preventDefault()
           event.stopPropagation()
@@ -341,18 +314,23 @@ export function useMonacoMarkdownEditor({
     })
     const handleGlobalUndoRedo = (event: KeyboardEvent) => {
       if (
-        event.defaultPrevented ||
         editor.hasTextFocus() ||
-        isEditableKeyboardTarget(event.target) ||
-        event.altKey ||
-        !(event.ctrlKey || event.metaKey)
+        isEditableKeyboardTarget(event.target)
       ) {
         return
       }
 
-      const key = event.key.toLowerCase()
-      const isUndo = key === 'z' && !event.shiftKey
-      const isRedo = key === 'z' && event.shiftKey
+      const shortcuts = settingsRef.current.shortcuts
+      const isUndo = eventMatchesShortcutAction(
+        event,
+        shortcuts,
+        shortcutActionIds.editorUndo,
+      )
+      const isRedo = eventMatchesShortcutAction(
+        event,
+        shortcuts,
+        shortcutActionIds.editorRedo,
+      )
 
       if (!isUndo && !isRedo) {
         return
@@ -436,6 +414,149 @@ export function useMonacoMarkdownEditor({
     setEditorInstance,
     settingsRef,
   ])
+
+  useEffect(() => {
+    const editor = editorRef.current
+
+    if (!editor) {
+      return
+    }
+
+    const actions = [
+      editor.addAction({
+        id: 'draft.editor.undo',
+        label: 'Editor: Undo',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorUndo,
+        ),
+        run: () => {
+          editor.trigger('draft.shortcut', 'undo', null)
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.redo',
+        label: 'Editor: Redo',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorRedo,
+        ),
+        run: () => {
+          editor.trigger('draft.shortcut', 'redo', null)
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.duplicateLine',
+        label: 'Editor: Duplicate Current Line',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorDuplicateLine,
+        ),
+        run: () => {
+          duplicateCurrentLine(editor)
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.moveLineUp',
+        label: 'Editor: Move Line Up',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorMoveLineUp,
+        ),
+        run: () => {
+          moveEditorLines(editor, 'up')
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.moveLineDown',
+        label: 'Editor: Move Line Down',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorMoveLineDown,
+        ),
+        run: () => {
+          moveEditorLines(editor, 'down')
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.moveCursorWordLeft',
+        label: 'Editor: Move Cursor One Word Left',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorMoveCursorWordLeft,
+        ),
+        run: () => {
+          moveSelectionsByWord(editor, 'left', false)
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.moveCursorWordRight',
+        label: 'Editor: Move Cursor One Word Right',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorMoveCursorWordRight,
+        ),
+        run: () => {
+          moveSelectionsByWord(editor, 'right', false)
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.extendSelectionWordLeft',
+        label: 'Editor: Extend Selection One Word Left',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorExtendSelectionWordLeft,
+        ),
+        run: () => {
+          moveSelectionsByWord(editor, 'left', true)
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.extendSelectionWordRight',
+        label: 'Editor: Extend Selection One Word Right',
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorExtendSelectionWordRight,
+        ),
+        run: () => {
+          moveSelectionsByWord(editor, 'right', true)
+        },
+      }),
+    ]
+
+    for (const action of [
+      shortcutActionIds.editorUndo,
+      shortcutActionIds.editorRedo,
+      shortcutActionIds.editorDuplicateLine,
+      shortcutActionIds.editorMoveLineUp,
+      shortcutActionIds.editorMoveLineDown,
+      shortcutActionIds.editorMoveCursorWordLeft,
+      shortcutActionIds.editorMoveCursorWordRight,
+      shortcutActionIds.editorExtendSelectionWordLeft,
+      shortcutActionIds.editorExtendSelectionWordRight,
+    ]) {
+      const keybindings = getChangedDefaultKeybindings(shortcutBindings, action)
+
+      if (keybindings.length === 0) {
+        continue
+      }
+
+      actions.push(
+        editor.addAction({
+          id: `draft.editor.blockDefault.${action}`,
+          label: `Editor: Block Default ${action}`,
+          keybindings,
+          run: () => {},
+        }),
+      )
+    }
+
+    return () => {
+      for (const action of actions) {
+        action.dispose()
+      }
+    }
+  }, [editorRef, shortcutBindings])
 
   const resyncEditorLayout = useCallback(() => {
     const editor = editorRef.current

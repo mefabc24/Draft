@@ -1,6 +1,7 @@
 using System.IO;
 using System.Security;
 using Draft.Settings.Models;
+using Draft.Settings.Shortcuts;
 using System.Text.Json;
 
 namespace Draft.Settings.Services;
@@ -104,6 +105,7 @@ public static class AppSettingsStore
         settings.DefaultFileExtension = DefaultFileExtension;
         settings.MarkdownTheme = MarkdownPreviewThemeCatalog.GetThemeLabel(settings.MarkdownTheme);
         settings.ToolbarControlbarPosition = DefaultToolbarPosition;
+        settings.Shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts);
         settings.WindowBorderAccentMode = IsWindowBorderAccentMode(settings.WindowBorderAccentMode)
             ? settings.WindowBorderAccentMode
             : WindowBorderAccentDisabled;

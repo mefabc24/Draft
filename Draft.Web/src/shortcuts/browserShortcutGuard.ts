@@ -1,3 +1,15 @@
+import {
+  configurableShortcutActionIds,
+  defaultShortcutBindings,
+  shortcutActionIds,
+  type ShortcutActionId,
+  type ShortcutBindings,
+} from './shortcutSettings'
+import {
+  eventMatchesDefaultShortcutAction,
+  eventMatchesShortcutAction,
+} from './shortcutMatching'
+
 export type BrowserShortcutPolicyKind =
   | 'allow'
   | 'blockBrowserDefault'
@@ -20,8 +32,10 @@ type BrowserShortcutRule = {
   match: (shortcut: BrowserShortcut) => boolean
 }
 
-type BrowserShortcutCommandRule = BrowserShortcutRule & {
+type BrowserShortcutCommandAction = {
+  actionId: ShortcutActionId
   command: BrowserShortcutDraftCommand
+  id: string
 }
 
 type BrowserShortcutDevelopmentRule = BrowserShortcutRule & {
@@ -49,6 +63,7 @@ export type BrowserShortcutPolicy =
 
 export type BrowserShortcutGuardOptions = {
   allowDeveloperShortcuts?: boolean
+  getShortcutBindings?: () => ShortcutBindings
   onDraftCommand: (command: BrowserShortcutDraftCommand) => void
 }
 
@@ -100,10 +115,6 @@ function hasPrimaryAndShift(shortcut: BrowserShortcut) {
   return hasPrimaryModifier(shortcut) && !shortcut.altKey && shortcut.shiftKey
 }
 
-function hasPrimaryAndAlt(shortcut: BrowserShortcut) {
-  return hasPrimaryModifier(shortcut) && shortcut.altKey && !shortcut.shiftKey
-}
-
 function hasAltOnly(shortcut: BrowserShortcut) {
   return shortcut.altKey && !shortcut.ctrlKey && !shortcut.metaKey && !shortcut.shiftKey
 }
@@ -124,11 +135,6 @@ function primaryKey(key: string) {
 function primaryShiftKey(key: string) {
   return (shortcut: BrowserShortcut) =>
     hasPrimaryAndShift(shortcut) && isKey(shortcut, key)
-}
-
-function primaryAltKey(key: string) {
-  return (shortcut: BrowserShortcut) =>
-    hasPrimaryAndAlt(shortcut) && isKey(shortcut, key)
 }
 
 function primaryDigit(digit: number) {
@@ -171,48 +177,71 @@ export const allowedBrowserShortcuts: readonly BrowserShortcutRule[] = [
   { id: 'text.copy', match: primaryKey('c') },
   { id: 'text.cut', match: primaryKey('x') },
   { id: 'text.paste', match: primaryKey('v') },
-  { id: 'text.undo', match: primaryKey('z') },
-  { id: 'text.redo.ctrlY', match: primaryKey('y') },
-  { id: 'text.redo.shiftZ', match: primaryShiftKey('z') },
 ]
 
-export const draftHandledBrowserShortcuts: readonly BrowserShortcutCommandRule[] = [
-  { command: 'save', id: 'draft.save', match: primaryKey('s') },
-  { command: 'open', id: 'draft.open', match: primaryKey('o') },
+export const draftHandledBrowserShortcuts: readonly BrowserShortcutCommandAction[] = [
+  {
+    actionId: shortcutActionIds.appSave,
+    command: 'save',
+    id: 'draft.save',
+  },
+  {
+    actionId: shortcutActionIds.appOpen,
+    command: 'open',
+    id: 'draft.open',
+  },
 ]
 
-export const draftCommandShortcuts: readonly BrowserShortcutRule[] = [
-  { id: 'draft.toolbar.bold', match: primaryKey('b') },
-  { id: 'draft.toolbar.italic', match: primaryKey('i') },
-  { id: 'draft.toolbar.underline', match: primaryKey('u') },
-  { id: 'draft.toolbar.inlineCode', match: primaryKey('e') },
-  { id: 'draft.toolbar.spoiler', match: primaryShiftKey('s') },
-  { id: 'draft.toolbar.highlight', match: primaryShiftKey('h') },
-  {
-    id: 'draft.toolbar.comment',
-    match: (shortcut) =>
-      hasOnlyPrimaryModifier(shortcut) &&
-      (shortcut.key === '/' || isCode(shortcut, 'Slash')),
-  },
-  { id: 'draft.toolbar.strikethrough', match: primaryShiftKey('x') },
-  { id: 'draft.toolbar.link', match: primaryKey('k') },
-  { id: 'draft.toolbar.image', match: primaryAltKey('i') },
-  { id: 'draft.toolbar.heading1', match: primaryDigit(1) },
-  { id: 'draft.toolbar.heading2', match: primaryDigit(2) },
-  { id: 'draft.toolbar.heading3', match: primaryDigit(3) },
-  { id: 'draft.toolbar.heading4', match: primaryDigit(4) },
-  { id: 'draft.toolbar.heading5', match: primaryDigit(5) },
-  { id: 'draft.toolbar.heading6', match: primaryDigit(6) },
-  { id: 'draft.toolbar.normalText', match: primaryKey('n') },
-  { id: 'draft.editor.duplicateLine', match: primaryKey('d') },
-  {
-    id: 'draft.editor.quickInsert',
-    match: (shortcut) =>
-      hasOnlyPrimaryModifier(shortcut) &&
-      (shortcut.key === ' ' || isCode(shortcut, 'Space')),
-  },
-  { id: 'draft.preview.edit', match: primaryShiftKey('e') },
+export const draftCommandShortcutActions: readonly ShortcutActionId[] = [
+  shortcutActionIds.editorUndo,
+  shortcutActionIds.editorRedo,
+  shortcutActionIds.editorDuplicateLine,
+  shortcutActionIds.editorMoveLineUp,
+  shortcutActionIds.editorMoveLineDown,
+  shortcutActionIds.editorMoveCursorWordLeft,
+  shortcutActionIds.editorMoveCursorWordRight,
+  shortcutActionIds.editorExtendSelectionWordLeft,
+  shortcutActionIds.editorExtendSelectionWordRight,
+  shortcutActionIds.editorContinueMarkdownBlock,
+  shortcutActionIds.editorIndentListItem,
+  shortcutActionIds.toolbarBold,
+  shortcutActionIds.toolbarItalic,
+  shortcutActionIds.toolbarUnderline,
+  shortcutActionIds.toolbarInlineCode,
+  shortcutActionIds.toolbarSpoiler,
+  shortcutActionIds.toolbarHighlight,
+  shortcutActionIds.toolbarComment,
+  shortcutActionIds.toolbarStrikethrough,
+  shortcutActionIds.toolbarLink,
+  shortcutActionIds.toolbarImage,
+  shortcutActionIds.toolbarNormalText,
+  shortcutActionIds.toolbarHeading1,
+  shortcutActionIds.toolbarHeading2,
+  shortcutActionIds.toolbarHeading3,
+  shortcutActionIds.toolbarHeading4,
+  shortcutActionIds.toolbarHeading5,
+  shortcutActionIds.toolbarHeading6,
+  shortcutActionIds.toolbarEditPreviewSelection,
+  shortcutActionIds.toolbarConfirmEdit,
+  shortcutActionIds.toolbarClose,
+  shortcutActionIds.quickInsertOpenMenu,
 ]
+
+const unguardedDefaultDraftActions: readonly ShortcutActionId[] = [
+  shortcutActionIds.editorContinueMarkdownBlock,
+  shortcutActionIds.editorIndentListItem,
+  shortcutActionIds.toolbarConfirmEdit,
+  shortcutActionIds.toolbarClose,
+]
+
+const globallyBlockedChangedDefaultActions = configurableShortcutActionIds.filter(
+  (actionId) =>
+    actionId !== shortcutActionIds.editorContinueMarkdownBlock &&
+    actionId !== shortcutActionIds.editorIndentListItem &&
+    actionId !== shortcutActionIds.toolbarConfirmEdit &&
+    actionId !== shortcutActionIds.toolbarClose &&
+    actionId !== shortcutActionIds.quickInsertKeepOpen,
+)
 
 export const blockedBrowserShortcuts: readonly BrowserShortcutDevelopmentRule[] = [
   { id: 'browser.print', match: primaryKey('p') },
@@ -247,6 +276,7 @@ export const blockedBrowserShortcuts: readonly BrowserShortcutDevelopmentRule[] 
 export function getBrowserShortcutPolicy(
   event: KeyboardEvent,
   allowDeveloperShortcuts = false,
+  shortcutBindings: ShortcutBindings = defaultShortcutBindings,
 ): BrowserShortcutPolicy {
   const shortcut = toShortcut(event)
   const allowedShortcut = allowedBrowserShortcuts.find((rule) =>
@@ -261,7 +291,7 @@ export function getBrowserShortcutPolicy(
   }
 
   const draftHandledShortcut = draftHandledBrowserShortcuts.find((rule) =>
-    rule.match(shortcut),
+    eventMatchesShortcutAction(event, shortcutBindings, rule.actionId),
   )
 
   if (draftHandledShortcut) {
@@ -272,14 +302,35 @@ export function getBrowserShortcutPolicy(
     }
   }
 
-  const draftCommandShortcut = draftCommandShortcuts.find((rule) =>
-    rule.match(shortcut),
-  )
+  const draftCommandShortcut = draftCommandShortcutActions.find((actionId) => {
+    if (!eventMatchesShortcutAction(event, shortcutBindings, actionId)) {
+      return false
+    }
+
+    return (
+      !unguardedDefaultDraftActions.includes(actionId) ||
+      !eventMatchesDefaultShortcutAction(event, actionId)
+    )
+  })
 
   if (draftCommandShortcut) {
     return {
       kind: 'passToDraftCommand',
-      shortcutId: draftCommandShortcut.id,
+      shortcutId: draftCommandShortcut,
+    }
+  }
+
+  const changedDefaultShortcut = globallyBlockedChangedDefaultActions.find((
+    actionId,
+  ) =>
+    eventMatchesDefaultShortcutAction(event, actionId) &&
+    !eventMatchesShortcutAction(event, shortcutBindings, actionId),
+  )
+
+  if (changedDefaultShortcut) {
+    return {
+      kind: 'blockBrowserDefault',
+      shortcutId: `default.${changedDefaultShortcut}`,
     }
   }
 
@@ -318,6 +369,7 @@ export function handleBrowserShortcutKeyDown(
   const policy = getBrowserShortcutPolicy(
     event,
     options.allowDeveloperShortcuts ?? false,
+    options.getShortcutBindings?.() ?? defaultShortcutBindings,
   )
 
   switch (policy.kind) {

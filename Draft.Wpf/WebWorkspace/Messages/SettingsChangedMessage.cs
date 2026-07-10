@@ -20,4 +20,5 @@ public sealed record SettingsChangedMessage(
     string CursorStyle,
     bool CursorBlinking,
     string PreviewScrollSyncMode,
-    string FloatingMarkdownToolbarMode);
+    string FloatingMarkdownToolbarMode,
+    IReadOnlyDictionary<string, string> Shortcuts);

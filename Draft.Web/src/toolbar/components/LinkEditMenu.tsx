@@ -7,6 +7,11 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
 } from 'react'
+import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
+import {
+  shortcutActionIds,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
 import { clamp } from '../../shared/utils/clamp'
 import { isValidHttpUrl } from '../../shared/validation/urlValidation'
 import type { ToolbarTooltipContent } from './ToolbarTooltip'
@@ -36,7 +41,9 @@ type LinkEditMenuProps = {
     tooltip: ToolbarTooltipContent,
   ) => void
   open: boolean
+  shortcutBindings: ShortcutBindings
   toolbarRef: RefObject<HTMLDivElement | null>
+  triggerShortcut?: string
   workspaceRef: RefObject<HTMLElement | null>
 }
 
@@ -118,7 +125,9 @@ function LinkEditMenu({
   onTooltipHide,
   onTooltipShow,
   open,
+  shortcutBindings,
   toolbarRef,
+  triggerShortcut,
   workspaceRef,
 }: LinkEditMenuProps) {
   const copy = linkEditCopy[kind]
@@ -263,13 +272,25 @@ function LinkEditMenu({
   const handleKeyDown = (event: ReactKeyboardEvent) => {
     event.stopPropagation()
 
-    if (event.key === 'Escape') {
+    if (
+      eventMatchesShortcutAction(
+        event.nativeEvent,
+        shortcutBindings,
+        shortcutActionIds.toolbarClose,
+      )
+    ) {
       event.preventDefault()
       onCancel()
       return
     }
 
-    if (event.key === 'Enter') {
+    if (
+      eventMatchesShortcutAction(
+        event.nativeEvent,
+        shortcutBindings,
+        shortcutActionIds.toolbarConfirmEdit,
+      )
+    ) {
       event.preventDefault()
       handleConfirm()
     }
@@ -294,7 +315,7 @@ function LinkEditMenu({
         onTooltipShow={onTooltipShow}
         tooltip={{
           label: copy.title,
-          shortcut: kind === 'link' ? 'CTRL + K' : 'CTRL + ALT + I',
+          shortcut: triggerShortcut,
         }}
       >
         <ToolbarIcon name={kind} />

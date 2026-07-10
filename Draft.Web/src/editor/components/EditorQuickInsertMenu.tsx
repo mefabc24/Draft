@@ -10,6 +10,11 @@ import {
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { CalloutType } from '../../markdown/callouts'
+import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
+import {
+  shortcutActionIds,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
 import {
   insertEditorQuickInsertCodeBlock,
   insertEditorQuickInsertExpander,
@@ -54,6 +59,7 @@ type EditorQuickInsertMenuProps = {
   onContentLayoutChange: () => void
   onKeepOpenAction: (action: () => number | false | null) => void
   position: EditorQuickInsertMenuPosition | null
+  shortcutBindings: ShortcutBindings
   target: EditorQuickInsertMenuAnchor | null
 }
 
@@ -210,6 +216,7 @@ function EditorQuickInsertMenu({
   onContentLayoutChange,
   onKeepOpenAction,
   position,
+  shortcutBindings,
   target,
 }: EditorQuickInsertMenuProps) {
   const [expandedSections, setExpandedSections] = useState(
@@ -273,7 +280,13 @@ function EditorQuickInsertMenu({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') {
+      if (
+        !eventMatchesShortcutAction(
+          event,
+          shortcutBindings,
+          shortcutActionIds.toolbarClose,
+        )
+      ) {
         return
       }
 
@@ -287,7 +300,7 @@ function EditorQuickInsertMenu({
       document.removeEventListener('pointerdown', handlePointerDown, true)
       document.removeEventListener('keydown', handleKeyDown, true)
     }
-  }, [menuRef, onClose, target])
+  }, [menuRef, onClose, shortcutBindings, target])
 
   useEffect(() => {
     if (!menuOpen) {

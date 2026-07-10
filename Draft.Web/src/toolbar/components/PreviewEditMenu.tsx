@@ -8,6 +8,11 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
 } from 'react'
+import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
+import {
+  shortcutActionIds,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
 import { clamp } from '../../shared/utils/clamp'
 import type { ToolbarTooltipContent } from './ToolbarTooltip'
 import ToolbarButton from './ToolbarButton'
@@ -25,8 +30,10 @@ type PreviewEditMenuProps = {
     tooltip: ToolbarTooltipContent,
   ) => void
   open: boolean
+  shortcutBindings: ShortcutBindings
   sourceText: string
   toolbarRef: RefObject<HTMLDivElement | null>
+  triggerShortcut: string
   workspaceRef: RefObject<HTMLElement | null>
 }
 
@@ -67,8 +74,10 @@ function PreviewEditMenu({
   onTooltipHide,
   onTooltipShow,
   open,
+  shortcutBindings,
   sourceText,
   toolbarRef,
+  triggerShortcut,
   workspaceRef,
 }: PreviewEditMenuProps) {
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -281,13 +290,25 @@ function PreviewEditMenu({
   const handleKeyDown = (event: ReactKeyboardEvent) => {
     event.stopPropagation()
 
-    if (event.key === 'Escape') {
+    if (
+      eventMatchesShortcutAction(
+        event.nativeEvent,
+        shortcutBindings,
+        shortcutActionIds.toolbarClose,
+      )
+    ) {
       event.preventDefault()
       onCancel()
       return
     }
 
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (
+      eventMatchesShortcutAction(
+        event.nativeEvent,
+        shortcutBindings,
+        shortcutActionIds.toolbarConfirmEdit,
+      )
+    ) {
       event.preventDefault()
       handleConfirm()
     }
@@ -304,7 +325,7 @@ function PreviewEditMenu({
         onClick={handleOpen}
         onTooltipHide={onTooltipHide}
         onTooltipShow={onTooltipShow}
-        tooltip={{ label: 'Edit', shortcut: 'CTRL + SHIFT + E' }}
+        tooltip={{ label: 'Edit', shortcut: triggerShortcut }}
       >
         <ToolbarIcon name="edit" />
       </ToolbarButton>

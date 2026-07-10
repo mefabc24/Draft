@@ -21,16 +21,25 @@
                 Style="{StaticResource ShortcutRecorderText}"
                 Text="{Binding DisplayText, ElementName=Root, FallbackValue='CTRL + S'}" />
 
-            <Button
-                x:Name="RecordButton"
-                Grid.Column="1"
-                AutomationProperties.Name="Record shortcut"
-                Click="RecordButton_Click"
-                Style="{StaticResource ShortcutRecordButton}">
-                <Path
-                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-                    Style="{StaticResource ShortcutRecorderIcon}" />
-            </Button>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" FlowDirection="RightToLeft">
+                <Button
+                    x:Name="RecordButton"
+                    Margin="0,0,4,0"
+                    AutomationProperties.Name="Record shortcut"
+                    Click="RecordButton_Click"
+                    Style="{StaticResource ShortcutRecordButton}">
+                    <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" Style="{StaticResource ShortcutRecorderIcon}" />
+                </Button>
+                <Button
+                    x:Name="ResetButton"
+                    AutomationProperties.Name="Record shortcut"
+                    Click="RecordButton_Click"
+                    Style="{StaticResource ShortcutRecordButton}">
+                    <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" Style="{StaticResource ShortcutRestoreIcon}" />
+                </Button>
+            </StackPanel>
+
         </Grid>
     </Border>
 </UserControl>

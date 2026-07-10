@@ -7,6 +7,13 @@ import {
   type RefObject,
 } from 'react'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import {
+  getMonacoShortcutKeybinding,
+} from '../../shortcuts/shortcutMatching'
+import {
+  shortcutActionIds,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
 import { clamp } from '../../shared/utils/clamp'
 import {
   getEditorQuickInsertTargetFromPosition,
@@ -115,6 +122,7 @@ function clampQuickInsertMenuPosition(
 export function useEditorQuickInsertMenu(
   editor: monaco.editor.IStandaloneCodeEditor | null,
   editorBodyRef: RefObject<HTMLDivElement | null>,
+  shortcutBindings: ShortcutBindings,
 ) {
   const [menuTarget, setMenuTarget] =
     useState<EditorQuickInsertMenuTarget | null>(null)
@@ -378,7 +386,14 @@ export function useEditorQuickInsertMenu(
     const action = editor.addAction({
       id: 'draft.editorQuickInsert.openMenu',
       label: 'Quick Insert: Open Menu',
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space],
+      keybindings: (() => {
+        const keybinding = getMonacoShortcutKeybinding(
+          shortcutBindings,
+          shortcutActionIds.quickInsertOpenMenu,
+        )
+
+        return keybinding === null ? [] : [keybinding]
+      })(),
       run: () => {
         openMenuAtCursor()
       },
@@ -387,7 +402,7 @@ export function useEditorQuickInsertMenu(
     return () => {
       action.dispose()
     }
-  }, [editor, openMenuAtCursor])
+  }, [editor, openMenuAtCursor, shortcutBindings])
 
   useEffect(() => {
     if (!editor || !menuTarget) {

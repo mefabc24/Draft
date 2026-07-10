@@ -6,6 +6,7 @@ using Draft.Dialogs.Prompts.RevertSave.Models;
 using Draft.Export.Models;
 using Draft.Export.Services;
 using Draft.Save.Models;
+using Draft.Settings.Shortcuts;
 using Draft.Shell.Services;
 using Draft.Shell.ViewModels;
 using Draft.WebWorkspace.Services;
@@ -37,6 +38,7 @@ public partial class MainWindow : Window
     private readonly DocumentExportService _documentExportService = new();
     private readonly DraftWebViewHostService _webViewHostService = new();
     private readonly DraftWebViewMessageBridge _webViewMessageBridge = new();
+    private readonly List<InputBinding> _shortcutInputBindings = new();
     private readonly WindowSizingService _windowSizingService = new();
     private DraftSettings _settings;
     private bool _isWebViewNavigationReady;
@@ -85,6 +87,7 @@ public partial class MainWindow : Window
         _windowSizingService.ApplyMinimumWindowSize(this, _settings);
         viewModel.ApplySettings(_settings);
         DataContext = viewModel;
+        RefreshShellShortcutBindings();
         SubscribeToViewModel(viewModel);
         Loaded += MainWindow_Loaded;
         LocationChanged += MainWindow_PositionChanged;
@@ -558,6 +561,7 @@ public partial class MainWindow : Window
         _settings = AppSettingsStore.Normalize(settings);
         _windowSizingService.ApplyMinimumWindowSize(this, _settings);
         ViewModel?.ApplySettings(_settings);
+        RefreshShellShortcutBindings();
         PostSettingsToWebView();
     }
 
@@ -566,6 +570,7 @@ public partial class MainWindow : Window
         return new DraftSettings
         {
             ReopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup,
+            CheckForUpdatesOnStartup = settings.CheckForUpdatesOnStartup,
             AutosaveEnabled = settings.AutosaveEnabled,
             AutosaveInterval = settings.AutosaveInterval,
             SaveOnFocusLost = settings.SaveOnFocusLost,
@@ -609,6 +614,7 @@ public partial class MainWindow : Window
             IsStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible,
             WindowBorderAccentMode = settings.WindowBorderAccentMode,
             ToolbarControlbarPosition = settings.ToolbarControlbarPosition,
+            Shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts),
         };
     }
 
@@ -654,6 +660,181 @@ public partial class MainWindow : Window
             WorkspaceWebView.CoreWebView2,
             line,
             column);
+    }
+
+    private void RefreshShellShortcutBindings()
+    {
+        foreach (InputBinding binding in _shortcutInputBindings)
+        {
+            InputBindings.Remove(binding);
+        }
+
+        _shortcutInputBindings.Clear();
+
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        AddShellShortcutBinding(ShortcutActionIds.AppSave, viewModel.SaveFileCommand);
+        AddShellShortcutBinding(ShortcutActionIds.AppOpen, viewModel.OpenFileCommand);
+    }
+
+    private void AddShellShortcutBinding(string actionId, ICommand command)
+    {
+        string shortcut = ShortcutSettingsCatalog.GetShortcut(_settings.Shortcuts, actionId);
+
+        if (!TryCreateKeyGesture(shortcut, out KeyGesture? gesture))
+            return;
+
+        KeyBinding binding = new(command, gesture);
+        InputBindings.Add(binding);
+        _shortcutInputBindings.Add(binding);
+    }
+
+    private static bool TryCreateKeyGesture(string shortcut, out KeyGesture? gesture)
+    {
+        gesture = null;
+
+        if (string.IsNullOrWhiteSpace(shortcut))
+            return false;
+
+        string[] parts = SplitShortcutParts(shortcut);
+        ModifierKeys modifiers = ModifierKeys.None;
+        Key key = Key.None;
+
+        foreach (string part in parts)
+        {
+            if (TryReadModifier(part, ref modifiers))
+                continue;
+
+            if (key != Key.None || !TryReadShortcutKey(part, out key))
+                return false;
+        }
+
+        if (key == Key.None)
+            return false;
+
+        try
+        {
+            gesture = new KeyGesture(key, modifiers);
+            return true;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    private static string[] SplitShortcutParts(string shortcut)
+    {
+        string trimmedShortcut = shortcut.Trim();
+
+        if (trimmedShortcut.Contains(" + ", StringComparison.Ordinal))
+        {
+            return trimmedShortcut
+                .Split(" + ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        }
+
+        return trimmedShortcut
+            .Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    private static bool TryReadModifier(string part, ref ModifierKeys modifiers)
+    {
+        switch (part.Trim().ToUpperInvariant())
+        {
+            case "CTRL":
+            case "CONTROL":
+                modifiers |= ModifierKeys.Control;
+                return true;
+            case "SHIFT":
+                modifiers |= ModifierKeys.Shift;
+                return true;
+            case "ALT":
+                modifiers |= ModifierKeys.Alt;
+                return true;
+            case "WIN":
+            case "WINDOWS":
+                modifiers |= ModifierKeys.Windows;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryReadShortcutKey(string part, out Key key)
+    {
+        string normalized = part.Trim();
+
+        if (normalized.Length == 1)
+        {
+            char character = char.ToUpperInvariant(normalized[0]);
+
+            if (character is >= 'A' and <= 'Z')
+            {
+                key = (Key)((int)Key.A + (character - 'A'));
+                return true;
+            }
+
+            if (character is >= '0' and <= '9')
+            {
+                key = (Key)((int)Key.D0 + (character - '0'));
+                return true;
+            }
+        }
+
+        if (normalized.StartsWith("F", StringComparison.OrdinalIgnoreCase)
+            && int.TryParse(normalized[1..], out int functionKey)
+            && functionKey is >= 1 and <= 24)
+        {
+            key = (Key)((int)Key.F1 + (functionKey - 1));
+            return true;
+        }
+
+        if (normalized.StartsWith("Num ", StringComparison.OrdinalIgnoreCase)
+            && normalized.Length == 5
+            && char.IsDigit(normalized[4]))
+        {
+            key = (Key)((int)Key.NumPad0 + (normalized[4] - '0'));
+            return true;
+        }
+
+        key = normalized.ToUpperInvariant() switch
+        {
+            "ENTER" => Key.Return,
+            "ESC" or "ESCAPE" => Key.Escape,
+            "SPACE" => Key.Space,
+            "BACKSPACE" => Key.Back,
+            "DELETE" => Key.Delete,
+            "TAB" => Key.Tab,
+            "LEFT" => Key.Left,
+            "RIGHT" => Key.Right,
+            "UP" => Key.Up,
+            "DOWN" => Key.Down,
+            "HOME" => Key.Home,
+            "END" => Key.End,
+            "INSERT" => Key.Insert,
+            "PAGE UP" => Key.PageUp,
+            "PAGE DOWN" => Key.PageDown,
+            "/" => Key.OemQuestion,
+            "+" => Key.OemPlus,
+            "-" => Key.OemMinus,
+            "NUM +" => Key.Add,
+            "NUM -" => Key.Subtract,
+            "NUM *" => Key.Multiply,
+            "NUM /" => Key.Divide,
+            "NUM ." => Key.Decimal,
+            "," => Key.OemComma,
+            "." => Key.OemPeriod,
+            "[" => Key.OemOpenBrackets,
+            "]" => Key.OemCloseBrackets,
+            ";" => Key.OemSemicolon,
+            "'" => Key.OemQuotes,
+            "`" => Key.OemTilde,
+            "\\" => Key.OemBackslash,
+            _ => Key.None,
+        };
+
+        return key != Key.None;
     }
 
     private void FocusWorkspaceWebView()

@@ -8,6 +8,7 @@ using System.Security;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Draft.Settings.Shortcuts;
 
 namespace Draft.Shell.ViewModels;
 
@@ -49,6 +50,8 @@ public class MainWindowViewModel : BaseViewModel
     private bool _isStatusBarAppVersionVisible = true;
     private bool _isCopyMarkdownFeedbackVisible;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
+    private string _openShortcut = ShortcutSettingsCatalog.GetShortcut(null, ShortcutActionIds.AppOpen);
+    private string _saveShortcut = ShortcutSettingsCatalog.GetShortcut(null, ShortcutActionIds.AppSave);
     private string _defaultSaveLocation = string.Empty;
 
     public WorkspaceState WorkspaceState
@@ -451,6 +454,18 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand OpenRevertSavePromptCommand { get; }
 
+    public string OpenShortcut
+    {
+        get => _openShortcut;
+        private set => SetProperty(ref _openShortcut, value);
+    }
+
+    public string SaveShortcut
+    {
+        get => _saveShortcut;
+        private set => SetProperty(ref _saveShortcut, value);
+    }
+
     public event EventHandler? OpenFileRequested;
 
     public event EventHandler? SaveFileAsRequested;
@@ -563,6 +578,8 @@ public class MainWindowViewModel : BaseViewModel
         IsStatusBarAutosaveStatusVisible = settings.IsStatusBarAutosaveStatusVisible;
         IsStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible;
         WindowBorderAccentMode = settings.WindowBorderAccentMode;
+        OpenShortcut = ShortcutSettingsCatalog.GetShortcut(settings.Shortcuts, ShortcutActionIds.AppOpen);
+        SaveShortcut = ShortcutSettingsCatalog.GetShortcut(settings.Shortcuts, ShortcutActionIds.AppSave);
 
         // TODO: Wire ToolbarControlbarPosition when alternate control bar layouts exist.
     }
