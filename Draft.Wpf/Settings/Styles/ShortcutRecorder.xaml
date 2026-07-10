@@ -110,6 +110,13 @@
                 <Setter Property="Background" Value="{StaticResource ShortcutRecorderActiveButtonHoverBackground}" />
                 <Setter Property="Foreground" Value="{StaticResource Brush.Function.Critical}" />
             </MultiDataTrigger>
+
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Cursor" Value="Arrow" />
+                <Setter Property="Foreground" Value="{StaticResource Brush.Text.Muted}" />
+                <Setter Property="Opacity" Value="1" />
+            </Trigger>
         </Style.Triggers>
     </Style>
 

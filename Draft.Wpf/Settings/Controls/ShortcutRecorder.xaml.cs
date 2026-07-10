@@ -19,6 +19,16 @@ public partial class ShortcutRecorder : UserControl
     public static readonly DependencyProperty IsRecordingProperty =
         IsRecordingPropertyKey.DependencyProperty;
 
+    private static readonly DependencyPropertyKey IsResetAvailablePropertyKey =
+        DependencyProperty.RegisterReadOnly(
+            nameof(IsResetAvailable),
+            typeof(bool),
+            typeof(ShortcutRecorder),
+            new PropertyMetadata(false));
+
+    public static readonly DependencyProperty IsResetAvailableProperty =
+        IsResetAvailablePropertyKey.DependencyProperty;
+
     public static readonly DependencyProperty ShortcutTextProperty =
         DependencyProperty.Register(
             nameof(ShortcutText),
@@ -41,7 +51,7 @@ public partial class ShortcutRecorder : UserControl
             nameof(DefaultShortcutText),
             typeof(string),
             typeof(ShortcutRecorder),
-            new PropertyMetadata(string.Empty));
+            new PropertyMetadata(string.Empty, OnDefaultShortcutTextChanged));
 
     public static readonly DependencyProperty PlaceholderProperty =
         DependencyProperty.Register(
@@ -73,7 +83,11 @@ public partial class ShortcutRecorder : UserControl
         _previewKeyDownHandler = OnRecordingPreviewKeyDown;
         _previewKeyUpHandler = OnRecordingPreviewKeyUp;
 
-        Loaded += (_, _) => UpdateDisplayTextFromShortcut();
+        Loaded += (_, _) =>
+        {
+            UpdateDisplayTextFromShortcut();
+            UpdateResetAvailability();
+        };
         Unloaded += (_, _) => StopRecording(commit: false);
         IsEnabledChanged += (_, _) =>
         {
@@ -88,6 +102,12 @@ public partial class ShortcutRecorder : UserControl
     {
         get => (bool)GetValue(IsRecordingProperty);
         private set => SetValue(IsRecordingPropertyKey, value);
+    }
+
+    public bool IsResetAvailable
+    {
+        get => (bool)GetValue(IsResetAvailableProperty);
+        private set => SetValue(IsResetAvailablePropertyKey, value);
     }
 
     public string ShortcutText
@@ -122,8 +142,19 @@ public partial class ShortcutRecorder : UserControl
 
     private static void OnShortcutTextChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
     {
-        if (dependencyObject is ShortcutRecorder recorder && !recorder.IsRecording)
+        if (dependencyObject is not ShortcutRecorder recorder)
+            return;
+
+        if (!recorder.IsRecording)
             recorder.UpdateDisplayTextFromShortcut();
+
+        recorder.UpdateResetAvailability();
+    }
+
+    private static void OnDefaultShortcutTextChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+    {
+        if (dependencyObject is ShortcutRecorder recorder)
+            recorder.UpdateResetAvailability();
     }
 
     private static void OnPlaceholderChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
@@ -339,6 +370,16 @@ public partial class ShortcutRecorder : UserControl
         DisplayText = string.IsNullOrWhiteSpace(ShortcutText)
             ? Placeholder
             : ShortcutText;
+    }
+
+    private void UpdateResetAvailability()
+    {
+        string defaultShortcut = DefaultShortcutText.Trim();
+        string currentShortcut = ShortcutText.Trim();
+
+        IsResetAvailable =
+            !string.IsNullOrWhiteSpace(defaultShortcut) &&
+            !string.Equals(currentShortcut, defaultShortcut, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string FormatShortcut(IReadOnlyList<Key> keys)
