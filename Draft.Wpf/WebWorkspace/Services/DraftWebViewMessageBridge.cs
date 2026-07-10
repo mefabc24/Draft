@@ -151,6 +151,7 @@ public sealed class DraftWebViewMessageBridge
         Action<string, int?> documentChanged,
         Action<int, int, int> cursorPositionChanged,
         Action saveRequested,
+        Action openRequested,
         Action<string> openExternalUrl)
     {
         if (string.IsNullOrWhiteSpace(message))
@@ -185,6 +186,9 @@ public sealed class DraftWebViewMessageBridge
                     break;
                 case DraftWebViewMessageTypes.SaveRequested:
                     saveRequested();
+                    break;
+                case DraftWebViewMessageTypes.OpenRequested:
+                    openRequested();
                     break;
                 case DraftWebViewMessageTypes.OpenExternalUrl:
                     DispatchOpenExternalUrlMessage(root, openExternalUrl);

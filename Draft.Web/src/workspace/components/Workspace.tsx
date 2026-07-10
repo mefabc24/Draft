@@ -37,6 +37,7 @@ import {
   parseWorkspaceModeMessage,
   postCursorPositionChanged as postCursorPositionChangedMessage,
   postDocumentChanged,
+  postOpenRequested,
   postSaveRequested,
   postStartupStateApplied,
   postWorkspaceReady,
@@ -47,6 +48,10 @@ import {
 } from '../../app/webview/draftWebViewMessages'
 import type { WebViewMessageEvent } from '../../app/webview/webViewTypes'
 import { createPreviewExportHtml } from '../../export/previewExport'
+import {
+  addBrowserShortcutGuard,
+  type BrowserShortcutDraftCommand,
+} from '../../shortcuts/browserShortcutGuard'
 import { usePreviewScrollSync } from '../hooks/usePreviewScrollSync'
 import { useSplitSizing } from '../hooks/useSplitSizing'
 import { isViewMode, type ViewMode } from '../workspaceTypes'
@@ -80,6 +85,10 @@ function postCursorPositionChanged(editor: monaco.editor.IStandaloneCodeEditor) 
     column: position?.column ?? 1,
     selectedCharacterCount: getSelectedCharacterCount(editor),
   })
+}
+
+function isDraftWebViewHost() {
+  return window.chrome?.webview !== undefined
 }
 
 function Workspace() {
@@ -376,27 +385,21 @@ function Workspace() {
   }, [viewMode])
 
   useEffect(() => {
-    const handleSaveShortcut = (event: KeyboardEvent) => {
-      const isSaveShortcut =
-        (event.ctrlKey || event.metaKey) &&
-        !event.altKey &&
-        !event.shiftKey &&
-        (event.key.toLowerCase() === 's' || event.code === 'KeyS')
-
-      if (!isSaveShortcut) {
-        return
+    const handleDraftShortcutCommand = (command: BrowserShortcutDraftCommand) => {
+      switch (command) {
+        case 'open':
+          postOpenRequested()
+          return
+        case 'save':
+          postSaveRequested()
+          return
       }
-
-      event.preventDefault()
-      event.stopPropagation()
-      postSaveRequested()
     }
 
-    document.addEventListener('keydown', handleSaveShortcut, true)
-
-    return () => {
-      document.removeEventListener('keydown', handleSaveShortcut, true)
-    }
+    return addBrowserShortcutGuard({
+      allowDeveloperShortcuts: import.meta.env.DEV && !isDraftWebViewHost(),
+      onDraftCommand: handleDraftShortcutCommand,
+    })
   }, [])
 
   useEffect(() => {

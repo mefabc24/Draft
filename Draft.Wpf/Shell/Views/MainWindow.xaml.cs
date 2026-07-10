@@ -824,6 +824,7 @@ public partial class MainWindow : Window
             UpdateContentFromWeb,
             viewModel.UpdateCursorPosition,
             () => viewModel.SaveFileCommand.Execute(null),
+            () => viewModel.OpenFileCommand.Execute(null),
             OpenExternalUrl);
     }
 
