@@ -28,17 +28,29 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
                         "Duplicate the active editor line.",
                         "Ctrl + D"),
                     new ShortcutItemViewModel(
-                        "Move line or selection",
-                        "Move the active editor line or selected lines up or down.",
-                        "Ctrl + Shift + Up / Down"),
+                        "Move line or selection up",
+                        "Move the active editor line or selected lines up.",
+                        "Ctrl + Shift + Up"),
                     new ShortcutItemViewModel(
-                        "Move by word",
-                        "Move the cursor one word left or right in the editor.",
-                        "Ctrl + Left / Right"),
+                        "Move line or selection down",
+                        "Move the active editor line or selected lines down.",
+                        "Ctrl + Shift + Down"),
                     new ShortcutItemViewModel(
-                        "Select by word",
-                        "Extend the selection one word left or right.",
-                        "Ctrl + Shift + Left / Right"),
+                        "Move cursor one word left",
+                        "Move the editor cursor one word left.",
+                        "Ctrl + Left"),
+                    new ShortcutItemViewModel(
+                        "Move cursor one word right",
+                        "Move the editor cursor one word right.",
+                        "Ctrl + Right"),
+                    new ShortcutItemViewModel(
+                        "Extend selection one word left",
+                        "Extend the editor selection one word left.",
+                        "Ctrl + Shift + Left"),
+                    new ShortcutItemViewModel(
+                        "Extend selection one word right",
+                        "Extend the editor selection one word right.",
+                        "Ctrl + Shift + Right"),
                     new ShortcutItemViewModel(
                         "Continue Markdown block",
                         "Continue the current list or quote on the next line.",
