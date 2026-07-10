@@ -21,6 +21,7 @@
                     <settings:ShortcutRecorder
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
+                        DefaultShortcutText="{Binding DefaultShortcut}"
                         ShortcutText="{Binding Shortcut, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Visibility="{Binding IsEditable, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <Border>

@@ -36,6 +36,13 @@ public partial class ShortcutRecorder : UserControl
             typeof(ShortcutRecorder),
             new PropertyMetadata(null));
 
+    public static readonly DependencyProperty DefaultShortcutTextProperty =
+        DependencyProperty.Register(
+            nameof(DefaultShortcutText),
+            typeof(string),
+            typeof(ShortcutRecorder),
+            new PropertyMetadata(string.Empty));
+
     public static readonly DependencyProperty PlaceholderProperty =
         DependencyProperty.Register(
             nameof(Placeholder),
@@ -95,6 +102,12 @@ public partial class ShortcutRecorder : UserControl
         set => SetValue(ShortcutChangedCommandProperty, value);
     }
 
+    public string DefaultShortcutText
+    {
+        get => (string?)GetValue(DefaultShortcutTextProperty) ?? string.Empty;
+        set => SetValue(DefaultShortcutTextProperty, value);
+    }
+
     public string Placeholder
     {
         get => (string?)GetValue(PlaceholderProperty) ?? string.Empty;
@@ -130,6 +143,24 @@ public partial class ShortcutRecorder : UserControl
         }
 
         StartRecording();
+    }
+
+    private void ResetButton_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+
+        if (IsRecording)
+            StopRecording(commit: false);
+
+        string defaultShortcut = DefaultShortcutText.Trim();
+        if (string.IsNullOrWhiteSpace(defaultShortcut))
+            return;
+
+        ShortcutText = defaultShortcut;
+        ShortcutChanged?.Invoke(this, new ShortcutChangedEventArgs(defaultShortcut));
+
+        if (ShortcutChangedCommand?.CanExecute(defaultShortcut) == true)
+            ShortcutChangedCommand.Execute(defaultShortcut);
     }
 
     private void StartRecording()

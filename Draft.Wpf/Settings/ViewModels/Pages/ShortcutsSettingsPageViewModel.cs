@@ -53,6 +53,8 @@ public sealed class ShortcutItemViewModel : BaseViewModel
 
     public string Description => _definition.Description;
 
+    public string DefaultShortcut => _definition.DefaultShortcut;
+
     public bool IsEditable => _definition.IsEditable;
 
     public string Shortcut
