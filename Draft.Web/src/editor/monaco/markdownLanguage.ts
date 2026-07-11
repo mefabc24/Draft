@@ -15,6 +15,11 @@ const draftQuotePairs = [
   { open: '`', close: '`' },
 ]
 
+const draftEmptyHtmlTagRules: monaco.languages.IMonarchLanguageRule[] = [
+  [/<>/, 'tag'],
+  [/<\/>/, 'tag'],
+]
+
 type LanguagePair = {
   close: string
   open: string
@@ -72,6 +77,10 @@ export function registerDraftMarkdownLanguage() {
     ...language,
     tokenizer: {
       ...language.tokenizer,
+      html: [
+        ...draftEmptyHtmlTagRules,
+        ...(language.tokenizer.html ?? []),
+      ],
       root: [
         [/^\s*\|/, '@rematch', '@table_header'],
         [

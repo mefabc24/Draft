@@ -241,6 +241,17 @@ function parseOpeningTagCandidate(
     return null
   }
 
+  if (tagEndOffset === tagStartOffset + 1) {
+    return {
+      isSelfClosing: false,
+      tagEndOffset,
+      tagName: '',
+      tagNameEndOffset: tagStartOffset + 1,
+      tagNameStartOffset: tagStartOffset + 1,
+      tagStartOffset,
+    }
+  }
+
   const firstTagNameCharacter = line[tagStartOffset + 1] ?? ''
 
   if (!isTagNameStart(firstTagNameCharacter)) {
@@ -321,8 +332,7 @@ function parseClosingTagAt(
 ): HtmlClosingTag | null {
   if (
     line[tagStartOffset] !== '<' ||
-    line[tagStartOffset + 1] !== '/' ||
-    !isTagNameStart(line[tagStartOffset + 2] ?? '')
+    line[tagStartOffset + 1] !== '/'
   ) {
     return null
   }
@@ -330,6 +340,20 @@ function parseClosingTagAt(
   const tagEndOffset = findTagEndOffset(line, tagStartOffset)
 
   if (tagEndOffset === -1) {
+    return null
+  }
+
+  if (tagEndOffset === tagStartOffset + 2) {
+    return {
+      tagEndOffset,
+      tagName: '',
+      tagNameEndOffset: tagStartOffset + 2,
+      tagNameStartOffset: tagStartOffset + 2,
+      tagStartOffset,
+    }
+  }
+
+  if (!isTagNameStart(line[tagStartOffset + 2] ?? '')) {
     return null
   }
 
@@ -364,6 +388,7 @@ function shouldInsertClosingTag(
   lineAfterOpeningGreaterThan: string,
 ) {
   return (
+    openingTag.tagName.length > 0 &&
     !openingTag.isSelfClosing &&
     !isVoidHtmlTag(openingTag.tagName) &&
     !getClosingTagAtStart(lineAfterOpeningGreaterThan)
@@ -522,7 +547,7 @@ export function completeMarkdownHtmlSelfClosingSlash(
     context.cursorOffset,
   )
 
-  if (!openingTag || openingTag.isSelfClosing) {
+  if (!openingTag || openingTag.tagName.length === 0 || openingTag.isSelfClosing) {
     return false
   }
 
@@ -574,7 +599,7 @@ function findOpeningTagAtCursorInName(
 
   if (
     !openingTag ||
-    cursorOffset <= openingTag.tagNameStartOffset ||
+    cursorOffset < openingTag.tagNameStartOffset ||
     cursorOffset > openingTag.tagNameEndOffset
   ) {
     return null
@@ -597,7 +622,7 @@ function findClosingTagAtCursorInName(
 
   if (
     !closingTag ||
-    cursorOffset <= closingTag.tagNameStartOffset ||
+    cursorOffset < closingTag.tagNameStartOffset ||
     cursorOffset > closingTag.tagNameEndOffset
   ) {
     return null
