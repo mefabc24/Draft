@@ -14,20 +14,20 @@ public partial class ShortcutRecorder : UserControl
             nameof(IsRecording),
             typeof(bool),
             typeof(ShortcutRecorder),
-            new PropertyMetadata(false));
+            new PropertyMetadata(false, OnIsRecordingChanged));
 
     public static readonly DependencyProperty IsRecordingProperty =
         IsRecordingPropertyKey.DependencyProperty;
 
-    private static readonly DependencyPropertyKey IsResetAvailablePropertyKey =
+    private static readonly DependencyPropertyKey ResetButtonVisibilityPropertyKey =
         DependencyProperty.RegisterReadOnly(
-            nameof(IsResetAvailable),
-            typeof(bool),
+            nameof(ResetButtonVisibility),
+            typeof(Visibility),
             typeof(ShortcutRecorder),
-            new PropertyMetadata(false));
+            new PropertyMetadata(Visibility.Collapsed));
 
-    public static readonly DependencyProperty IsResetAvailableProperty =
-        IsResetAvailablePropertyKey.DependencyProperty;
+    public static readonly DependencyProperty ResetButtonVisibilityProperty =
+        ResetButtonVisibilityPropertyKey.DependencyProperty;
 
     public static readonly DependencyProperty ShortcutTextProperty =
         DependencyProperty.Register(
@@ -86,7 +86,7 @@ public partial class ShortcutRecorder : UserControl
         Loaded += (_, _) =>
         {
             UpdateDisplayTextFromShortcut();
-            UpdateResetAvailability();
+            UpdateResetButtonVisibility();
         };
         Unloaded += (_, _) => StopRecording(commit: false);
         IsEnabledChanged += (_, _) =>
@@ -104,10 +104,10 @@ public partial class ShortcutRecorder : UserControl
         private set => SetValue(IsRecordingPropertyKey, value);
     }
 
-    public bool IsResetAvailable
+    public Visibility ResetButtonVisibility
     {
-        get => (bool)GetValue(IsResetAvailableProperty);
-        private set => SetValue(IsResetAvailablePropertyKey, value);
+        get => (Visibility)GetValue(ResetButtonVisibilityProperty);
+        private set => SetValue(ResetButtonVisibilityPropertyKey, value);
     }
 
     public string ShortcutText
@@ -140,6 +140,12 @@ public partial class ShortcutRecorder : UserControl
         private set => SetValue(DisplayTextProperty, value);
     }
 
+    private static void OnIsRecordingChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+    {
+        if (dependencyObject is ShortcutRecorder recorder)
+            recorder.UpdateResetButtonVisibility();
+    }
+
     private static void OnShortcutTextChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
     {
         if (dependencyObject is not ShortcutRecorder recorder)
@@ -148,13 +154,13 @@ public partial class ShortcutRecorder : UserControl
         if (!recorder.IsRecording)
             recorder.UpdateDisplayTextFromShortcut();
 
-        recorder.UpdateResetAvailability();
+        recorder.UpdateResetButtonVisibility();
     }
 
     private static void OnDefaultShortcutTextChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
     {
         if (dependencyObject is ShortcutRecorder recorder)
-            recorder.UpdateResetAvailability();
+            recorder.UpdateResetButtonVisibility();
     }
 
     private static void OnPlaceholderChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
@@ -372,14 +378,19 @@ public partial class ShortcutRecorder : UserControl
             : ShortcutText;
     }
 
-    private void UpdateResetAvailability()
+    private void UpdateResetButtonVisibility()
     {
         string defaultShortcut = DefaultShortcutText.Trim();
         string currentShortcut = ShortcutText.Trim();
 
-        IsResetAvailable =
+        bool isResetAvailable =
+            !IsRecording &&
             !string.IsNullOrWhiteSpace(defaultShortcut) &&
             !string.Equals(currentShortcut, defaultShortcut, StringComparison.OrdinalIgnoreCase);
+
+        ResetButtonVisibility = isResetAvailable
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private static string FormatShortcut(IReadOnlyList<Key> keys)
