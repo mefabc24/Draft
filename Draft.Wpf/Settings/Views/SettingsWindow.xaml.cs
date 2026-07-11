@@ -63,15 +63,26 @@ public partial class SettingsWindow : Window
         object? sender,
         ResetConfirmationRequestedEventArgs e)
     {
+        string appLanguage = sender is SettingsWindowViewModel viewModel
+            ? viewModel.AppLanguage
+            : AppSettingsStore.DefaultAppLanguage;
+
         MessageDialogResult result = _messageDialogService.ShowMessage(
             new MessageDialogRequest(
-                "Reset Settings",
-                "Reset all settings to their default values? This will be saved immediately.",
+                LocalizationService.Translate("settings.resetDefaults.title", "Reset Settings", appLanguage),
+                LocalizationService.Translate(
+                    "settings.resetDefaults.description",
+                    "Reset all settings to their default values? This will be saved immediately.",
+                    appLanguage),
                 MessageDialogType.Warning,
                 new[]
                 {
-                    MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
-                    MessageDialogButtonDefinition.Primary("Reset", new MessageDialogResult("reset")),
+                    MessageDialogButtonDefinition.Secondary(
+                        LocalizationService.Translate("common.cancel", "Cancel", appLanguage),
+                        MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Primary(
+                        LocalizationService.Translate("common.reset", "Reset", appLanguage),
+                        new MessageDialogResult("reset")),
                 }));
 
         e.IsConfirmed = result.Id == "reset";

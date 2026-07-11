@@ -8,6 +8,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
 } from 'react'
+import { useTranslation } from '../../localization/useTranslation'
 import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
 import {
   shortcutActionIds,
@@ -80,6 +81,7 @@ function PreviewEditMenu({
   triggerShortcut,
   workspaceRef,
 }: PreviewEditMenuProps) {
+  const { t } = useTranslation()
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -321,11 +323,11 @@ function PreviewEditMenu({
         active={open}
         ariaExpanded={open}
         ariaHasPopup="dialog"
-        ariaLabel="Edit selected Markdown"
+        ariaLabel={t('toolbar.editSelectedMarkdown', 'Edit selected Markdown')}
         onClick={handleOpen}
         onTooltipHide={onTooltipHide}
         onTooltipShow={onTooltipShow}
-        tooltip={{ label: 'Edit', shortcut: triggerShortcut }}
+        tooltip={{ label: t('common.edit', 'Edit'), shortcut: triggerShortcut }}
       >
         <ToolbarIcon name="edit" />
       </ToolbarButton>
@@ -337,7 +339,10 @@ function PreviewEditMenu({
           data-toolbar-popup="true"
           data-preview-edit-menu="true"
           role="dialog"
-          aria-label="Edit selected Markdown source"
+          aria-label={t(
+            'toolbar.editSelectedMarkdownSource',
+            'Edit selected Markdown source',
+          )}
           style={menuStyle}
           onKeyDown={handleKeyDown}
         >
@@ -358,14 +363,14 @@ function PreviewEditMenu({
               className="preview-edit-action preview-edit-action-secondary"
               onClick={onCancel}
             >
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </button>
             <button
               type="button"
               className="preview-edit-action preview-edit-action-primary"
               onClick={handleConfirm}
             >
-              Confirm
+              {t('common.confirm', 'Confirm')}
             </button>
           </div>
         </div>

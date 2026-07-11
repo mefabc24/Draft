@@ -17,6 +17,8 @@ import { getEditorTheme, getPreviewTheme, getPreviewThemeStyle } from '../../the
 import { useEditorScrollbar } from '../../editor/hooks/useEditorScrollbar'
 import { useMonacoMarkdownEditor } from '../../editor/hooks/useMonacoMarkdownEditor'
 import { countMarkdownWords } from '../../markdown'
+import { LocalizationProvider } from '../../localization/LocalizationProvider'
+import { translate } from '../../localization/localization'
 import { DEFAULT_EDITOR_SETTINGS } from '../../settings/defaultEditorSettings'
 import { parseSettingsChangedMessage } from '../../settings/settingsMessageParser'
 import type {
@@ -109,6 +111,9 @@ function Workspace() {
     DEFAULT_EDITOR_SETTINGS.activePreviewThemeId,
   )
   const [shortcutBindings, setShortcutBindings] = useState(defaultShortcutBindings)
+  const [appLanguage, setAppLanguage] = useState(
+    DEFAULT_EDITOR_SETTINGS.appLanguage,
+  )
   const initialMarkdownRef = useRef(markdown)
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
@@ -195,6 +200,7 @@ function Workspace() {
 
   const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
     draftEditorSettingsRef.current = settings
+    setAppLanguage(settings.appLanguage)
     setFloatingMarkdownToolbarMode(settings.floatingMarkdownToolbarMode)
     setActiveEditorThemeId(settings.activeEditorThemeId)
     setActivePreviewThemeId(settings.activePreviewThemeId)
@@ -427,75 +433,104 @@ function Workspace() {
   const previewWordCount = useMemo(() => {
     return countMarkdownWords(markdown)
   }, [markdown])
+  const livePreviewLabel = useMemo(
+    () =>
+      translate('workspace.livePreview', {
+        fallback: 'Live Preview',
+        language: appLanguage,
+      }),
+    [appLanguage],
+  )
+  const previewWordCountLabel = useMemo(
+    () =>
+      translate(
+        previewWordCount === 1
+          ? 'workspace.wordCountOne'
+          : 'workspace.wordCount',
+        {
+          fallback: previewWordCount === 1
+            ? '1 word'
+            : `${previewWordCount} words`,
+          language: appLanguage,
+          params: { count: previewWordCount },
+        },
+      ),
+    [appLanguage, previewWordCount],
+  )
 
   return (
-    <main className="app-shell" onContextMenu={(event) => event.preventDefault()}>
-      <section
-        ref={workspaceRef}
-        className={`workspace ${viewMode}`}
-        style={workspaceStyle}
-        data-split-resizing={isSplitResizing ? 'true' : 'false'}
+    <LocalizationProvider language={appLanguage}>
+      <main
+        className="app-shell"
+        onContextMenu={(event) => event.preventDefault()}
       >
-        <MarkdownEditorPane
-          ariaHidden={viewMode === 'preview'}
-          editor={editorInstance}
-          editorBodyRef={editorBodyRef}
-          shortcutBindings={shortcutBindings}
-          editorHostRef={editorHostRef}
-          header={(
-            <PaneHeader
-              leftLabel={fileName}
-              rightItems={['UTF-8', 'Markdown']}
-            />
-          )}
-          scrollbarProps={editorScrollbarProps}
-          scrollbarRef={editorScrollbarRef}
-          thumbProps={editorThumbProps}
-          thumbRef={editorThumbRef}
-        />
+        <section
+          ref={workspaceRef}
+          className={`workspace ${viewMode}`}
+          style={workspaceStyle}
+          data-split-resizing={isSplitResizing ? 'true' : 'false'}
+        >
+          <MarkdownEditorPane
+            ariaHidden={viewMode === 'preview'}
+            editor={editorInstance}
+            editorBodyRef={editorBodyRef}
+            shortcutBindings={shortcutBindings}
+            editorHostRef={editorHostRef}
+            header={(
+              <PaneHeader
+                leftLabel={fileName}
+                rightItems={['UTF-8', 'Markdown']}
+              />
+            )}
+            scrollbarProps={editorScrollbarProps}
+            scrollbarRef={editorScrollbarRef}
+            thumbProps={editorThumbProps}
+            thumbRef={editorThumbRef}
+          />
 
-        <WorkspaceSplitResizer
-          isResizing={isSplitResizing}
-          resizerProps={splitResizerProps}
-          resizerRef={splitResizerRef}
-        />
+          <WorkspaceSplitResizer
+            isResizing={isSplitResizing}
+            resizerProps={splitResizerProps}
+            resizerRef={splitResizerRef}
+          />
 
-        <PreviewPane
-          markdown={markdown}
-          header={(
-            <PaneHeader
-              leftLabel="Live Preview"
-              rightItems={[`${previewWordCount} words`]}
-            />
-          )}
-          ariaHidden={viewMode === 'editor'}
-          previewTheme={activePreviewTheme}
-          previewThemeStyle={previewThemeStyle}
-          previewContentElementRef={previewContentRef}
-          previewScrollElementRef={previewScrollRef}
-          onPreviewScroll={handlePreviewScroll}
+          <PreviewPane
+            markdown={markdown}
+            header={(
+              <PaneHeader
+                leftLabel={livePreviewLabel}
+                rightItems={[previewWordCountLabel]}
+              />
+            )}
+            ariaHidden={viewMode === 'editor'}
+            previewTheme={activePreviewTheme}
+            previewThemeStyle={previewThemeStyle}
+            previewContentElementRef={previewContentRef}
+            previewScrollElementRef={previewScrollRef}
+            onPreviewScroll={handlePreviewScroll}
+          />
+          <FloatingMarkdownToolbar
+            editor={editorInstance}
+            editorBodyRef={editorBodyRef}
+            onRequestEditorMode={() => {
+              setViewMode((currentViewMode) =>
+                currentViewMode === 'preview' ? 'editor' : currentViewMode,
+              )
+            }}
+            previewContentRef={previewContentRef}
+            previewScrollElementRef={previewScrollRef}
+            shortcutBindings={shortcutBindings}
+            toolbarMode={floatingMarkdownToolbarMode}
+            viewMode={viewMode}
+            workspaceRef={workspaceRef}
+          />
+        </section>
+        <WorkspaceDevMenu
+          activePreviewThemeId={activePreviewThemeId}
+          onPreviewThemeChange={setActivePreviewThemeId}
         />
-        <FloatingMarkdownToolbar
-          editor={editorInstance}
-          editorBodyRef={editorBodyRef}
-          onRequestEditorMode={() => {
-            setViewMode((currentViewMode) =>
-              currentViewMode === 'preview' ? 'editor' : currentViewMode,
-            )
-          }}
-          previewContentRef={previewContentRef}
-          previewScrollElementRef={previewScrollRef}
-          shortcutBindings={shortcutBindings}
-          toolbarMode={floatingMarkdownToolbarMode}
-          viewMode={viewMode}
-          workspaceRef={workspaceRef}
-        />
-      </section>
-      <WorkspaceDevMenu
-        activePreviewThemeId={activePreviewThemeId}
-        onPreviewThemeChange={setActivePreviewThemeId}
-      />
-    </main>
+      </main>
+    </LocalizationProvider>
   )
 }
 

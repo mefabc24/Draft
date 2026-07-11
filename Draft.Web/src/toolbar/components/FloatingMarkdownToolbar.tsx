@@ -16,6 +16,7 @@ import {
 } from '../../editor/monaco/markdownCommandAdapter'
 import type { HeadingValue, ListValue } from '../../markdown'
 import type { CalloutType } from '../../markdown/callouts'
+import { useTranslation } from '../../localization/useTranslation'
 import {
   formatShortcutForDisplay,
   getShortcutBinding,
@@ -27,10 +28,13 @@ import { useFloatingToolbarState } from '../hooks/useFloatingToolbarState'
 import { useToolbarTooltip } from '../hooks/useToolbarTooltip'
 import {
   headingItems,
+  headingLabelKeys,
   headingLabels,
+  inlineTooltipLabelKeys,
   inlineToolbarActions,
   listIcons,
   listItems,
+  listLabelKeys,
   listLabels,
 } from '../toolbarConfig'
 import type { InlineToolbarAction } from '../toolbarConfig'
@@ -188,6 +192,7 @@ function FloatingMarkdownToolbar({
   viewMode,
   workspaceRef,
 }: FloatingMarkdownToolbarProps) {
+  const { t } = useTranslation()
   const toolbarRef = useRef<HTMLDivElement | null>(null)
   const toolbarBoundsFrameRef = useRef<number | null>(null)
   const toolbarPinReleaseTimeoutRef = useRef<number | null>(null)
@@ -303,6 +308,16 @@ function FloatingMarkdownToolbar({
       formatShortcutForDisplay(getShortcutBinding(shortcutBindings, actionId)),
     [shortcutBindings],
   )
+  const getHeadingLabel = useCallback(
+    (value: HeadingValue) =>
+      t(headingLabelKeys[value], headingLabels[value]),
+    [t],
+  )
+  const getListLabel = useCallback(
+    (value: ListValue) =>
+      t(listLabelKeys[value], listLabels[value]),
+    [t],
+  )
   const headingMenuItems = useMemo(
     () =>
       headingItems.map((item) => {
@@ -315,28 +330,44 @@ function FloatingMarkdownToolbar({
         return actionId
           ? {
               ...item,
+              label: getHeadingLabel(item.value as HeadingValue),
               shortcut: getShortcutLabel(actionId),
             }
-          : item
+          : {
+              ...item,
+              label: getHeadingLabel(item.value as HeadingValue),
+            }
       }),
-    [getShortcutLabel],
+    [getHeadingLabel, getShortcutLabel],
+  )
+  const listMenuItems = useMemo(
+    () =>
+      listItems.map((item) =>
+        'value' in item
+          ? {
+              ...item,
+              label: getListLabel(item.value as ListValue),
+            }
+          : item,
+      ),
+    [getListLabel],
   )
   const headingTooltip = useMemo(
     () => {
       const actionId = headingShortcutActionIds[headingValue]
 
       return {
-        label: headingLabels[headingValue],
+        label: getHeadingLabel(headingValue),
         shortcut: actionId ? getShortcutLabel(actionId) : undefined,
       }
     },
-    [getShortcutLabel, headingValue],
+    [getHeadingLabel, getShortcutLabel, headingValue],
   )
   const listTooltip = useMemo(
     () => ({
-      label: listLabels[listValue],
+      label: getListLabel(listValue),
     }),
-    [listValue],
+    [getListLabel, listValue],
   )
   const extraToolCount =
     extraInlineToolbarActions.length + (previewEdit.available ? 1 : 0)
@@ -356,9 +387,17 @@ function FloatingMarkdownToolbar({
     [extraToolCount],
   )
   useEffect(() => {
-    if (!toolbarVisible) {
+    if (toolbarVisible) {
+      return undefined
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
       setExtraToolsExpanded(false)
       setToolbarPinnedRight(null)
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
     }
   }, [toolbarVisible])
   const clampToolbarPositionToFrame = useCallback(() => {
@@ -613,12 +652,20 @@ function FloatingMarkdownToolbar({
     const command = action.command
     const actionId = inlineShortcutActionIds[action.id]
     const shortcut = actionId ? getShortcutLabel(actionId) : undefined
+    const tooltipLabel = t(
+      inlineTooltipLabelKeys[action.id],
+      action.tooltip.label,
+    )
+    const localizedTooltip = {
+      ...action.tooltip,
+      label: tooltipLabel,
+    }
     const tooltip = shortcut
       ? {
-          ...action.tooltip,
+          ...localizedTooltip,
           shortcut,
         }
-      : action.tooltip
+      : localizedTooltip
 
     if (command.type === 'link') {
       return linkEdit.available ? (
@@ -641,7 +688,7 @@ function FloatingMarkdownToolbar({
       ) : (
         <ToolbarButton
           key={action.id}
-          ariaLabel={action.ariaLabel}
+          ariaLabel={tooltipLabel}
           active={active}
           onTooltipHide={hideToolbarTooltip}
           onTooltipShow={showToolbarTooltip}
@@ -675,7 +722,7 @@ function FloatingMarkdownToolbar({
       ) : (
         <ToolbarButton
           key={action.id}
-          ariaLabel={action.ariaLabel}
+          ariaLabel={tooltipLabel}
           active={active}
           onTooltipHide={hideToolbarTooltip}
           onTooltipShow={showToolbarTooltip}
@@ -694,7 +741,7 @@ function FloatingMarkdownToolbar({
     return (
       <ToolbarButton
         key={action.id}
-        ariaLabel={action.ariaLabel}
+        ariaLabel={tooltipLabel}
         active={active}
         onTooltipHide={hideToolbarTooltip}
         onTooltipShow={showToolbarTooltip}
@@ -744,7 +791,7 @@ function FloatingMarkdownToolbar({
       className="floating-markdown-toolbar"
       style={toolbarStyle}
       role="toolbar"
-      aria-label="Markdown formatting"
+      aria-label={t('toolbar.markdownFormatting', 'Markdown formatting')}
       onPointerDownCapture={(event) => {
         markToolbarInteraction()
         hideToolbarTooltip()
@@ -762,8 +809,8 @@ function FloatingMarkdownToolbar({
     >
       <ToolbarDropdown
         className="heading-dropdown"
-        ariaLabel="Select text style"
-        menuLabel="Text styles"
+        ariaLabel={t('toolbar.selectTextStyle', 'Select text style')}
+        menuLabel={t('toolbar.textStyles', 'Text styles')}
         items={headingMenuItems}
         open={openDropdown === 'heading'}
         onOpenChange={handleHeadingOpenChange}
@@ -771,7 +818,7 @@ function FloatingMarkdownToolbar({
         onTooltipShow={showToolbarTooltip}
         selectedValue={headingValue}
         triggerTooltip={headingTooltip}
-        triggerLabel={headingLabels[headingValue]}
+        triggerLabel={getHeadingLabel(headingValue)}
         onSelect={handleHeadingSelect}
         renderSubmenu={renderHeadingSubmenu}
       />
@@ -800,14 +847,18 @@ function FloatingMarkdownToolbar({
           active={false}
           ariaExpanded={extraToolsExpanded}
           ariaLabel={
-            extraToolsExpanded ? 'Hide extra tools' : 'Show more tools'
+            extraToolsExpanded
+              ? t('toolbar.hideExtraTools', 'Hide extra tools')
+              : t('toolbar.moreTools', 'Show more tools')
           }
           className="markdown-toolbar-expand-button"
           onTooltipHide={hideToolbarTooltip}
           onTooltipShow={showToolbarTooltip}
           onClick={handleExtraToolsToggle}
           tooltip={{
-            label: extraToolsExpanded ? 'Hide extra tools' : 'Show more tools',
+            label: extraToolsExpanded
+              ? t('toolbar.hideExtraTools', 'Hide extra tools')
+              : t('toolbar.moreTools', 'Show more tools'),
           }}
         >
           <MoreToolsChevron expanded={extraToolsExpanded} />
@@ -819,9 +870,11 @@ function FloatingMarkdownToolbar({
       <ToolbarDropdown
         align="right"
         className="list-dropdown"
-        ariaLabel={`List style: ${listLabels[listValue]}`}
-        menuLabel="List styles"
-        items={listItems}
+        ariaLabel={t('toolbar.listStyle', 'List style: {label}', {
+          label: getListLabel(listValue),
+        })}
+        menuLabel={t('toolbar.listStyles', 'List styles')}
+        items={listMenuItems}
         open={openDropdown === 'list'}
         onOpenChange={handleListOpenChange}
         onTooltipHide={hideToolbarTooltip}

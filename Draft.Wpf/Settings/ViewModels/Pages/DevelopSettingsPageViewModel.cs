@@ -18,7 +18,7 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
     private string _demoUpdateStatus = "Test card. Scan to simulate an available update.";
 
     public DevelopSettingsPageViewModel(SettingsWindowViewModel settings)
-        : base("Develop", settings)
+        : base("settings.develop", "Develop", settings)
     {
         ShowInfoDialogCommand = new RelayCommand(() => ShowDialog(MessageDialogType.Info, InfoDialogButtonCount));
         ShowWarningDialogCommand = new RelayCommand(() => ShowDialog(MessageDialogType.Warning, WarningDialogButtonCount));

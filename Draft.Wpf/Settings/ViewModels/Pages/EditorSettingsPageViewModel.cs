@@ -6,7 +6,7 @@ namespace Draft.Settings.ViewModels.Pages;
 public sealed class EditorSettingsPageViewModel : SettingsPageViewModel
 {
     public EditorSettingsPageViewModel(SettingsWindowViewModel settings)
-        : base("Editor", settings)
+        : base("settings.editor", "Editor", settings)
     {
     }
 

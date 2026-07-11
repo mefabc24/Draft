@@ -6,9 +6,24 @@ namespace Draft.Settings.ViewModels.Pages;
 public sealed class GeneralSettingsPageViewModel : SettingsPageViewModel
 {
     public GeneralSettingsPageViewModel(SettingsWindowViewModel settings)
-        : base("General", settings)
+        : base("settings.general", "General", settings)
     {
     }
+
+    public string LocalizationSectionTitle =>
+        LocalizationService.Translate("settings.localizationSection", "LOCALIZATION", Settings.AppLanguage);
+
+    public string LanguageTitle =>
+        LocalizationService.Translate("settings.language", "Language", Settings.AppLanguage);
+
+    public string LanguageDescription =>
+        LocalizationService.Translate(
+            "settings.language.description",
+            "Choose the language used by Draft.",
+            Settings.AppLanguage);
+
+    public IReadOnlyList<string> AppLanguageOptions =>
+        SettingsOptionCatalog.AppLanguageOptions;
 
     public IReadOnlyList<string> AutosaveIntervalOptions =>
         SettingsOptionCatalog.AutosaveIntervalOptions;
@@ -30,4 +45,12 @@ public sealed class GeneralSettingsPageViewModel : SettingsPageViewModel
 
     public IReadOnlyList<string> DefaultFileExtensionOptions =>
         SettingsOptionCatalog.DefaultFileExtensionOptions;
+
+    public override void RefreshLocalization()
+    {
+        base.RefreshLocalization();
+        OnPropertyChanged(nameof(LocalizationSectionTitle));
+        OnPropertyChanged(nameof(LanguageTitle));
+        OnPropertyChanged(nameof(LanguageDescription));
+    }
 }

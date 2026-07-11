@@ -8,6 +8,7 @@ import { defaultShortcutBindings } from '../shortcuts/shortcutSettings'
 export const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
   activeEditorThemeId: DEFAULT_EDITOR_THEME_ID,
   activePreviewThemeId: DEFAULT_PREVIEW_THEME_ID,
+  appLanguage: 'en',
   autoPairBrackets: true,
   autoPairQuotes: true,
   cursorBlinking: true,

@@ -1,5 +1,6 @@
 import { DEFAULT_EDITOR_SETTINGS } from './defaultEditorSettings'
 import { normalizeShortcutBindings } from '../shortcuts/shortcutSettings'
+import { normalizeAppLanguage } from '../localization/localization'
 import type {
   CursorStyle,
   DraftEditorSettings,
@@ -128,6 +129,11 @@ export function parseDraftEditorSettings(
       record,
       'activePreviewThemeId',
       DEFAULT_EDITOR_SETTINGS.activePreviewThemeId,
+    ),
+    appLanguage: normalizeAppLanguage(
+      readRecordValue(record, 'appLanguage') ??
+        readRecordValue(record, 'language') ??
+        DEFAULT_EDITOR_SETTINGS.appLanguage,
     ),
     autoPairBrackets: readBoolean(
       record,

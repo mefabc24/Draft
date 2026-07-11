@@ -7,7 +7,7 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
     private readonly IReadOnlyList<ShortcutItemViewModel> _shortcuts;
 
     public ShortcutsSettingsPageViewModel(SettingsWindowViewModel settings)
-        : base("Shortcuts", settings)
+        : base("settings.shortcuts", "Shortcuts", settings)
     {
         Categories = ShortcutSettingsCatalog.Categories
             .Select(category => new ShortcutCategoryViewModel(

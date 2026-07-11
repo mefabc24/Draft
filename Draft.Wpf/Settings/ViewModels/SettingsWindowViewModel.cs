@@ -20,6 +20,7 @@ public class SettingsWindowViewModel : BaseViewModel
     private SettingsPage _selectedPage = SettingsPage.General;
     private SettingsPageViewModel _currentSettingsPage;
 
+    private string _appLanguage = AppSettingsStore.DefaultAppLanguage;
     private bool _reopenLastWorkspaceOnStartup;
     private bool _checkForUpdatesOnStartup = true;
     private bool _autosaveEnabled;
@@ -91,6 +92,9 @@ public class SettingsWindowViewModel : BaseViewModel
     public static IReadOnlyList<string> AutosaveIntervalOptionValues =>
         SettingsOptionCatalog.AutosaveIntervalOptions;
 
+    public IReadOnlyList<string> AppLanguageOptions =>
+        SettingsOptionCatalog.AppLanguageOptions;
+
     public IReadOnlyList<string> AutosaveIntervalOptions => AutosaveIntervalOptionValues;
 
     public IReadOnlyList<string> DefaultStartupModeOptions =>
@@ -151,6 +155,45 @@ public class SettingsWindowViewModel : BaseViewModel
     public event EventHandler<ResetConfirmationRequestedEventArgs>? ResetConfirmationRequested;
 
     public event EventHandler? CloseRequested;
+
+    public string SettingsTitle =>
+        LocalizationService.Translate("settings.title", "Settings", AppLanguage);
+
+    public string SettingsConfigurationLabel =>
+        LocalizationService.Translate("settings.configuration", "Configuration", AppLanguage);
+
+    public string SettingsResetDefaultsTooltip =>
+        LocalizationService.Translate("settings.resetDefaults", "Restore Default Settings", AppLanguage);
+
+    public string GeneralSettingsMenuLabel =>
+        LocalizationService.Translate("settings.general", "General", AppLanguage);
+
+    public string EditorSettingsMenuLabel =>
+        LocalizationService.Translate("settings.editor", "Editor", AppLanguage);
+
+    public string PreviewSettingsMenuLabel =>
+        LocalizationService.Translate("settings.preview", "Preview", AppLanguage);
+
+    public string AppearanceSettingsMenuLabel =>
+        LocalizationService.Translate("settings.appearance", "Appearance", AppLanguage);
+
+    public string StatusBarSettingsMenuLabel =>
+        LocalizationService.Translate("settings.statusBar", "Status Bar", AppLanguage);
+
+    public string ShortcutsSettingsMenuLabel =>
+        LocalizationService.Translate("settings.shortcuts", "Shortcuts", AppLanguage);
+
+    public string DevelopSettingsMenuLabel =>
+        LocalizationService.Translate("settings.develop", "Develop", AppLanguage);
+
+    public string AboutSettingsMenuLabel =>
+        LocalizationService.Translate("settings.about", "About", AppLanguage);
+
+    public string CancelButtonText =>
+        LocalizationService.Translate("common.cancel", "Cancel", AppLanguage);
+
+    public string ApplyChangesButtonText =>
+        LocalizationService.Translate("common.applyChanges", "Apply Changes", AppLanguage);
 
     public SettingsPageViewModel CurrentSettingsPage
     {
@@ -254,6 +297,23 @@ public class SettingsWindowViewModel : BaseViewModel
         {
             if (value)
                 SelectSettingsPage(SettingsPage.About);
+        }
+    }
+
+    public string AppLanguage
+    {
+        get => _appLanguage;
+        set
+        {
+            string nextLanguage = EnsureOption(
+                AppLanguageOptions,
+                value,
+                AppSettingsStore.DefaultAppLanguage);
+
+            if (SetSetting(ref _appLanguage, nextLanguage))
+            {
+                NotifyLocalizedPropertiesChanged();
+            }
         }
     }
 
@@ -637,6 +697,10 @@ public class SettingsWindowViewModel : BaseViewModel
     {
         AppSettingsStore.Normalize(settings);
 
+        _appLanguage = EnsureOption(
+            AppLanguageOptions,
+            settings.AppLanguage,
+            AppSettingsStore.DefaultAppLanguage);
         _reopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup;
         _checkForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
         _autosaveEnabled = settings.AutosaveEnabled;
@@ -759,6 +823,7 @@ public class SettingsWindowViewModel : BaseViewModel
     {
         return AppSettingsStore.Normalize(new DraftSettings
         {
+            AppLanguage = AppLanguage,
             ReopenLastWorkspaceOnStartup = ReopenLastWorkspaceOnStartup,
             CheckForUpdatesOnStartup = CheckForUpdatesOnStartup,
             AutosaveEnabled = AutosaveEnabled,
@@ -878,6 +943,7 @@ public class SettingsWindowViewModel : BaseViewModel
 
     private void RaiseAllSettingsPropertiesChanged()
     {
+        OnPropertyChanged(nameof(AppLanguage));
         OnPropertyChanged(nameof(ReopenLastWorkspaceOnStartup));
         OnPropertyChanged(nameof(CheckForUpdatesOnStartup));
         OnPropertyChanged(nameof(AutosaveEnabled));
@@ -925,6 +991,33 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(WindowBorderAccentMode));
         OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         OnPropertyChanged(nameof(ToolbarControlbarPosition));
+        NotifyLocalizedPropertiesChanged();
         _shortcutsSettingsPage.RefreshShortcuts();
+    }
+
+    private void NotifyLocalizedPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(SettingsTitle));
+        OnPropertyChanged(nameof(SettingsConfigurationLabel));
+        OnPropertyChanged(nameof(SettingsResetDefaultsTooltip));
+        OnPropertyChanged(nameof(GeneralSettingsMenuLabel));
+        OnPropertyChanged(nameof(EditorSettingsMenuLabel));
+        OnPropertyChanged(nameof(PreviewSettingsMenuLabel));
+        OnPropertyChanged(nameof(AppearanceSettingsMenuLabel));
+        OnPropertyChanged(nameof(StatusBarSettingsMenuLabel));
+        OnPropertyChanged(nameof(ShortcutsSettingsMenuLabel));
+        OnPropertyChanged(nameof(DevelopSettingsMenuLabel));
+        OnPropertyChanged(nameof(AboutSettingsMenuLabel));
+        OnPropertyChanged(nameof(CancelButtonText));
+        OnPropertyChanged(nameof(ApplyChangesButtonText));
+
+        _generalSettingsPage.RefreshLocalization();
+        _editorSettingsPage.RefreshLocalization();
+        _previewSettingsPage.RefreshLocalization();
+        _appearanceSettingsPage.RefreshLocalization();
+        _statusBarSettingsPage.RefreshLocalization();
+        _shortcutsSettingsPage.RefreshLocalization();
+        _developSettingsPage.RefreshLocalization();
+        _aboutSettingsPage.RefreshLocalization();
     }
 }

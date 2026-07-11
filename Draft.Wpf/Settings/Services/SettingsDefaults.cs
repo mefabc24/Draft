@@ -5,6 +5,9 @@ namespace Draft.Settings.Services;
 
 public static class SettingsDefaults
 {
+    public const string AppLanguageSystem = LocalizationService.SystemLanguageValue;
+    public const string AppLanguageEnglish = LocalizationService.EnglishLanguageValue;
+    public const string DefaultAppLanguage = AppLanguageSystem;
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";
     public const string DefaultMarkdownTheme = "Draft Dark";

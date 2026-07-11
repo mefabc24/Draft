@@ -2,6 +2,7 @@ namespace Draft.WebWorkspace.Messages;
 
 public sealed record SettingsChangedMessage(
     string Type,
+    string AppLanguage,
     string ActiveEditorThemeId,
     string ActivePreviewThemeId,
     string EditorFontFamily,

@@ -6,7 +6,7 @@ namespace Draft.Settings.ViewModels.Pages;
 public sealed class PreviewSettingsPageViewModel : SettingsPageViewModel
 {
     public PreviewSettingsPageViewModel(SettingsWindowViewModel settings)
-        : base("Preview", settings)
+        : base("settings.preview", "Preview", settings)
     {
     }
 

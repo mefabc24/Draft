@@ -2,6 +2,7 @@ global using Draft.AppHost.Session;
 global using Draft.Documents.Models;
 global using Draft.Documents.Services;
 global using Draft.FileAssociations.Services;
+global using Draft.Localization;
 global using Draft.Save.Models;
 global using Draft.Save.Services;
 global using Draft.Shared.Mvvm;

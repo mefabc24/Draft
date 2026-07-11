@@ -15,6 +15,18 @@ export const headingLabels: Record<HeadingValue, string> = {
   codeblock: 'Code Block',
 }
 
+export const headingLabelKeys: Record<HeadingValue, string> = {
+  normal: 'heading.normal',
+  h1: 'heading.h1',
+  h2: 'heading.h2',
+  h3: 'heading.h3',
+  h4: 'heading.h4',
+  h5: 'heading.h5',
+  h6: 'heading.h6',
+  blockquote: 'heading.blockquote',
+  codeblock: 'heading.codeblock',
+}
+
 export const headingItems: ToolbarDropdownMenuEntry[] = [
   { value: 'normal', label: 'Normal', shortcut: 'CTRL+N' },
   { value: 'h1', label: 'Heading 1', shortcut: 'CTRL+1' },
@@ -43,6 +55,13 @@ export const listLabels: Record<ListValue, string> = {
   bullet: 'Bullet List',
   numbered: 'Numbered List',
   checklist: 'Checklist',
+}
+
+export const listLabelKeys: Record<ListValue, string> = {
+  none: 'list.none',
+  bullet: 'list.bullet',
+  numbered: 'list.numbered',
+  checklist: 'list.checklist',
 }
 
 export const listIcons: Record<ListValue, ToolbarIconName> = {
@@ -77,6 +96,20 @@ export const inlineTooltips: Record<InlineFormat, ToolbarTooltipContent> = {
   link: { label: 'Link', shortcut: 'CTRL + K' },
   image: { label: 'Image', shortcut: 'CTRL + ALT + I' },
   badge: { label: 'Badge' },
+}
+
+export const inlineTooltipLabelKeys: Record<InlineFormat, string> = {
+  bold: 'toolbar.bold',
+  italic: 'toolbar.italic',
+  underline: 'toolbar.underline',
+  strikethrough: 'toolbar.strikethrough',
+  code: 'toolbar.inlineCode',
+  spoiler: 'toolbar.spoiler',
+  highlight: 'toolbar.highlight',
+  comment: 'toolbar.comment',
+  link: 'toolbar.link',
+  image: 'toolbar.image',
+  badge: 'toolbar.badge',
 }
 
 export type ToolbarButtonVisibility = 'primary' | 'extra'

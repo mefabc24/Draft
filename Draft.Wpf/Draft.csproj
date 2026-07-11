@@ -21,6 +21,7 @@
     <None Remove="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <None Remove="Assets\Fonts\SpaceGrotesk-VariableFont_wght.ttf" />
     <None Remove="Assets\Icons\draft.ico" />
+    <None Remove="Resources\Localization\*.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,10 @@
   <ItemGroup>
     <Content Include="..\Draft.Web\dist\**\*">
       <Link>Web\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\Localization\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

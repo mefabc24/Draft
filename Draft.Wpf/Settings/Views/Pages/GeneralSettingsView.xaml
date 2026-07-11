@@ -15,6 +15,20 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
+                <section:SectionHeader Title="{Binding LocalizationSectionTitle, FallbackValue=LOCALIZATION}" />
+
+                <settings:SettingCard
+                    Title="{Binding LanguageTitle, FallbackValue=Language}"
+                    Margin="0,0,0,32"
+                    Description="{Binding LanguageDescription, FallbackValue='Choose the language used by Draft.'}">
+                    <ComboBox
+                        Width="160"
+                        Height="36"
+                        ItemsSource="{Binding AppLanguageOptions}"
+                        SelectedItem="{Binding Settings.AppLanguage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </settings:SettingCard>
+
                 <section:SectionHeader Title="STARTUP &amp; BEHAVIOR" />
 
                 <settings:SettingCard

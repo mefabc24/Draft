@@ -8,6 +8,9 @@ namespace Draft.Settings.Services;
 
 public static class AppSettingsStore
 {
+    public const string AppLanguageSystem = SettingsDefaults.AppLanguageSystem;
+    public const string AppLanguageEnglish = SettingsDefaults.AppLanguageEnglish;
+    public const string DefaultAppLanguage = SettingsDefaults.DefaultAppLanguage;
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";
     public const string DefaultMarkdownTheme = SettingsDefaults.DefaultMarkdownTheme;
@@ -101,6 +104,9 @@ public static class AppSettingsStore
         bool hasPreviewScrollSyncMode = true,
         bool? legacySyncScrollWithEditor = null)
     {
+        settings.AppLanguage = IsAppLanguage(settings.AppLanguage)
+            ? settings.AppLanguage
+            : DefaultAppLanguage;
         settings.DefaultSaveLocation = NormalizeSaveLocation(settings.DefaultSaveLocation);
         settings.DefaultFileExtension = DefaultFileExtension;
         settings.MarkdownTheme = MarkdownPreviewThemeCatalog.GetThemeLabel(settings.MarkdownTheme);
@@ -317,6 +323,12 @@ public static class AppSettingsStore
             or WindowBorderAccentAlways
             or WindowBorderAccentFocusedOnly
             or WindowBorderAccentUnfocusedOnly;
+    }
+
+    private static bool IsAppLanguage(string? value)
+    {
+        return value is AppLanguageSystem
+            or AppLanguageEnglish;
     }
 
     private static bool TryGetStringProperty(JsonElement root, string name, out string? value)

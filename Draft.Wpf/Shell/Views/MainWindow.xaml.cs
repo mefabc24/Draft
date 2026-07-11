@@ -569,6 +569,7 @@ public partial class MainWindow : Window
     {
         return new DraftSettings
         {
+            AppLanguage = settings.AppLanguage,
             ReopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup,
             CheckForUpdatesOnStartup = settings.CheckForUpdatesOnStartup,
             AutosaveEnabled = settings.AutosaveEnabled,

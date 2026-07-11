@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { CalloutType } from '../../markdown/callouts'
+import { useTranslation } from '../../localization/useTranslation'
 import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
 import {
   shortcutActionIds,
@@ -219,6 +220,7 @@ function EditorQuickInsertMenu({
   shortcutBindings,
   target,
 }: EditorQuickInsertMenuProps) {
+  const { t } = useTranslation()
   const [expandedSections, setExpandedSections] = useState(
     getInitialExpandedSections,
   )
@@ -567,7 +569,7 @@ function EditorQuickInsertMenu({
       <EditorQuickInsertMenuItem
         icon={getQuickInsertEntryIcon(entry)}
         key={entry.id}
-        label={entry.label}
+        label={t(`quickInsert.${entry.id}`, entry.label)}
         nested={nested}
         onSelect={(event) => {
           runCommand(entry.command, shouldKeepMenuOpen(event))
@@ -575,7 +577,7 @@ function EditorQuickInsertMenu({
         shortcut={entry.shortcut}
       />
     ),
-    [runCommand],
+    [runCommand, t],
   )
 
   const renderCalloutSectionChildren = useCallback(
@@ -616,8 +618,8 @@ function EditorQuickInsertMenu({
                 className="editor-quick-insert-callout-expand-button"
                 aria-label={
                   extraCalloutsExpanded
-                    ? 'Hide extra callouts'
-                    : 'Show extra callouts'
+                    ? t('quickInsert.hideExtraCallouts', 'Hide extra callouts')
+                    : t('quickInsert.showExtraCallouts', 'Show extra callouts')
                 }
                 aria-expanded={extraCalloutsExpanded}
                 onClick={() => {
@@ -636,7 +638,7 @@ function EditorQuickInsertMenu({
         </>
       )
     },
-    [extraCalloutsExpanded, renderCommandItem, target],
+    [extraCalloutsExpanded, renderCommandItem, t, target],
   )
 
   const renderMenuEntry = useCallback(
@@ -656,7 +658,7 @@ function EditorQuickInsertMenu({
           expanded={expanded}
           icon={getQuickInsertIcon(entry.icon)}
           key={entry.id}
-          label={entry.label}
+          label={t(`quickInsert.${entry.id}`, entry.label)}
           onToggle={() => {
             setExpandedSections((currentSections) => ({
               ...currentSections,
@@ -704,6 +706,7 @@ function EditorQuickInsertMenu({
       expandedSections,
       renderCalloutSectionChildren,
       renderCommandItem,
+      t,
       target,
     ],
   )
@@ -715,7 +718,7 @@ function EditorQuickInsertMenu({
   return (
     <div
       ref={menuRef}
-      aria-label="Editor Quick Insert Menu"
+      aria-label={t('quickInsert.title', 'Editor Quick Insert Menu')}
       className="editor-quick-insert-menu"
       data-editor-quick-insert-menu="true"
       onMouseDown={(event) => {
