@@ -15,6 +15,15 @@ const draftQuotePairs = [
   { open: '`', close: '`' },
 ]
 
+type LanguagePair = {
+  close: string
+  open: string
+}
+
+function isAngleBracketPair(pair: LanguagePair) {
+  return pair.open === '<' && pair.close === '>'
+}
+
 export function registerDraftMarkdownLanguage() {
   if (!markdownLanguageRegistered) {
     monaco.languages.register({ id: 'markdown' })
@@ -27,11 +36,15 @@ export function registerDraftMarkdownLanguage() {
       {
         ...baseMarkdownConfiguration,
         autoClosingPairs: [
-          ...(baseMarkdownConfiguration.autoClosingPairs ?? []),
+          ...(baseMarkdownConfiguration.autoClosingPairs ?? []).filter(
+            (pair) => !isAngleBracketPair(pair),
+          ),
           ...draftQuotePairs,
         ],
         surroundingPairs: [
-          ...(baseMarkdownConfiguration.surroundingPairs ?? []),
+          ...(baseMarkdownConfiguration.surroundingPairs ?? []).filter(
+            (pair) => !isAngleBracketPair(pair),
+          ),
           { open: "'", close: "'" },
           { open: '"', close: '"' },
         ],

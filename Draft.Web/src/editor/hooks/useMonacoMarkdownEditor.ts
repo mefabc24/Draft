@@ -22,6 +22,12 @@ import {
   getEditorFontLoadTarget,
   getEditorSettingsOptions,
 } from '../monaco/editorOptions'
+import {
+  closeMarkdownHtmlTagOnGreaterThan,
+  completeMarkdownHtmlOpeningBracket,
+  completeMarkdownHtmlSelfClosingSlash,
+  mirrorMarkdownHtmlTagNameOnContentChange,
+} from '../monaco/htmlTagClosing'
 import { moveEditorLines } from '../monaco/lineMovement'
 import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
 import { indentEmptyMarkdownListItemOnTab } from '../monaco/markdownListIndentation'
@@ -248,7 +254,41 @@ export function useMonacoMarkdownEditor({
 
     const markdownKeyboardSub = editor.onKeyDown((event) => {
       const browserEvent = event.browserEvent
-      const shortcuts = settingsRef.current.shortcuts
+      const settings = settingsRef.current
+      const shortcuts = settings.shortcuts
+
+      const consumeKeyboardEvent = () => {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      const isPlainTextInput =
+        !browserEvent.ctrlKey &&
+        !browserEvent.altKey &&
+        !browserEvent.metaKey
+
+      if (settings.autoPairBrackets && isPlainTextInput) {
+        if (
+          browserEvent.key === '<' &&
+          completeMarkdownHtmlOpeningBracket(editor, consumeKeyboardEvent)
+        ) {
+          return
+        }
+
+        if (
+          browserEvent.key === '>' &&
+          closeMarkdownHtmlTagOnGreaterThan(editor, consumeKeyboardEvent)
+        ) {
+          return
+        }
+
+        if (
+          browserEvent.key === '/' &&
+          completeMarkdownHtmlSelfClosingSlash(editor, consumeKeyboardEvent)
+        ) {
+          return
+        }
+      }
 
       if (
         eventMatchesShortcutAction(
@@ -270,18 +310,20 @@ export function useMonacoMarkdownEditor({
           shortcutActionIds.editorIndentListItem,
         )
       ) {
-        const consumeTabEvent = () => {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-
-        if (indentEmptyMarkdownListItemOnTab(editor, consumeTabEvent)) {
+        if (indentEmptyMarkdownListItemOnTab(editor, consumeKeyboardEvent)) {
           return
         }
       }
     })
 
-    const contentSub = editor.onDidChangeModelContent(() => {
+    const contentSub = editor.onDidChangeModelContent((event) => {
+      if (
+        settingsRef.current.autoPairBrackets &&
+        mirrorMarkdownHtmlTagNameOnContentChange(editor, event)
+      ) {
+        return
+      }
+
       const nextMarkdown = editor.getValue()
 
       onMarkdownChange(nextMarkdown)
