@@ -21,7 +21,7 @@ public sealed class ExportPromptService : IExportPromptService
 
         BaseDialogWindow window = new(view)
         {
-            Title = "Export",
+            Title = LocalizationService.Translate("export.messageTitle", "Export"),
             Focusable = true,
         };
 

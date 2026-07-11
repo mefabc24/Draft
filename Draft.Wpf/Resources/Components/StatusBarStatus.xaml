@@ -2,10 +2,10 @@
     <Style x:Key="FileSaveStatusTextStyle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource Brush.Function.Success}" />
         <Style.Triggers>
-            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="UNSAVED">
+            <DataTrigger Binding="{Binding HasFilePath}" Value="False">
                 <Setter Property="Foreground" Value="{StaticResource Brush.Function.Warning}" />
             </DataTrigger>
-            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="MODIFIED">
+            <DataTrigger Binding="{Binding IsDirty}" Value="True">
                 <Setter Property="Foreground" Value="{StaticResource Brush.Function.Warning}" />
             </DataTrigger>
         </Style.Triggers>
@@ -14,10 +14,10 @@
     <Style x:Key="FileSaveStatusPathStyle" TargetType="Path">
         <Setter Property="Fill" Value="{StaticResource Brush.Function.Success}" />
         <Style.Triggers>
-            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="UNSAVED">
+            <DataTrigger Binding="{Binding HasFilePath}" Value="False">
                 <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
             </DataTrigger>
-            <DataTrigger Binding="{Binding FileSaveStatusDisplay}" Value="MODIFIED">
+            <DataTrigger Binding="{Binding IsDirty}" Value="True">
                 <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
             </DataTrigger>
         </Style.Triggers>
@@ -26,7 +26,7 @@
     <Style x:Key="AutosaveModeTextStyle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource Brush.Function.Success}" />
         <Style.Triggers>
-            <DataTrigger Binding="{Binding AutosaveModeDisplay}" Value="MANUAL SAVE">
+            <DataTrigger Binding="{Binding AutosaveEnabled}" Value="False">
                 <Setter Property="Foreground" Value="{StaticResource Brush.PrimaryText}" />
             </DataTrigger>
         </Style.Triggers>
@@ -35,7 +35,7 @@
     <Style x:Key="AutosaveModePathStyle" TargetType="Path">
         <Setter Property="Fill" Value="{StaticResource Brush.Function.Success}" />
         <Style.Triggers>
-            <DataTrigger Binding="{Binding AutosaveModeDisplay}" Value="MANUAL SAVE">
+            <DataTrigger Binding="{Binding AutosaveEnabled}" Value="False">
                 <Setter Property="Fill" Value="{StaticResource Brush.PrimaryText}" />
             </DataTrigger>
         </Style.Triggers>

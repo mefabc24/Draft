@@ -11,6 +11,8 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
     {
         Categories = ShortcutSettingsCatalog.Categories
             .Select(category => new ShortcutCategoryViewModel(
+                settings,
+                GetCategoryTitleKey(category.Title),
                 category.Title,
                 category.Shortcuts
                     .Select(shortcut => new ShortcutItemViewModel(settings, shortcut))
@@ -30,11 +32,62 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
             shortcut.RefreshShortcut();
         }
     }
+
+    public override void RefreshLocalization()
+    {
+        base.RefreshLocalization();
+
+        foreach (ShortcutCategoryViewModel category in Categories)
+        {
+            category.RefreshLocalization();
+        }
+
+        foreach (ShortcutItemViewModel shortcut in _shortcuts)
+        {
+            shortcut.RefreshLocalization();
+        }
+    }
+
+    private static string GetCategoryTitleKey(string title)
+    {
+        return title switch
+        {
+            "GENERAL" => "shortcuts.categories.general",
+            "FLOATING MARKDOWN TOOLBAR" => "shortcuts.categories.floatingMarkdownToolbar",
+            "QUICK INSERT MENU" => "shortcuts.categories.quickInsertMenu",
+            _ => title,
+        };
+    }
 }
 
-public sealed record ShortcutCategoryViewModel(
-    string Title,
-    IReadOnlyList<ShortcutItemViewModel> Shortcuts);
+public sealed class ShortcutCategoryViewModel : BaseViewModel
+{
+    private readonly string _fallbackTitle;
+    private readonly SettingsWindowViewModel _settings;
+    private readonly string _titleKey;
+
+    public ShortcutCategoryViewModel(
+        SettingsWindowViewModel settings,
+        string titleKey,
+        string fallbackTitle,
+        IReadOnlyList<ShortcutItemViewModel> shortcuts)
+    {
+        _settings = settings;
+        _titleKey = titleKey;
+        _fallbackTitle = fallbackTitle;
+        Shortcuts = shortcuts;
+    }
+
+    public string Title =>
+        LocalizationService.Translate(_titleKey, _fallbackTitle, _settings.AppLanguage);
+
+    public IReadOnlyList<ShortcutItemViewModel> Shortcuts { get; }
+
+    public void RefreshLocalization()
+    {
+        OnPropertyChanged(nameof(Title));
+    }
+}
 
 public sealed class ShortcutItemViewModel : BaseViewModel
 {
@@ -49,9 +102,15 @@ public sealed class ShortcutItemViewModel : BaseViewModel
         _definition = definition;
     }
 
-    public string Title => _definition.Title;
+    public string Title => LocalizationService.Translate(
+        $"shortcuts.actions.{_definition.Id}.title",
+        _definition.Title,
+        _settings.AppLanguage);
 
-    public string Description => _definition.Description;
+    public string Description => LocalizationService.Translate(
+        $"shortcuts.actions.{_definition.Id}.description",
+        _definition.Description,
+        _settings.AppLanguage);
 
     public string DefaultShortcut => _definition.DefaultShortcut;
 
@@ -70,5 +129,11 @@ public sealed class ShortcutItemViewModel : BaseViewModel
     public void RefreshShortcut()
     {
         OnPropertyChanged(nameof(Shortcut));
+    }
+
+    public void RefreshLocalization()
+    {
+        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(Description));
     }
 }

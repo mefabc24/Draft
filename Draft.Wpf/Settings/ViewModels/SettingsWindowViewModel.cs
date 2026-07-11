@@ -312,6 +312,7 @@ public class SettingsWindowViewModel : BaseViewModel
 
             if (SetSetting(ref _appLanguage, nextLanguage))
             {
+                LocalizationService.SetCurrentAppLanguage(nextLanguage);
                 NotifyLocalizedPropertiesChanged();
             }
         }
@@ -701,6 +702,7 @@ public class SettingsWindowViewModel : BaseViewModel
             AppLanguageOptions,
             settings.AppLanguage,
             AppSettingsStore.DefaultAppLanguage);
+        LocalizationService.SetCurrentAppLanguage(_appLanguage);
         _reopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup;
         _checkForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
         _autosaveEnabled = settings.AutosaveEnabled;

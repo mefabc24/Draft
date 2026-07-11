@@ -4,6 +4,7 @@ import {
   type RefObject,
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import { useTranslation } from '../../localization/useTranslation'
 import type { ShortcutBindings } from '../../shortcuts/shortcutSettings'
 import { useEditorQuickInsertMenu } from '../hooks/useEditorQuickInsertMenu'
 import { useHoveredEditorLine } from '../hooks/useHoveredEditorLine'
@@ -20,6 +21,7 @@ function EmptyLineInsertButton({
   editorBodyRef,
   shortcutBindings,
 }: EmptyLineInsertButtonProps) {
+  const { t } = useTranslation()
   const {
     clearPendingHide,
     hoveredLine,
@@ -55,7 +57,10 @@ function EmptyLineInsertButton({
     <>
       {hoveredLine ? (
         <button
-          aria-label="Open Editor Quick Insert Menu"
+          aria-label={t(
+            'quickInsert.openEditorQuickInsertMenu',
+            'Open Editor Quick Insert Menu',
+          )}
           className="empty-line-insert-button"
           onClick={() => {
             openMenu({

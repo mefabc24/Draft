@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="clr-namespace:Draft.Updates.Services"
+    xmlns:i18n="clr-namespace:Draft.Localization"
     xmlns:local="clr-namespace:Draft.Settings.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:section="clr-namespace:Draft.Settings.Controls"
@@ -17,13 +18,13 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <section:SectionHeader Title="DRAFT" />
+                <section:SectionHeader Title="{i18n:Loc app.name}" />
 
-                <settings:SettingCard Title="A focused Markdown editor for writing, previewing, and saving clean Markdown documents in a calm desktop workspace." Margin="0,0,0,32" />
+                <settings:SettingCard Title="{i18n:Loc settings.about.tagline}" Margin="0,0,0,32" />
 
-                <section:SectionHeader Title="VERSION &amp; UPDATES" />
+                <section:SectionHeader Title="{i18n:Loc settings.about.versionUpdates}" />
                 <settings:UpdateSettingCard
-                    Title="Version"
+                    Title="{i18n:Loc settings.about.version}"
                     Margin="0,0,0,12"
                     ActionCommand="{Binding UpdateActionCommand, RelativeSource={RelativeSource AncestorType={x:Type local:AboutSettingsView}}}"
                     ActionText="{Binding Status.ActionButtonText, Source={x:Static helpers:UpdateCoordinator.Current}}"
@@ -32,13 +33,13 @@
                     IsUpdateAvailable="{Binding Status.HasAvailableUpdate, Source={x:Static helpers:UpdateCoordinator.Current}}"
                     StatusText="{Binding Status.StatusText, Source={x:Static helpers:UpdateCoordinator.Current}}" />
 
-                <section:SectionHeader Title="PROJECT &amp; LINKS" />
-                <settings:SettingCard Title="GitHub" Description="Open the Draft project repository.">
+                <section:SectionHeader Title="{i18n:Loc settings.about.projectLinks}" />
+                <settings:SettingCard Title="{i18n:Loc settings.about.github}" Description="{i18n:Loc settings.about.github.description}">
                     <Button
                         Width="120"
                         Height="36"
                         Click="GitHubButton_Click"
-                        Content="Open GitHub"
+                        Content="{i18n:Loc settings.about.openGitHub}"
                         Style="{StaticResource SettingButton}" />
                 </settings:SettingCard>
             </StackPanel>

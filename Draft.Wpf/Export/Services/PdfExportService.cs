@@ -61,7 +61,9 @@ public sealed class PdfExportService
 
         bool didPrint = await webView.CoreWebView2.PrintToPdfAsync(request.FilePath, printSettings);
         if (!didPrint)
-            throw new InvalidOperationException("The PDF export could not be completed.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pdfCouldNotComplete",
+                "The PDF export could not be completed."));
     }
 
     private static async Task PreparePdfExportLayoutAsync(WebView2 webView)

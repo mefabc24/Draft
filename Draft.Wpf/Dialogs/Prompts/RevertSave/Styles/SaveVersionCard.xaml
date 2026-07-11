@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i18n="clr-namespace:Draft.Localization"
     xmlns:models="clr-namespace:Draft.Dialogs.Prompts.RevertSave.Models">
     <Style x:Key="SaveVersionCard" TargetType="RadioButton">
         <Setter Property="Template">
@@ -50,7 +51,7 @@
                                         FontFamily="{StaticResource Font.Manrope}"
                                         FontSize="11"
                                         Foreground="{StaticResource Brush.Accent.Primary}"
-                                        Text="Latest" />
+                                        Text="{i18n:Loc revertSave.latest}" />
                                 </Border>
                             </Grid>
 

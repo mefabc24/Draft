@@ -6,6 +6,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react'
 import type { CreateExpanderMarkdownData } from '../commands/createInlineLinkMarkdown'
+import { useTranslation } from '../../localization/useTranslation'
 
 type EditorQuickInsertExpanderControlsProps = {
   onConfirm: (data: CreateExpanderMarkdownData, keepOpen?: boolean) => void
@@ -38,6 +39,7 @@ function resizeContentTextarea(textarea: HTMLTextAreaElement) {
 function EditorQuickInsertExpanderControls({
   onConfirm,
 }: EditorQuickInsertExpanderControlsProps) {
+  const { t } = useTranslation()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const contentRef = useRef<HTMLTextAreaElement | null>(null)
@@ -68,11 +70,13 @@ function EditorQuickInsertExpanderControls({
   return (
     <div className="editor-quick-insert-expander-controls">
       <label className="editor-quick-insert-expander-field">
-        <span className="editor-quick-insert-expander-label">Title</span>
+        <span className="editor-quick-insert-expander-label">
+          {t('quickInsert.expander.title')}
+        </span>
         <input
           type="text"
           value={title}
-          placeholder="Title"
+          placeholder={t('quickInsert.expander.title')}
           onChange={(event) => {
             setTitle(event.target.value)
           }}
@@ -80,12 +84,14 @@ function EditorQuickInsertExpanderControls({
         />
       </label>
       <label className="editor-quick-insert-expander-field">
-        <span className="editor-quick-insert-expander-label">Content</span>
+        <span className="editor-quick-insert-expander-label">
+          {t('quickInsert.expander.content')}
+        </span>
         <textarea
           ref={contentRef}
           rows={1}
           value={content}
-          placeholder="Content"
+          placeholder={t('quickInsert.expander.content')}
           onChange={(event) => {
             setContent(event.target.value)
           }}
@@ -98,7 +104,7 @@ function EditorQuickInsertExpanderControls({
           confirm(shouldKeepOpen(event))
         }}
       >
-        Create
+        {t('common.create')}
       </button>
     </div>
   )

@@ -36,7 +36,9 @@ public sealed class UpdateCheckResult
     {
         return new UpdateCheckResult(
             UpdateCheckStatus.NotInstalledWithVelopack,
-            "Updates are only available in installed Draft releases.",
+            LocalizationService.Translate(
+                "updates.onlyInstalledReleases",
+                "Updates are only available in installed Draft releases."),
             null,
             null);
     }
@@ -45,7 +47,7 @@ public sealed class UpdateCheckResult
     {
         return new UpdateCheckResult(
             UpdateCheckStatus.UpToDate,
-            "Draft is up to date.",
+            LocalizationService.Translate("updates.upToDate", "Draft is up to date."),
             null,
             null);
     }
@@ -55,7 +57,13 @@ public sealed class UpdateCheckResult
         string version = updateInfo.TargetFullRelease.Version.ToString();
         return new UpdateCheckResult(
             UpdateCheckStatus.UpdateAvailable,
-            $"Draft {version} is available.",
+            LocalizationService.TranslateFormat(
+                "updates.versionAvailable",
+                "Draft {version} is available.",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["version"] = version,
+                }),
             version,
             updateInfo);
     }

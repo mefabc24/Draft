@@ -28,13 +28,23 @@ public sealed class UpdateInteractionService
     {
         MessageDialogResult installResult = _messageDialogService.ShowMessage(
             new MessageDialogRequest(
-                "Update Available",
-                $"Draft {result.Version} is available. Open Settings to install it from About?",
+                LocalizationService.Translate("updates.availableTitle", "Update Available"),
+                LocalizationService.TranslateFormat(
+                    "updates.openSettingsPrompt",
+                    "Draft {version} is available. Open Settings to install it from About?",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["version"] = result.Version ?? string.Empty,
+                    }),
                 MessageDialogType.Info,
                 new[]
                 {
-                    MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
-                    MessageDialogButtonDefinition.Primary("Open Settings", new MessageDialogResult(OpenUpdateSettingsResultId)),
+                    MessageDialogButtonDefinition.Secondary(
+                        LocalizationService.Translate("common.cancel", "Cancel"),
+                        MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Primary(
+                        LocalizationService.Translate("updates.openSettings", "Open Settings"),
+                        new MessageDialogResult(OpenUpdateSettingsResultId)),
                 }));
 
         return installResult.Id == OpenUpdateSettingsResultId;
@@ -67,8 +77,10 @@ public sealed class UpdateInteractionService
             return true;
 
         ShowMessage(
-            "Unsaved Changes",
-            "Draft has unsaved work. Save or discard your changes before installing the update.",
+            LocalizationService.Translate("dialog.unsavedChanges.title", "Unsaved Changes"),
+            LocalizationService.Translate(
+                "updates.unsavedChangesBeforeInstall",
+                "Draft has unsaved work. Save or discard your changes before installing the update."),
             MessageDialogType.Warning);
 
         return false;
@@ -86,7 +98,9 @@ public sealed class UpdateInteractionService
                 dialogType,
                 new[]
                 {
-                    MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
+                    MessageDialogButtonDefinition.Primary(
+                        LocalizationService.Translate("common.okay", "Okay"),
+                        MessageDialogResult.Ok),
                 }));
     }
 

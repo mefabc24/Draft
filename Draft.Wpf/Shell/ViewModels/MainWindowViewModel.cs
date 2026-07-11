@@ -2,6 +2,7 @@ using Draft.Documents.Models;
 using Draft.Save.Models;
 using Draft.Documents.Services;
 using Draft.Save.Services;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Security;
@@ -100,7 +101,15 @@ public class MainWindowViewModel : BaseViewModel
         }
     }
 
-    public string WordCountDisplay => WordCount == 1 ? "1 WORD" : $"{WordCount} WORDS";
+    public string WordCountDisplay => WordCount == 1
+        ? FormatLocalized(
+            "status.wordCountSingular",
+            "{count} WORD",
+            ("count", WordCount.ToString(CultureInfo.CurrentCulture)))
+        : FormatLocalized(
+            "status.wordCountPlural",
+            "{count} WORDS",
+            ("count", WordCount.ToString(CultureInfo.CurrentCulture)));
 
     public int CharacterCount
     {
@@ -117,8 +126,14 @@ public class MainWindowViewModel : BaseViewModel
     }
 
     public string CharacterCountDisplay => CharacterCount == 1
-        ? "1 CHAR"
-        : $"{CharacterCount} CHARS";
+        ? FormatLocalized(
+            "status.characterCountSingular",
+            "{count} CHAR",
+            ("count", CharacterCount.ToString(CultureInfo.CurrentCulture)))
+        : FormatLocalized(
+            "status.characterCountPlural",
+            "{count} CHARS",
+            ("count", CharacterCount.ToString(CultureInfo.CurrentCulture)));
 
     public int CursorLine
     {
@@ -169,8 +184,17 @@ public class MainWindowViewModel : BaseViewModel
     }
 
     public string CursorPositionDisplay => SelectedCharacterCount > 0
-        ? $"LN {CursorLine}, COL {CursorColumn} ({SelectedCharacterCount} SELECTED)"
-        : $"LN {CursorLine}, COL {CursorColumn}";
+        ? FormatLocalized(
+            "status.cursorPositionWithSelection",
+            "LN {line}, COL {column} ({selected} SELECTED)",
+            ("line", CursorLine.ToString(CultureInfo.CurrentCulture)),
+            ("column", CursorColumn.ToString(CultureInfo.CurrentCulture)),
+            ("selected", SelectedCharacterCount.ToString(CultureInfo.CurrentCulture)))
+        : FormatLocalized(
+            "status.cursorPosition",
+            "LN {line}, COL {column}",
+            ("line", CursorLine.ToString(CultureInfo.CurrentCulture)),
+            ("column", CursorColumn.ToString(CultureInfo.CurrentCulture)));
 
     public bool IsDirty => _documentState.IsDirty;
 
@@ -250,18 +274,22 @@ public class MainWindowViewModel : BaseViewModel
         get
         {
             if (IsSaving)
-                return "SAVING...";
+                return Translate("status.saving", "SAVING...");
 
             if (!HasFilePath)
-                return "UNSAVED";
+                return Translate("status.unsaved", "UNSAVED");
 
-            return IsDirty ? "MODIFIED" : "SAVED";
+            return IsDirty
+                ? Translate("status.modified", "MODIFIED")
+                : Translate("status.saved", "SAVED");
         }
     }
 
     public bool SaveStatusDotVisible => _documentState.SaveStatusDotVisible;
 
-    public string AutosaveModeDisplay => AutosaveEnabled ? "AUTOSAVE" : "MANUAL SAVE";
+    public string AutosaveModeDisplay => AutosaveEnabled
+        ? Translate("status.autosave", "AUTOSAVE")
+        : Translate("status.manualSave", "MANUAL SAVE");
 
     public string AppVersionDisplay { get; } = $"V{GetAppVersionDisplay().ToUpper()}";
 
@@ -580,6 +608,7 @@ public class MainWindowViewModel : BaseViewModel
         WindowBorderAccentMode = settings.WindowBorderAccentMode;
         OpenShortcut = ShortcutSettingsCatalog.GetShortcut(settings.Shortcuts, ShortcutActionIds.AppOpen);
         SaveShortcut = ShortcutSettingsCatalog.GetShortcut(settings.Shortcuts, ShortcutActionIds.AppSave);
+        RaiseLocalizedShellPropertiesChanged();
 
         // TODO: Wire ToolbarControlbarPosition when alternate control bar layouts exist.
     }
@@ -599,12 +628,15 @@ public class MainWindowViewModel : BaseViewModel
         if (!HasFilePath || CurrentFilePath is null)
             throw new InvalidOperationException("Cannot save without a current file path.");
 
-        return SaveDocumentToPathAsync(CurrentFilePath, "Unable to save the current file.", saveKind);
+        return SaveDocumentToPathAsync(
+            CurrentFilePath,
+            Translate("errors.saveCurrentFile", "Unable to save the current file."),
+            saveKind);
     }
 
     public async Task SaveDocumentToPathAsync(
         string path,
-        string failureTitle = "Unable to save the current file.",
+        string? failureTitle = null,
         DocumentSaveKind saveKind = DocumentSaveKind.Manual)
     {
         if (IsSaving)
@@ -633,7 +665,9 @@ public class MainWindowViewModel : BaseViewModel
         {
             FileOperationFailed?.Invoke(
                 this,
-                new FileOperationFailedEventArgs(failureTitle, ex.Message));
+                new FileOperationFailedEventArgs(
+                    failureTitle ?? Translate("errors.saveCurrentFile", "Unable to save the current file."),
+                    ex.Message));
         }
         finally
         {
@@ -686,7 +720,9 @@ public class MainWindowViewModel : BaseViewModel
 
         await SaveDocumentToPathAsync(
             CurrentFilePath!,
-            "Unable to save the current file when Draft lost focus.",
+            Translate(
+                "errors.saveOnFocusLost",
+                "Unable to save the current file when Draft lost focus."),
             DocumentSaveKind.Automatic);
     }
 
@@ -739,7 +775,7 @@ public class MainWindowViewModel : BaseViewModel
             {
                 await SaveDocumentToPathAsync(
                     CurrentFilePath!,
-                    "Unable to autosave the current file.",
+                    Translate("errors.autosaveCurrentFile", "Unable to autosave the current file."),
                     DocumentSaveKind.Automatic);
             }
         }
@@ -807,6 +843,33 @@ public class MainWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(LastSaveKind));
         CommandManager.InvalidateRequerySuggested();
         RefreshAutosaveTimer();
+    }
+
+    private void RaiseLocalizedShellPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(WordCountDisplay));
+        OnPropertyChanged(nameof(CharacterCountDisplay));
+        OnPropertyChanged(nameof(CursorPositionDisplay));
+        OnPropertyChanged(nameof(FileSaveStatusDisplay));
+        OnPropertyChanged(nameof(AutosaveModeDisplay));
+    }
+
+    private static string Translate(string key, string fallback)
+    {
+        return LocalizationService.Translate(key, fallback);
+    }
+
+    private static string FormatLocalized(
+        string key,
+        string fallback,
+        params (string Key, string Value)[] parameters)
+    {
+        Dictionary<string, string> parameterMap = parameters.ToDictionary(
+            parameter => parameter.Key,
+            parameter => parameter.Value,
+            StringComparer.Ordinal);
+
+        return LocalizationService.TranslateFormat(key, fallback, parameterMap);
     }
 
     private static bool IsFileOperationException(Exception ex)

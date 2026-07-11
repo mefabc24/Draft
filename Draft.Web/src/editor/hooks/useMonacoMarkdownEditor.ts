@@ -12,6 +12,7 @@ import {
   eventMatchesShortcutAction,
   getMonacoShortcutKeybinding,
 } from '../../shortcuts/shortcutMatching'
+import { useTranslation } from '../../localization/useTranslation'
 import { getEditorTheme, registerEditorThemes } from '../../themes'
 import { syncCurrentLineDecorations } from '../monaco/currentLineDecorations'
 import { duplicateCurrentLine } from '../monaco/duplicateLine'
@@ -128,6 +129,7 @@ export function useMonacoMarkdownEditor({
   settingsRef,
   shortcutBindings,
 }: UseMonacoMarkdownEditorOptions) {
+  const { t } = useTranslation()
   const currentLineDecorationsRef =
     useRef<monaco.editor.IEditorDecorationsCollection | null>(null)
 
@@ -467,7 +469,7 @@ export function useMonacoMarkdownEditor({
     const actions = [
       editor.addAction({
         id: 'draft.editor.undo',
-        label: 'Editor: Undo',
+        label: t('commands.editor.undo'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorUndo,
@@ -478,7 +480,7 @@ export function useMonacoMarkdownEditor({
       }),
       editor.addAction({
         id: 'draft.editor.redo',
-        label: 'Editor: Redo',
+        label: t('commands.editor.redo'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorRedo,
@@ -489,7 +491,7 @@ export function useMonacoMarkdownEditor({
       }),
       editor.addAction({
         id: 'draft.editor.duplicateLine',
-        label: 'Editor: Duplicate Current Line',
+        label: t('commands.editor.duplicateCurrentLine'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorDuplicateLine,
@@ -500,7 +502,7 @@ export function useMonacoMarkdownEditor({
       }),
       editor.addAction({
         id: 'draft.editor.moveLineUp',
-        label: 'Editor: Move Line Up',
+        label: t('commands.editor.moveLineUp'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorMoveLineUp,
@@ -511,7 +513,7 @@ export function useMonacoMarkdownEditor({
       }),
       editor.addAction({
         id: 'draft.editor.moveLineDown',
-        label: 'Editor: Move Line Down',
+        label: t('commands.editor.moveLineDown'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorMoveLineDown,
@@ -522,7 +524,7 @@ export function useMonacoMarkdownEditor({
       }),
       editor.addAction({
         id: 'draft.editor.moveCursorWordLeft',
-        label: 'Editor: Move Cursor One Word Left',
+        label: t('commands.editor.moveCursorWordLeft'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorMoveCursorWordLeft,
@@ -533,7 +535,7 @@ export function useMonacoMarkdownEditor({
       }),
       editor.addAction({
         id: 'draft.editor.moveCursorWordRight',
-        label: 'Editor: Move Cursor One Word Right',
+        label: t('commands.editor.moveCursorWordRight'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorMoveCursorWordRight,
@@ -544,7 +546,7 @@ export function useMonacoMarkdownEditor({
       }),
       editor.addAction({
         id: 'draft.editor.extendSelectionWordLeft',
-        label: 'Editor: Extend Selection One Word Left',
+        label: t('commands.editor.extendSelectionWordLeft'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorExtendSelectionWordLeft,
@@ -555,7 +557,7 @@ export function useMonacoMarkdownEditor({
       }),
       editor.addAction({
         id: 'draft.editor.extendSelectionWordRight',
-        label: 'Editor: Extend Selection One Word Right',
+        label: t('commands.editor.extendSelectionWordRight'),
         keybindings: getEditorActionKeybindings(
           shortcutBindings,
           shortcutActionIds.editorExtendSelectionWordRight,
@@ -586,7 +588,7 @@ export function useMonacoMarkdownEditor({
       actions.push(
         editor.addAction({
           id: `draft.editor.blockDefault.${action}`,
-          label: `Editor: Block Default ${action}`,
+          label: t('commands.editor.blockDefault', { action }),
           keybindings,
           run: () => {},
         }),
@@ -598,7 +600,7 @@ export function useMonacoMarkdownEditor({
         action.dispose()
       }
     }
-  }, [editorRef, shortcutBindings])
+  }, [editorRef, shortcutBindings, t])
 
   const resyncEditorLayout = useCallback(() => {
     const editor = editorRef.current

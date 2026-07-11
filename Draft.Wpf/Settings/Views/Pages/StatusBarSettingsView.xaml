@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i18n="clr-namespace:Draft.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:section="clr-namespace:Draft.Settings.Controls"
     xmlns:settings="clr-namespace:Draft.Settings.Controls"
@@ -15,79 +16,79 @@
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel VerticalAlignment="Top">
-                <section:SectionHeader Title="STATUS BAR" />
+                <section:SectionHeader Title="{i18n:Loc settings.statusBar.section}" />
 
                 <settings:SettingCard
-                    Title="Status bar visibility"
+                    Title="{i18n:Loc settings.statusBar.visibility}"
                     Margin="0,0,0,32"
-                    Description="Show or hide the status bar at the bottom of the app.">
+                    Description="{i18n:Loc settings.statusBar.visibility.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
-                <section:SectionHeader Title="LEFT INFO ELEMENTS" />
+                <section:SectionHeader Title="{i18n:Loc settings.statusBar.leftInfoElements}" />
 
                 <settings:SettingCard
-                    Title="File type"
+                    Title="{i18n:Loc settings.statusBar.fileType}"
                     Margin="0,0,0,12"
-                    Description="Show the Markdown file type indicator.">
+                    Description="{i18n:Loc settings.statusBar.fileType.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarFileTypeVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="Encoding"
+                    Title="{i18n:Loc settings.statusBar.encoding}"
                     Margin="0,0,0,12"
-                    Description="Show the text encoding indicator.">
+                    Description="{i18n:Loc settings.statusBar.encoding.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarEncodingVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="Word count"
+                    Title="{i18n:Loc settings.statusBar.wordCount}"
                     Margin="0,0,0,12"
-                    Description="Show the current document word count.">
+                    Description="{i18n:Loc settings.statusBar.wordCount.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarWordCountVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="Character count"
+                    Title="{i18n:Loc settings.statusBar.characterCount}"
                     Margin="0,0,0,32"
-                    Description="Show the current document character count.">
+                    Description="{i18n:Loc settings.statusBar.characterCount.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarCharacterCountVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
-                <section:SectionHeader Title="RIGHT BUTTONS" />
+                <section:SectionHeader Title="{i18n:Loc settings.statusBar.rightButtons}" />
 
                 <settings:SettingCard
-                    Title="Cursor position"
+                    Title="{i18n:Loc settings.statusBar.cursorPosition}"
                     Margin="0,0,0,12"
-                    Description="Show the line and column navigation button.">
+                    Description="{i18n:Loc settings.statusBar.cursorPosition.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarCursorPositionVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="Revert button"
+                    Title="{i18n:Loc settings.statusBar.revertButton}"
                     Margin="0,0,0,12"
-                    Description="Show the saved-version restore button.">
+                    Description="{i18n:Loc settings.statusBar.revertButton.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarRevertButtonVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="Save status"
+                    Title="{i18n:Loc settings.statusBar.saveStatus}"
                     Margin="0,0,0,12"
-                    Description="Show the current save state button.">
+                    Description="{i18n:Loc settings.statusBar.saveStatus.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarSaveStatusVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="Autosave status"
+                    Title="{i18n:Loc settings.statusBar.autosaveStatus}"
                     Margin="0,0,0,12"
-                    Description="Show the autosave mode button.">
+                    Description="{i18n:Loc settings.statusBar.autosaveStatus.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarAutosaveStatusVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="App version"
+                    Title="{i18n:Loc settings.statusBar.appVersion}"
                     Margin="0,0,0,12"
-                    Description="Show the app version button.">
+                    Description="{i18n:Loc settings.statusBar.appVersion.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarAppVersionVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
             </StackPanel>

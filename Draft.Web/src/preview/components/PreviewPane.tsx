@@ -1,6 +1,7 @@
 import type { CSSProperties, MutableRefObject, ReactNode } from 'react'
 import '../styles/previewMarkdown.css'
 import type { DraftPreviewTheme } from '../../themes/preview/support/previewThemeTypes'
+import { useTranslation } from '../../localization/useTranslation'
 import { usePreviewScrollbar } from '../hooks/usePreviewScrollbar'
 import PreviewMarkdownRenderer from './PreviewMarkdownRenderer'
 import PreviewScrollbar from './PreviewScrollbar'
@@ -26,6 +27,7 @@ function PreviewPane({
   previewScrollElementRef,
   onPreviewScroll,
 }: PreviewPaneProps) {
+  const { t } = useTranslation()
   const {
     previewScrollRef,
     previewContentRef,
@@ -55,7 +57,7 @@ function PreviewPane({
   return (
     <article
       className="preview-pane"
-      aria-label="Markdown Preview"
+      aria-label={t('workspace.markdownPreview')}
       aria-hidden={ariaHidden}
       style={previewThemeStyle}
     >

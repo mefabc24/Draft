@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i18n="clr-namespace:Draft.Localization"
     xmlns:local="clr-namespace:Draft.Shell.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="clr-namespace:Draft.Shared.UI.Controls"
@@ -12,7 +13,7 @@
         <Button
             Click="Minimize_Click"
             Style="{StaticResource WindowControlButton}"
-            ui:ToolTipAssist.Text="Minimize">
+            ui:ToolTipAssist.Text="{i18n:Loc window.minimize}">
             <Path
                 Width="12"
                 Height="12"
@@ -26,7 +27,7 @@
         <Button
             Click="MaxRestore_Click"
             Style="{StaticResource WindowControlButton}"
-            ui:ToolTipAssist.Text="Maximize or restore">
+            ui:ToolTipAssist.Text="{i18n:Loc window.maximizeOrRestore}">
             <Path
                 Width="12"
                 Height="12"
@@ -46,7 +47,7 @@
                 </Path.Style>
             </Path>
         </Button>
-        <Button Click="Close_Click" ui:ToolTipAssist.Text="Close">
+        <Button Click="Close_Click" ui:ToolTipAssist.Text="{i18n:Loc common.close}">
             <Button.Style>
                 <Style BasedOn="{StaticResource WindowControlButton}" TargetType="Button">
                     <Setter Property="Tag" Value="Close" />

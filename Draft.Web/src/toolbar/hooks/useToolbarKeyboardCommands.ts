@@ -9,6 +9,7 @@ import {
   eventMatchesShortcutAction,
   getMonacoShortcutKeybinding,
 } from '../../shortcuts/shortcutMatching'
+import { useTranslation } from '../../localization/useTranslation'
 import {
   applyHeadingStyle,
   toggleImageSelection,
@@ -59,6 +60,8 @@ export function useToolbarKeyboardCommands({
   savedSelectionSourceRef,
   shortcutBindings,
 }: UseToolbarKeyboardCommandsOptions) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     if (!editor) {
       return
@@ -74,7 +77,7 @@ export function useToolbarKeyboardCommands({
     const actions = [
       editor.addAction({
         id: 'draft.markdownToolbar.bold',
-        label: 'Markdown: Toggle Bold',
+        label: t('commands.markdownToolbar.bold'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarBold,
@@ -87,7 +90,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.italic',
-        label: 'Markdown: Toggle Italic',
+        label: t('commands.markdownToolbar.italic'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarItalic,
@@ -100,7 +103,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.underline',
-        label: 'Markdown: Toggle Underline',
+        label: t('commands.markdownToolbar.underline'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarUnderline,
@@ -113,7 +116,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.inlineCode',
-        label: 'Markdown: Toggle Inline Code',
+        label: t('commands.markdownToolbar.inlineCode'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarInlineCode,
@@ -126,7 +129,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.spoiler',
-        label: 'Markdown: Toggle Spoiler',
+        label: t('commands.markdownToolbar.spoiler'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarSpoiler,
@@ -139,7 +142,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.highlight',
-        label: 'Markdown: Toggle Highlight',
+        label: t('commands.markdownToolbar.highlight'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarHighlight,
@@ -152,7 +155,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.comment',
-        label: 'Markdown: Toggle Comment',
+        label: t('commands.markdownToolbar.comment'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarComment,
@@ -165,7 +168,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.strikethrough',
-        label: 'Markdown: Toggle Strikethrough',
+        label: t('commands.markdownToolbar.strikethrough'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarStrikethrough,
@@ -178,7 +181,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.link',
-        label: 'Markdown: Toggle Link',
+        label: t('commands.markdownToolbar.link'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarLink,
@@ -189,7 +192,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.image',
-        label: 'Markdown: Toggle Image',
+        label: t('commands.markdownToolbar.image'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarImage,
@@ -200,7 +203,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading1',
-        label: 'Markdown: Heading 1',
+        label: t('commands.markdownToolbar.heading1'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarHeading1,
@@ -213,7 +216,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading2',
-        label: 'Markdown: Heading 2',
+        label: t('commands.markdownToolbar.heading2'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarHeading2,
@@ -226,7 +229,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading3',
-        label: 'Markdown: Heading 3',
+        label: t('commands.markdownToolbar.heading3'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarHeading3,
@@ -239,7 +242,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading4',
-        label: 'Markdown: Heading 4',
+        label: t('commands.markdownToolbar.heading4'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarHeading4,
@@ -252,7 +255,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading5',
-        label: 'Markdown: Heading 5',
+        label: t('commands.markdownToolbar.heading5'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarHeading5,
@@ -265,7 +268,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading6',
-        label: 'Markdown: Heading 6',
+        label: t('commands.markdownToolbar.heading6'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarHeading6,
@@ -278,7 +281,7 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.normal',
-        label: 'Markdown: Normal Text',
+        label: t('commands.markdownToolbar.normalText'),
         keybindings: getToolbarActionKeybindings(
           shortcutBindings,
           shortcutActionIds.toolbarNormalText,
@@ -296,7 +299,7 @@ export function useToolbarKeyboardCommands({
         action.dispose()
       }
     }
-  }, [editor, runEditorCommand, shortcutBindings])
+  }, [editor, runEditorCommand, shortcutBindings, t])
 
   useEffect(() => {
     if (!editor) {

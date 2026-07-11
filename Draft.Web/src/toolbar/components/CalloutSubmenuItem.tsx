@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { CalloutType } from '../../markdown/callouts'
+import { useTranslation } from '../../localization/useTranslation'
 import type { ToolbarCalloutOption } from '../calloutOptions'
 
 type CalloutSubmenuItemProps = {
@@ -36,6 +37,7 @@ function CalloutSubmenuItem({
   onSelect,
   selected,
 }: CalloutSubmenuItemProps) {
+  const { t } = useTranslation()
   const iconUrl = getToolbarAssetUrl(option.iconPath)
   const iconStyle = {
     color: `var(${option.colorVariable}, currentColor)`,
@@ -60,7 +62,9 @@ function CalloutSubmenuItem({
         className="markdown-toolbar-callout-icon"
         style={iconStyle}
       />
-      <span className="markdown-toolbar-callout-label">{option.label}</span>
+      <span className="markdown-toolbar-callout-label">
+        {t(`callout.${option.type}`, option.label)}
+      </span>
       <span className="markdown-toolbar-callout-check-slot">
         {selected ? <CheckIcon /> : null}
       </span>

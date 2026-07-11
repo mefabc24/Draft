@@ -565,18 +565,24 @@ function EditorQuickInsertMenu({
   )
 
   const renderCommandItem = useCallback(
-    (entry: EditorQuickInsertCommandEntry, nested = false) => (
-      <EditorQuickInsertMenuItem
-        icon={getQuickInsertEntryIcon(entry)}
-        key={entry.id}
-        label={t(`quickInsert.${entry.id}`, entry.label)}
-        nested={nested}
-        onSelect={(event) => {
-          runCommand(entry.command, shouldKeepMenuOpen(event))
-        }}
-        shortcut={entry.shortcut}
-      />
-    ),
+    (entry: EditorQuickInsertCommandEntry, nested = false) => {
+      const labelKey = entry.calloutType
+        ? `callout.${entry.calloutType}`
+        : `quickInsert.${entry.id}`
+
+      return (
+        <EditorQuickInsertMenuItem
+          icon={getQuickInsertEntryIcon(entry)}
+          key={entry.id}
+          label={t(labelKey, entry.label)}
+          nested={nested}
+          onSelect={(event) => {
+            runCommand(entry.command, shouldKeepMenuOpen(event))
+          }}
+          shortcut={entry.shortcut}
+        />
+      )
+    },
     [runCommand, t],
   )
 
@@ -618,8 +624,8 @@ function EditorQuickInsertMenu({
                 className="editor-quick-insert-callout-expand-button"
                 aria-label={
                   extraCalloutsExpanded
-                    ? t('quickInsert.hideExtraCallouts', 'Hide extra callouts')
-                    : t('quickInsert.showExtraCallouts', 'Show extra callouts')
+                    ? t('quickInsert.hideExtraCallouts')
+                    : t('quickInsert.showExtraCallouts')
                 }
                 aria-expanded={extraCalloutsExpanded}
                 onClick={() => {
@@ -718,7 +724,7 @@ function EditorQuickInsertMenu({
   return (
     <div
       ref={menuRef}
-      aria-label={t('quickInsert.title', 'Editor Quick Insert Menu')}
+      aria-label={t('quickInsert.title')}
       className="editor-quick-insert-menu"
       data-editor-quick-insert-menu="true"
       onMouseDown={(event) => {

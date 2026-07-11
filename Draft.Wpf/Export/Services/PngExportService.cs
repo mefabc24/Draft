@@ -109,8 +109,13 @@ public sealed class PngExportService
 
         if (measuredWidth > MaximumViewportWidthCssPixels)
         {
-            throw new InvalidOperationException(
-                $"The document is too wide to export as a single PNG ({Math.Ceiling(measuredWidth)} CSS pixels). Try PDF or HTML export, or reduce very wide content such as tables or code blocks.");
+            throw new InvalidOperationException(LocalizationService.TranslateFormat(
+                "export.pngTooWide",
+                "The document is too wide to export as a single PNG ({width} CSS pixels). Try PDF or HTML export, or reduce very wide content such as tables or code blocks.",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["width"] = Math.Ceiling(measuredWidth).ToString(CultureInfo.CurrentCulture),
+                }));
         }
 
         return Math.Clamp(
@@ -126,7 +131,9 @@ public sealed class PngExportService
         double documentHeight)
     {
         if (!double.IsFinite(documentHeight) || documentHeight <= 0)
-            throw new InvalidOperationException("The PNG export document size could not be measured.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pngSizeCouldNotBeMeasured",
+                "The PNG export document size could not be measured."));
 
         WriteableBitmap? finalImage = null;
         double pixelScaleY = 1;
@@ -165,7 +172,9 @@ public sealed class PngExportService
         }
 
         if (finalImage is null)
-            throw new InvalidOperationException("The PNG export could not be captured.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pngCouldNotBeCaptured",
+                "The PNG export could not be captured."));
 
         SavePng(filePath, finalImage);
     }
@@ -175,7 +184,9 @@ public sealed class PngExportService
         double finalHeight = Math.Ceiling(documentHeight * pixelScaleY);
 
         if (!double.IsFinite(finalHeight) || finalHeight <= 0 || finalHeight > int.MaxValue)
-            throw new InvalidOperationException("The PNG export document is too large to capture.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pngTooLargeToCapture",
+                "The PNG export document is too large to capture."));
 
         return (int)finalHeight;
     }
@@ -183,13 +194,21 @@ public sealed class PngExportService
     private static void EnsureFinalImageSizeSupported(int width, int height)
     {
         if (width <= 0 || height <= 0)
-            throw new InvalidOperationException("The PNG export document size could not be measured.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pngSizeCouldNotBeMeasured",
+                "The PNG export document size could not be measured."));
 
         long pixelCount = (long)width * height;
         if (pixelCount > MaximumPngPixelCount)
         {
-            throw new InvalidOperationException(
-                $"The document is too large to export as a single PNG ({width} x {height} pixels). Try PDF or HTML export, or split the document into smaller sections.");
+            throw new InvalidOperationException(LocalizationService.TranslateFormat(
+                "export.pngTooLarge",
+                "The document is too large to export as a single PNG ({width} x {height} pixels). Try PDF or HTML export, or split the document into smaller sections.",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["width"] = width.ToString(CultureInfo.CurrentCulture),
+                    ["height"] = height.ToString(CultureInfo.CurrentCulture),
+                }));
         }
     }
 
@@ -202,7 +221,9 @@ public sealed class PngExportService
             captureStream);
 
         if (captureStream.Length == 0)
-            throw new InvalidOperationException("The PNG export capture was empty.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pngCaptureEmpty",
+                "The PNG export capture was empty."));
 
         captureStream.Position = 0;
         BitmapSource tile = BitmapFrame.Create(
@@ -326,7 +347,13 @@ public sealed class PngExportService
         string? error = JsonSerializer.Deserialize<string?>(errorResult, JsonOptions);
 
         if (!string.IsNullOrWhiteSpace(error))
-            throw new InvalidOperationException($"The PNG export preview could not be prepared: {error}");
+            throw new InvalidOperationException(LocalizationService.TranslateFormat(
+                "export.pngPreviewCouldNotBePrepared",
+                "The PNG export preview could not be prepared: {message}",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["message"] = error,
+                }));
     }
 
     private static async Task<ExportDocumentSize> MeasureDocumentAsync(WebView2 webView)
@@ -375,7 +402,9 @@ public sealed class PngExportService
             || documentSize.Width <= 0
             || documentSize.Height <= 0)
         {
-            throw new InvalidOperationException("The PNG export document size could not be measured.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pngSizeCouldNotBeMeasured",
+                "The PNG export document size could not be measured."));
         }
 
         return documentSize;
@@ -441,7 +470,9 @@ public sealed class PngExportService
         }
 
         if (shouldThrowOnTimeout)
-            throw new InvalidOperationException("The PNG export preview did not finish rendering in time.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pngPreviewTimeout",
+                "The PNG export preview did not finish rendering in time."));
     }
 
     private sealed record ExportDocumentSize(

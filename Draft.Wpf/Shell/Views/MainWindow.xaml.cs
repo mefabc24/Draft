@@ -83,6 +83,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         _settings = AppSettingsStore.Normalize(settings);
+        LocalizationService.SetCurrentAppLanguage(_settings.AppLanguage);
         _windowSizingService.ApplyStartupWindowSize(this);
         _windowSizingService.ApplyMinimumWindowSize(this, _settings);
         viewModel.ApplySettings(_settings);
@@ -269,7 +270,9 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) when (IsFileOperationException(ex))
         {
-            _dialogCoordinator.ShowFileOperationError("Open File", ex);
+            _dialogCoordinator.ShowFileOperationError(
+                LocalizationService.Translate("dialog.openFile.title", "Open File"),
+                ex);
         }
     }
 
@@ -287,7 +290,7 @@ public partial class MainWindow : Window
 
         await ViewModel.SaveDocumentToPathAsync(
             filePath,
-            "Unable to save the current file.",
+            LocalizationService.Translate("errors.saveCurrentFile", "Unable to save the current file."),
             DocumentSaveKind.Manual);
         if (IsCurrentDocumentPath(filePath))
         {
@@ -327,8 +330,10 @@ public partial class MainWindow : Window
         if (!CanPostRuntimeWorkspaceMessage)
         {
             _dialogCoordinator.ShowMessage(
-                "Export",
-                "The Markdown preview is not ready yet. Try exporting again after the workspace finishes loading.",
+                LocalizationService.Translate("export.messageTitle", "Export"),
+                LocalizationService.Translate(
+                    "export.previewNotReady",
+                    "The Markdown preview is not ready yet. Try exporting again after the workspace finishes loading."),
                 MessageDialogType.Warning);
             return;
         }
@@ -358,14 +363,20 @@ public partial class MainWindow : Window
             }
 
             _dialogCoordinator.ShowMessage(
-                "Export Complete",
-                $"The document was exported successfully as {GetExportFormatDisplayName(result.Format)}.",
+                LocalizationService.Translate("export.completeTitle", "Export Complete"),
+                LocalizationService.TranslateFormat(
+                    "export.completeDescription",
+                    "The document was exported successfully as {format}.",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["format"] = GetExportFormatDisplayName(result.Format),
+                    }),
                 MessageDialogType.Success);
         }
         catch (Exception ex) when (IsExportException(ex))
         {
             _dialogCoordinator.ShowMessage(
-                "Export",
+                LocalizationService.Translate("export.messageTitle", "Export"),
                 ex.Message,
                 MessageDialogType.Error);
         }
@@ -494,8 +505,10 @@ public partial class MainWindow : Window
         if (!viewModel.HasFilePath)
         {
             _dialogCoordinator.ShowMessage(
-                "Revert Save",
-                "Open or save a file before restoring a saved version.",
+                LocalizationService.Translate("revertSave.messageTitle", "Revert Save"),
+                LocalizationService.Translate(
+                    "revertSave.openOrSaveFirst",
+                    "Open or save a file before restoring a saved version."),
                 MessageDialogType.Warning);
             return;
         }
@@ -520,8 +533,10 @@ public partial class MainWindow : Window
         if (result.RestoredContent is null)
         {
             _dialogCoordinator.ShowMessage(
-                "Revert Save",
-                "The selected saved version could not be restored.",
+                LocalizationService.Translate("revertSave.messageTitle", "Revert Save"),
+                LocalizationService.Translate(
+                    "revertSave.restoreFailed",
+                    "The selected saved version could not be restored."),
                 MessageDialogType.Error);
             return;
         }
@@ -535,7 +550,7 @@ public partial class MainWindow : Window
         catch (Exception ex) when (IsFileOperationException(ex))
         {
             _dialogCoordinator.ShowMessage(
-                "Revert Save",
+                LocalizationService.Translate("revertSave.messageTitle", "Revert Save"),
                 ex.Message,
                 MessageDialogType.Error);
         }
@@ -559,6 +574,7 @@ public partial class MainWindow : Window
     private void ApplySettings(DraftSettings settings)
     {
         _settings = AppSettingsStore.Normalize(settings);
+        LocalizationService.SetCurrentAppLanguage(_settings.AppLanguage);
         _windowSizingService.ApplyMinimumWindowSize(this, _settings);
         ViewModel?.ApplySettings(_settings);
         RefreshShellShortcutBindings();
@@ -1031,8 +1047,10 @@ public partial class MainWindow : Window
         catch (Exception ex) when (IsExternalLinkException(ex))
         {
             _dialogCoordinator.ShowMessage(
-                "Open External Link",
-                "The link could not be opened in your default browser.",
+                LocalizationService.Translate("dialog.openExternalLink.title", "Open External Link"),
+                LocalizationService.Translate(
+                    "dialog.openExternalLink.openFailed",
+                    "The link could not be opened in your default browser."),
                 MessageDialogType.Error);
         }
     }
@@ -1097,7 +1115,7 @@ public partial class MainWindow : Window
             ExportFormat.Pdf => "PDF",
             ExportFormat.Html => "HTML",
             ExportFormat.Png => "PNG",
-            _ => "the selected format",
+            _ => LocalizationService.Translate("export.selectedFormat", "the selected format"),
         };
     }
 
@@ -1114,15 +1132,15 @@ public partial class MainWindow : Window
     private static string GetExportProgressTitle(ExportFormat format)
     {
         return format == ExportFormat.Png
-            ? "Exporting PNG..."
-            : "Exporting...";
+            ? LocalizationService.Translate("export.progressPngTitle", "Exporting PNG...")
+            : LocalizationService.Translate("export.progressTitle", "Exporting...");
     }
 
     private static string GetExportProgressMessage(ExportFormat format)
     {
         return format == ExportFormat.Png
-            ? "Preparing your document image."
-            : "Preparing your document for export.";
+            ? LocalizationService.Translate("export.progressPngMessage", "Preparing your document image.")
+            : LocalizationService.Translate("export.progressMessage", "Preparing your document for export.");
     }
 
 }

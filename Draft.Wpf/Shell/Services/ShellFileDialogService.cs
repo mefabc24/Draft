@@ -1,5 +1,6 @@
 using Draft.Documents.Models;
 using Draft.Export.Models;
+using Draft.Localization;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows;
@@ -12,7 +13,7 @@ public sealed class ShellFileDialogService
     {
         OpenFileDialog dialog = new()
         {
-            Filter = SupportedDocumentTypes.DialogFilter,
+            Filter = SupportedDocumentTypes.GetDialogFilter(),
             CheckFileExists = true,
             Multiselect = false,
         };
@@ -29,7 +30,7 @@ public sealed class ShellFileDialogService
     {
         SaveFileDialog dialog = new()
         {
-            Filter = SupportedDocumentTypes.DialogFilter,
+            Filter = SupportedDocumentTypes.GetDialogFilter(),
             DefaultExt = SupportedDocumentTypes.DefaultExtension,
             AddExtension = true,
             OverwritePrompt = true,
@@ -77,9 +78,9 @@ public sealed class ShellFileDialogService
     {
         return format switch
         {
-            ExportFormat.Html => "HTML files (*.html)|*.html",
-            ExportFormat.Png => "PNG files (*.png)|*.png",
-            _ => "PDF files (*.pdf)|*.pdf",
+            ExportFormat.Html => $"{LocalizationService.Translate("dialog.fileFilter.htmlFiles", "HTML files (*.html)")}|*.html",
+            ExportFormat.Png => $"{LocalizationService.Translate("dialog.fileFilter.pngFiles", "PNG files (*.png)")}|*.png",
+            _ => $"{LocalizationService.Translate("dialog.fileFilter.pdfFiles", "PDF files (*.pdf)")}|*.pdf",
         };
     }
 
@@ -101,7 +102,7 @@ public sealed class ShellFileDialogService
 
         if (string.IsNullOrWhiteSpace(baseFileName))
         {
-            baseFileName = "Draft-Export";
+            baseFileName = LocalizationService.Translate("export.defaultFileName", "Draft-Export");
         }
 
         return $"{baseFileName}{GetExportDefaultExtension(format)}";

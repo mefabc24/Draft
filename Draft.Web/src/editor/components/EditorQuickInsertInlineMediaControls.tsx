@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react'
+import { useTranslation } from '../../localization/useTranslation'
 import type {
   CreateInlineImageMarkdownData,
   CreateInlineLinkMarkdownData,
@@ -27,6 +28,7 @@ function shouldKeepOpen(event: ReactMouseEvent<HTMLButtonElement>) {
 function EditorQuickInsertInlineMediaControls(
   props: EditorQuickInsertInlineMediaControlsProps,
 ) {
+  const { t } = useTranslation()
   const [text, setText] = useState('')
   const [url, setUrl] = useState('')
   const isImage = props.type === 'image'
@@ -53,12 +55,18 @@ function EditorQuickInsertInlineMediaControls(
     <div className="editor-quick-insert-inline-media-controls">
       <label className="editor-quick-insert-inline-media-field">
         <span className="editor-quick-insert-inline-media-label">
-          {isImage ? 'Placeholder text' : 'Display text'}
+          {isImage
+            ? t('quickInsert.inlineMedia.placeholderText')
+            : t('quickInsert.inlineMedia.displayText')}
         </span>
         <input
           type="text"
           value={text}
-          placeholder={isImage ? 'Alt text' : 'Display text'}
+          placeholder={
+            isImage
+              ? t('quickInsert.inlineMedia.altText')
+              : t('quickInsert.inlineMedia.displayText')
+          }
           onChange={(event) => {
             setText(event.target.value)
           }}
@@ -67,12 +75,18 @@ function EditorQuickInsertInlineMediaControls(
       </label>
       <label className="editor-quick-insert-inline-media-field">
         <span className="editor-quick-insert-inline-media-label">
-          {isImage ? 'Image link' : 'Link'}
+          {isImage
+            ? t('quickInsert.inlineMedia.imageLink')
+            : t('toolbar.link')}
         </span>
         <input
           type="text"
           value={url}
-          placeholder={isImage ? 'Image URL' : 'URL'}
+          placeholder={
+            isImage
+              ? t('quickInsert.inlineMedia.imageUrl')
+              : t('quickInsert.inlineMedia.url')
+          }
           onChange={(event) => {
             setUrl(event.target.value)
           }}
@@ -86,7 +100,7 @@ function EditorQuickInsertInlineMediaControls(
           confirm(shouldKeepOpen(event))
         }}
       >
-        Create
+        {t('common.create')}
       </button>
     </div>
   )

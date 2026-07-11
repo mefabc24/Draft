@@ -37,6 +37,7 @@ import {
   getPreviewAnchorIdFromHref,
   scrollToPreviewAnchor,
 } from '../anchors/scrollToPreviewAnchor'
+import { useTranslation } from '../../localization/useTranslation'
 
 type PreviewMarkdownRendererProps = {
   markdown: string
@@ -310,6 +311,7 @@ function PreviewSpoiler({
   spoilerId,
   ...props
 }: PreviewSpoilerProps) {
+  const { t } = useTranslation()
   const [isLocallyRevealed, setIsLocallyRevealed] = useState(false)
   const isRevealed = spoilerId
     ? revealedSpoilerIds.has(spoilerId)
@@ -338,8 +340,8 @@ function PreviewSpoiler({
       tabIndex={0}
       aria-label={
         isRevealed
-          ? 'Spoiler visible. Click to hide.'
-          : 'Spoiler hidden. Click to reveal.'
+          ? t('preview.spoilerVisible')
+          : t('preview.spoilerHidden')
       }
       onClick={(event) => {
         onClick?.(event)
@@ -374,6 +376,7 @@ function PreviewCodeBlock({
   sourceLine,
   ...props
 }: PreviewCodeBlockProps) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const resetCopiedTimeoutRef = useRef(0)
   const codeText = getTextFromReactNode(children)
@@ -414,8 +417,12 @@ function PreviewCodeBlock({
       <button
         type="button"
         className={`preview-code-block-copy-button${copied ? ' is-copied' : ''}`}
-        aria-label={copied ? 'Copied code block' : 'Copy code block'}
-        title={copied ? 'Copied' : 'Copy'}
+        aria-label={
+          copied
+            ? t('preview.copiedCodeBlock')
+            : t('preview.copyCodeBlock')
+        }
+        title={copied ? t('preview.copied') : t('preview.copy')}
         onClick={handleCopyClick}
         onMouseDown={(event) => {
           event.preventDefault()

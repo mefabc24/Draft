@@ -323,11 +323,11 @@ function PreviewEditMenu({
         active={open}
         ariaExpanded={open}
         ariaHasPopup="dialog"
-        ariaLabel={t('toolbar.editSelectedMarkdown', 'Edit selected Markdown')}
+        ariaLabel={t('toolbar.editSelectedMarkdown')}
         onClick={handleOpen}
         onTooltipHide={onTooltipHide}
         onTooltipShow={onTooltipShow}
-        tooltip={{ label: t('common.edit', 'Edit'), shortcut: triggerShortcut }}
+        tooltip={{ label: t('common.edit'), shortcut: triggerShortcut }}
       >
         <ToolbarIcon name="edit" />
       </ToolbarButton>
@@ -339,10 +339,7 @@ function PreviewEditMenu({
           data-toolbar-popup="true"
           data-preview-edit-menu="true"
           role="dialog"
-          aria-label={t(
-            'toolbar.editSelectedMarkdownSource',
-            'Edit selected Markdown source',
-          )}
+          aria-label={t('toolbar.editSelectedMarkdownSource')}
           style={menuStyle}
           onKeyDown={handleKeyDown}
         >
@@ -363,14 +360,14 @@ function PreviewEditMenu({
               className="preview-edit-action preview-edit-action-secondary"
               onClick={onCancel}
             >
-              {t('common.cancel', 'Cancel')}
+              {t('common.cancel')}
             </button>
             <button
               type="button"
               className="preview-edit-action preview-edit-action-primary"
               onClick={handleConfirm}
             >
-              {t('common.confirm', 'Confirm')}
+              {t('common.confirm')}
             </button>
           </div>
         </div>

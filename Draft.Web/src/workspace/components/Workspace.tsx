@@ -436,7 +436,6 @@ function Workspace() {
   const livePreviewLabel = useMemo(
     () =>
       translate('workspace.livePreview', {
-        fallback: 'Live Preview',
         language: appLanguage,
       }),
     [appLanguage],
@@ -448,9 +447,6 @@ function Workspace() {
           ? 'workspace.wordCountOne'
           : 'workspace.wordCount',
         {
-          fallback: previewWordCount === 1
-            ? '1 word'
-            : `${previewWordCount} words`,
           language: appLanguage,
           params: { count: previewWordCount },
         },

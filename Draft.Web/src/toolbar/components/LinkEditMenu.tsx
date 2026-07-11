@@ -7,6 +7,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
 } from 'react'
+import { useTranslation } from '../../localization/useTranslation'
 import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
 import {
   shortcutActionIds,
@@ -58,19 +59,19 @@ const MENU_GAP = 12
 
 const linkEditCopy = {
   image: {
-    dialogLabel: 'Edit Markdown image',
-    labelInputLabel: 'Image alt text',
-    title: 'Image',
-    triggerLabel: 'Edit image',
-    urlInputLabel: 'Image URL',
+    dialogLabelKey: 'toolbar.linkEdit.image.dialogLabel',
+    labelInputLabelKey: 'toolbar.linkEdit.image.labelInputLabel',
+    titleKey: 'toolbar.image',
+    triggerLabelKey: 'toolbar.linkEdit.image.triggerLabel',
+    urlInputLabelKey: 'toolbar.linkEdit.image.urlInputLabel',
     urlPlaceholder: 'https://example.com/image.png',
   },
   link: {
-    dialogLabel: 'Edit Markdown link',
-    labelInputLabel: 'Link text',
-    title: 'Link',
-    triggerLabel: 'Edit link',
-    urlInputLabel: 'Link URL',
+    dialogLabelKey: 'toolbar.linkEdit.link.dialogLabel',
+    labelInputLabelKey: 'toolbar.linkEdit.link.labelInputLabel',
+    titleKey: 'toolbar.link',
+    triggerLabelKey: 'toolbar.linkEdit.link.triggerLabel',
+    urlInputLabelKey: 'toolbar.linkEdit.link.urlInputLabel',
     urlPlaceholder: 'https://example.com',
   },
 } satisfies Record<LinkEditKind, Record<string, string>>
@@ -130,7 +131,13 @@ function LinkEditMenu({
   triggerShortcut,
   workspaceRef,
 }: LinkEditMenuProps) {
+  const { t } = useTranslation()
   const copy = linkEditCopy[kind]
+  const dialogLabel = t(copy.dialogLabelKey)
+  const labelInputLabel = t(copy.labelInputLabelKey)
+  const title = t(copy.titleKey)
+  const triggerLabel = t(copy.triggerLabelKey)
+  const urlInputLabel = t(copy.urlInputLabelKey)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const textInputRef = useRef<HTMLInputElement | null>(null)
@@ -309,12 +316,12 @@ function LinkEditMenu({
         active={active || open}
         ariaExpanded={open}
         ariaHasPopup="dialog"
-        ariaLabel={copy.triggerLabel}
+        ariaLabel={triggerLabel}
         onClick={handleOpen}
         onTooltipHide={onTooltipHide}
         onTooltipShow={onTooltipShow}
         tooltip={{
-          label: copy.title,
+          label: title,
           shortcut: triggerShortcut,
         }}
       >
@@ -327,7 +334,7 @@ function LinkEditMenu({
           className={`preview-edit-menu link-edit-menu place-${menuGeometry.placement}`}
           data-toolbar-popup="true"
           role="dialog"
-          aria-label={copy.dialogLabel}
+          aria-label={dialogLabel}
           style={menuStyle}
           onKeyDown={handleKeyDown}
         >
@@ -338,7 +345,7 @@ function LinkEditMenu({
               className="link-edit-input"
               value={label}
               spellCheck={false}
-              aria-label={copy.labelInputLabel}
+              aria-label={labelInputLabel}
               onChange={(event) => {
                 setLabel(event.target.value)
               }}
@@ -352,7 +359,7 @@ function LinkEditMenu({
               value={url}
               spellCheck={false}
               placeholder={copy.urlPlaceholder}
-              aria-label={copy.urlInputLabel}
+              aria-label={urlInputLabel}
               onBlur={() => {
                 setUrlTouched(true)
               }}
@@ -370,7 +377,7 @@ function LinkEditMenu({
               className="preview-edit-action preview-edit-action-secondary"
               onClick={onCancel}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="button"
@@ -378,7 +385,7 @@ function LinkEditMenu({
               disabled={confirmDisabled}
               onClick={handleConfirm}
             >
-              Confirm
+              {t('common.confirm')}
             </button>
           </div>
         </div>

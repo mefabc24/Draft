@@ -8,6 +8,7 @@ import {
   type RefObject,
 } from 'react'
 import type { CalloutType } from '../../markdown/callouts'
+import { useTranslation } from '../../localization/useTranslation'
 import { clamp } from '../../shared/utils/clamp'
 import {
   coreToolbarCalloutOptions,
@@ -82,6 +83,7 @@ function CalloutSubmenu({
   onSelect,
   selectedCalloutType,
 }: CalloutSubmenuProps) {
+  const { t } = useTranslation()
   const submenuRef = useRef<HTMLDivElement | null>(null)
   const geometryFrameRef = useRef<number | null>(null)
   const [expanded, setExpanded] = useState(false)
@@ -229,7 +231,7 @@ function CalloutSubmenu({
         geometry ? ` open-${geometry.side}` : ''
       }`}
       role="menu"
-      aria-label="Blockquote callouts"
+      aria-label={t('toolbar.blockquoteCallouts')}
       style={submenuStyle}
     >
       <div className="markdown-toolbar-callout-list">
@@ -268,7 +270,11 @@ function CalloutSubmenu({
         <button
           type="button"
           className="markdown-toolbar-callout-expand-button"
-          aria-label={expanded ? 'Hide extra callouts' : 'Show extra callouts'}
+          aria-label={
+            expanded
+              ? t('quickInsert.hideExtraCallouts')
+              : t('quickInsert.showExtraCallouts')
+          }
           aria-expanded={expanded}
           onClick={() => {
             setExpanded((currentExpanded) => !currentExpanded)

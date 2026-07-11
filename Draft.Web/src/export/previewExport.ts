@@ -1,4 +1,5 @@
 import { getPreviewTheme, getPreviewThemeStyle } from '../themes'
+import { getCurrentAppLanguage, translate } from '../localization/localization'
 
 type PreviewExportOptions = {
   fileName: string
@@ -28,7 +29,7 @@ function getDocumentTitle(fileName: string) {
   const trimmedFileName = fileName.trim()
 
   if (!trimmedFileName) {
-    return 'Draft Export'
+    return translate('export.documentTitle')
   }
 
   const extensionIndex = trimmedFileName.lastIndexOf('.')
@@ -1109,7 +1110,7 @@ function clonePreviewContent() {
   const previewContent = document.querySelector<HTMLElement>('.preview-content')
 
   if (!previewContent) {
-    throw new Error('Preview content is not ready.')
+    throw new Error(translate('export.previewContentNotReady'))
   }
 
   const clonedPreviewContent = previewContent.cloneNode(true) as HTMLElement
@@ -1158,7 +1159,7 @@ export function createPreviewExportHtml({
       : 'draft-export-preview draft-html-export preview-pane'
 
   return `<!doctype html>
-<html lang="en"${htmlStyleAttribute}>
+<html lang="${getCurrentAppLanguage()}"${htmlStyleAttribute}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

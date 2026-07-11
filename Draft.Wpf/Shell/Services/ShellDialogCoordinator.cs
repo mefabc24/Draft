@@ -122,9 +122,11 @@ public sealed class ShellDialogCoordinator
             return true;
 
         MessageDialogResult result = ShowConfirmationDialog(
-            "Unsaved Changes",
-            "You have unsaved changes. Do you want to continue?",
-            "Continue",
+            LocalizationService.Translate("dialog.unsavedChanges.title", "Unsaved Changes"),
+            LocalizationService.Translate(
+                "dialog.unsavedChanges.continueDescription",
+                "You have unsaved changes. Do you want to continue?"),
+            LocalizationService.Translate("common.continue", "Continue"),
             "continue");
 
         return result.Id == "continue";
@@ -139,9 +141,11 @@ public sealed class ShellDialogCoordinator
             return true;
 
         MessageDialogResult result = ShowConfirmationDialog(
-            "Unsaved Changes",
-            "This file has unsaved changes or has not been saved yet. If you close now, all unsaved work will be lost. Do you really want to close Draft?",
-            "Close Draft",
+            LocalizationService.Translate("dialog.unsavedChanges.title", "Unsaved Changes"),
+            LocalizationService.Translate(
+                "dialog.unsavedChanges.closeDescription",
+                "This file has unsaved changes or has not been saved yet. If you close now, all unsaved work will be lost. Do you really want to close Draft?"),
+            LocalizationService.Translate("dialog.unsavedChanges.closeDraft", "Close Draft"),
             "close-draft");
 
         return result.Id == "close-draft";
@@ -150,9 +154,15 @@ public sealed class ShellDialogCoordinator
     public bool ConfirmOpenExternalLink(Uri uri)
     {
         MessageDialogResult result = ShowConfirmationDialog(
-            "Open External Link",
-            $"Open this link in your default browser?\n{uri.AbsoluteUri}",
-            "Open Link",
+            LocalizationService.Translate("dialog.openExternalLink.title", "Open External Link"),
+            LocalizationService.TranslateFormat(
+                "dialog.openExternalLink.description",
+                "Open this link in your default browser?\n{url}",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["url"] = uri.AbsoluteUri,
+                }),
+            LocalizationService.Translate("dialog.openExternalLink.openLink", "Open Link"),
             "open-link");
 
         return result.Id == "open-link";
@@ -175,7 +185,9 @@ public sealed class ShellDialogCoordinator
                 dialogType,
                 new[]
                 {
-                    MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
+                    MessageDialogButtonDefinition.Primary(
+                        LocalizationService.Translate("common.okay", "Okay"),
+                        MessageDialogResult.Ok),
                 }));
     }
 
@@ -192,7 +204,9 @@ public sealed class ShellDialogCoordinator
                 MessageDialogType.Warning,
                 new[]
                 {
-                    MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Secondary(
+                        LocalizationService.Translate("common.cancel", "Cancel"),
+                        MessageDialogResult.Cancel),
                     MessageDialogButtonDefinition.Primary(primaryButtonText, new MessageDialogResult(primaryResultId)),
                 }));
     }

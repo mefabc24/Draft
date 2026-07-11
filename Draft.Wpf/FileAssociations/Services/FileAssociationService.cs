@@ -1,6 +1,7 @@
 using Microsoft.Win32;
 using System.IO;
 using System.Runtime.InteropServices;
+using Draft.Localization;
 
 namespace Draft.FileAssociations.Services;
 
@@ -8,8 +9,6 @@ public static class FileAssociationService
 {
     private const string MarkdownProgId = "Draft.MarkdownFile";
     private const string TextProgId = "Draft.TextFile";
-    private const string MarkdownDescription = "Markdown Document";
-    private const string TextDescription = "Text Document";
     private const string ClassesRootPath = "Software\\Classes";
     private const uint ShcneAssocChanged = 0x08000000;
     private const uint ShcnfIdList = 0x0000;
@@ -24,7 +23,12 @@ public static class FileAssociationService
 
     public static void RegisterMarkdownAssociations()
     {
-        RegisterAssociations(MarkdownProgId, MarkdownDescription, MarkdownExtensions);
+        RegisterAssociations(
+            MarkdownProgId,
+            LocalizationService.Translate(
+                "fileAssociations.markdownDocument",
+                "Markdown Document"),
+            MarkdownExtensions);
     }
 
     public static void UnregisterMarkdownAssociations()
@@ -34,7 +38,10 @@ public static class FileAssociationService
 
     public static void RegisterTextAssociations()
     {
-        RegisterAssociations(TextProgId, TextDescription, [".txt"]);
+        RegisterAssociations(
+            TextProgId,
+            LocalizationService.Translate("fileAssociations.textDocument", "Text Document"),
+            [".txt"]);
     }
 
     public static void UnregisterTextAssociations()

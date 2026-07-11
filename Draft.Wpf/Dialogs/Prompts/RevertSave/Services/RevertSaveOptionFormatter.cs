@@ -8,7 +8,15 @@ public sealed class RevertSaveOptionFormatter
 
     public string FormatWordCount(int wordCount)
     {
-        return wordCount == 1 ? "1 word" : $"{wordCount:N0} words";
+        return wordCount == 1
+            ? LocalizationService.Translate("revertSave.wordCountSingular", "1 word")
+            : LocalizationService.TranslateFormat(
+                "revertSave.wordCountPlural",
+                "{count} words",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["count"] = wordCount.ToString("N0", CultureInfo.CurrentCulture),
+                });
     }
 
     public string FormatVersionTimestamp(string action, DateTimeOffset timestampUtc)
@@ -20,7 +28,16 @@ public sealed class RevertSaveOptionFormatter
         }
 
         if (elapsed < TimeSpan.FromHours(1))
-            return $"{action} {FormatRelativeTime(elapsed)}";
+        {
+            return LocalizationService.TranslateFormat(
+                "revertSave.timestampRelative",
+                "{action} {time}",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["action"] = action,
+                    ["time"] = FormatRelativeTime(elapsed),
+                });
+        }
 
         return FormatAbsoluteTimestamp(action, timestampUtc);
     }
@@ -31,12 +48,34 @@ public sealed class RevertSaveOptionFormatter
         DateTime today = DateTime.Today;
 
         if (local.Date == today)
-            return $"{action} today at {FormatLocalTime(local)}";
+            return LocalizationService.TranslateFormat(
+                "revertSave.timestampToday",
+                "{action} today at {time}",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["action"] = action,
+                    ["time"] = FormatLocalTime(local),
+                });
 
         if (local.Date == today.AddDays(-1))
-            return $"{action} yesterday at {FormatLocalTime(local)}";
+            return LocalizationService.TranslateFormat(
+                "revertSave.timestampYesterday",
+                "{action} yesterday at {time}",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["action"] = action,
+                    ["time"] = FormatLocalTime(local),
+                });
 
-        return $"{action} {local:MMM d} at {FormatLocalTime(local)}";
+        return LocalizationService.TranslateFormat(
+            "revertSave.timestampDate",
+            "{action} {date} at {time}",
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["action"] = action,
+                ["date"] = local.ToString("MMM d", TimestampCulture),
+                ["time"] = FormatLocalTime(local),
+            });
     }
 
     private static string FormatLocalTime(DateTime local)
@@ -47,21 +86,45 @@ public sealed class RevertSaveOptionFormatter
     private static string FormatRelativeTime(TimeSpan elapsed)
     {
         if (elapsed < TimeSpan.FromMinutes(1))
-            return "just now";
+            return LocalizationService.Translate("revertSave.justNow", "just now");
 
         if (elapsed < TimeSpan.FromHours(1))
         {
             int minutes = Math.Max(1, (int)Math.Round(elapsed.TotalMinutes));
-            return minutes == 1 ? "1 min ago" : $"{minutes} mins ago";
+            return minutes == 1
+                ? LocalizationService.Translate("revertSave.minuteAgo", "1 min ago")
+                : LocalizationService.TranslateFormat(
+                    "revertSave.minutesAgo",
+                    "{count} mins ago",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["count"] = minutes.ToString(CultureInfo.CurrentCulture),
+                    });
         }
 
         if (elapsed < TimeSpan.FromDays(1))
         {
             int hours = Math.Max(1, (int)Math.Round(elapsed.TotalHours));
-            return hours == 1 ? "1 hour ago" : $"{hours} hours ago";
+            return hours == 1
+                ? LocalizationService.Translate("revertSave.hourAgo", "1 hour ago")
+                : LocalizationService.TranslateFormat(
+                    "revertSave.hoursAgo",
+                    "{count} hours ago",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["count"] = hours.ToString(CultureInfo.CurrentCulture),
+                    });
         }
 
         int days = Math.Max(1, (int)Math.Round(elapsed.TotalDays));
-        return days == 1 ? "1 day ago" : $"{days} days ago";
+        return days == 1
+            ? LocalizationService.Translate("revertSave.dayAgo", "1 day ago")
+            : LocalizationService.TranslateFormat(
+                "revertSave.daysAgo",
+                "{count} days ago",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["count"] = days.ToString(CultureInfo.CurrentCulture),
+                });
     }
 }

@@ -3,6 +3,7 @@ import {
   normalizeCalloutType,
   type CalloutType,
 } from '../../markdown/callouts'
+import { translate } from '../../localization/localization'
 import type { HastNode } from '../previewTypes'
 
 type DraftExtensionFragment =
@@ -617,7 +618,12 @@ function annotateCalloutBlockquote(node: HastNode, calloutType: CalloutType) {
   ])
   node.properties = {
     ...node.properties,
-    'data-callout-label': calloutLabels[calloutType],
+    'data-callout-label': translate(
+      calloutType === 'default' ? 'callout.quote' : `callout.${calloutType}`,
+      {
+        fallback: calloutLabels[calloutType],
+      },
+    ),
     'data-callout-type': calloutType,
   }
 }

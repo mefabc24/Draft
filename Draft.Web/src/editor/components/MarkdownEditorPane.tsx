@@ -1,5 +1,6 @@
 import type { HTMLAttributes, ReactNode, RefObject } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import { useTranslation } from '../../localization/useTranslation'
 import type { ShortcutBindings } from '../../shortcuts/shortcutSettings'
 import EmptyLineInsertButton from './EmptyLineInsertButton'
 import EditorScrollbar from './EditorScrollbar'
@@ -29,10 +30,12 @@ function MarkdownEditorPane({
   thumbProps,
   thumbRef,
 }: MarkdownEditorPaneProps) {
+  const { t } = useTranslation()
+
   return (
     <div
       className="editor-pane"
-      aria-label="Markdown Editor"
+      aria-label={t('editor.markdownEditor')}
       aria-hidden={ariaHidden}
     >
       {header}

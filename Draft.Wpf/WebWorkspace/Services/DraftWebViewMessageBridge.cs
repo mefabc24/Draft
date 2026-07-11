@@ -124,7 +124,9 @@ public sealed class DraftWebViewMessageBridge
         string? previewThemeId)
     {
         if (webView is null)
-            throw new InvalidOperationException("The preview WebView is not ready.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.previewWebViewNotReady",
+                "The preview WebView is not ready."));
 
         string normalizedLayout = NormalizePreviewExportLayout(layout);
         string layoutJson = JsonSerializer.Serialize(normalizedLayout, JsonOptions);
@@ -134,7 +136,9 @@ public sealed class DraftWebViewMessageBridge
         string? htmlDocument = JsonSerializer.Deserialize<string?>(scriptResult, JsonOptions);
 
         if (string.IsNullOrWhiteSpace(htmlDocument))
-            throw new InvalidOperationException("The preview export HTML could not be created.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.previewHtmlCouldNotBeCreated",
+                "The preview export HTML could not be created."));
 
         return htmlDocument;
     }

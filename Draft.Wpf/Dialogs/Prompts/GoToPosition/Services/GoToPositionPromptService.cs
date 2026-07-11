@@ -21,7 +21,7 @@ public sealed class GoToPositionPromptService : IGoToPositionPromptService
 
         BaseDialogWindow window = new(view)
         {
-            Title = "Go to Position",
+            Title = LocalizationService.Translate("goToPosition.title", "Go to Position"),
             Focusable = true,
         };
 

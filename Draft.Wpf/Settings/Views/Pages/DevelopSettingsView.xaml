@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i18n="clr-namespace:Draft.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:section="clr-namespace:Draft.Settings.Controls"
     xmlns:settings="clr-namespace:Draft.Settings.Controls"
@@ -16,17 +17,18 @@
                 Style="{StaticResource SettingsScrollViewer}"
                 VerticalScrollBarVisibility="Auto">
                 <StackPanel VerticalAlignment="Top">
-                    <section:SectionHeader Title="Dialog Previews" />
+                    <section:SectionHeader Title="{i18n:Loc settings.develop.dialogPreviews}" />
 
                     <settings:SettingCard
-                        Title="Info dialog"
+                        Title="{i18n:Loc settings.develop.infoDialog}"
                         Margin="0,0,0,12"
-                        Description="Open the info dialog variant.">
+                        Description="{i18n:Loc settings.develop.infoDialog.description}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox
                                 Width="72"
                                 Height="36"
                                 Margin="0,0,8,0"
+                                ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
                                 ItemsSource="{Binding DialogButtonCountOptions}"
                                 SelectedItem="{Binding InfoDialogButtonCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource SettingsComboBox}" />
@@ -34,20 +36,21 @@
                                 Width="120"
                                 Height="36"
                                 Command="{Binding ShowInfoDialogCommand}"
-                                Content="Open"
+                                Content="{i18n:Loc common.open}"
                                 Style="{StaticResource SettingButton}" />
                         </StackPanel>
                     </settings:SettingCard>
 
                     <settings:SettingCard
-                        Title="Warning dialog"
+                        Title="{i18n:Loc settings.develop.warningDialog}"
                         Margin="0,0,0,12"
-                        Description="Open the warning dialog variant.">
+                        Description="{i18n:Loc settings.develop.warningDialog.description}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox
                                 Width="72"
                                 Height="36"
                                 Margin="0,0,8,0"
+                                ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
                                 ItemsSource="{Binding DialogButtonCountOptions}"
                                 SelectedItem="{Binding WarningDialogButtonCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource SettingsComboBox}" />
@@ -55,20 +58,21 @@
                                 Width="120"
                                 Height="36"
                                 Command="{Binding ShowWarningDialogCommand}"
-                                Content="Open"
+                                Content="{i18n:Loc common.open}"
                                 Style="{StaticResource SettingButton}" />
                         </StackPanel>
                     </settings:SettingCard>
 
                     <settings:SettingCard
-                        Title="Error dialog"
+                        Title="{i18n:Loc settings.develop.errorDialog}"
                         Margin="0,0,0,12"
-                        Description="Open the error dialog variant.">
+                        Description="{i18n:Loc settings.develop.errorDialog.description}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox
                                 Width="72"
                                 Height="36"
                                 Margin="0,0,8,0"
+                                ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
                                 ItemsSource="{Binding DialogButtonCountOptions}"
                                 SelectedItem="{Binding ErrorDialogButtonCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource SettingsComboBox}" />
@@ -76,20 +80,21 @@
                                 Width="120"
                                 Height="36"
                                 Command="{Binding ShowErrorDialogCommand}"
-                                Content="Open"
+                                Content="{i18n:Loc common.open}"
                                 Style="{StaticResource SettingButton}" />
                         </StackPanel>
                     </settings:SettingCard>
 
                     <settings:SettingCard
-                        Title="Success dialog"
+                        Title="{i18n:Loc settings.develop.successDialog}"
                         Margin="0,0,0,12"
-                        Description="Open the success dialog variant.">
+                        Description="{i18n:Loc settings.develop.successDialog.description}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox
                                 Width="72"
                                 Height="36"
                                 Margin="0,0,8,0"
+                                ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
                                 ItemsSource="{Binding DialogButtonCountOptions}"
                                 SelectedItem="{Binding SuccessDialogButtonCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource SettingsComboBox}" />
@@ -97,34 +102,34 @@
                                 Width="120"
                                 Height="36"
                                 Command="{Binding ShowSuccessDialogCommand}"
-                                Content="Open"
+                                Content="{i18n:Loc common.open}"
                                 Style="{StaticResource SettingButton}" />
                         </StackPanel>
                     </settings:SettingCard>
 
-                    <section:SectionHeader Title="Update Card Demo" />
+                    <section:SectionHeader Title="{i18n:Loc settings.develop.updateCardDemo}" />
 
                     <settings:UpdateSettingCard
-                        Title="Test update card"
+                        Title="{i18n:Loc settings.develop.testUpdateCard}"
                         Margin="0,0,0,12"
                         ActionCommand="{Binding RunDemoUpdateActionCommand}"
                         ActionText="{Binding DemoUpdateActionText}"
-                        Description="Development-only test setting card. It always reports a fake update and never installs anything."
+                        Description="{i18n:Loc settings.develop.testUpdateCard.description}"
                         IsActionEnabled="{Binding IsDemoUpdateActionEnabled}"
                         IsUpdateAvailable="{Binding IsDemoUpdateAvailable}"
                         StatusText="{Binding DemoUpdateStatus}" />
 
-                    <section:SectionHeader Title="Prompt Preview" />
+                    <section:SectionHeader Title="{i18n:Loc settings.develop.promptPreview}" />
 
                     <settings:SettingCard
-                        Title="Prompt window"
+                        Title="{i18n:Loc settings.develop.promptWindow}"
                         Margin="0,0,0,12"
-                        Description="Open the empty prompt window shell.">
+                        Description="{i18n:Loc settings.develop.promptWindow.description}">
                         <Button
                             Width="120"
                             Height="36"
                             Command="{Binding ShowPromptWindowCommand}"
-                            Content="Open"
+                            Content="{i18n:Loc common.open}"
                             Style="{StaticResource SettingButton}" />
                     </settings:SettingCard>
 

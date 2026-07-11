@@ -46,7 +46,9 @@ public sealed class DocumentExportService
             ExportFormat.Html => _htmlExportService.ExportAsync(request),
             ExportFormat.Pdf => ExportPdfAsync(request, exportWebView, webHostName),
             ExportFormat.Png => ExportPngAsync(request, exportWebView, webHostName),
-            _ => throw new NotSupportedException("The selected export format is not supported."),
+            _ => throw new NotSupportedException(LocalizationService.Translate(
+                "export.unsupportedFormat",
+                "The selected export format is not supported.")),
         };
     }
 
@@ -56,10 +58,14 @@ public sealed class DocumentExportService
         string? webHostName)
     {
         if (pdfExportWebView is null)
-            throw new InvalidOperationException("A PDF export WebView is required.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pdfWebViewRequired",
+                "A PDF export WebView is required."));
 
         if (string.IsNullOrWhiteSpace(webHostName))
-            throw new InvalidOperationException("A WebView host name is required.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.webViewHostNameRequired",
+                "A WebView host name is required."));
 
         return _pdfExportService.ExportAsync(pdfExportWebView, webHostName, request);
     }
@@ -70,10 +76,14 @@ public sealed class DocumentExportService
         string? webHostName)
     {
         if (pngExportWebView is null)
-            throw new InvalidOperationException("A PNG export WebView is required.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.pngWebViewRequired",
+                "A PNG export WebView is required."));
 
         if (string.IsNullOrWhiteSpace(webHostName))
-            throw new InvalidOperationException("A WebView host name is required.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "export.webViewHostNameRequired",
+                "A WebView host name is required."));
 
         return _pngExportService.ExportAsync(pngExportWebView, webHostName, request);
     }

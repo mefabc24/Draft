@@ -20,7 +20,13 @@ internal static class ExportWebViewNavigator
             }
 
             navigationCompleted.TrySetException(
-                new InvalidOperationException($"The export preview could not be loaded: {e.WebErrorStatus}."));
+                new InvalidOperationException(LocalizationService.TranslateFormat(
+                    "export.previewLoadFailed",
+                    "The export preview could not be loaded: {status}.",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["status"] = e.WebErrorStatus.ToString(),
+                    })));
         }
 
         webView.NavigationCompleted += NavigationCompleted;

@@ -14,6 +14,7 @@ import {
   shortcutActionIds,
   type ShortcutBindings,
 } from '../../shortcuts/shortcutSettings'
+import { useTranslation } from '../../localization/useTranslation'
 import { clamp } from '../../shared/utils/clamp'
 import {
   getEditorQuickInsertTargetFromPosition,
@@ -124,6 +125,7 @@ export function useEditorQuickInsertMenu(
   editorBodyRef: RefObject<HTMLDivElement | null>,
   shortcutBindings: ShortcutBindings,
 ) {
+  const { t } = useTranslation()
   const [menuTarget, setMenuTarget] =
     useState<EditorQuickInsertMenuTarget | null>(null)
   const [menuPosition, setMenuPosition] =
@@ -385,7 +387,7 @@ export function useEditorQuickInsertMenu(
 
     const action = editor.addAction({
       id: 'draft.editorQuickInsert.openMenu',
-      label: 'Quick Insert: Open Menu',
+      label: t('commands.quickInsert.openMenu'),
       keybindings: (() => {
         const keybinding = getMonacoShortcutKeybinding(
           shortcutBindings,
@@ -402,7 +404,7 @@ export function useEditorQuickInsertMenu(
     return () => {
       action.dispose()
     }
-  }, [editor, openMenuAtCursor, shortcutBindings])
+  }, [editor, openMenuAtCursor, shortcutBindings, t])
 
   useEffect(() => {
     if (!editor || !menuTarget) {

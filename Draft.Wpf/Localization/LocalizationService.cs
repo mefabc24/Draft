@@ -13,6 +13,22 @@ public static class LocalizationService
     private static readonly object DictionariesLock = new();
     private static readonly Dictionary<string, IReadOnlyDictionary<string, string>> Dictionaries =
         new(StringComparer.OrdinalIgnoreCase);
+    private static string _currentAppLanguage = SystemLanguageValue;
+
+    public static string CurrentAppLanguage => _currentAppLanguage;
+
+    public static void SetCurrentAppLanguage(string? appLanguage)
+    {
+        string nextAppLanguage = string.IsNullOrWhiteSpace(appLanguage)
+            ? SystemLanguageValue
+            : appLanguage.Trim();
+
+        if (string.Equals(_currentAppLanguage, nextAppLanguage, StringComparison.Ordinal))
+            return;
+
+        _currentAppLanguage = nextAppLanguage;
+        LocalizationBindingSource.Current.Refresh();
+    }
 
     public static string ResolveLanguageCode(string? appLanguage)
     {
@@ -35,7 +51,7 @@ public static class LocalizationService
         if (string.IsNullOrWhiteSpace(key))
             return fallback ?? string.Empty;
 
-        string languageCode = ResolveLanguageCode(appLanguage);
+        string languageCode = ResolveLanguageCode(appLanguage ?? CurrentAppLanguage);
 
         if (TryTranslate(languageCode, key, out string? localizedText))
             return localizedText;
@@ -47,6 +63,25 @@ public static class LocalizationService
         }
 
         return fallback ?? key;
+    }
+
+    public static string TranslateFormat(
+        string key,
+        string fallback,
+        IReadOnlyDictionary<string, string> parameters,
+        string? appLanguage = null)
+    {
+        string localizedText = Translate(key, fallback, appLanguage);
+
+        foreach ((string parameterName, string value) in parameters)
+        {
+            localizedText = localizedText.Replace(
+                $"{{{parameterName}}}",
+                value,
+                StringComparison.Ordinal);
+        }
+
+        return localizedText;
     }
 
     private static bool TryTranslate(string languageCode, string key, out string value)

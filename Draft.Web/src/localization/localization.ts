@@ -10,6 +10,7 @@ const fallbackLanguage: AppLanguage = 'en'
 const dictionaries: Record<AppLanguage, TranslationDictionary> = {
   en: englishMessages,
 }
+let currentLanguage: AppLanguage = fallbackLanguage
 
 export function normalizeAppLanguage(value: unknown): AppLanguage {
   if (typeof value !== 'string') {
@@ -29,6 +30,14 @@ export function normalizeAppLanguage(value: unknown): AppLanguage {
   return fallbackLanguage
 }
 
+export function getCurrentAppLanguage() {
+  return currentLanguage
+}
+
+export function setCurrentAppLanguage(value: unknown) {
+  currentLanguage = normalizeAppLanguage(value)
+}
+
 export function translate(
   key: string,
   options: {
@@ -37,7 +46,10 @@ export function translate(
     params?: TranslationParams
   } = {},
 ) {
-  const language = normalizeAppLanguage(options.language)
+  const language =
+    options.language === undefined
+      ? currentLanguage
+      : normalizeAppLanguage(options.language)
   const text =
     dictionaries[language]?.[key] ??
     dictionaries[fallbackLanguage][key] ??
