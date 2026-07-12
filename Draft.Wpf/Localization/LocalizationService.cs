@@ -6,10 +6,12 @@ namespace Draft.Localization;
 public static class LocalizationService
 {
     public const string EnglishLanguageCode = "en";
-    public const string SystemLanguageValue = "System";
-    public const string EnglishLanguageValue = "English";
+    public const string SystemLanguageValue = "system";
+    public const string EnglishLanguageValue = EnglishLanguageCode;
 
     private const string LocalizationDirectoryName = "Localization";
+    private const string LegacyEnglishLanguageValue = "English";
+    private const string LegacySystemLanguageValue = "System";
     private static readonly object DictionariesLock = new();
     private static readonly Dictionary<string, IReadOnlyDictionary<string, string>> Dictionaries =
         new(StringComparer.OrdinalIgnoreCase);
@@ -19,9 +21,7 @@ public static class LocalizationService
 
     public static void SetCurrentAppLanguage(string? appLanguage)
     {
-        string nextAppLanguage = string.IsNullOrWhiteSpace(appLanguage)
-            ? SystemLanguageValue
-            : appLanguage.Trim();
+        string nextAppLanguage = NormalizeAppLanguageValue(appLanguage);
 
         if (string.Equals(_currentAppLanguage, nextAppLanguage, StringComparison.Ordinal))
             return;
@@ -32,17 +32,40 @@ public static class LocalizationService
 
     public static string ResolveLanguageCode(string? appLanguage)
     {
+        string normalizedLanguage = NormalizeAppLanguageValue(appLanguage);
+
+        return string.Equals(normalizedLanguage, SystemLanguageValue, StringComparison.OrdinalIgnoreCase)
+            ? EnglishLanguageCode
+            : NormalizeLanguageCode(normalizedLanguage);
+    }
+
+    public static string NormalizeAppLanguageValue(string? appLanguage)
+    {
         if (string.IsNullOrWhiteSpace(appLanguage))
-            return EnglishLanguageCode;
+            return SystemLanguageValue;
 
         string normalizedLanguage = appLanguage.Trim();
 
         return normalizedLanguage switch
         {
-            SystemLanguageValue => EnglishLanguageCode,
-            EnglishLanguageValue => EnglishLanguageCode,
-            EnglishLanguageCode => EnglishLanguageCode,
-            _ => normalizedLanguage.ToLowerInvariant(),
+            SystemLanguageValue or LegacySystemLanguageValue => SystemLanguageValue,
+            EnglishLanguageValue or LegacyEnglishLanguageValue => EnglishLanguageValue,
+            _ => NormalizeLanguageCode(normalizedLanguage),
+        };
+    }
+
+    public static string NormalizeLanguageCode(string? languageCode)
+    {
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return EnglishLanguageCode;
+
+        string normalizedLanguageCode = languageCode.Trim();
+
+        return normalizedLanguageCode switch
+        {
+            SystemLanguageValue or LegacySystemLanguageValue => EnglishLanguageCode,
+            LegacyEnglishLanguageValue => EnglishLanguageCode,
+            _ => normalizedLanguageCode.ToLowerInvariant(),
         };
     }
 
@@ -127,12 +150,9 @@ public static class LocalizationService
         try
         {
             string json = File.ReadAllText(path);
-            Dictionary<string, string>? dictionary =
-                JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+            using JsonDocument document = JsonDocument.Parse(json);
 
-            return dictionary is null
-                ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                : new Dictionary<string, string>(dictionary, StringComparer.OrdinalIgnoreCase);
+            return ReadTranslations(document.RootElement);
         }
         catch (Exception ex) when (ex is IOException
             or UnauthorizedAccessException
@@ -141,5 +161,28 @@ public static class LocalizationService
         {
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+    }
+
+    private static IReadOnlyDictionary<string, string> ReadTranslations(JsonElement root)
+    {
+        if (root.ValueKind != JsonValueKind.Object)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        JsonElement translationsElement = root.TryGetProperty("translations", out JsonElement value)
+            && value.ValueKind == JsonValueKind.Object
+                ? value
+                : root;
+
+        Dictionary<string, string> dictionary = new(StringComparer.OrdinalIgnoreCase);
+
+        foreach (JsonProperty property in translationsElement.EnumerateObject())
+        {
+            if (property.Value.ValueKind == JsonValueKind.String)
+            {
+                dictionary[property.Name] = property.Value.GetString() ?? string.Empty;
+            }
+        }
+
+        return dictionary;
     }
 }

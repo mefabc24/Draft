@@ -16,7 +16,6 @@ public sealed class LocalizedDisplayValueConverter : IMultiValueConverter
             ["Disabled"] = "settings.options.common.disabled",
             ["Editor"] = "settings.options.workspace.editor",
             ["Editor controls preview"] = "settings.options.scrollSync.editorControlsPreview",
-            ["English"] = "settings.language.english",
             ["Follow edited section"] = "settings.options.scrollSync.followEditedSection",
             ["Highlighted Only"] = "settings.options.whitespace.highlightedOnly",
             ["Last"] = "settings.options.startup.last",
@@ -26,7 +25,6 @@ public sealed class LocalizedDisplayValueConverter : IMultiValueConverter
             ["Preview"] = "settings.options.workspace.preview",
             ["Preview controls editor"] = "settings.options.scrollSync.previewControlsEditor",
             ["Split"] = "settings.options.workspace.split",
-            ["System"] = "settings.language.system",
             ["Top"] = "settings.options.position.top",
             ["Two-way sync"] = "settings.options.scrollSync.twoWay",
             ["Underline"] = "settings.options.cursor.underline",
@@ -52,6 +50,19 @@ public sealed class LocalizedDisplayValueConverter : IMultiValueConverter
             return formattable.ToString(null, culture);
 
         string fallback = value.ToString() ?? string.Empty;
+
+        string normalizedLanguageValue = LocalizationService.NormalizeAppLanguageValue(fallback);
+
+        if (string.Equals(
+            normalizedLanguageValue,
+            LocalizationService.SystemLanguageValue,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return LocalizationService.Translate("settings.language.system", "System");
+        }
+
+        if (LanguageCatalog.TryGetLanguage(normalizedLanguageValue, out LanguageMetadata language))
+            return language.DisplayName;
 
         return LocalizationKeys.TryGetValue(fallback, out string? key)
             ? LocalizationService.Translate(key, fallback)

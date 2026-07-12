@@ -104,9 +104,7 @@ public static class AppSettingsStore
         bool hasPreviewScrollSyncMode = true,
         bool? legacySyncScrollWithEditor = null)
     {
-        settings.AppLanguage = IsAppLanguage(settings.AppLanguage)
-            ? settings.AppLanguage
-            : DefaultAppLanguage;
+        settings.AppLanguage = NormalizeAppLanguage(settings.AppLanguage);
         settings.DefaultSaveLocation = NormalizeSaveLocation(settings.DefaultSaveLocation);
         settings.DefaultFileExtension = DefaultFileExtension;
         settings.MarkdownTheme = MarkdownPreviewThemeCatalog.GetThemeLabel(settings.MarkdownTheme);
@@ -325,10 +323,13 @@ public static class AppSettingsStore
             or WindowBorderAccentUnfocusedOnly;
     }
 
-    private static bool IsAppLanguage(string? value)
+    private static string NormalizeAppLanguage(string? value)
     {
-        return value is AppLanguageSystem
-            or AppLanguageEnglish;
+        string normalizedValue = LocalizationService.NormalizeAppLanguageValue(value);
+
+        return LanguageCatalog.IsSupportedAppLanguage(normalizedValue)
+            ? normalizedValue
+            : DefaultAppLanguage;
     }
 
     private static bool TryGetStringProperty(JsonElement root, string name, out string? value)

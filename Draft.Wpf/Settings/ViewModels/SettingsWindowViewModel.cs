@@ -307,7 +307,7 @@ public class SettingsWindowViewModel : BaseViewModel
         {
             string nextLanguage = EnsureOption(
                 AppLanguageOptions,
-                value,
+                LocalizationService.NormalizeAppLanguageValue(value),
                 AppSettingsStore.DefaultAppLanguage);
 
             if (SetSetting(ref _appLanguage, nextLanguage))
@@ -700,7 +700,7 @@ public class SettingsWindowViewModel : BaseViewModel
 
         _appLanguage = EnsureOption(
             AppLanguageOptions,
-            settings.AppLanguage,
+            LocalizationService.NormalizeAppLanguageValue(settings.AppLanguage),
             AppSettingsStore.DefaultAppLanguage);
         LocalizationService.SetCurrentAppLanguage(_appLanguage);
         _reopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup;

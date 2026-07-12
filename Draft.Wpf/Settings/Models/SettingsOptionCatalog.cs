@@ -2,8 +2,8 @@ namespace Draft.Settings.Models;
 
 public static class SettingsOptionCatalog
 {
-    public static IReadOnlyList<string> AppLanguageOptions { get; } =
-        new[] { SettingsDefaults.AppLanguageSystem, SettingsDefaults.AppLanguageEnglish };
+    public static IReadOnlyList<string> AppLanguageOptions =>
+        LanguageCatalog.AppLanguageOptionValues;
 
     public static IReadOnlyList<string> AutosaveIntervalOptions { get; } =
         new[] { "5s", "10s", "30s", "1m", "5m" };
