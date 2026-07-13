@@ -38,7 +38,6 @@ import type {
   EditorQuickInsertMenuAnchor,
   EditorQuickInsertMenuPosition,
 } from '../hooks/useEditorQuickInsertMenu'
-import { useToolbarMenuScrollbar } from '../../toolbar/hooks/useToolbarMenuScrollbar'
 import {
   editorQuickInsertMenuEntries,
   type EditorQuickInsertIconName,
@@ -49,6 +48,7 @@ import EditorQuickInsertExpanderControls from './EditorQuickInsertExpanderContro
 import EditorQuickInsertInlineMediaControls from './EditorQuickInsertInlineMediaControls'
 import EditorQuickInsertMenuItem from './EditorQuickInsertMenuItem'
 import EditorQuickInsertMenuSection from './EditorQuickInsertMenuSection'
+import EditorQuickInsertScrollArea from './EditorQuickInsertScrollArea'
 import EditorQuickInsertTableControls from './EditorQuickInsertTableControls'
 import EditorQuickInsertTagControls from './EditorQuickInsertTagControls'
 import './EditorQuickInsertMenu.css'
@@ -237,17 +237,6 @@ function EditorQuickInsertMenu({
     [position],
   )
   const menuOpen = editor !== null && target !== null && position !== null
-  const {
-    scrollRef: menuScrollRef,
-    scrollbarRef: menuScrollbarRef,
-    thumbRef: menuScrollbarThumbRef,
-    syncScrollbarPosition,
-    handleTrackPointerDown,
-    handleThumbPointerCancel,
-    handleThumbPointerDown,
-    handleThumbPointerMove,
-    handleThumbPointerUp,
-  } = useToolbarMenuScrollbar(menuOpen)
 
   useLayoutEffect(() => {
     if (!menuOpen) {
@@ -311,11 +300,9 @@ function EditorQuickInsertMenu({
 
     const frameId = window.requestAnimationFrame(() => {
       onContentLayoutChange()
-      syncScrollbarPosition()
     })
     const transitionFrameId = window.setTimeout(() => {
       onContentLayoutChange()
-      syncScrollbarPosition()
     }, 220)
 
     return () => {
@@ -327,7 +314,6 @@ function EditorQuickInsertMenu({
     extraCalloutsExpanded,
     menuOpen,
     onContentLayoutChange,
-    syncScrollbarPosition,
     target,
   ])
 
@@ -737,32 +723,9 @@ function EditorQuickInsertMenu({
       role="menu"
       style={menuStyle}
     >
-      <div
-        ref={menuScrollRef}
-        className="editor-quick-insert-menu-scroll"
-        data-scrollable="false"
-      >
-        <div className="editor-quick-insert-menu-list">
-          {editorQuickInsertMenuEntries.map((entry) => renderMenuEntry(entry))}
-        </div>
-      </div>
-      <div
-        ref={menuScrollbarRef}
-        className="editor-quick-insert-menu-scrollbar"
-        data-dragging="false"
-        data-scrollable="false"
-        aria-hidden="true"
-        onPointerDown={handleTrackPointerDown}
-      >
-        <div
-          ref={menuScrollbarThumbRef}
-          className="editor-quick-insert-menu-scrollbar-thumb"
-          onPointerCancel={handleThumbPointerCancel}
-          onPointerDown={handleThumbPointerDown}
-          onPointerMove={handleThumbPointerMove}
-          onPointerUp={handleThumbPointerUp}
-        />
-      </div>
+      <EditorQuickInsertScrollArea>
+        {editorQuickInsertMenuEntries.map((entry) => renderMenuEntry(entry))}
+      </EditorQuickInsertScrollArea>
     </div>
   )
 }

@@ -107,15 +107,26 @@ function clampQuickInsertMenuPosition(
   position: EditorQuickInsertMenuPreferredPosition,
 ) {
   const menuWidth = menu?.offsetWidth ?? MENU_ESTIMATED_WIDTH
-  const menuHeight = getQuickInsertMenuNaturalHeight(menu)
+  const maximumAvailableHeight = Math.max(
+    editorBody.clientHeight - MENU_EDGE_PADDING * 2,
+    0,
+  )
+  const menuHeight = Math.min(
+    getQuickInsertMenuNaturalHeight(menu),
+    maximumAvailableHeight,
+  )
   const maxLeft = editorBody.clientWidth - menuWidth - MENU_EDGE_PADDING
   const maxTop = editorBody.clientHeight - menuHeight - MENU_EDGE_PADDING
 
   const top = clamp(position.top, MENU_EDGE_PADDING, maxTop)
+  const availableHeight = Math.max(
+    editorBody.clientHeight - top - MENU_EDGE_PADDING,
+    0,
+  )
 
   return {
     left: clamp(position.left, MENU_EDGE_PADDING, maxLeft),
-    maxHeight: Math.max(editorBody.clientHeight - top - MENU_EDGE_PADDING, 0),
+    maxHeight: availableHeight,
     top,
   }
 }

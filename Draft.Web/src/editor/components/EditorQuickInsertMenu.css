@@ -26,10 +26,19 @@
   user-select: none;
 }
 
+.editor-quick-insert-menu-scroll-wrap {
+  position: relative;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: inherit;
+}
+
 .editor-quick-insert-menu-scroll {
   box-sizing: border-box;
   flex: 1 1 auto;
   min-height: 0;
+  max-height: inherit;
   width: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -38,45 +47,9 @@
   -ms-overflow-style: none;
 }
 
-.editor-quick-insert-menu-scroll[data-scrollable='true'] {
-  padding-right: 18px;
-}
-
 .editor-quick-insert-menu-scroll::-webkit-scrollbar {
   width: 0;
   height: 0;
-}
-
-.editor-quick-insert-menu-scrollbar {
-  position: absolute;
-  top: 8px;
-  right: 4px;
-  bottom: 8px;
-  width: 0;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--editor-scrollbar-track);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 160ms ease;
-}
-
-.editor-quick-insert-menu-scrollbar[data-scrollable='true'],
-.editor-quick-insert-menu-scrollbar[data-dragging='true'] {
-  width: var(--editor-scrollbar-width, 6px);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.editor-quick-insert-menu-scrollbar-thumb {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  min-height: 32px;
-  border-radius: 999px;
-  background: var(--editor-scrollbar-thumb);
-  touch-action: none;
 }
 
 .editor-quick-insert-menu-list {
