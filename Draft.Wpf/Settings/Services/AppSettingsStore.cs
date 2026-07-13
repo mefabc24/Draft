@@ -295,15 +295,9 @@ public static class AppSettingsStore
 
     private static string NormalizeFloatingMarkdownToolbarMode(string value)
     {
-        return value switch
-        {
-            FloatingMarkdownToolbarDisabled
-                or FloatingMarkdownToolbarEditor
-                or FloatingMarkdownToolbarPreview
-                or FloatingMarkdownToolbarEditorAndPreview => value,
-            "Always" or "Both" or "Editor & Preview" => FloatingMarkdownToolbarEditorAndPreview,
-            _ => DefaultFloatingMarkdownToolbarMode,
-        };
+        return SettingsDisplayValueMapper.NormalizeFloatingMarkdownToolbarMode(
+            value,
+            DefaultFloatingMarkdownToolbarMode);
     }
 
     private static bool IsWindowMinimumSizeScale(double value)

@@ -133,6 +133,9 @@ public class SettingsWindowViewModel : BaseViewModel
     public IReadOnlyList<string> FloatingMarkdownToolbarModeOptions =>
         SettingsOptionCatalog.FloatingMarkdownToolbarModeOptions;
 
+    public IReadOnlyList<string> FloatingMarkdownToolbarModeValueOptions =>
+        SettingsOptionCatalog.FloatingMarkdownToolbarModeValues;
+
     public IReadOnlyList<string> AppThemeOptions =>
         SettingsOptionCatalog.AppThemeOptions;
 
@@ -551,6 +554,16 @@ public class SettingsWindowViewModel : BaseViewModel
         set => SetSetting(
             ref _floatingMarkdownToolbarMode,
             GetFloatingMarkdownToolbarModeValue(value));
+    }
+
+    public string FloatingMarkdownToolbarModeValue
+    {
+        get => _floatingMarkdownToolbarMode;
+        set => SetSetting(
+            ref _floatingMarkdownToolbarMode,
+            SettingsDisplayValueMapper.NormalizeFloatingMarkdownToolbarMode(
+                value,
+                AppSettingsStore.DefaultFloatingMarkdownToolbarMode));
     }
 
     public string AppTheme
@@ -979,6 +992,7 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(ConfirmBeforeOpeningExternalLinks));
         OnPropertyChanged(nameof(PreviewScrollSyncMode));
         OnPropertyChanged(nameof(FloatingMarkdownToolbarMode));
+        OnPropertyChanged(nameof(FloatingMarkdownToolbarModeValue));
         OnPropertyChanged(nameof(AppTheme));
         OnPropertyChanged(nameof(IsStatusBarVisible));
         OnPropertyChanged(nameof(IsStatusBarFileTypeVisible));

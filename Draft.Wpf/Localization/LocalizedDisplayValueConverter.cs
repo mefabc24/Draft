@@ -15,6 +15,7 @@ public sealed class LocalizedDisplayValueConverter : IMultiValueConverter
             ["Dark"] = "settings.options.theme.dark",
             ["Disabled"] = "settings.options.common.disabled",
             ["Editor"] = "settings.options.workspace.editor",
+            ["EditorAndPreview"] = "settings.options.common.both",
             ["Editor controls preview"] = "settings.options.scrollSync.editorControlsPreview",
             ["Follow edited section"] = "settings.options.scrollSync.followEditedSection",
             ["Highlighted Only"] = "settings.options.whitespace.highlightedOnly",

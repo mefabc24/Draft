@@ -43,6 +43,9 @@ public sealed class GeneralSettingsPageViewModel : SettingsPageViewModel
     public IReadOnlyList<string> FloatingMarkdownToolbarModeOptions =>
         SettingsOptionCatalog.FloatingMarkdownToolbarModeOptions;
 
+    public IReadOnlyList<string> FloatingMarkdownToolbarModeValueOptions =>
+        SettingsOptionCatalog.FloatingMarkdownToolbarModeValues;
+
     public IReadOnlyList<string> DefaultFileExtensionOptions =>
         SettingsOptionCatalog.DefaultFileExtensionOptions;
 

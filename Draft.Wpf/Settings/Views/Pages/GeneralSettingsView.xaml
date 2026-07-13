@@ -134,8 +134,8 @@
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
-                        ItemsSource="{Binding FloatingMarkdownToolbarModeOptions}"
-                        SelectedItem="{Binding Settings.FloatingMarkdownToolbarMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=Editor, TargetNullValue=Editor}"
+                        ItemsSource="{Binding FloatingMarkdownToolbarModeValueOptions}"
+                        SelectedItem="{Binding Settings.FloatingMarkdownToolbarModeValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=Editor, TargetNullValue=Editor}"
                         Style="{StaticResource SettingsComboBox}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -158,7 +158,7 @@
                                                     <DataTrigger Binding="{Binding}" Value="Preview">
                                                         <Setter Property="Visibility" Value="Visible" />
                                                     </DataTrigger>
-                                                    <DataTrigger Binding="{Binding}" Value="Both">
+                                                    <DataTrigger Binding="{Binding}" Value="EditorAndPreview">
                                                         <Setter Property="Visibility" Value="Visible" />
                                                     </DataTrigger>
                                                 </Style.Triggers>

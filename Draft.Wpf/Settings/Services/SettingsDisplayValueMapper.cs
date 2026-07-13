@@ -50,28 +50,85 @@ public static class SettingsDisplayValueMapper
         };
     }
 
+    public static string NormalizeFloatingMarkdownToolbarMode(
+        string? value,
+        string fallback)
+    {
+        string normalizedValue = value?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(normalizedValue))
+            return fallback;
+
+        if (IsAny(
+            normalizedValue,
+            SettingsDefaults.FloatingMarkdownToolbarDisabled,
+            "Off"))
+        {
+            return SettingsDefaults.FloatingMarkdownToolbarDisabled;
+        }
+
+        if (IsAny(
+            normalizedValue,
+            SettingsDefaults.FloatingMarkdownToolbarEditor,
+            "EditorOnly",
+            "Editor only",
+            "Editor-only"))
+        {
+            return SettingsDefaults.FloatingMarkdownToolbarEditor;
+        }
+
+        if (IsAny(
+            normalizedValue,
+            SettingsDefaults.FloatingMarkdownToolbarPreview,
+            "PreviewOnly",
+            "Preview only",
+            "Preview-only"))
+        {
+            return SettingsDefaults.FloatingMarkdownToolbarPreview;
+        }
+
+        if (IsAny(
+            normalizedValue,
+            SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview,
+            "Always",
+            "Both",
+            "Editor & Preview",
+            "Editor and Preview",
+            "Editor+Preview",
+            "EditorPreview"))
+        {
+            return SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview;
+        }
+
+        return fallback;
+    }
+
     public static string GetFloatingMarkdownToolbarModeValue(string displayName)
     {
-        return displayName switch
-        {
-            "Editor" => SettingsDefaults.FloatingMarkdownToolbarEditor,
-            "Preview" => SettingsDefaults.FloatingMarkdownToolbarPreview,
-            "Both" => SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview,
-            "Always" => SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview,
-            "Editor & Preview" => SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview,
-            _ => SettingsDefaults.FloatingMarkdownToolbarDisabled,
-        };
+        return NormalizeFloatingMarkdownToolbarMode(
+            displayName,
+            SettingsDefaults.FloatingMarkdownToolbarDisabled);
     }
 
     public static string GetFloatingMarkdownToolbarModeDisplayName(string value)
     {
-        return value switch
+        return NormalizeFloatingMarkdownToolbarMode(
+            value,
+            SettingsDefaults.FloatingMarkdownToolbarDisabled) switch
         {
             SettingsDefaults.FloatingMarkdownToolbarEditor => "Editor",
             SettingsDefaults.FloatingMarkdownToolbarPreview => "Preview",
             SettingsDefaults.FloatingMarkdownToolbarEditorAndPreview => "Both",
             _ => "Disabled",
         };
+    }
+
+    private static bool IsAny(string value, params string[] candidates)
+    {
+        return candidates.Any(candidate => string.Equals(
+            value,
+            candidate,
+            StringComparison.OrdinalIgnoreCase));
     }
 
     public static string GetDefaultFileExtensionValue(string displayName)

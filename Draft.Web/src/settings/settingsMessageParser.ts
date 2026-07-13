@@ -12,6 +12,29 @@ import type {
 
 export const SETTINGS_CHANGED_MESSAGE_TYPE = 'settingsChanged'
 
+const FLOATING_MARKDOWN_TOOLBAR_MODE_ALIASES: Record<
+  string,
+  FloatingMarkdownToolbarMode
+> = {
+  both: 'EditorAndPreview',
+  disabled: 'Disabled',
+  editor: 'Editor',
+  'editor & preview': 'EditorAndPreview',
+  'editor and preview': 'EditorAndPreview',
+  'editor only': 'Editor',
+  'editor-only': 'Editor',
+  editorandpreview: 'EditorAndPreview',
+  editoronly: 'Editor',
+  editorpreview: 'EditorAndPreview',
+  'editor+preview': 'EditorAndPreview',
+  off: 'Disabled',
+  preview: 'Preview',
+  'preview only': 'Preview',
+  'preview-only': 'Preview',
+  previewonly: 'Preview',
+  always: 'EditorAndPreview',
+}
+
 export function readRecordValue(
   record: Record<string, unknown>,
   camelName: string,
@@ -92,25 +115,13 @@ function readFloatingMarkdownToolbarMode(
 ): FloatingMarkdownToolbarMode {
   const value = readRecordValue(record, 'floatingMarkdownToolbarMode')
 
-  if (value === 'Editor') {
-    return 'Editor'
-  }
+  if (typeof value === 'string') {
+    const mode =
+      FLOATING_MARKDOWN_TOOLBAR_MODE_ALIASES[value.trim().toLowerCase()]
 
-  if (value === 'Preview') {
-    return 'Preview'
-  }
-
-  if (
-    value === 'EditorAndPreview' ||
-    value === 'Both' ||
-    value === 'Always' ||
-    value === 'Editor & Preview'
-  ) {
-    return 'EditorAndPreview'
-  }
-
-  if (value === 'Disabled') {
-    return 'Disabled'
+    if (mode) {
+      return mode
+    }
   }
 
   return DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarMode
