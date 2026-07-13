@@ -189,14 +189,20 @@ public sealed class ShellDialogCoordinator
                     MessageDialogButtonDefinition.Secondary(
                         LocalizationService.Translate("dialog.missingFileSave.recreate", "Recreate"),
                         new MessageDialogResult("recreate")),
+                    MessageDialogButtonDefinition.Secondary(
+                        LocalizationService.Translate("dialog.missingFileSave.selectFile", "Select File"),
+                        new MessageDialogResult("select-file")),
                     MessageDialogButtonDefinition.Primary(
                         LocalizationService.Translate("dialog.missingFileSave.saveAs", "Save As"),
                         new MessageDialogResult("save-as")),
-                }));
+                },
+                width: 620,
+                textMaxWidth: 540));
 
         return result.Id switch
         {
             "save-as" => MissingFilePathSaveAction.SaveAs,
+            "select-file" => MissingFilePathSaveAction.SelectFile,
             "recreate" => MissingFilePathSaveAction.Recreate,
             _ => MissingFilePathSaveAction.Cancel,
         };

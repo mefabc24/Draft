@@ -40,6 +40,8 @@
                          "dialog.missingFileSave.description":  "The original file was moved, renamed, or deleted outside Draft.\n\nDraft will not recreate it automatically. Choose how to save the current document.\n\nOriginal path:\n{path}",
                          "dialog.missingFileSave.recreate":  "Recreate",
                          "dialog.missingFileSave.saveAs":  "Save As",
+                         "dialog.missingFileSave.selectFile":  "Select File",
+                         "dialog.missingFileSave.selectFileTitle":  "Select Moved File",
                          "dialog.missingFileSave.title":  "File Location Missing",
                          "dialog.openFile.title":  "Open File",
                          "dialog.title":  "Dialog",

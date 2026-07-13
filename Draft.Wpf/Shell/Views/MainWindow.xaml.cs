@@ -297,6 +297,9 @@ public partial class MainWindow : Window
 
         switch (action)
         {
+            case MissingFilePathSaveAction.SelectFile:
+                await SaveDocumentToSelectedExistingFileAsync(viewModel, e.FilePath);
+                break;
             case MissingFilePathSaveAction.SaveAs:
                 await SaveDocumentAsAsync(viewModel);
                 break;
@@ -309,6 +312,21 @@ public partial class MainWindow : Window
         }
     }
 
+    private async Task<bool> SaveDocumentToSelectedExistingFileAsync(
+        MainWindowViewModel viewModel,
+        string missingFilePath)
+    {
+        string? filePath = _fileDialogService.ShowSelectExistingSaveTargetDialog(
+            this,
+            viewModel.DisplayFileName,
+            missingFilePath,
+            viewModel.DefaultSaveLocation);
+        if (filePath is null)
+            return false;
+
+        return await SaveDocumentToSelectedPathAsync(viewModel, filePath);
+    }
+
     private async Task<bool> SaveDocumentAsAsync(MainWindowViewModel viewModel)
     {
         string? filePath = _fileDialogService.ShowSaveFileDialog(
@@ -318,6 +336,13 @@ public partial class MainWindow : Window
         if (filePath is null)
             return false;
 
+        return await SaveDocumentToSelectedPathAsync(viewModel, filePath);
+    }
+
+    private async Task<bool> SaveDocumentToSelectedPathAsync(
+        MainWindowViewModel viewModel,
+        string filePath)
+    {
         bool didSave = await viewModel.SaveDocumentToPathAsync(
             filePath,
             LocalizationService.Translate("errors.saveCurrentFile", "Unable to save the current file."),

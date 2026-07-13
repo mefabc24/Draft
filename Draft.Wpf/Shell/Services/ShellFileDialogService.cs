@@ -48,6 +48,34 @@ public sealed class ShellFileDialogService
             : null;
     }
 
+    public string? ShowSelectExistingSaveTargetDialog(
+        Window owner,
+        string displayFileName,
+        string? currentFilePath,
+        string? defaultSaveLocation)
+    {
+        OpenFileDialog dialog = new()
+        {
+            Title = LocalizationService.Translate(
+                "dialog.missingFileSave.selectFileTitle",
+                "Select Moved File"),
+            Filter = SupportedDocumentTypes.GetDialogFilter(),
+            CheckFileExists = true,
+            Multiselect = false,
+            FileName = displayFileName,
+        };
+
+        string? initialDirectory = GetExistingInitialDirectory(currentFilePath, defaultSaveLocation);
+        if (initialDirectory is not null)
+        {
+            dialog.InitialDirectory = initialDirectory;
+        }
+
+        return dialog.ShowDialog(owner) == true
+            ? dialog.FileName
+            : null;
+    }
+
     public string? ShowExportSaveFileDialog(
         Window owner,
         ExportFormat format,
@@ -108,7 +136,7 @@ public sealed class ShellFileDialogService
         return $"{baseFileName}{GetExportDefaultExtension(format)}";
     }
 
-    private static string? GetExportInitialDirectory(string? currentFilePath, string? defaultSaveLocation)
+    private static string? GetExistingInitialDirectory(string? currentFilePath, string? defaultSaveLocation)
     {
         if (!string.IsNullOrWhiteSpace(currentFilePath))
         {
@@ -122,5 +150,10 @@ public sealed class ShellFileDialogService
         return !string.IsNullOrWhiteSpace(defaultSaveLocation) && Directory.Exists(defaultSaveLocation)
             ? defaultSaveLocation
             : null;
+    }
+
+    private static string? GetExportInitialDirectory(string? currentFilePath, string? defaultSaveLocation)
+    {
+        return GetExistingInitialDirectory(currentFilePath, defaultSaveLocation);
     }
 }
