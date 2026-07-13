@@ -32,6 +32,7 @@ import {
 import { moveEditorLines } from '../monaco/lineMovement'
 import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
 import { indentEmptyMarkdownListItemOnTab } from '../monaco/markdownListIndentation'
+import { wrapSelectedTextForTypedCharacter } from '../monaco/selectedTextWrapping'
 import { moveSelectionsByWord } from '../monaco/wordNavigation'
 
 type CurrentRef<T> = {
@@ -267,7 +268,19 @@ export function useMonacoMarkdownEditor({
       const isPlainTextInput =
         !browserEvent.ctrlKey &&
         !browserEvent.altKey &&
-        !browserEvent.metaKey
+        !browserEvent.metaKey &&
+        !browserEvent.isComposing
+
+      if (
+        isPlainTextInput &&
+        wrapSelectedTextForTypedCharacter(
+          editor,
+          browserEvent.key,
+          consumeKeyboardEvent,
+        )
+      ) {
+        return
+      }
 
       if (settings.autoPairBrackets && isPlainTextInput) {
         if (
