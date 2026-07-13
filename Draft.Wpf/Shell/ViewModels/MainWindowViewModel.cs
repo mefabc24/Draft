@@ -498,6 +498,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public event EventHandler? SaveFileAsRequested;
 
+    public event EventHandler<MissingFilePathSaveRequestedEventArgs>? MissingFilePathSaveRequested;
+
     public event EventHandler? OpenExportPromptRequested;
 
     public event EventHandler? NewFileRequested;
@@ -623,7 +625,7 @@ public class MainWindowViewModel : BaseViewModel
         UpdateCursorPosition(1, 1, 0);
     }
 
-    public Task SaveDocumentToCurrentPathAsync(DocumentSaveKind saveKind = DocumentSaveKind.Manual)
+    public Task<bool> SaveDocumentToCurrentPathAsync(DocumentSaveKind saveKind = DocumentSaveKind.Manual)
     {
         if (!HasFilePath || CurrentFilePath is null)
             throw new InvalidOperationException("Cannot save without a current file path.");
@@ -634,16 +636,17 @@ public class MainWindowViewModel : BaseViewModel
             saveKind);
     }
 
-    public async Task SaveDocumentToPathAsync(
+    public async Task<bool> SaveDocumentToPathAsync(
         string path,
         string? failureTitle = null,
         DocumentSaveKind saveKind = DocumentSaveKind.Manual)
     {
         if (IsSaving)
-            return;
+            return false;
 
         DateTime saveStartedAt = DateTime.UtcNow;
         string contentToSave = CurrentContent;
+        bool didSave = false;
 
         IsSaving = true;
 
@@ -660,6 +663,7 @@ public class MainWindowViewModel : BaseViewModel
                 saveResult.SavedAtUtc,
                 saveKind);
             RaiseDocumentStatePropertiesChanged();
+            didSave = true;
         }
         catch (Exception ex) when (IsFileOperationException(ex))
         {
@@ -681,6 +685,8 @@ public class MainWindowViewModel : BaseViewModel
 
             IsSaving = false;
         }
+
+        return didSave;
     }
 
     public void UpdateContentFromWeb(string content)
@@ -734,6 +740,14 @@ public class MainWindowViewModel : BaseViewModel
         if (!HasFilePath)
         {
             SaveFileAsRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
+        if (CurrentFilePath is not null && !File.Exists(CurrentFilePath))
+        {
+            MissingFilePathSaveRequested?.Invoke(
+                this,
+                new MissingFilePathSaveRequestedEventArgs(CurrentFilePath));
             return;
         }
 

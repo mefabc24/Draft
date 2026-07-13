@@ -168,6 +168,40 @@ public sealed class ShellDialogCoordinator
         return result.Id == "open-link";
     }
 
+    public MissingFilePathSaveAction ShowMissingFilePathSavePrompt(string filePath)
+    {
+        MessageDialogResult result = _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
+                LocalizationService.Translate("dialog.missingFileSave.title", "File Location Missing"),
+                LocalizationService.TranslateFormat(
+                    "dialog.missingFileSave.description",
+                    "The original file was moved, renamed, or deleted outside Draft.\n\nDraft will not recreate it automatically. Choose how to save the current document.\n\nOriginal path:\n{path}",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["path"] = filePath,
+                    }),
+                MessageDialogType.Warning,
+                new[]
+                {
+                    MessageDialogButtonDefinition.Secondary(
+                        LocalizationService.Translate("common.cancel", "Cancel"),
+                        MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Secondary(
+                        LocalizationService.Translate("dialog.missingFileSave.recreate", "Recreate"),
+                        new MessageDialogResult("recreate")),
+                    MessageDialogButtonDefinition.Primary(
+                        LocalizationService.Translate("dialog.missingFileSave.saveAs", "Save As"),
+                        new MessageDialogResult("save-as")),
+                }));
+
+        return result.Id switch
+        {
+            "save-as" => MissingFilePathSaveAction.SaveAs,
+            "recreate" => MissingFilePathSaveAction.Recreate,
+            _ => MissingFilePathSaveAction.Cancel,
+        };
+    }
+
     public void ShowFileOperationError(string title, Exception ex)
     {
         ShowMessage(

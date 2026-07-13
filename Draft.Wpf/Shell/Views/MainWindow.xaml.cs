@@ -220,6 +220,7 @@ public partial class MainWindow : Window
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         viewModel.OpenFileRequested += ViewModel_OpenFileRequested;
         viewModel.SaveFileAsRequested += ViewModel_SaveFileAsRequested;
+        viewModel.MissingFilePathSaveRequested += ViewModel_MissingFilePathSaveRequested;
         viewModel.OpenExportPromptRequested += ViewModel_OpenExportPromptRequested;
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
@@ -235,6 +236,7 @@ public partial class MainWindow : Window
         viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         viewModel.OpenFileRequested -= ViewModel_OpenFileRequested;
         viewModel.SaveFileAsRequested -= ViewModel_SaveFileAsRequested;
+        viewModel.MissingFilePathSaveRequested -= ViewModel_MissingFilePathSaveRequested;
         viewModel.OpenExportPromptRequested -= ViewModel_OpenExportPromptRequested;
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
@@ -278,25 +280,55 @@ public partial class MainWindow : Window
 
     private async void ViewModel_SaveFileAsRequested(object? sender, EventArgs e)
     {
-        if (ViewModel is null)
+        if (ViewModel is not MainWindowViewModel viewModel)
             return;
 
+        await SaveDocumentAsAsync(viewModel);
+    }
+
+    private async void ViewModel_MissingFilePathSaveRequested(
+        object? sender,
+        MissingFilePathSaveRequestedEventArgs e)
+    {
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        MissingFilePathSaveAction action = _dialogCoordinator.ShowMissingFilePathSavePrompt(e.FilePath);
+
+        switch (action)
+        {
+            case MissingFilePathSaveAction.SaveAs:
+                await SaveDocumentAsAsync(viewModel);
+                break;
+            case MissingFilePathSaveAction.Recreate:
+                await viewModel.SaveDocumentToPathAsync(
+                    e.FilePath,
+                    LocalizationService.Translate("errors.saveCurrentFile", "Unable to save the current file."),
+                    DocumentSaveKind.Manual);
+                break;
+        }
+    }
+
+    private async Task<bool> SaveDocumentAsAsync(MainWindowViewModel viewModel)
+    {
         string? filePath = _fileDialogService.ShowSaveFileDialog(
             this,
-            ViewModel.DisplayFileName,
-            ViewModel.DefaultSaveLocation);
+            viewModel.DisplayFileName,
+            viewModel.DefaultSaveLocation);
         if (filePath is null)
-            return;
+            return false;
 
-        await ViewModel.SaveDocumentToPathAsync(
+        bool didSave = await viewModel.SaveDocumentToPathAsync(
             filePath,
             LocalizationService.Translate("errors.saveCurrentFile", "Unable to save the current file."),
             DocumentSaveKind.Manual);
-        if (IsCurrentDocumentPath(filePath))
-        {
-            AdvanceDocumentGeneration();
-        }
+
+        if (!didSave)
+            return false;
+
+        AdvanceDocumentGeneration();
         PostDocumentToWebView();
+        return true;
     }
 
     private async void ViewModel_OpenExportPromptRequested(object? sender, EventArgs e)
