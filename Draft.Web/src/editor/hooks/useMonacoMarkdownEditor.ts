@@ -14,6 +14,10 @@ import {
 } from '../../shortcuts/shortcutMatching'
 import { useTranslation } from '../../localization/useTranslation'
 import { getEditorTheme, registerEditorThemes } from '../../themes'
+import {
+  isAdditiveSelectionMouseGesture,
+  registerAdditiveSelectionGesture,
+} from '../monaco/additiveSelectionGesture'
 import { syncCurrentLineDecorations } from '../monaco/currentLineDecorations'
 import { duplicateCurrentLine } from '../monaco/duplicateLine'
 import {
@@ -81,7 +85,11 @@ function isEditableKeyboardTarget(target: EventTarget | null) {
 }
 
 function shouldAllowSelectionDragAndDrop(event: MouseEvent) {
-  return event.button === 0 && event.shiftKey
+  return (
+    event.button === 0 &&
+    event.shiftKey &&
+    !isAdditiveSelectionMouseGesture(event)
+  )
 }
 
 function getEditorActionKeybindings(
@@ -405,6 +413,7 @@ export function useMonacoMarkdownEditor({
     const disableSelectionDragAndDrop = () => {
       editor.updateOptions({ dragAndDrop: false })
     }
+    const additiveSelectionGestureSub = registerAdditiveSelectionGesture(editor)
 
     editorRef.current = editor
     setEditorInstance(editor)
@@ -450,6 +459,7 @@ export function useMonacoMarkdownEditor({
       selectionSub.dispose()
       contentSub.dispose()
       markdownKeyboardSub.dispose()
+      additiveSelectionGestureSub.dispose()
       editor.dispose()
       editorRef.current = null
       setEditorInstance(null)

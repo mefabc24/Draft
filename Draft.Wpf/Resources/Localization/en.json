@@ -303,6 +303,8 @@
                          "shortcuts.actions.editor.extendSelectionWordLeft.title":  "Extend selection one word left",
                          "shortcuts.actions.editor.extendSelectionWordRight.description":  "Extend the editor selection one word right.",
                          "shortcuts.actions.editor.extendSelectionWordRight.title":  "Extend selection one word right",
+                         "shortcuts.actions.editor.addSelectionRange.description":  "Add another independent text selection without clearing existing selections. Ctrl + Shift + Alt + double-click adds the clicked word.",
+                         "shortcuts.actions.editor.addSelectionRange.title":  "Add separate selection",
                          "shortcuts.actions.editor.indentListItem.description":  "Indent an empty Markdown list item.",
                          "shortcuts.actions.editor.indentListItem.title":  "Indent list item",
                          "shortcuts.actions.editor.moveCursorWordLeft.description":  "Move the editor cursor one word left.",

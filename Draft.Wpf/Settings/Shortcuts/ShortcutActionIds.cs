@@ -13,6 +13,7 @@ public static class ShortcutActionIds
     public const string EditorMoveCursorWordRight = "editor.moveCursorWordRight";
     public const string EditorExtendSelectionWordLeft = "editor.extendSelectionWordLeft";
     public const string EditorExtendSelectionWordRight = "editor.extendSelectionWordRight";
+    public const string EditorAddSelectionRange = "editor.addSelectionRange";
     public const string EditorContinueMarkdownBlock = "editor.continueMarkdownBlock";
     public const string EditorIndentListItem = "editor.indentListItem";
     public const string ToolbarBold = "toolbar.bold";

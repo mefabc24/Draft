@@ -88,6 +88,12 @@ public static class ShortcutSettingsCatalog
                         "Extend the editor selection one word right.",
                         "Ctrl + Shift + Right"),
                     new ShortcutActionDefinition(
+                        ShortcutActionIds.EditorAddSelectionRange,
+                        "Add separate selection",
+                        "Add another independent text selection without clearing existing selections. Ctrl + Shift + Alt + double-click adds the clicked word.",
+                        "Ctrl + Shift + Alt + Mouse Drag",
+                        IsEditable: false),
+                    new ShortcutActionDefinition(
                         ShortcutActionIds.EditorContinueMarkdownBlock,
                         "Continue Markdown block",
                         "Continue the current list or quote on the next line.",
