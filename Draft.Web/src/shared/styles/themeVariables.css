@@ -172,6 +172,10 @@
   --preview-blockquote-caution-color: #f97316;
   --preview-blockquote-error-color: #e25e5e;
   --preview-blockquote-success-color: #31c559;
+  --preview-blockquote-good-color: #31c559;
+  --preview-blockquote-bad-color: #e25e5e;
+  --preview-blockquote-pro-color: #31c559;
+  --preview-blockquote-con-color: #e25e5e;
   --preview-blockquote-question-color: #8ae9f8;
   --preview-blockquote-todo-color: #acabaa;
   --preview-blockquote-background-opacity: 0.1;
