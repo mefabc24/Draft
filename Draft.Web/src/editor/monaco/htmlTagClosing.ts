@@ -553,17 +553,22 @@ export function deletePendingMarkdownHtmlOpeningBracketOnBackspace(
   const pendingCompletion = pendingHtmlAngleCompletions.get(editor)
   const context = getSingleCursorContext(editor)
 
+  if (!pendingCompletion) {
+    return false
+  }
+
   if (
-    !pendingCompletion ||
     !context ||
-    !hasCurrentPendingHtmlAngleCompletion(context, pendingCompletion) ||
+    !hasCurrentPendingHtmlAngleCompletion(context, pendingCompletion)
+  ) {
+    pendingHtmlAngleCompletions.delete(editor)
+    return false
+  }
+
+  if (
     context.position.column !== pendingCompletion.openingColumn + 1 ||
     pendingCompletion.closingColumn !== pendingCompletion.openingColumn + 1
   ) {
-    if (pendingCompletion) {
-      pendingHtmlAngleCompletions.delete(editor)
-    }
-
     return false
   }
 
