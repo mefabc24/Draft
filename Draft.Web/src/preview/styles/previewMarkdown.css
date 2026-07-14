@@ -454,6 +454,22 @@
   --preview-current-blockquote-color: var(--preview-blockquote-success-color, var(--preview-blockquote-default-color, currentColor));
 }
 
+.preview-content blockquote.preview-callout-good {
+  --preview-current-blockquote-color: var(--preview-blockquote-good-color, var(--preview-blockquote-success-color, var(--preview-blockquote-default-color, currentColor)));
+}
+
+.preview-content blockquote.preview-callout-bad {
+  --preview-current-blockquote-color: var(--preview-blockquote-bad-color, var(--preview-blockquote-error-color, var(--preview-blockquote-default-color, currentColor)));
+}
+
+.preview-content blockquote.preview-callout-pro {
+  --preview-current-blockquote-color: var(--preview-blockquote-pro-color, var(--preview-blockquote-success-color, var(--preview-blockquote-default-color, currentColor)));
+}
+
+.preview-content blockquote.preview-callout-con {
+  --preview-current-blockquote-color: var(--preview-blockquote-con-color, var(--preview-blockquote-error-color, var(--preview-blockquote-default-color, currentColor)));
+}
+
 .preview-content blockquote.preview-callout-question {
   --preview-current-blockquote-color: var(--preview-blockquote-question-color, var(--preview-blockquote-default-color, currentColor));
 }

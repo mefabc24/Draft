@@ -95,6 +95,10 @@ const theHubPreviewColorVariables = {
   '--preview-blockquote-caution-color': '#F97316',
   '--preview-blockquote-error-color': '#E25E5E',
   '--preview-blockquote-success-color': '#31C559',
+  '--preview-blockquote-good-color': '#31C559',
+  '--preview-blockquote-bad-color': '#E25E5E',
+  '--preview-blockquote-pro-color': '#31C559',
+  '--preview-blockquote-con-color': '#E25E5E',
   '--preview-blockquote-question-color': '#8AE9F8',
   '--preview-blockquote-todo-color': '#ACABAA',
   // background-opacity is a decimal alpha used to tint the blockquote color.
