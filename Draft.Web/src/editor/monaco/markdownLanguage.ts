@@ -3,17 +3,12 @@ import {
   conf as baseMarkdownConfiguration,
   language as baseMarkdownLanguage,
 } from 'monaco-editor/esm/vs/basic-languages/markdown/markdown.js'
+import { draftAutoClosingQuotePairs } from './autoClosingWrapperPairs'
 
 let markdownTokensProvider: monaco.IDisposable | null = null
 let markdownLanguageConfiguration: monaco.IDisposable | null = null
 let plaintextLanguageConfiguration: monaco.IDisposable | null = null
 let markdownLanguageRegistered = false
-
-const draftQuotePairs = [
-  { open: "'", close: "'" },
-  { open: '"', close: '"' },
-  { open: '`', close: '`' },
-]
 
 const draftEmptyHtmlTagRules: monaco.languages.IMonarchLanguageRule[] = [
   [/<>/, 'tag'],
@@ -44,7 +39,7 @@ export function registerDraftMarkdownLanguage() {
           ...(baseMarkdownConfiguration.autoClosingPairs ?? []).filter(
             (pair) => !isAngleBracketPair(pair),
           ),
-          ...draftQuotePairs,
+          ...draftAutoClosingQuotePairs,
         ],
         surroundingPairs: [
           ...(baseMarkdownConfiguration.surroundingPairs ?? []).filter(
@@ -61,8 +56,8 @@ export function registerDraftMarkdownLanguage() {
     plaintextLanguageConfiguration = monaco.languages.setLanguageConfiguration(
       'plaintext',
       {
-        autoClosingPairs: draftQuotePairs,
-        surroundingPairs: draftQuotePairs,
+        autoClosingPairs: draftAutoClosingQuotePairs,
+        surroundingPairs: draftAutoClosingQuotePairs,
       },
     )
   }

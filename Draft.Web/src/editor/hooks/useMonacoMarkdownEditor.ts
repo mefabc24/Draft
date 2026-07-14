@@ -18,6 +18,10 @@ import {
   isAdditiveSelectionMouseGesture,
   registerAdditiveSelectionGesture,
 } from '../monaco/additiveSelectionGesture'
+import {
+  reuseExistingClosingBracketPair,
+  reuseExistingClosingQuotePair,
+} from '../monaco/autoClosingWrapperReuse'
 import { syncCurrentLineDecorations } from '../monaco/currentLineDecorations'
 import { duplicateCurrentLine } from '../monaco/duplicateLine'
 import {
@@ -282,6 +286,30 @@ export function useMonacoMarkdownEditor({
       if (
         isPlainTextInput &&
         wrapSelectedTextForTypedCharacter(
+          editor,
+          browserEvent.key,
+          consumeKeyboardEvent,
+        )
+      ) {
+        return
+      }
+
+      if (
+        settings.autoPairBrackets &&
+        isPlainTextInput &&
+        reuseExistingClosingBracketPair(
+          editor,
+          browserEvent.key,
+          consumeKeyboardEvent,
+        )
+      ) {
+        return
+      }
+
+      if (
+        settings.autoPairQuotes &&
+        isPlainTextInput &&
+        reuseExistingClosingQuotePair(
           editor,
           browserEvent.key,
           consumeKeyboardEvent,

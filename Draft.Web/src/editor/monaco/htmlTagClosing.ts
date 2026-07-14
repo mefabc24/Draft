@@ -1,5 +1,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { getFencedCodeBlockContextFromLines } from '../../markdown'
+import { reuseExistingClosingHtmlAnglePair } from './autoClosingWrapperReuse'
 
 const HTML_TAG_COMPLETION_EDIT_SOURCE = 'draft.htmlTagCompletion'
 const HTML_TAG_MIRROR_EDIT_SOURCE = 'draft.htmlTagMirroring'
@@ -425,6 +426,10 @@ export function completeMarkdownHtmlOpeningBracket(
     )
   ) {
     return false
+  }
+
+  if (reuseExistingClosingHtmlAnglePair(editor, beforeEdit)) {
+    return true
   }
 
   beforeEdit?.()
