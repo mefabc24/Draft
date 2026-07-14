@@ -20,6 +20,7 @@ import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
 import type { PluggableList } from 'unified'
 import { postOpenExternalUrl } from '../../app/webview/draftWebViewMessages'
+import { postCopiedPlainTextToHostClipboard } from '../../clipboard/clipboardHistoryBridge'
 import {
   isCalloutType,
   type CalloutType,
@@ -399,6 +400,7 @@ function PreviewCodeBlock({
       return
     }
 
+    postCopiedPlainTextToHostClipboard(codeText)
     setCopied(true)
 
     if (resetCopiedTimeoutRef.current !== 0) {

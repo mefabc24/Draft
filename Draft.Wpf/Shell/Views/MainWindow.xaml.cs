@@ -38,6 +38,7 @@ public partial class MainWindow : Window
     private readonly DocumentExportService _documentExportService = new();
     private readonly DraftWebViewHostService _webViewHostService = new();
     private readonly DraftWebViewMessageBridge _webViewMessageBridge = new();
+    private readonly ClipboardTextService _clipboardTextService = new();
     private readonly List<InputBinding> _shortcutInputBindings = new();
     private readonly WindowSizingService _windowSizingService = new();
     private DraftSettings _settings;
@@ -1078,9 +1079,17 @@ public partial class MainWindow : Window
             ApplyWorkspaceModeFromWeb,
             UpdateContentFromWeb,
             viewModel.UpdateCursorPosition,
+            UpdateClipboardTextFromWeb,
             () => viewModel.SaveFileCommand.Execute(null),
             () => viewModel.OpenFileCommand.Execute(null),
             OpenExternalUrl);
+    }
+
+    private void UpdateClipboardTextFromWeb(string text)
+    {
+        Dispatcher.BeginInvoke(
+            () => _clipboardTextService.SetPlainText(text),
+            DispatcherPriority.Background);
     }
 
     private void OpenExternalUrl(string url)

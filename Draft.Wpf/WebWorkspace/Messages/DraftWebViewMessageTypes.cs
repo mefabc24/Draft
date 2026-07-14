@@ -9,6 +9,7 @@ public static class DraftWebViewMessageTypes
     public const string LoadDocument = "loadDocument";
     public const string DocumentChanged = "documentChanged";
     public const string CursorPositionChanged = "cursorPositionChanged";
+    public const string ClipboardTextCopied = "clipboardTextCopied";
     public const string SettingsChanged = "settingsChanged";
     public const string GoToPosition = "goToPosition";
     public const string SaveRequested = "saveRequested";

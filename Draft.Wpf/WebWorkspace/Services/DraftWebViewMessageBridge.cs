@@ -157,6 +157,7 @@ public sealed class DraftWebViewMessageBridge
         Action<string> workspaceModeChanged,
         Action<string, int?> documentChanged,
         Action<int, int, int> cursorPositionChanged,
+        Action<string> clipboardTextCopied,
         Action saveRequested,
         Action openRequested,
         Action<string> openExternalUrl)
@@ -190,6 +191,9 @@ public sealed class DraftWebViewMessageBridge
                     break;
                 case DraftWebViewMessageTypes.CursorPositionChanged:
                     DispatchCursorPositionChangedMessage(root, cursorPositionChanged);
+                    break;
+                case DraftWebViewMessageTypes.ClipboardTextCopied:
+                    DispatchClipboardTextCopiedMessage(root, clipboardTextCopied);
                     break;
                 case DraftWebViewMessageTypes.SaveRequested:
                     saveRequested();
@@ -263,6 +267,21 @@ public sealed class DraftWebViewMessageBridge
             && columnElement.TryGetInt32(out int column))
         {
             cursorPositionChanged(line, column, selectedCharacterCount);
+        }
+    }
+
+    private static void DispatchClipboardTextCopiedMessage(
+        JsonElement root,
+        Action<string> clipboardTextCopied)
+    {
+        if (!root.TryGetProperty("text", out JsonElement textElement))
+            return;
+
+        string? text = textElement.GetString();
+
+        if (!string.IsNullOrEmpty(text))
+        {
+            clipboardTextCopied(text);
         }
     }
 

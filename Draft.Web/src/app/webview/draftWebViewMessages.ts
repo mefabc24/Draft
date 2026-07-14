@@ -16,6 +16,7 @@ const LOAD_DOCUMENT_MESSAGE_TYPE = 'loadDocument'
 const GO_TO_POSITION_MESSAGE_TYPE = 'goToPosition'
 const DOCUMENT_CHANGED_MESSAGE_TYPE = 'documentChanged'
 const CURSOR_POSITION_CHANGED_MESSAGE_TYPE = 'cursorPositionChanged'
+const CLIPBOARD_TEXT_COPIED_MESSAGE_TYPE = 'clipboardTextCopied'
 const SAVE_REQUESTED_MESSAGE_TYPE = 'saveRequested'
 const OPEN_REQUESTED_MESSAGE_TYPE = 'openRequested'
 const OPEN_EXTERNAL_URL_MESSAGE_TYPE = 'openExternalUrl'
@@ -270,6 +271,13 @@ export function postCursorPositionChanged(message: {
   postWebViewMessage({
     type: CURSOR_POSITION_CHANGED_MESSAGE_TYPE,
     ...message,
+  })
+}
+
+export function postClipboardTextCopied(text: string) {
+  postWebViewMessage({
+    type: CLIPBOARD_TEXT_COPIED_MESSAGE_TYPE,
+    text,
   })
 }
 

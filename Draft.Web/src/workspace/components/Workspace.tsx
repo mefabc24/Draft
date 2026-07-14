@@ -58,6 +58,7 @@ import { defaultShortcutBindings } from '../../shortcuts/shortcutSettings'
 import { usePreviewScrollSync } from '../hooks/usePreviewScrollSync'
 import { useSplitSizing } from '../hooks/useSplitSizing'
 import { isViewMode, type ViewMode } from '../workspaceTypes'
+import { usePreviewClipboardHistory } from '../../preview/hooks/usePreviewClipboardHistory'
 
 function getSelectedCharacterCount(editor: monaco.editor.IStandaloneCodeEditor) {
   const model = editor.getModel()
@@ -157,6 +158,7 @@ function Workspace() {
     settingsRef: draftEditorSettingsRef,
     viewModeRef,
   })
+  usePreviewClipboardHistory(previewContentRef)
   const {
     applyEditorSettings,
     resyncEditorLayout,

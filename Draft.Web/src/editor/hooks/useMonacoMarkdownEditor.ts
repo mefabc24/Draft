@@ -24,6 +24,7 @@ import {
 } from '../monaco/autoClosingWrapperReuse'
 import { syncCurrentLineDecorations } from '../monaco/currentLineDecorations'
 import { duplicateCurrentLine } from '../monaco/duplicateLine'
+import { registerEditorClipboardHistoryBridge } from '../monaco/editorClipboardHistory'
 import {
   EDITOR_LINE_NUMBER_LEFT_PADDING_PX,
   EDITOR_PADDING,
@@ -415,6 +416,7 @@ export function useMonacoMarkdownEditor({
     const layoutSub = editor.onDidLayoutChange(() => {
       onSyncEditorScrollbar()
     })
+    const clipboardHistoryBridgeSub = registerEditorClipboardHistoryBridge(editor)
     const contentSizeSub = editor.onDidContentSizeChange(() => {
       onSyncEditorScrollbar()
       if (settingsRef.current.previewScrollSyncMode === 'FollowEditedSection') {
@@ -500,6 +502,7 @@ export function useMonacoMarkdownEditor({
       )
       document.fonts.removeEventListener('loadingdone', syncEditorFontMetrics)
       contentSizeSub.dispose()
+      clipboardHistoryBridgeSub.dispose()
       layoutSub.dispose()
       scrollSub.dispose()
       selectionSub.dispose()
