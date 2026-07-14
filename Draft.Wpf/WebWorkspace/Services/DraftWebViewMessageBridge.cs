@@ -48,7 +48,7 @@ public sealed class DraftWebViewMessageBridge
     {
         return new SettingsChangedMessage(
             DraftWebViewMessageTypes.SettingsChanged,
-            LocalizationService.ResolveLanguageCode(settings.AppLanguage),
+            LocalizationService.NormalizeLanguageCode(settings.AppLanguage),
             "draftDark",
             MarkdownPreviewThemeCatalog.GetThemeId(settings.MarkdownTheme),
             settings.EditorFontFamily,

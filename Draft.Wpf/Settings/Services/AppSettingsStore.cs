@@ -8,8 +8,6 @@ namespace Draft.Settings.Services;
 
 public static class AppSettingsStore
 {
-    public const string AppLanguageSystem = SettingsDefaults.AppLanguageSystem;
-    public const string AppLanguageEnglish = SettingsDefaults.AppLanguageEnglish;
     public const string DefaultAppLanguage = SettingsDefaults.DefaultAppLanguage;
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";

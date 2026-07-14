@@ -25,7 +25,7 @@
                     <ComboBox
                         Width="160"
                         Height="36"
-                        ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
+                        ItemTemplate="{StaticResource LocalizedLanguageComboBoxItemTemplate}"
                         ItemsSource="{Binding AppLanguageOptions}"
                         SelectedItem="{Binding Settings.AppLanguage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource SettingsComboBox}" />

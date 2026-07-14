@@ -23,22 +23,16 @@ public static class LanguageCatalog
     }
 
     public static IReadOnlyList<string> AppLanguageOptionValues =>
-        new[] { LocalizationService.SystemLanguageValue }
-            .Concat(AvailableLanguages.Select(language => language.Code))
-            .ToArray();
+        AvailableLanguages.Select(language => language.Code).ToArray();
 
     public static bool IsSupportedAppLanguage(string? value)
     {
         string normalizedValue = LocalizationService.NormalizeAppLanguageValue(value);
 
-        return string.Equals(
-                normalizedValue,
-                LocalizationService.SystemLanguageValue,
-                StringComparison.OrdinalIgnoreCase)
-            || AvailableLanguages.Any(language => string.Equals(
-                language.Code,
-                normalizedValue,
-                StringComparison.OrdinalIgnoreCase));
+        return AvailableLanguages.Any(language => string.Equals(
+            language.Code,
+            normalizedValue,
+            StringComparison.OrdinalIgnoreCase));
     }
 
     public static bool TryGetLanguage(string? code, out LanguageMetadata language)

@@ -6,16 +6,13 @@ namespace Draft.Localization;
 public static class LocalizationService
 {
     public const string EnglishLanguageCode = "en";
-    public const string SystemLanguageValue = "system";
-    public const string EnglishLanguageValue = EnglishLanguageCode;
 
     private const string LocalizationDirectoryName = "Localization";
     private const string LegacyEnglishLanguageValue = "English";
-    private const string LegacySystemLanguageValue = "System";
     private static readonly object DictionariesLock = new();
     private static readonly Dictionary<string, IReadOnlyDictionary<string, string>> Dictionaries =
         new(StringComparer.OrdinalIgnoreCase);
-    private static string _currentAppLanguage = SystemLanguageValue;
+    private static string _currentAppLanguage = EnglishLanguageCode;
 
     public static string CurrentAppLanguage => _currentAppLanguage;
 
@@ -30,29 +27,8 @@ public static class LocalizationService
         LocalizationBindingSource.Current.Refresh();
     }
 
-    public static string ResolveLanguageCode(string? appLanguage)
-    {
-        string normalizedLanguage = NormalizeAppLanguageValue(appLanguage);
-
-        return string.Equals(normalizedLanguage, SystemLanguageValue, StringComparison.OrdinalIgnoreCase)
-            ? EnglishLanguageCode
-            : NormalizeLanguageCode(normalizedLanguage);
-    }
-
     public static string NormalizeAppLanguageValue(string? appLanguage)
-    {
-        if (string.IsNullOrWhiteSpace(appLanguage))
-            return SystemLanguageValue;
-
-        string normalizedLanguage = appLanguage.Trim();
-
-        return normalizedLanguage switch
-        {
-            SystemLanguageValue or LegacySystemLanguageValue => SystemLanguageValue,
-            EnglishLanguageValue or LegacyEnglishLanguageValue => EnglishLanguageValue,
-            _ => NormalizeLanguageCode(normalizedLanguage),
-        };
-    }
+        => NormalizeLanguageCode(appLanguage);
 
     public static string NormalizeLanguageCode(string? languageCode)
     {
@@ -63,7 +39,6 @@ public static class LocalizationService
 
         return normalizedLanguageCode switch
         {
-            SystemLanguageValue or LegacySystemLanguageValue => EnglishLanguageCode,
             LegacyEnglishLanguageValue => EnglishLanguageCode,
             _ => normalizedLanguageCode.ToLowerInvariant(),
         };
@@ -74,7 +49,7 @@ public static class LocalizationService
         if (string.IsNullOrWhiteSpace(key))
             return fallback ?? string.Empty;
 
-        string languageCode = ResolveLanguageCode(appLanguage ?? CurrentAppLanguage);
+        string languageCode = NormalizeLanguageCode(appLanguage ?? CurrentAppLanguage);
 
         if (TryTranslate(languageCode, key, out string? localizedText))
             return localizedText;

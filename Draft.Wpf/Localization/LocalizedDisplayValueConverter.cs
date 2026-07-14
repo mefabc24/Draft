@@ -54,14 +54,6 @@ public sealed class LocalizedDisplayValueConverter : IMultiValueConverter
 
         string normalizedLanguageValue = LocalizationService.NormalizeAppLanguageValue(fallback);
 
-        if (string.Equals(
-            normalizedLanguageValue,
-            LocalizationService.SystemLanguageValue,
-            StringComparison.OrdinalIgnoreCase))
-        {
-            return LocalizationService.Translate("settings.language.system", "System");
-        }
-
         if (LanguageCatalog.TryGetLanguage(normalizedLanguageValue, out LanguageMetadata language))
             return language.DisplayName;
 
