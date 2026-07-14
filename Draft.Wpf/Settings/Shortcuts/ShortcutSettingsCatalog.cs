@@ -58,6 +58,21 @@ public static class ShortcutSettingsCatalog
                         "Duplicate the active editor line.",
                         "Ctrl + D"),
                     new ShortcutActionDefinition(
+                        ShortcutActionIds.EditorToggleLineCapitalization,
+                        "Toggle line capitalization",
+                        "Toggle the first letter capitalization of the current line.",
+                        "Ctrl + Alt + U"),
+                    new ShortcutActionDefinition(
+                        ShortcutActionIds.EditorUppercaseSelection,
+                        "Uppercase selection",
+                        "Convert the selected text to uppercase.",
+                        "Ctrl + Shift + U"),
+                    new ShortcutActionDefinition(
+                        ShortcutActionIds.EditorLowercaseSelection,
+                        "Lowercase selection",
+                        "Convert the selected text to lowercase.",
+                        "Ctrl + Shift + L"),
+                    new ShortcutActionDefinition(
                         ShortcutActionIds.EditorMoveLineUp,
                         "Move line or selection up",
                         "Move the active editor line or selected lines up.",

@@ -7,6 +7,9 @@ public static class ShortcutActionIds
     public const string EditorUndo = "editor.undo";
     public const string EditorRedo = "editor.redo";
     public const string EditorDuplicateLine = "editor.duplicateLine";
+    public const string EditorToggleLineCapitalization = "editor.toggleLineCapitalization";
+    public const string EditorUppercaseSelection = "editor.uppercaseSelection";
+    public const string EditorLowercaseSelection = "editor.lowercaseSelection";
     public const string EditorMoveLineUp = "editor.moveLineUp";
     public const string EditorMoveLineDown = "editor.moveLineDown";
     public const string EditorMoveCursorWordLeft = "editor.moveCursorWordLeft";

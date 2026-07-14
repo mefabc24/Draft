@@ -46,6 +46,10 @@ import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
 import { indentEmptyMarkdownListItemOnTab } from '../monaco/markdownListIndentation'
 import { wrapSelectedTextForTypedCharacter } from '../monaco/selectedTextWrapping'
 import { moveSelectionsByWord } from '../monaco/wordNavigation'
+import {
+  toggleCurrentLineCapitalization,
+  transformSelectedTextCase,
+} from '../monaco/textCasing'
 
 type CurrentRef<T> = {
   current: T
@@ -573,6 +577,39 @@ export function useMonacoMarkdownEditor({
         },
       }),
       editor.addAction({
+        id: 'draft.editor.toggleLineCapitalization',
+        label: t('commands.editor.toggleLineCapitalization'),
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorToggleLineCapitalization,
+        ),
+        run: () => {
+          toggleCurrentLineCapitalization(editor)
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.uppercaseSelection',
+        label: t('commands.editor.uppercaseSelection'),
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorUppercaseSelection,
+        ),
+        run: () => {
+          transformSelectedTextCase(editor, 'uppercase')
+        },
+      }),
+      editor.addAction({
+        id: 'draft.editor.lowercaseSelection',
+        label: t('commands.editor.lowercaseSelection'),
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorLowercaseSelection,
+        ),
+        run: () => {
+          transformSelectedTextCase(editor, 'lowercase')
+        },
+      }),
+      editor.addAction({
         id: 'draft.editor.moveLineUp',
         label: t('commands.editor.moveLineUp'),
         keybindings: getEditorActionKeybindings(
@@ -644,6 +681,9 @@ export function useMonacoMarkdownEditor({
       shortcutActionIds.editorUndo,
       shortcutActionIds.editorRedo,
       shortcutActionIds.editorDuplicateLine,
+      shortcutActionIds.editorToggleLineCapitalization,
+      shortcutActionIds.editorUppercaseSelection,
+      shortcutActionIds.editorLowercaseSelection,
       shortcutActionIds.editorMoveLineUp,
       shortcutActionIds.editorMoveLineDown,
       shortcutActionIds.editorMoveCursorWordLeft,
