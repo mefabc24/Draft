@@ -28,6 +28,7 @@
                          "common.open":  "Open",
                          "common.reset":  "Reset",
                          "common.save":  "Save",
+                         "common.saveAs":  "Save As",
                          "common.unavailable":  "Unavailable",
                          "dialog.openExternalLink.description":  "Open this link in your default browser?\n{url}",
                          "dialog.openExternalLink.openFailed":  "The link could not be opened in your default browser.",
