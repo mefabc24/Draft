@@ -101,7 +101,7 @@ public static class ShortcutSettingsCatalog
                     new ShortcutActionDefinition(
                         ShortcutActionIds.EditorAddSelectionRange,
                         "Add separate selection",
-                        "Hold the configured modifier keys and drag with the left mouse button to add another independent selection. Double-click a word while holding the modifiers to add that word as another selection.",
+                        "Hold the configured keys and drag with the left mouse button to add another independent selection. Double-click a word while holding the keys to add that word as another selection.",
                         "Ctrl + Shift + Alt",
                         FixedMouseGesture: ShortcutFixedMouseGesture.LeftDragOrDoubleClick),
                     new ShortcutActionDefinition(
@@ -232,7 +232,7 @@ public static class ShortcutSettingsCatalog
                     new ShortcutActionDefinition(
                         ShortcutActionIds.QuickInsertKeepOpen,
                         "Insert and keep menu open",
-                        "Hold the configured modifier keys and click a Quick Insert item with the left mouse button to insert it and keep the menu open for the next empty line.",
+                        "Hold the configured keys and click a Quick Insert item with the left mouse button to insert it and keep the menu open for the next empty line.",
                         "Shift",
                         FixedMouseGesture: ShortcutFixedMouseGesture.LeftClick),
                 }),
@@ -330,21 +330,47 @@ public static class ShortcutSettingsCatalog
             return true;
         }
 
-        HashSet<string> modifiers = SplitShortcutParts(shortcut)
-            .Select(NormalizeModifierName)
-            .Where(modifier => modifier is not null)
-            .Select(modifier => modifier!)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> modifiers = new(StringComparer.OrdinalIgnoreCase);
+        List<string> keys = new();
 
-        string[] orderedModifiers = new[] { "Ctrl", "Shift", "Alt", "Win" }
+        foreach (string part in SplitShortcutParts(shortcut))
+        {
+            if (IsLegacyMouseGesturePart(part))
+                continue;
+
+            string? modifier = NormalizeModifierName(part);
+            if (modifier is not null)
+            {
+                modifiers.Add(modifier);
+                continue;
+            }
+
+            keys.Add(part.Trim());
+        }
+
+        IEnumerable<string> orderedModifiers = new[] { "Ctrl", "Shift", "Alt", "Win" }
             .Where(modifiers.Contains)
-            .ToArray();
-
-        if (orderedModifiers.Length == 0)
-            return false;
+            .Concat(keys);
 
         normalizedShortcut = string.Join(" + ", orderedModifiers);
+        if (string.IsNullOrWhiteSpace(normalizedShortcut))
+            return false;
+
         return true;
+    }
+
+    private static bool IsLegacyMouseGesturePart(string part)
+    {
+        string normalizedPart = new(part
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToLowerInvariant)
+            .ToArray());
+
+        return normalizedPart is "click"
+            or "doubleclick"
+            or "leftclick"
+            or "mouseclick"
+            or "mousedrag";
     }
 
     private static string? NormalizeModifierName(string part)

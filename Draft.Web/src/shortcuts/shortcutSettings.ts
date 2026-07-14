@@ -150,19 +150,45 @@ function normalizeModifierName(part: string): ShortcutModifierName | null {
   }
 }
 
-function normalizeFixedGestureModifierBinding(shortcut: string) {
-  const modifiers = new Set(
-    splitShortcutParts(shortcut)
-      .map(normalizeModifierName)
-      .filter((modifier): modifier is ShortcutModifierName => modifier !== null),
-  )
+function isLegacyMouseGesturePart(part: string) {
+  const normalizedPart = part.toLowerCase().replace(/[^a-z0-9]/gu, '')
+
+  return [
+    'click',
+    'doubleclick',
+    'leftclick',
+    'mouseclick',
+    'mousedrag',
+  ].includes(normalizedPart)
+}
+
+function normalizeFixedGestureKeyboardBinding(shortcut: string) {
+  const modifiers = new Set<ShortcutModifierName>()
+  const keys: string[] = []
+
+  for (const part of splitShortcutParts(shortcut)) {
+    if (isLegacyMouseGesturePart(part)) {
+      continue
+    }
+
+    const modifier = normalizeModifierName(part)
+
+    if (modifier !== null) {
+      modifiers.add(modifier)
+      continue
+    }
+
+    keys.push(part.trim())
+  }
+
   const modifierOrder: ShortcutModifierName[] = ['Ctrl', 'Shift', 'Alt', 'Win']
   const orderedModifiers = modifierOrder.filter((modifier) =>
     modifiers.has(modifier),
   )
+  const keyboardParts = [...orderedModifiers, ...keys]
 
-  return orderedModifiers.length > 0
-    ? orderedModifiers.join(' + ')
+  return keyboardParts.length > 0
+    ? keyboardParts.join(' + ')
     : null
 }
 
@@ -171,7 +197,7 @@ function normalizeShortcutBinding(
   shortcut: string,
 ) {
   if (actionId in fixedMouseGestureByShortcutActionId) {
-    return normalizeFixedGestureModifierBinding(shortcut)
+    return normalizeFixedGestureKeyboardBinding(shortcut)
   }
 
   return isValidShortcutBinding(shortcut) ? shortcut.trim() : null

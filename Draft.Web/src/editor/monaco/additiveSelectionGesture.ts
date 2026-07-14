@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import { eventMatchesShortcutModifiers } from '../../shortcuts/shortcutMatching'
+import { eventMatchesShortcutKeyboardState } from '../../shortcuts/shortcutMatching'
 import {
   defaultShortcutBindings,
   getShortcutBinding,
@@ -9,10 +9,11 @@ import { cloneSelections, isEmptySelection } from './markdownSelection'
 
 const LEFT_MOUSE_BUTTON = 0
 const LEFT_MOUSE_BUTTON_MASK = 1
-const DEFAULT_MODIFIER_SHORTCUT = getShortcutBinding(
+const DEFAULT_KEYBOARD_SHORTCUT = getShortcutBinding(
   defaultShortcutBindings,
   shortcutActionIds.editorAddSelectionRange,
 )
+const NO_PRESSED_KEYS = new Set<string>()
 
 type AdditiveSelectionGesture = {
   anchorPosition: monaco.Position
@@ -22,21 +23,23 @@ type AdditiveSelectionGesture = {
 
 export function isAdditiveSelectionMouseGesture(
   event: MouseEvent,
-  modifierShortcut = DEFAULT_MODIFIER_SHORTCUT,
+  keyboardShortcut = DEFAULT_KEYBOARD_SHORTCUT,
+  pressedKeys: ReadonlySet<string> = NO_PRESSED_KEYS,
 ) {
   return (
     event.button === LEFT_MOUSE_BUTTON &&
-    eventMatchesShortcutModifiers(event, modifierShortcut)
+    eventMatchesShortcutKeyboardState(event, keyboardShortcut, pressedKeys)
   )
 }
 
 function isAdditiveSelectionMouseMove(
   event: MouseEvent,
-  modifierShortcut: string,
+  keyboardShortcut: string,
+  pressedKeys: ReadonlySet<string>,
 ) {
   return (
     (event.buttons & LEFT_MOUSE_BUTTON_MASK) === LEFT_MOUSE_BUTTON_MASK &&
-    eventMatchesShortcutModifiers(event, modifierShortcut)
+    eventMatchesShortcutKeyboardState(event, keyboardShortcut, pressedKeys)
   )
 }
 
@@ -146,7 +149,8 @@ function addWordSelectionAtPosition(
 
 export function registerAdditiveSelectionGesture(
   editor: monaco.editor.IStandaloneCodeEditor,
-  getModifierShortcut: () => string = () => DEFAULT_MODIFIER_SHORTCUT,
+  getKeyboardShortcut: () => string = () => DEFAULT_KEYBOARD_SHORTCUT,
+  pressedKeys: ReadonlySet<string> = NO_PRESSED_KEYS,
 ): monaco.IDisposable {
   const editorNode = editor.getDomNode()
 
@@ -172,7 +176,11 @@ export function registerAdditiveSelectionGesture(
   }
 
   const handleMouseDown = (event: MouseEvent) => {
-    if (!isAdditiveSelectionMouseGesture(event, getModifierShortcut())) {
+    if (!isAdditiveSelectionMouseGesture(
+      event,
+      getKeyboardShortcut(),
+      pressedKeys,
+    )) {
       return
     }
 
@@ -201,7 +209,11 @@ export function registerAdditiveSelectionGesture(
 
     consumeMouseEvent(event)
 
-    if (!isAdditiveSelectionMouseMove(event, getModifierShortcut())) {
+    if (!isAdditiveSelectionMouseMove(
+      event,
+      getKeyboardShortcut(),
+      pressedKeys,
+    )) {
       finishGesture()
       return
     }
@@ -229,7 +241,11 @@ export function registerAdditiveSelectionGesture(
   }
 
   const handleDoubleClick = (event: MouseEvent) => {
-    if (!isAdditiveSelectionMouseGesture(event, getModifierShortcut())) {
+    if (!isAdditiveSelectionMouseGesture(
+      event,
+      getKeyboardShortcut(),
+      pressedKeys,
+    )) {
       return
     }
 

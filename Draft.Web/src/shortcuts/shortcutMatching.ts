@@ -13,14 +13,15 @@ type ParsedShortcut = {
   shiftKey: boolean
 }
 
-type ShortcutModifierEvent = Pick<
+type ShortcutKeyboardStateEvent = Pick<
   KeyboardEvent | MouseEvent,
   'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'
 >
 
-type ParsedShortcutModifiers = {
+type ParsedShortcutKeyboardState = {
   altKey: boolean
   ctrlKey: boolean
+  keys: ReadonlySet<string>
   metaKey: boolean
   shiftKey: boolean
 }
@@ -33,6 +34,8 @@ const keyAliases: Record<string, string> = {
   control: 'ctrl',
   del: 'delete',
   escape: 'esc',
+  meta: 'win',
+  os: 'win',
   return: 'enter',
 }
 
@@ -177,13 +180,15 @@ function normalizeKeyName(value: string) {
   return keyAliases[normalized] ?? normalized
 }
 
-export function parseShortcutModifiers(
+export function parseShortcutKeyboardState(
   shortcut: string,
-): ParsedShortcutModifiers | null {
+): ParsedShortcutKeyboardState | null {
   const parts = shortcut ? splitShortcutParts(shortcut) : []
-  const modifiers: ParsedShortcutModifiers = {
+  const keys = new Set<string>()
+  const keyboardState: ParsedShortcutKeyboardState = {
     altKey: false,
     ctrlKey: false,
+    keys,
     metaKey: false,
     shiftKey: false,
   }
@@ -192,54 +197,59 @@ export function parseShortcutModifiers(
     const normalized = normalizeKeyName(part)
 
     if (normalized === 'ctrl' || normalized === 'cmd' || normalized === 'command') {
-      modifiers.ctrlKey = true
+      keyboardState.ctrlKey = true
       continue
     }
 
     if (normalized === 'shift') {
-      modifiers.shiftKey = true
+      keyboardState.shiftKey = true
       continue
     }
 
     if (normalized === 'alt' || normalized === 'option') {
-      modifiers.altKey = true
+      keyboardState.altKey = true
       continue
     }
 
     if (normalized === 'win' || normalized === 'windows') {
-      modifiers.metaKey = true
+      keyboardState.metaKey = true
       continue
     }
 
-    return null
+    keys.add(normalized)
   }
 
-  return Object.values(modifiers).some(Boolean) ? modifiers : null
+  return parts.length > 0 ? keyboardState : null
 }
 
-export function eventMatchesShortcutModifiers(
-  event: ShortcutModifierEvent,
+export function eventMatchesShortcutKeyboardState(
+  event: ShortcutKeyboardStateEvent,
   shortcut: string,
+  pressedKeys: ReadonlySet<string> = new Set(),
 ) {
-  const modifiers = parseShortcutModifiers(shortcut)
+  const keyboardState = parseShortcutKeyboardState(shortcut)
 
   return (
-    modifiers !== null &&
-    event.altKey === modifiers.altKey &&
-    event.ctrlKey === modifiers.ctrlKey &&
-    event.metaKey === modifiers.metaKey &&
-    event.shiftKey === modifiers.shiftKey
+    keyboardState !== null &&
+    event.altKey === keyboardState.altKey &&
+    event.ctrlKey === keyboardState.ctrlKey &&
+    event.metaKey === keyboardState.metaKey &&
+    event.shiftKey === keyboardState.shiftKey &&
+    pressedKeys.size === keyboardState.keys.size &&
+    [...keyboardState.keys].every((key) => pressedKeys.has(key))
   )
 }
 
-export function eventMatchesShortcutActionModifiers(
-  event: ShortcutModifierEvent,
+export function eventMatchesShortcutActionKeyboardState(
+  event: ShortcutKeyboardStateEvent,
   bindings: ShortcutBindings,
   actionId: ShortcutActionId,
+  pressedKeys: ReadonlySet<string> = new Set(),
 ) {
-  return eventMatchesShortcutModifiers(
+  return eventMatchesShortcutKeyboardState(
     event,
     getShortcutBinding(bindings, actionId),
+    pressedKeys,
   )
 }
 
@@ -289,7 +299,7 @@ export function parseShortcut(shortcut: string): ParsedShortcut | null {
   }
 }
 
-function getEventKey(event: KeyboardEvent) {
+export function getShortcutEventKey(event: KeyboardEvent) {
   if (event.code in codeKeys) {
     return codeKeys[event.code]
   }
@@ -329,8 +339,12 @@ export function eventMatchesShortcut(
     eventHasPrimaryKey === parsed.primaryKey &&
     event.shiftKey === parsed.shiftKey &&
     event.altKey === parsed.altKey &&
-    getEventKey(event) === parsed.key
+    getShortcutEventKey(event) === parsed.key
   )
+}
+
+export function isShortcutModifierKeyName(key: string) {
+  return ['alt', 'ctrl', 'shift', 'win'].includes(normalizeKeyName(key))
 }
 
 export function eventMatchesShortcutAction(

@@ -3,6 +3,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
@@ -13,8 +14,12 @@ import type { CalloutType } from '../../markdown/callouts'
 import { useTranslation } from '../../localization/useTranslation'
 import {
   eventMatchesShortcutAction,
-  eventMatchesShortcutActionModifiers,
+  eventMatchesShortcutActionKeyboardState,
 } from '../../shortcuts/shortcutMatching'
+import {
+  registerPressedShortcutKeyTracker,
+  type PressedShortcutKeyTracker,
+} from '../../shortcuts/pressedShortcutKeys'
 import {
   shortcutActionIds,
   type ShortcutBindings,
@@ -228,6 +233,9 @@ function EditorQuickInsertMenu({
     getInitialExpandedSections,
   )
   const [extraCalloutsExpanded, setExtraCalloutsExpanded] = useState(false)
+  const pressedShortcutKeyTrackerRef = useRef<PressedShortcutKeyTracker | null>(
+    null,
+  )
   const menuStyle = useMemo(
     () =>
       position
@@ -240,13 +248,28 @@ function EditorQuickInsertMenu({
     [position],
   )
   const menuOpen = editor !== null && target !== null && position !== null
+
+  useEffect(() => {
+    const tracker = registerPressedShortcutKeyTracker()
+    pressedShortcutKeyTrackerRef.current = tracker
+
+    return () => {
+      tracker.dispose()
+
+      if (pressedShortcutKeyTrackerRef.current === tracker) {
+        pressedShortcutKeyTrackerRef.current = null
+      }
+    }
+  }, [])
+
   const shouldKeepQuickInsertOpen = useCallback(
     (event: ReactMouseEvent<HTMLElement>) =>
       event.button === 0 &&
-      eventMatchesShortcutActionModifiers(
+      eventMatchesShortcutActionKeyboardState(
         event,
         shortcutBindings,
         shortcutActionIds.quickInsertKeepOpen,
+        pressedShortcutKeyTrackerRef.current?.pressedKeys,
       ),
     [shortcutBindings],
   )

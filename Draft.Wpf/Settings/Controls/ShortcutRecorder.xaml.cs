@@ -53,13 +53,6 @@ public partial class ShortcutRecorder : UserControl
             typeof(ShortcutRecorder),
             new PropertyMetadata(string.Empty, OnDefaultShortcutTextChanged));
 
-    public static readonly DependencyProperty ModifiersOnlyProperty =
-        DependencyProperty.Register(
-            nameof(ModifiersOnly),
-            typeof(bool),
-            typeof(ShortcutRecorder),
-            new PropertyMetadata(false));
-
     public static readonly DependencyProperty PlaceholderProperty =
         DependencyProperty.Register(
             nameof(Placeholder),
@@ -133,12 +126,6 @@ public partial class ShortcutRecorder : UserControl
     {
         get => (string?)GetValue(DefaultShortcutTextProperty) ?? string.Empty;
         set => SetValue(DefaultShortcutTextProperty, value);
-    }
-
-    public bool ModifiersOnly
-    {
-        get => (bool)GetValue(ModifiersOnlyProperty);
-        set => SetValue(ModifiersOnlyProperty, value);
     }
 
     public string Placeholder
@@ -308,10 +295,7 @@ public partial class ShortcutRecorder : UserControl
             return;
 
         AddCurrentModifierKeys();
-
-        if (!ModifiersOnly || IsModifierKey(key))
-            AddPressedKey(key);
-
+        AddPressedKey(key);
         UpdatePendingShortcutText();
     }
 

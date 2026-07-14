@@ -12,6 +12,7 @@ import {
   eventMatchesShortcutAction,
   getMonacoShortcutKeybinding,
 } from '../../shortcuts/shortcutMatching'
+import { registerPressedShortcutKeyTracker } from '../../shortcuts/pressedShortcutKeys'
 import { useTranslation } from '../../localization/useTranslation'
 import { getEditorTheme, registerEditorThemes } from '../../themes'
 import {
@@ -98,14 +99,16 @@ function isEditableKeyboardTarget(target: EventTarget | null) {
 
 function shouldAllowSelectionDragAndDrop(
   event: MouseEvent,
-  additiveSelectionModifierShortcut: string,
+  additiveSelectionKeyboardShortcut: string,
+  pressedKeys: ReadonlySet<string>,
 ) {
   return (
     event.button === 0 &&
     event.shiftKey &&
     !isAdditiveSelectionMouseGesture(
       event,
-      additiveSelectionModifierShortcut,
+      additiveSelectionKeyboardShortcut,
+      pressedKeys,
     )
   )
 }
@@ -463,8 +466,9 @@ export function useMonacoMarkdownEditor({
       event.stopPropagation()
       editor.trigger('draft.globalUndoRedo', isUndo ? 'undo' : 'redo', null)
     }
+    const pressedShortcutKeyTracker = registerPressedShortcutKeyTracker()
     const handleSelectionDragMouseDown = (event: MouseEvent) => {
-      const additiveSelectionModifierShortcut = getShortcutBinding(
+      const additiveSelectionKeyboardShortcut = getShortcutBinding(
         settingsRef.current.shortcuts,
         shortcutActionIds.editorAddSelectionRange,
       )
@@ -472,7 +476,8 @@ export function useMonacoMarkdownEditor({
       editor.updateOptions({
         dragAndDrop: shouldAllowSelectionDragAndDrop(
           event,
-          additiveSelectionModifierShortcut,
+          additiveSelectionKeyboardShortcut,
+          pressedShortcutKeyTracker.pressedKeys,
         ),
       })
     }
@@ -486,6 +491,7 @@ export function useMonacoMarkdownEditor({
           settingsRef.current.shortcuts,
           shortcutActionIds.editorAddSelectionRange,
         ),
+      pressedShortcutKeyTracker.pressedKeys,
     )
 
     editorRef.current = editor
@@ -534,6 +540,7 @@ export function useMonacoMarkdownEditor({
       contentSub.dispose()
       markdownKeyboardSub.dispose()
       additiveSelectionGestureSub.dispose()
+      pressedShortcutKeyTracker.dispose()
       editor.dispose()
       editorRef.current = null
       setEditorInstance(null)
