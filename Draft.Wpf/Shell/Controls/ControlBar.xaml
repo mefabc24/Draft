@@ -215,7 +215,7 @@
                             StrokeEndLineCap="Round"
                             StrokeLineJoin="Round"
                             StrokeStartLineCap="Round"
-                            StrokeThickness="2.2">
+                            StrokeThickness="1.8">
                             <Path.RenderTransform>
                                 <ScaleTransform ScaleX="0.72" ScaleY="0.72" />
                             </Path.RenderTransform>

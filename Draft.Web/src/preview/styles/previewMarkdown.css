@@ -386,7 +386,7 @@
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2.2px;
+  stroke-width: 1px;
   transform: translate(-50%, -50%) scale(0.72);
 }
 
