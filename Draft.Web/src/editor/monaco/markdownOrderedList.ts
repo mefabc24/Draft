@@ -47,5 +47,15 @@ export function getNextOrderedListNumber(numberText: string) {
 export function createIncrementedOrderedListItem(
   item: MarkdownOrderedListItem,
 ) {
-  return `${item.prefix}${getNextOrderedListNumber(item.numberText)}${item.delimiter}${item.spacing}${item.content}`
+  return createOrderedListItemWithNumber(
+    item,
+    getNextOrderedListNumber(item.numberText),
+  )
+}
+
+export function createOrderedListItemWithNumber(
+  item: MarkdownOrderedListItem,
+  numberText: string,
+) {
+  return `${item.prefix}${numberText}${item.delimiter}${item.spacing}${item.content}`
 }

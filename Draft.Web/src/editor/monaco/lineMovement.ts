@@ -1,4 +1,10 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import { getFencedCodeBlockContextFromLines } from '../../markdown'
+import {
+  createOrderedListItemWithNumber,
+  parseMarkdownOrderedListItem,
+  type MarkdownOrderedListItem,
+} from './markdownOrderedList'
 
 const LINE_MOVEMENT_EDIT_SOURCE = 'draft.moveLines'
 
@@ -7,6 +13,133 @@ export type LineMovementDirection = 'up' | 'down'
 type SelectedLineBlock = {
   endLineNumber: number
   startLineNumber: number
+}
+
+type OrderedListItemCache = Map<number, MarkdownOrderedListItem | null>
+
+type MovedLineNumberAdjustment = {
+  nextNumberLength: number
+  numberEndOffset: number
+  numberStartOffset: number
+}
+
+function getOrderedListItem(
+  model: monaco.editor.ITextModel,
+  lineNumber: number,
+  cache: OrderedListItemCache,
+) {
+  if (cache.has(lineNumber)) {
+    return cache.get(lineNumber) ?? null
+  }
+
+  const insideCodeBlock = getFencedCodeBlockContextFromLines(
+    (currentLineNumber) => model.getLineContent(currentLineNumber),
+    lineNumber,
+  ).insideCodeBlock
+  const item = insideCodeBlock
+    ? null
+    : parseMarkdownOrderedListItem(model.getLineContent(lineNumber))
+
+  cache.set(lineNumber, item)
+  return item
+}
+
+function isSameOrderedListLevel(
+  left: MarkdownOrderedListItem,
+  right: MarkdownOrderedListItem,
+) {
+  return (
+    left.blockquotePrefix === right.blockquotePrefix &&
+    left.indentation === right.indentation &&
+    left.delimiter === right.delimiter
+  )
+}
+
+function isSameContiguousOrderedListBlock(
+  model: monaco.editor.ITextModel,
+  firstLineNumber: number,
+  secondLineNumber: number,
+  listLevel: MarkdownOrderedListItem,
+  cache: OrderedListItemCache,
+) {
+  const startLineNumber = Math.min(firstLineNumber, secondLineNumber)
+  const endLineNumber = Math.max(firstLineNumber, secondLineNumber)
+
+  for (
+    let lineNumber = startLineNumber;
+    lineNumber <= endLineNumber;
+    lineNumber += 1
+  ) {
+    const item = getOrderedListItem(model, lineNumber, cache)
+
+    if (!item || item.blockquotePrefix !== listLevel.blockquotePrefix) {
+      return false
+    }
+
+    if (item.indentation === listLevel.indentation) {
+      if (item.delimiter !== listLevel.delimiter) {
+        return false
+      }
+
+      continue
+    }
+
+    if (!item.indentation.startsWith(listLevel.indentation)) {
+      return false
+    }
+  }
+
+  return true
+}
+
+function preserveMovedOrderedListNumbers(
+  model: monaco.editor.ITextModel,
+  replacementStartLineNumber: number,
+  replacementLineContents: string[],
+  sourceLineNumbers: number[],
+) {
+  const cache: OrderedListItemCache = new Map()
+  const numberAdjustments = new Map<number, MovedLineNumberAdjustment>()
+
+  const lineContents = replacementLineContents.map((lineContent, index) => {
+    const targetLineNumber = replacementStartLineNumber + index
+    const sourceLineNumber = sourceLineNumbers[index]
+
+    if (sourceLineNumber === undefined) {
+      return lineContent
+    }
+
+    const targetItem = getOrderedListItem(model, targetLineNumber, cache)
+    const sourceItem = getOrderedListItem(model, sourceLineNumber, cache)
+
+    if (
+      !targetItem ||
+      !sourceItem ||
+      !isSameOrderedListLevel(targetItem, sourceItem) ||
+      !isSameContiguousOrderedListBlock(
+        model,
+        targetLineNumber,
+        sourceLineNumber,
+        targetItem,
+        cache,
+      )
+    ) {
+      return lineContent
+    }
+
+    numberAdjustments.set(sourceLineNumber, {
+      nextNumberLength: targetItem.numberText.length,
+      numberEndOffset: sourceItem.numberEndOffset,
+      numberStartOffset: sourceItem.numberStartOffset,
+    })
+
+    return createOrderedListItemWithNumber(sourceItem, targetItem.numberText)
+  })
+
+  return {
+    lineContents,
+    numberAdjustments,
+  }
 }
 
 function getSelectedLineBlock(
@@ -109,16 +242,51 @@ function shiftSelection(
   model: monaco.editor.ITextModel,
   selection: monaco.Selection,
   deltaLineNumber: number,
+  numberAdjustments: ReadonlyMap<number, MovedLineNumberAdjustment>,
 ) {
+  const adjustColumn = (lineNumber: number, column: number) => {
+    const adjustment = numberAdjustments.get(lineNumber)
+
+    if (!adjustment) {
+      return column
+    }
+
+    const offset = column - 1
+
+    if (offset <= adjustment.numberStartOffset) {
+      return column
+    }
+
+    if (offset >= adjustment.numberEndOffset) {
+      return (
+        column +
+        adjustment.nextNumberLength -
+        (adjustment.numberEndOffset - adjustment.numberStartOffset)
+      )
+    }
+
+    return (
+      adjustment.numberStartOffset +
+      Math.min(
+        offset - adjustment.numberStartOffset,
+        adjustment.nextNumberLength,
+      ) +
+      1
+    )
+  }
+
   const anchor = clampPosition(
     model,
     selection.selectionStartLineNumber + deltaLineNumber,
-    selection.selectionStartColumn,
+    adjustColumn(
+      selection.selectionStartLineNumber,
+      selection.selectionStartColumn,
+    ),
   )
   const active = clampPosition(
     model,
     selection.positionLineNumber + deltaLineNumber,
-    selection.positionColumn,
+    adjustColumn(selection.positionLineNumber, selection.positionColumn),
   )
 
   return new monaco.Selection(
@@ -141,11 +309,12 @@ function createMovedBlockSelection(
   selection: monaco.Selection,
   startLineNumber: number,
   endLineNumber: number,
+  numberAdjustments: ReadonlyMap<number, MovedLineNumberAdjustment>,
 ) {
   if (!isWholeLineSelection(selection)) {
     const deltaLineNumber = startLineNumber - getSelectedLineBlock(model, selection).startLineNumber
 
-    return shiftSelection(model, selection, deltaLineNumber)
+    return shiftSelection(model, selection, deltaLineNumber, numberAdjustments)
   }
 
   if (endLineNumber < model.getLineCount()) {
@@ -198,11 +367,24 @@ export function moveEditorLines(
   const replacementLineContents = isMovingUp
     ? [...selectedLineContents, adjacentLineContent]
     : [adjacentLineContent, ...selectedLineContents]
+  const selectedLineNumbers = Array.from(
+    { length: endLineNumber - startLineNumber + 1 },
+    (_, index) => startLineNumber + index,
+  )
+  const replacementSourceLineNumbers = isMovingUp
+    ? [...selectedLineNumbers, adjacentLineNumber]
+    : [adjacentLineNumber, ...selectedLineNumbers]
+  const normalizedReplacement = preserveMovedOrderedListNumbers(
+    model,
+    replacementStartLineNumber,
+    replacementLineContents,
+    replacementSourceLineNumbers,
+  )
   const replacement = getLineRangeReplacement(
     model,
     replacementStartLineNumber,
     replacementEndLineNumber,
-    replacementLineContents,
+    normalizedReplacement.lineContents,
   )
   const nextStartLineNumber = isMovingUp ? startLineNumber - 1 : startLineNumber + 1
   const nextEndLineNumber = isMovingUp ? endLineNumber - 1 : endLineNumber + 1
@@ -221,6 +403,7 @@ export function moveEditorLines(
       selection,
       nextStartLineNumber,
       nextEndLineNumber,
+      normalizedReplacement.numberAdjustments,
     ),
   )
   editor.revealLineInCenterIfOutsideViewport(nextStartLineNumber)
