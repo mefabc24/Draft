@@ -13,6 +13,12 @@ export type MarkdownOrderedListItem = {
   spacing: string
 }
 
+export type MarkdownOrderedListRenumbering = {
+  item: MarkdownOrderedListItem
+  lineNumber: number
+  numberText: string
+}
+
 export function parseMarkdownOrderedListItem(
   line: string,
 ): MarkdownOrderedListItem | null {
@@ -58,4 +64,54 @@ export function createOrderedListItemWithNumber(
   numberText: string,
 ) {
   return `${item.prefix}${numberText}${item.delimiter}${item.spacing}${item.content}`
+}
+
+export function getFollowingOrderedListRenumberings(
+  getLineContent: (lineNumber: number) => string,
+  lineCount: number,
+  lineNumber: number,
+  precedingItem: MarkdownOrderedListItem,
+  precedingNumberText: string,
+) {
+  const renumberings: MarkdownOrderedListRenumbering[] = []
+  let nextNumberText = getNextOrderedListNumber(precedingNumberText)
+
+  for (
+    let followingLineNumber = lineNumber + 1;
+    followingLineNumber <= lineCount;
+    followingLineNumber += 1
+  ) {
+    const followingItem = parseMarkdownOrderedListItem(
+      getLineContent(followingLineNumber),
+    )
+
+    if (!followingItem) {
+      break
+    }
+
+    if (followingItem.blockquotePrefix !== precedingItem.blockquotePrefix) {
+      break
+    }
+
+    if (followingItem.indentation !== precedingItem.indentation) {
+      if (followingItem.indentation.startsWith(precedingItem.indentation)) {
+        continue
+      }
+
+      break
+    }
+
+    if (followingItem.delimiter !== precedingItem.delimiter) {
+      break
+    }
+
+    renumberings.push({
+      item: followingItem,
+      lineNumber: followingLineNumber,
+      numberText: nextNumberText,
+    })
+    nextNumberText = getNextOrderedListNumber(nextNumberText)
+  }
+
+  return renumberings
 }

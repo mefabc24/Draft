@@ -2,6 +2,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { getFencedCodeBlockContextFromLines } from '../../markdown'
 import {
   createIncrementedOrderedListItem,
+  getFollowingOrderedListRenumberings,
   getNextOrderedListNumber,
   parseMarkdownOrderedListItem,
   type MarkdownOrderedListItem,
@@ -24,50 +25,22 @@ function getFollowingOrderedListRenumberEdits(
   lineNumber: number,
   duplicatedItem: MarkdownOrderedListItem,
 ) {
-  const edits: monaco.editor.IIdentifiedSingleEditOperation[] = []
-
-  for (
-    let followingLineNumber = lineNumber + 1;
-    followingLineNumber <= model.getLineCount();
-    followingLineNumber += 1
-  ) {
-    const followingItem = parseMarkdownOrderedListItem(
-      model.getLineContent(followingLineNumber),
-    )
-
-    if (!followingItem) {
-      break
-    }
-
-    if (followingItem.blockquotePrefix !== duplicatedItem.blockquotePrefix) {
-      break
-    }
-
-    if (followingItem.indentation !== duplicatedItem.indentation) {
-      if (followingItem.indentation.startsWith(duplicatedItem.indentation)) {
-        continue
-      }
-
-      break
-    }
-
-    if (followingItem.delimiter !== duplicatedItem.delimiter) {
-      break
-    }
-
-    edits.push({
+  return getFollowingOrderedListRenumberings(
+    (followingLineNumber) => model.getLineContent(followingLineNumber),
+    model.getLineCount(),
+    lineNumber,
+    duplicatedItem,
+    getNextOrderedListNumber(duplicatedItem.numberText),
+  ).map(({ item, lineNumber: followingLineNumber, numberText }) => ({
       forceMoveMarkers: true,
       range: new monaco.Range(
         followingLineNumber,
-        followingItem.numberStartOffset + 1,
+        item.numberStartOffset + 1,
         followingLineNumber,
-        followingItem.numberEndOffset + 1,
+        item.numberEndOffset + 1,
       ),
-      text: getNextOrderedListNumber(followingItem.numberText),
-    })
-  }
-
-  return edits
+      text: numberText,
+    }))
 }
 
 export function duplicateCurrentLine(editor: monaco.editor.IStandaloneCodeEditor) {

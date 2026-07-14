@@ -188,39 +188,56 @@ function getLineContents(
   return lineContents
 }
 
-function getLineRangeReplacement(
+function getMinimalLineContentEdit(
   model: monaco.editor.ITextModel,
-  startLineNumber: number,
-  endLineNumber: number,
-  lineContents: string[],
+  lineNumber: number,
+  nextLineContent: string,
 ) {
-  const eol = model.getEOL()
-  const lineCount = model.getLineCount()
+  const currentLineContent = model.getLineContent(lineNumber)
 
-  if (startLineNumber === 1 && endLineNumber === lineCount) {
-    return {
-      range: model.getFullModelRange(),
-      text: lineContents.join(eol),
-    }
+  if (currentLineContent === nextLineContent) {
+    return null
   }
 
-  if (endLineNumber < lineCount) {
-    return {
-      range: new monaco.Range(startLineNumber, 1, endLineNumber + 1, 1),
-      text: `${lineContents.join(eol)}${eol}`,
-    }
+  let commonPrefixLength = 0
+  const maximumPrefixLength = Math.min(
+    currentLineContent.length,
+    nextLineContent.length,
+  )
+
+  while (
+    commonPrefixLength < maximumPrefixLength &&
+    currentLineContent[commonPrefixLength] ===
+      nextLineContent[commonPrefixLength]
+  ) {
+    commonPrefixLength += 1
   }
 
-  const previousLineNumber = startLineNumber - 1
+  let commonSuffixLength = 0
+  const maximumSuffixLength = Math.min(
+    currentLineContent.length - commonPrefixLength,
+    nextLineContent.length - commonPrefixLength,
+  )
+
+  while (
+    commonSuffixLength < maximumSuffixLength &&
+    currentLineContent[currentLineContent.length - commonSuffixLength - 1] ===
+      nextLineContent[nextLineContent.length - commonSuffixLength - 1]
+  ) {
+    commonSuffixLength += 1
+  }
 
   return {
     range: new monaco.Range(
-      previousLineNumber,
-      model.getLineMaxColumn(previousLineNumber),
-      endLineNumber,
-      model.getLineMaxColumn(endLineNumber),
+      lineNumber,
+      commonPrefixLength + 1,
+      lineNumber,
+      currentLineContent.length - commonSuffixLength + 1,
     ),
-    text: `${eol}${lineContents.join(eol)}`,
+    text: nextLineContent.slice(
+      commonPrefixLength,
+      nextLineContent.length - commonSuffixLength,
+    ),
   }
 }
 
@@ -363,7 +380,6 @@ export function moveEditorLines(
   const adjacentLineNumber = isMovingUp ? startLineNumber - 1 : endLineNumber + 1
   const adjacentLineContent = model.getLineContent(adjacentLineNumber)
   const replacementStartLineNumber = isMovingUp ? adjacentLineNumber : startLineNumber
-  const replacementEndLineNumber = isMovingUp ? endLineNumber : adjacentLineNumber
   const replacementLineContents = isMovingUp
     ? [...selectedLineContents, adjacentLineContent]
     : [adjacentLineContent, ...selectedLineContents]
@@ -380,23 +396,22 @@ export function moveEditorLines(
     replacementLineContents,
     replacementSourceLineNumbers,
   )
-  const replacement = getLineRangeReplacement(
-    model,
-    replacementStartLineNumber,
-    replacementEndLineNumber,
-    normalizedReplacement.lineContents,
+  const edits = normalizedReplacement.lineContents.flatMap(
+    (lineContent, index) => {
+      const edit = getMinimalLineContentEdit(
+        model,
+        replacementStartLineNumber + index,
+        lineContent,
+      )
+
+      return edit ? [{ ...edit, forceMoveMarkers: true }] : []
+    },
   )
   const nextStartLineNumber = isMovingUp ? startLineNumber - 1 : startLineNumber + 1
   const nextEndLineNumber = isMovingUp ? endLineNumber - 1 : endLineNumber + 1
 
   editor.pushUndoStop()
-  editor.executeEdits(LINE_MOVEMENT_EDIT_SOURCE, [
-    {
-      forceMoveMarkers: true,
-      range: replacement.range,
-      text: replacement.text,
-    },
-  ])
+  editor.executeEdits(LINE_MOVEMENT_EDIT_SOURCE, edits)
   editor.setSelection(
     createMovedBlockSelection(
       model,
