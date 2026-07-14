@@ -30,10 +30,10 @@
             <!-- Logo -->
             <Button
                 Margin="0,0,8,0"
+                ui:ToolTipAssist.Text="{i18n:Loc settings.about.openGitHub}"
                 Click="LogoButton_Click"
                 Content="{i18n:Loc app.name}"
-                Style="{StaticResource LogoButton}"
-                ui:ToolTipAssist.Text="{i18n:Loc settings.about.openGitHub}" />
+                Style="{StaticResource LogoButton}" />
 
             <!-- Divider -->
             <Border Grid.Column="1" Background="{StaticResource Brush.Background.Hover}" />
@@ -75,10 +75,10 @@
                 <!-- Open Button -->
                 <Button
                     Margin="0,0,8,0"
-                    Command="{Binding OpenFileCommand}"
-                    Style="{StaticResource ControlButton}"
                     ui:ToolTipAssist.Shortcut="{Binding OpenShortcut}"
-                    ui:ToolTipAssist.Text="{i18n:Loc common.open}">
+                    ui:ToolTipAssist.Text="{i18n:Loc common.open}"
+                    Command="{Binding OpenFileCommand}"
+                    Style="{StaticResource ControlButton}">
                     <Path
                         Width="16"
                         Height="16"
@@ -89,10 +89,10 @@
                 <!-- Save Button -->
                 <Button
                     Margin="0,0,8,0"
-                    Command="{Binding SaveFileCommand}"
-                    Style="{StaticResource ControlButton}"
                     ui:ToolTipAssist.Shortcut="{Binding SaveShortcut}"
-                    ui:ToolTipAssist.Text="{i18n:Loc common.save}">
+                    ui:ToolTipAssist.Text="{i18n:Loc common.save}"
+                    Command="{Binding SaveFileCommand}"
+                    Style="{StaticResource ControlButton}">
                     <Grid>
                         <Path
                             Width="16"
@@ -145,12 +145,43 @@
                         </Canvas>
                     </Grid>
                 </Button>
+                <!-- Save As Button -->
+                <Button
+                    Margin="0,0,8,0"
+                    ui:ToolTipAssist.Text="{i18n:Loc common.saveAs}"
+                    Command="{Binding SaveFileAsCommand}"
+                    Style="{StaticResource ControlButton}">
+                    <Grid>
+                        <Path
+                            Width="16"
+                            Height="16"
+                            Data="{StaticResource Icon.Save}"
+                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Stretch="Uniform" />
+                        <Canvas>
+                            <Ellipse
+                                Canvas.Right="-3"
+                                Canvas.Bottom="-3"
+                                Width="12"
+                                Height="12"
+                                Fill="{Binding Path=(local:ControlButtonAssist.CutoutBackground), RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <Path
+                                Canvas.Right="-2"
+                                Canvas.Bottom="-2"
+                                Width="10"
+                                Height="10"
+                                Data="{StaticResource Icon.AddCircle}"
+                                Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                Stretch="Uniform" />
+                        </Canvas>
+                    </Grid>
+                </Button>
                 <!-- Copy Markdown Button -->
                 <Button
                     Margin="0,0,8,0"
+                    ui:ToolTipAssist.Text="{i18n:Loc toolbar.copyMarkdown}"
                     Command="{Binding CopyMarkdownCommand}"
-                    Style="{StaticResource ControlButton}"
-                    ui:ToolTipAssist.Text="{i18n:Loc toolbar.copyMarkdown}">
+                    Style="{StaticResource ControlButton}">
                     <Grid Width="16" Height="16">
                         <Path
                             Data="{StaticResource Icon.Copy}"
@@ -270,22 +301,22 @@
                 <!-- Export File Button -->
                 <Button
                     Margin="0,0,8,0"
+                    ui:ToolTipAssist.Text="{i18n:Loc export.documentTooltip}"
                     Command="{Binding OpenExportPromptCommand}"
-                    Style="{StaticResource ControlButton}"
-                    ui:ToolTipAssist.Text="{i18n:Loc export.documentTooltip}">
+                    Style="{StaticResource ControlButton}">
                     <Path
                         Width="16"
                         Height="16"
+                        Margin="1.5,0,-1.5,0"
                         Data="{StaticResource Icon.Export}"
                         Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                        Margin="1.5,0,-1.5,0"
                         Stretch="Uniform" />
                 </Button>
                 <!-- New File Button -->
                 <Button
+                    ui:ToolTipAssist.Text="{i18n:Loc common.new}"
                     Command="{Binding NewFileCommand}"
-                    Style="{StaticResource ControlButton}"
-                    ui:ToolTipAssist.Text="{i18n:Loc common.new}">
+                    Style="{StaticResource ControlButton}">
                     <Path
                         Width="16"
                         Height="16"
@@ -302,9 +333,9 @@
             <Button
                 Grid.Column="6"
                 Margin="8,0,0,0"
+                ui:ToolTipAssist.Text="{i18n:Loc settings.title}"
                 Command="{Binding OpenSettingsCommand}"
-                Style="{StaticResource ControlButton}"
-                ui:ToolTipAssist.Text="{i18n:Loc settings.title}">
+                Style="{StaticResource ControlButton}">
                 <Path
                     Width="16"
                     Height="16"
