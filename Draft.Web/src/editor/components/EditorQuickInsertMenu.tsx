@@ -97,6 +97,10 @@ const quickInsertCalloutIconPaths = {
   caution: 'icons/callouts/Caution.svg',
   error: 'icons/callouts/Error.svg',
   success: 'icons/callouts/Success.svg',
+  good: 'icons/callouts/Good.svg',
+  bad: 'icons/callouts/Bad.svg',
+  pro: 'icons/callouts/Pro.svg',
+  con: 'icons/callouts/Contra.svg',
   question: 'icons/callouts/Question.svg',
   todo: 'icons/callouts/Todo.svg',
 } satisfies Record<CalloutType, string>
