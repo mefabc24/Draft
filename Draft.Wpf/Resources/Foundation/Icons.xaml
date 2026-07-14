@@ -1,6 +1,195 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Icons -->
+    <!-- Vector equivalents of Draft.Web/public/icons/flags/*.svg. -->
+    <DrawingImage x:Key="Flag.en">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="#012169">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,30,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="-2.19922,-2.89844,41.7,3.6">
+                            <RectangleGeometry.Transform>
+                                <RotateTransform Angle="30" CenterX="-2.19922" CenterY="-2.89844" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="-4,17.9492,41.7,3.6">
+                            <RectangleGeometry.Transform>
+                                <RotateTransform Angle="-30" CenterX="-4" CenterY="17.9492" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="17.4004,9.19922,15.4,1.4">
+                            <RectangleGeometry.Transform>
+                                <RotateTransform Angle="30" CenterX="17.4004" CenterY="9.19922" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,15.4,1.4">
+                            <RectangleGeometry.Transform>
+                                <MatrixTransform Matrix="0.866025,-0.5,-0.5,-0.866025,17.4004,8.01172" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,15.4433,1.4">
+                            <RectangleGeometry.Transform>
+                                <RotateTransform Angle="30" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,15.4433,1.4">
+                            <RectangleGeometry.Transform>
+                                <MatrixTransform Matrix="0.866025,-0.5,-0.5,-0.866025,0,18.9336" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="12,0,6,18.1" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,6.05078,30,6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="13.1992,0,3.6,18.1" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,7.30078,30,3.6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="Flag.de">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="Black">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,30,6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#DD0000">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,6,30,6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFCE00">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,12,30,6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="Flag.es">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="#AD1519">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,30,5" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FABD00">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,5,30,8" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#AD1519">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,13,30,5" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="Flag.it">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="#009246">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,10,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="10,0,10,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#CE2B37">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="20,0,10,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="Flag.br">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="#009C3B">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,30,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFDF00" Geometry="M15,2 L27,9 L15,16 L3,9 Z" />
+                <GeometryDrawing Brush="#002776">
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="15,9" RadiusX="5" RadiusY="5" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing
+                    Brush="White"
+                    Geometry="M10.5986,7.14746 C10.9091,7.15802 11.3509,7.17893 11.8799,7.22168 C12.9369,7.30713 14.3511,7.47875 15.7617,7.82617 C17.1853,8.17683 18.3459,8.70853 19.1514,9.15137 C19.481,9.33263 19.7511,9.50104 19.957,9.63574 C19.9203,9.92541 19.8605,10.2075 19.7764,10.4795 C19.7372,10.4517 19.6914,10.4182 19.6377,10.3818 C19.4397,10.2479 19.1448,10.0601 18.7656,9.85156 C18.0065,9.43422 16.9107,8.93388 15.5693,8.60352 C14.2153,8.27007 12.8484,8.10297 11.8164,8.01953 C11.3012,7.97788 10.8704,7.9565 10.5703,7.94629 C10.4208,7.94121 10.303,7.93969 10.2236,7.93848 C10.1842,7.93787 10.1538,7.93764 10.1338,7.9375 C10.125,7.93744 10.1181,7.93748 10.1133,7.9375 C10.1728,7.66275 10.2548,7.39651 10.3574,7.14062 C10.4254,7.14223 10.5064,7.14432 10.5986,7.14746 Z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
     <Geometry x:Key="Icon.Save">
         M62 12V12.1309C62.6814 12.3092 63.31 12.6655 63.8164 13.1719L82.8281 32.1836C83.5783 32.9337 84 33.9518 84 35.0127V76C84 80.4183 80.4183 84 76 84H20C15.5817 84 12 80.4183 12 76V20C12 15.5817 15.5817 12 20 12H62ZM21.333 18C19.4923 18.0002 18.0002 19.4923 18 21.333V74.667C18.0002 76.5077 19.4923 77.9998 21.333 78H24V52C24 49.7909 25.7909 48 28 48H68C70.2091 48 72 49.7909 72 52V78H74.667C76.5077 77.9998 77.9998 76.5077 78 74.667V36.6221C77.9999 36.0917 77.7891 35.583 77.4141 35.208L62 19.7939V32C62 34.2091 60.2091 36 58 36H28C25.7909 36 24 34.2091 24 32V18H21.333ZM32 54C30.8954 54 30 54.8954 30 56V78H66V56C66 54.8954 65.1046 54 64 54H32ZM30 28C30 29.1046 30.8954 30 32 30H54C55.1046 30 56 29.1046 56 28V18H30V28Z
     </Geometry>
