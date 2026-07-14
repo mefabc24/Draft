@@ -3,7 +3,8 @@
                  "code":  "en",
                  "shortName":  "EN",
                  "displayName":  "English",
-                 "englishName":  "English"
+                 "englishName":  "English",
+                 "flag":  "en"
              },
     "translations":  {
                          "app.name":  "Draft",
@@ -232,7 +233,6 @@
                          "settings.language":  "Language",
                          "settings.language.description":  "Choose the language used by Draft.",
                          "settings.language.english":  "English",
-                         "settings.language.system":  "System",
                          "settings.localizationSection":  "LOCALIZATION",
                          "settings.options.common.always":  "Always",
                          "settings.options.common.both":  "Both",
