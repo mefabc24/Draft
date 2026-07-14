@@ -378,6 +378,7 @@
                          "status.autosave":  "AUTOSAVE",
                          "status.characterCountPlural":  "{count} CHARS",
                          "status.characterCountSingular":  "{count} CHAR",
+                         "status.configureAutosave":  "Configure Autosave",
                          "status.cursorPosition":  "LN {line}, COL {column}",
                          "status.cursorPositionWithSelection":  "LN {line}, COL {column} ({selected} SELECTED)",
                          "status.fileTypeMarkdown":  "MARKDOWN",
