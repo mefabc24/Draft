@@ -189,6 +189,7 @@
                 Padding="8,4"
                 Command="{Binding OpenAutosavePromptCommand}"
                 Style="{StaticResource StatusBarButton}"
+                ToolTip="{i18n:Loc status.configureAutosave}"
                 Visibility="{Binding IsStatusBarAutosaveStatusVisible, Converter={StaticResource StatusBarVisibilityConverter}}">
                 <StackPanel Height="16" Orientation="Horizontal">
                     <Path
