@@ -8,6 +8,10 @@ export const calloutTypes = [
   'caution',
   'error',
   'success',
+  'good',
+  'bad',
+  'pro',
+  'con',
   'question',
   'todo',
 ] as const
@@ -30,6 +34,10 @@ export const calloutLabels = {
   caution: 'Caution',
   error: 'Error',
   success: 'Success',
+  good: 'Good',
+  bad: 'Bad',
+  pro: 'Pro',
+  con: 'Con',
   question: 'Question',
   todo: 'Todo',
 } satisfies Record<CalloutType, string>
