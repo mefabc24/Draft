@@ -18,6 +18,10 @@ const calloutIconPaths = {
   question: 'icons/callouts/Question.svg',
   todo: 'icons/callouts/Todo.svg',
   success: 'icons/callouts/Success.svg',
+  good: 'icons/callouts/Good.svg',
+  bad: 'icons/callouts/Bad.svg',
+  pro: 'icons/callouts/Pro.svg',
+  con: 'icons/callouts/Contra.svg',
   error: 'icons/callouts/Error.svg',
 } satisfies Record<CalloutType, string>
 
@@ -32,6 +36,10 @@ const calloutMenuLabels = {
   question: 'Question',
   todo: 'Todo',
   success: 'Success',
+  good: 'Good',
+  bad: 'Bad',
+  pro: 'Pro',
+  con: 'Con',
   error: 'Error',
 } satisfies Record<CalloutType, string>
 
@@ -58,5 +66,9 @@ export const extraToolbarCalloutOptions = ([
   'question',
   'todo',
   'success',
+  'good',
+  'pro',
   'error',
+  'bad',
+  'con',
 ] as const).map(createCalloutOption)
