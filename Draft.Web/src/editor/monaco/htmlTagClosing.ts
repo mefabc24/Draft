@@ -6,6 +6,8 @@ const HTML_TAG_COMPLETION_EDIT_SOURCE = 'draft.htmlTagCompletion'
 const HTML_TAG_MIRROR_EDIT_SOURCE = 'draft.htmlTagMirroring'
 
 const mirroringEditors = new WeakSet<monaco.editor.IStandaloneCodeEditor>()
+const pendingHtmlAngleCompletions =
+  new WeakMap<monaco.editor.IStandaloneCodeEditor, PendingHtmlAngleCompletion>()
 
 const voidHtmlTags = new Set([
   'area',
@@ -49,6 +51,15 @@ type HtmlClosingTag = {
   tagNameEndOffset: number
   tagNameStartOffset: number
   tagStartOffset: number
+}
+
+type PendingHtmlAngleCompletion = {
+  allowNextCursorChange: boolean
+  closingColumn: number
+  cursorColumn: number
+  lineNumber: number
+  model: monaco.editor.ITextModel
+  openingColumn: number
 }
 
 function isEmptySelection(selection: monaco.Selection) {
@@ -407,6 +418,181 @@ function setCursor(
   editor.focus()
 }
 
+function rememberPendingHtmlAngleCompletion(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  context: CursorContext,
+) {
+  pendingHtmlAngleCompletions.set(editor, {
+    allowNextCursorChange: false,
+    closingColumn: context.position.column + 1,
+    cursorColumn: context.position.column + 1,
+    lineNumber: context.position.lineNumber,
+    model: context.model,
+    openingColumn: context.position.column,
+  })
+}
+
+function getPendingHtmlAngleLine(
+  pendingCompletion: PendingHtmlAngleCompletion,
+) {
+  if (pendingCompletion.lineNumber > pendingCompletion.model.getLineCount()) {
+    return null
+  }
+
+  return pendingCompletion.model.getLineContent(pendingCompletion.lineNumber)
+}
+
+function hasPendingHtmlAnglePair(
+  pendingCompletion: PendingHtmlAngleCompletion,
+) {
+  const line = getPendingHtmlAngleLine(pendingCompletion)
+
+  return (
+    line !== null &&
+    line[pendingCompletion.openingColumn - 1] === '<' &&
+    line[pendingCompletion.closingColumn - 1] === '>'
+  )
+}
+
+function hasCurrentPendingHtmlAngleCompletion(
+  context: CursorContext,
+  pendingCompletion: PendingHtmlAngleCompletion,
+) {
+  return (
+    context.model === pendingCompletion.model &&
+    hasPendingHtmlAnglePair(pendingCompletion) &&
+    context.position.lineNumber === pendingCompletion.lineNumber &&
+    context.position.column > pendingCompletion.openingColumn &&
+    context.position.column <= pendingCompletion.closingColumn
+  )
+}
+
+export function updatePendingMarkdownHtmlAngleCompletionOnContentChanged(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  event: monaco.editor.IModelContentChangedEvent,
+) {
+  const pendingCompletion = pendingHtmlAngleCompletions.get(editor)
+  const model = editor.getModel()
+
+  if (!pendingCompletion) {
+    return
+  }
+
+  if (
+    !model ||
+    model !== pendingCompletion.model ||
+    event.isFlush ||
+    event.isUndoing ||
+    event.isRedoing ||
+    event.changes.length !== 1
+  ) {
+    pendingHtmlAngleCompletions.delete(editor)
+    return
+  }
+
+  const [change] = event.changes
+
+  if (
+    change.range.startLineNumber !== pendingCompletion.lineNumber ||
+    change.range.endLineNumber !== pendingCompletion.lineNumber ||
+    change.text.includes('\n') ||
+    change.text.includes('\r') ||
+    change.range.startColumn < pendingCompletion.openingColumn + 1 ||
+    change.range.endColumn > pendingCompletion.closingColumn
+  ) {
+    pendingHtmlAngleCompletions.delete(editor)
+    return
+  }
+
+  const replacedLength = change.range.endColumn - change.range.startColumn
+  pendingCompletion.closingColumn += change.text.length - replacedLength
+  pendingCompletion.allowNextCursorChange = true
+
+  if (!hasPendingHtmlAnglePair(pendingCompletion)) {
+    pendingHtmlAngleCompletions.delete(editor)
+  }
+}
+
+export function clearPendingMarkdownHtmlAngleCompletionIfCursorChanged(
+  editor: monaco.editor.IStandaloneCodeEditor,
+) {
+  const pendingCompletion = pendingHtmlAngleCompletions.get(editor)
+
+  if (!pendingCompletion) {
+    return
+  }
+
+  const context = getSingleCursorContext(editor)
+
+  if (
+    !context ||
+    !hasCurrentPendingHtmlAngleCompletion(context, pendingCompletion)
+  ) {
+    pendingHtmlAngleCompletions.delete(editor)
+    return
+  }
+
+  if (context.position.column === pendingCompletion.cursorColumn) {
+    pendingCompletion.allowNextCursorChange = false
+    return
+  }
+
+  if (pendingCompletion.allowNextCursorChange) {
+    pendingCompletion.cursorColumn = context.position.column
+    pendingCompletion.allowNextCursorChange = false
+    return
+  }
+
+  pendingHtmlAngleCompletions.delete(editor)
+}
+
+export function deletePendingMarkdownHtmlOpeningBracketOnBackspace(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  beforeEdit?: () => void,
+) {
+  const pendingCompletion = pendingHtmlAngleCompletions.get(editor)
+  const context = getSingleCursorContext(editor)
+
+  if (
+    !pendingCompletion ||
+    !context ||
+    !hasCurrentPendingHtmlAngleCompletion(context, pendingCompletion) ||
+    context.position.column !== pendingCompletion.openingColumn + 1 ||
+    pendingCompletion.closingColumn !== pendingCompletion.openingColumn + 1
+  ) {
+    if (pendingCompletion) {
+      pendingHtmlAngleCompletions.delete(editor)
+    }
+
+    return false
+  }
+
+  beforeEdit?.()
+  pendingHtmlAngleCompletions.delete(editor)
+
+  editor.pushUndoStop()
+  editor.executeEdits(HTML_TAG_COMPLETION_EDIT_SOURCE, [
+    {
+      range: new monaco.Range(
+        pendingCompletion.lineNumber,
+        pendingCompletion.openingColumn,
+        pendingCompletion.lineNumber,
+        pendingCompletion.openingColumn + 2,
+      ),
+      text: '',
+      forceMoveMarkers: true,
+    },
+  ])
+  setCursor(
+    editor,
+    pendingCompletion.lineNumber,
+    pendingCompletion.openingColumn,
+  )
+  editor.pushUndoStop()
+
+  return true
+}
+
 export function completeMarkdownHtmlOpeningBracket(
   editor: monaco.editor.IStandaloneCodeEditor,
   beforeEdit?: () => void,
@@ -448,6 +634,7 @@ export function completeMarkdownHtmlOpeningBracket(
     },
   ])
   setCursor(editor, context.position.lineNumber, context.position.column + 1)
+  rememberPendingHtmlAngleCompletion(editor, context)
   editor.pushUndoStop()
 
   return true

@@ -32,10 +32,13 @@ import {
   getEditorSettingsOptions,
 } from '../monaco/editorOptions'
 import {
+  clearPendingMarkdownHtmlAngleCompletionIfCursorChanged,
   closeMarkdownHtmlTagOnGreaterThan,
   completeMarkdownHtmlOpeningBracket,
   completeMarkdownHtmlSelfClosingSlash,
+  deletePendingMarkdownHtmlOpeningBracketOnBackspace,
   mirrorMarkdownHtmlTagNameOnContentChange,
+  updatePendingMarkdownHtmlAngleCompletionOnContentChanged,
 } from '../monaco/htmlTagClosing'
 import { moveEditorLines } from '../monaco/lineMovement'
 import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
@@ -284,6 +287,18 @@ export function useMonacoMarkdownEditor({
         !browserEvent.isComposing
 
       if (
+        settings.autoPairBrackets &&
+        isPlainTextInput &&
+        browserEvent.key === 'Backspace' &&
+        deletePendingMarkdownHtmlOpeningBracketOnBackspace(
+          editor,
+          consumeKeyboardEvent,
+        )
+      ) {
+        return
+      }
+
+      if (
         isPlainTextInput &&
         wrapSelectedTextForTypedCharacter(
           editor,
@@ -368,6 +383,8 @@ export function useMonacoMarkdownEditor({
     })
 
     const contentSub = editor.onDidChangeModelContent((event) => {
+      updatePendingMarkdownHtmlAngleCompletionOnContentChanged(editor, event)
+
       if (
         settingsRef.current.autoPairBrackets &&
         mirrorMarkdownHtmlTagNameOnContentChange(editor, event)
@@ -386,6 +403,7 @@ export function useMonacoMarkdownEditor({
       onDocumentChanged(nextMarkdown)
     })
     const selectionSub = editor.onDidChangeCursorSelection(() => {
+      clearPendingMarkdownHtmlAngleCompletionIfCursorChanged(editor)
       syncPersistentCurrentLine()
       onCursorPositionChanged(editor)
       onFollowEditedSection()
