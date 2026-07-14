@@ -26,10 +26,12 @@ public sealed class ShellFileDialogService
     public string? ShowSaveFileDialog(
         Window owner,
         string displayFileName,
+        string? currentFilePath,
         string? defaultSaveLocation)
     {
         SaveFileDialog dialog = new()
         {
+            Title = LocalizationService.Translate("common.saveAs", "Save As"),
             Filter = SupportedDocumentTypes.GetDialogFilter(),
             DefaultExt = SupportedDocumentTypes.DefaultExtension,
             AddExtension = true,
@@ -37,10 +39,10 @@ public sealed class ShellFileDialogService
             FileName = displayFileName,
         };
 
-        if (!string.IsNullOrWhiteSpace(defaultSaveLocation)
-            && Directory.Exists(defaultSaveLocation))
+        string? initialDirectory = GetExistingInitialDirectory(currentFilePath, defaultSaveLocation);
+        if (initialDirectory is not null)
         {
-            dialog.InitialDirectory = defaultSaveLocation;
+            dialog.InitialDirectory = initialDirectory;
         }
 
         return dialog.ShowDialog(owner) == true

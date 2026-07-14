@@ -466,6 +466,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand SaveFileCommand { get; }
 
+    public ICommand SaveFileAsCommand { get; }
+
     public ICommand CopyMarkdownCommand { get; }
 
     public ICommand OpenExportPromptCommand { get; }
@@ -537,6 +539,7 @@ public class MainWindowViewModel : BaseViewModel
 
         OpenFileCommand = new RelayCommand(() => OpenFileRequested?.Invoke(this, EventArgs.Empty));
         SaveFileCommand = new RelayCommand(ExecuteSaveFileCommand);
+        SaveFileAsCommand = new RelayCommand(ExecuteSaveFileAsCommand);
         CopyMarkdownCommand = new RelayCommand(
             CopyMarkdownToClipboard,
             () => !string.IsNullOrEmpty(CurrentContent));
@@ -752,6 +755,14 @@ public class MainWindowViewModel : BaseViewModel
         }
 
         await SaveDocumentToCurrentPathAsync(DocumentSaveKind.Manual);
+    }
+
+    private void ExecuteSaveFileAsCommand()
+    {
+        if (IsSaving)
+            return;
+
+        SaveFileAsRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void CopyMarkdownToClipboard()

@@ -333,6 +333,7 @@ public partial class MainWindow : Window
         string? filePath = _fileDialogService.ShowSaveFileDialog(
             this,
             viewModel.DisplayFileName,
+            viewModel.CurrentFilePath,
             viewModel.DefaultSaveLocation);
         if (filePath is null)
             return false;
