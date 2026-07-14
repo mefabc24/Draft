@@ -1,17 +1,7 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 
-type WordNavigationCharacterKind = 'whitespace' | 'word' | 'symbol'
-
-function getWordNavigationCharacterKind(value: string): WordNavigationCharacterKind {
-  if (/\s/u.test(value)) {
-    return 'whitespace'
-  }
-
-  if (/[\p{L}\p{N}_]/u.test(value)) {
-    return 'word'
-  }
-
-  return 'symbol'
+function isWordNavigationCharacter(value: string) {
+  return /[\p{L}\p{M}\p{N}_]/u.test(value)
 }
 
 function getNextWordOffset(text: string, offset: number) {
@@ -20,22 +10,17 @@ function getNextWordOffset(text: string, offset: number) {
   }
 
   let nextOffset = offset
-  const currentKind = getWordNavigationCharacterKind(text[nextOffset])
 
-  if (currentKind === 'whitespace') {
-    while (
-      nextOffset < text.length &&
-      getWordNavigationCharacterKind(text[nextOffset]) === 'whitespace'
-    ) {
-      nextOffset += 1
-    }
-
-    return nextOffset
+  while (
+    nextOffset < text.length &&
+    !isWordNavigationCharacter(text[nextOffset])
+  ) {
+    nextOffset += 1
   }
 
   while (
     nextOffset < text.length &&
-    getWordNavigationCharacterKind(text[nextOffset]) === currentKind
+    isWordNavigationCharacter(text[nextOffset])
   ) {
     nextOffset += 1
   }
@@ -49,22 +34,17 @@ function getPreviousWordOffset(text: string, offset: number) {
   }
 
   let previousOffset = offset
-  const previousKind = getWordNavigationCharacterKind(text[previousOffset - 1])
 
-  if (previousKind === 'whitespace') {
-    while (
-      previousOffset > 0 &&
-      getWordNavigationCharacterKind(text[previousOffset - 1]) === 'whitespace'
-    ) {
-      previousOffset -= 1
-    }
-
-    return previousOffset
+  while (
+    previousOffset > 0 &&
+    !isWordNavigationCharacter(text[previousOffset - 1])
+  ) {
+    previousOffset -= 1
   }
 
   while (
     previousOffset > 0 &&
-    getWordNavigationCharacterKind(text[previousOffset - 1]) === previousKind
+    isWordNavigationCharacter(text[previousOffset - 1])
   ) {
     previousOffset -= 1
   }
