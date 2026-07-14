@@ -10,7 +10,16 @@
     d:DesignWidth="220"
     Style="{StaticResource ShortcutRecorderControl}"
     mc:Ignorable="d">
-    <Border x:Name="MainBorder" Style="{StaticResource ShortcutRecorderBorder}">
+    <Border x:Name="MainBorder">
+        <Border.Style>
+            <Style BasedOn="{StaticResource ShortcutRecorderBorder}" TargetType="Border">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding HasValidationError, ElementName=Root}" Value="True">
+                        <Setter Property="BorderBrush" Value="{StaticResource Brush.Function.Critical}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

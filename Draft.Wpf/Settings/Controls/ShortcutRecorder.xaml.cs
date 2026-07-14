@@ -53,6 +53,13 @@ public partial class ShortcutRecorder : UserControl
             typeof(ShortcutRecorder),
             new PropertyMetadata(string.Empty, OnDefaultShortcutTextChanged));
 
+    public static readonly DependencyProperty HasValidationErrorProperty =
+        DependencyProperty.Register(
+            nameof(HasValidationError),
+            typeof(bool),
+            typeof(ShortcutRecorder),
+            new PropertyMetadata(false));
+
     public static readonly DependencyProperty PlaceholderProperty =
         DependencyProperty.Register(
             nameof(Placeholder),
@@ -126,6 +133,12 @@ public partial class ShortcutRecorder : UserControl
     {
         get => (string?)GetValue(DefaultShortcutTextProperty) ?? string.Empty;
         set => SetValue(DefaultShortcutTextProperty, value);
+    }
+
+    public bool HasValidationError
+    {
+        get => (bool)GetValue(HasValidationErrorProperty);
+        set => SetValue(HasValidationErrorProperty, value);
     }
 
     public string Placeholder

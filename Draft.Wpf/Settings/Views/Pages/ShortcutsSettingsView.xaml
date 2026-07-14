@@ -17,29 +17,41 @@
                 Title="{Binding Title}"
                 Margin="0,0,0,12"
                 Description="{Binding Description}">
-                <Grid Width="220" Height="36" HorizontalAlignment="Right">
-                    <settings:ShortcutRecorder
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        DefaultShortcutText="{Binding DefaultShortcut}"
-                        ShortcutText="{Binding Shortcut, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Visibility="{Binding IsEditable, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                    <Border>
-                        <Border.Style>
-                            <Style BasedOn="{StaticResource ShortcutRecorderBorder}" TargetType="Border">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsEditable}" Value="False">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <TextBlock
-                            Style="{StaticResource ShortcutRecorderText}"
-                            Text="{Binding Shortcut}" />
-                    </Border>
-                </Grid>
+                <StackPanel Width="220" HorizontalAlignment="Right">
+                    <Grid Height="36">
+                        <settings:ShortcutRecorder
+                            AutomationProperties.HelpText="{Binding ConflictMessage}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            DefaultShortcutText="{Binding DefaultShortcut}"
+                            HasValidationError="{Binding HasConflict}"
+                            ShortcutText="{Binding Shortcut, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Visibility="{Binding IsEditable, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Border>
+                            <Border.Style>
+                                <Style BasedOn="{StaticResource ShortcutRecorderBorder}" TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEditable}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock
+                                Style="{StaticResource ShortcutRecorderText}"
+                                Text="{Binding Shortcut}" />
+                        </Border>
+                    </Grid>
+                    <TextBlock
+                        Margin="2,6,0,0"
+                        FontFamily="{StaticResource Font.Inter}"
+                        FontSize="11"
+                        Foreground="{StaticResource Brush.Function.Critical}"
+                        Text="{Binding ConflictMessage}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasConflict, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StackPanel>
             </settings:SettingCard>
         </DataTemplate>
     </UserControl.Resources>

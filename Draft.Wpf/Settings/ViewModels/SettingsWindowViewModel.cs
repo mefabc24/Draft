@@ -67,11 +67,15 @@ public class SettingsWindowViewModel : BaseViewModel
     private string _toolbarControlbarPosition = AppSettingsStore.DefaultToolbarPosition;
     private Dictionary<string, string> _shortcuts =
         ShortcutSettingsCatalog.CreateDefaultShortcuts();
+    private IReadOnlyList<ShortcutConflict> _shortcutConflicts =
+        Array.Empty<ShortcutConflict>();
 
     public SettingsWindowViewModel()
     {
         BrowseDefaultSaveLocationCommand = new RelayCommand(BrowseDefaultSaveLocation);
-        ApplySettingsCommand = new RelayCommand(ApplyChanges);
+        ApplySettingsCommand = new RelayCommand(
+            ApplyChanges,
+            () => !HasShortcutConflicts);
         CancelSettingsCommand = new RelayCommand(CancelChanges);
         ResetToDefaultsCommand = new RelayCommand(ResetToDefaults);
 
@@ -87,6 +91,7 @@ public class SettingsWindowViewModel : BaseViewModel
         _developSettingsPage = new DevelopSettingsPageViewModel(this);
         _aboutSettingsPage = new AboutSettingsPageViewModel(this);
         _currentSettingsPage = _generalSettingsPage;
+        RefreshShortcutConflicts();
     }
 
     public static IReadOnlyList<string> AutosaveIntervalOptionValues =>
@@ -197,6 +202,13 @@ public class SettingsWindowViewModel : BaseViewModel
 
     public string ApplyChangesButtonText =>
         LocalizationService.Translate("common.applyChanges", "Apply Changes", AppLanguage);
+
+    public string ShortcutConflictSummary => LocalizationService.Translate(
+        "shortcuts.resolveConflicts",
+        "Resolve shortcut conflicts before applying changes.",
+        AppLanguage);
+
+    public bool HasShortcutConflicts => _shortcutConflicts.Count > 0;
 
     public SettingsPageViewModel CurrentSettingsPage
     {
@@ -675,6 +687,14 @@ public class SettingsWindowViewModel : BaseViewModel
             return;
 
         _shortcuts[actionId] = normalizedShortcut;
+        RefreshShortcutConflicts();
+    }
+
+    public ShortcutConflict? GetShortcutConflict(string actionId)
+    {
+        return _shortcutConflicts.FirstOrDefault(conflict =>
+            string.Equals(conflict.FirstActionId, actionId, StringComparison.Ordinal)
+            || string.Equals(conflict.SecondActionId, actionId, StringComparison.Ordinal));
     }
 
     public void SelectSettingsPage(SettingsPage page)
@@ -786,6 +806,7 @@ public class SettingsWindowViewModel : BaseViewModel
             AppSettingsStore.DefaultToolbarPosition);
         _shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts);
         _shortcutsSettingsPage?.RefreshShortcuts();
+        RefreshShortcutConflicts();
     }
 
     private void BrowseDefaultSaveLocation()
@@ -799,8 +820,16 @@ public class SettingsWindowViewModel : BaseViewModel
 
     private void ApplyChanges()
     {
+        if (HasShortcutConflicts)
+        {
+            SelectSettingsPage(SettingsPage.Shortcuts);
+            return;
+        }
+
         DraftSettings settings = CaptureSettings();
-        _settingsApplicationService.SaveAndApply(settings);
+        if (!_settingsApplicationService.SaveAndApply(settings))
+            return;
+
         _originalSettings = settings;
         OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
@@ -836,6 +865,14 @@ public class SettingsWindowViewModel : BaseViewModel
         [CallerMemberName] string? propertyName = null)
     {
         return SetProperty(ref field, value, propertyName);
+    }
+
+    private void RefreshShortcutConflicts()
+    {
+        _shortcutConflicts = ShortcutConflictDetector.FindConflicts(_shortcuts);
+        _shortcutsSettingsPage?.RefreshShortcutConflicts();
+        OnPropertyChanged(nameof(HasShortcutConflicts));
+        CommandManager.InvalidateRequerySuggested();
     }
 
     private DraftSettings CaptureSettings()
@@ -1030,6 +1067,7 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(AboutSettingsMenuLabel));
         OnPropertyChanged(nameof(CancelButtonText));
         OnPropertyChanged(nameof(ApplyChangesButtonText));
+        OnPropertyChanged(nameof(ShortcutConflictSummary));
 
         _generalSettingsPage.RefreshLocalization();
         _editorSettingsPage.RefreshLocalization();

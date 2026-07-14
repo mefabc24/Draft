@@ -74,6 +74,9 @@ public static class AppSettingsStore
         {
             Normalize(settings);
 
+            if (ShortcutConflictDetector.HasConflicts(settings.Shortcuts))
+                return false;
+
             string? directoryPath = Path.GetDirectoryName(SettingsFilePath);
 
             if (!string.IsNullOrWhiteSpace(directoryPath))

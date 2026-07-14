@@ -16,6 +16,7 @@
     mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <DataTemplate DataType="{x:Type settingsVm:GeneralSettingsPageViewModel}">
                 <settings:GeneralSettingsView />
             </DataTemplate>
@@ -407,6 +408,16 @@
                         Style="{StaticResource SettingsPageContentTransition}" />
 
                     <Grid Grid.Row="2">
+                        <TextBlock
+                            MaxWidth="250"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            FontFamily="{StaticResource Font.Inter}"
+                            FontSize="11"
+                            Foreground="{StaticResource Brush.Function.Critical}"
+                            Text="{Binding ShortcutConflictSummary}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding HasShortcutConflicts, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         <StackPanel
                             HorizontalAlignment="Right"
                             Orientation="Horizontal">

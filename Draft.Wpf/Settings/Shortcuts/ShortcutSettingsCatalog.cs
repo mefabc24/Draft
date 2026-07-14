@@ -4,6 +4,16 @@ public enum ShortcutFixedMouseGesture
 {
     None,
     LeftClick,
+    MiddleClick,
+    RightClick,
+    LeftDoubleClick,
+    MiddleDoubleClick,
+    RightDoubleClick,
+    LeftDrag,
+    MiddleDrag,
+    RightDrag,
+    WheelUp,
+    WheelDown,
     LeftDragOrDoubleClick,
 }
 
@@ -13,6 +23,7 @@ public sealed record ShortcutActionDefinition(
     string Description,
     string DefaultShortcut,
     ShortcutFixedMouseGesture FixedMouseGesture = ShortcutFixedMouseGesture.None,
+    ShortcutScope Scope = ShortcutScope.Global,
     bool IsEditable = true);
 
 public sealed record ShortcutCategoryDefinition(
@@ -108,12 +119,14 @@ public static class ShortcutSettingsCatalog
                         ShortcutActionIds.EditorContinueMarkdownBlock,
                         "Continue Markdown block",
                         "Continue the current list or quote on the next line.",
-                        "Enter"),
+                        "Enter",
+                        Scope: ShortcutScope.EditorTextInput),
                     new ShortcutActionDefinition(
                         ShortcutActionIds.EditorIndentListItem,
                         "Indent list item",
                         "Indent an empty Markdown list item.",
-                        "Tab"),
+                        "Tab",
+                        Scope: ShortcutScope.EditorTextInput),
                 }),
             new ShortcutCategoryDefinition(
                 "FLOATING MARKDOWN TOOLBAR",
@@ -213,12 +226,14 @@ public static class ShortcutSettingsCatalog
                         ShortcutActionIds.ToolbarConfirmEdit,
                         "Confirm toolbar edit",
                         "Apply changes in the toolbar's link, image, or preview edit menu.",
-                        "Enter"),
+                        "Enter",
+                        Scope: ShortcutScope.ToolbarOverlay),
                     new ShortcutActionDefinition(
                         ShortcutActionIds.ToolbarClose,
                         "Close toolbar or edit menu",
                         "Dismiss the floating toolbar selection or cancel an open edit menu.",
-                        "Esc"),
+                        "Esc",
+                        Scope: ShortcutScope.ToolbarOverlay),
                 }),
             new ShortcutCategoryDefinition(
                 "QUICK INSERT MENU",
@@ -293,11 +308,12 @@ public static class ShortcutSettingsCatalog
 
     public static bool IsValidShortcut(string shortcut)
     {
-        if (string.IsNullOrWhiteSpace(shortcut))
-            return false;
-
-        return SplitShortcutParts(shortcut)
-            .Any(part => NormalizeModifierName(part) is null);
+        return ShortcutNormalizer.TryNormalizeKeyboardShortcut(
+            shortcut,
+            allowModifierOnly: false,
+            removeLegacyMouseGestures: false,
+            out _,
+            out _);
     }
 
     public static bool TryNormalizeShortcut(
@@ -316,86 +332,14 @@ public static class ShortcutSettingsCatalog
         string shortcut,
         out string normalizedShortcut)
     {
-        normalizedShortcut = string.Empty;
+        bool hasFixedMouseGesture =
+            action.FixedMouseGesture != ShortcutFixedMouseGesture.None;
 
-        if (string.IsNullOrWhiteSpace(shortcut))
-            return false;
-
-        if (action.FixedMouseGesture == ShortcutFixedMouseGesture.None)
-        {
-            if (!IsValidShortcut(shortcut))
-                return false;
-
-            normalizedShortcut = shortcut.Trim();
-            return true;
-        }
-
-        HashSet<string> modifiers = new(StringComparer.OrdinalIgnoreCase);
-        List<string> keys = new();
-
-        foreach (string part in SplitShortcutParts(shortcut))
-        {
-            if (IsLegacyMouseGesturePart(part))
-                continue;
-
-            string? modifier = NormalizeModifierName(part);
-            if (modifier is not null)
-            {
-                modifiers.Add(modifier);
-                continue;
-            }
-
-            keys.Add(part.Trim());
-        }
-
-        IEnumerable<string> orderedModifiers = new[] { "Ctrl", "Shift", "Alt", "Win" }
-            .Where(modifiers.Contains)
-            .Concat(keys);
-
-        normalizedShortcut = string.Join(" + ", orderedModifiers);
-        if (string.IsNullOrWhiteSpace(normalizedShortcut))
-            return false;
-
-        return true;
-    }
-
-    private static bool IsLegacyMouseGesturePart(string part)
-    {
-        string normalizedPart = new(part
-            .Where(char.IsLetterOrDigit)
-            .Select(char.ToLowerInvariant)
-            .ToArray());
-
-        return normalizedPart is "click"
-            or "doubleclick"
-            or "leftclick"
-            or "mouseclick"
-            or "mousedrag";
-    }
-
-    private static string? NormalizeModifierName(string part)
-    {
-        return part.Trim().ToUpperInvariant() switch
-        {
-            "CMD" or "COMMAND" or "CONTROL" or "CTRL" => "Ctrl",
-            "SHIFT" => "Shift",
-            "ALT" or "OPTION" => "Alt",
-            "WIN" or "WINDOWS" => "Win",
-            _ => null,
-        };
-    }
-
-    private static IEnumerable<string> SplitShortcutParts(string shortcut)
-    {
-        string trimmedShortcut = shortcut.Trim();
-
-        if (trimmedShortcut.Contains(" + ", StringComparison.Ordinal))
-        {
-            return trimmedShortcut
-                .Split(" + ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        }
-
-        return trimmedShortcut
-            .Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return ShortcutNormalizer.TryNormalizeKeyboardShortcut(
+            shortcut,
+            allowModifierOnly: hasFixedMouseGesture,
+            removeLegacyMouseGestures: hasFixedMouseGesture,
+            out normalizedShortcut,
+            out _);
     }
 }
