@@ -45,6 +45,21 @@ export type ShortcutActionId =
 
 export type ShortcutBindings = Record<string, string>
 
+export type ShortcutFixedMouseGesture =
+  | 'left-click'
+  | 'left-drag-or-double-click'
+
+export const fixedMouseGestureByShortcutActionId: Partial<
+  Record<ShortcutActionId, ShortcutFixedMouseGesture>
+> = {
+  [shortcutActionIds.editorAddSelectionRange]: 'left-drag-or-double-click',
+  [shortcutActionIds.quickInsertKeepOpen]: 'left-click',
+}
+
+export const fixedMouseGestureShortcutActionIds = Object.keys(
+  fixedMouseGestureByShortcutActionId,
+) as ShortcutActionId[]
+
 export const defaultShortcutBindings: ShortcutBindings = {
   [shortcutActionIds.appSave]: 'Ctrl + S',
   [shortcutActionIds.appOpen]: 'Ctrl + O',
@@ -60,7 +75,7 @@ export const defaultShortcutBindings: ShortcutBindings = {
   [shortcutActionIds.editorMoveCursorWordRight]: 'Ctrl + Right',
   [shortcutActionIds.editorExtendSelectionWordLeft]: 'Ctrl + Shift + Left',
   [shortcutActionIds.editorExtendSelectionWordRight]: 'Ctrl + Shift + Right',
-  [shortcutActionIds.editorAddSelectionRange]: 'Ctrl + Shift + Alt + Mouse Drag',
+  [shortcutActionIds.editorAddSelectionRange]: 'Ctrl + Shift + Alt',
   [shortcutActionIds.editorContinueMarkdownBlock]: 'Enter',
   [shortcutActionIds.editorIndentListItem]: 'Tab',
   [shortcutActionIds.toolbarBold]: 'Ctrl + B',
@@ -84,24 +99,14 @@ export const defaultShortcutBindings: ShortcutBindings = {
   [shortcutActionIds.toolbarConfirmEdit]: 'Enter',
   [shortcutActionIds.toolbarClose]: 'Esc',
   [shortcutActionIds.quickInsertOpenMenu]: 'Ctrl + Space',
-  [shortcutActionIds.quickInsertKeepOpen]: 'Shift + Left Click',
+  [shortcutActionIds.quickInsertKeepOpen]: 'Shift',
 }
 
 export const configurableShortcutActionIds = Object.keys(
   defaultShortcutBindings,
 ) as ShortcutActionId[]
 
-const shortcutModifierNames = new Set([
-  'alt',
-  'cmd',
-  'command',
-  'control',
-  'ctrl',
-  'option',
-  'shift',
-  'win',
-  'windows',
-])
+type ShortcutModifierName = 'Alt' | 'Ctrl' | 'Shift' | 'Win'
 
 function splitShortcutParts(shortcut: string) {
   const trimmedShortcut = shortcut.trim()
@@ -121,8 +126,55 @@ function splitShortcutParts(shortcut: string) {
 
 export function isValidShortcutBinding(shortcut: string) {
   return splitShortcutParts(shortcut).some(
-    (part) => !shortcutModifierNames.has(part.toLowerCase()),
+    (part) => normalizeModifierName(part) === null,
   )
+}
+
+function normalizeModifierName(part: string): ShortcutModifierName | null {
+  switch (part.trim().toLowerCase()) {
+    case 'cmd':
+    case 'command':
+    case 'control':
+    case 'ctrl':
+      return 'Ctrl'
+    case 'shift':
+      return 'Shift'
+    case 'alt':
+    case 'option':
+      return 'Alt'
+    case 'win':
+    case 'windows':
+      return 'Win'
+    default:
+      return null
+  }
+}
+
+function normalizeFixedGestureModifierBinding(shortcut: string) {
+  const modifiers = new Set(
+    splitShortcutParts(shortcut)
+      .map(normalizeModifierName)
+      .filter((modifier): modifier is ShortcutModifierName => modifier !== null),
+  )
+  const modifierOrder: ShortcutModifierName[] = ['Ctrl', 'Shift', 'Alt', 'Win']
+  const orderedModifiers = modifierOrder.filter((modifier) =>
+    modifiers.has(modifier),
+  )
+
+  return orderedModifiers.length > 0
+    ? orderedModifiers.join(' + ')
+    : null
+}
+
+function normalizeShortcutBinding(
+  actionId: ShortcutActionId,
+  shortcut: string,
+) {
+  if (actionId in fixedMouseGestureByShortcutActionId) {
+    return normalizeFixedGestureModifierBinding(shortcut)
+  }
+
+  return isValidShortcutBinding(shortcut) ? shortcut.trim() : null
 }
 
 export function normalizeShortcutBindings(value: unknown): ShortcutBindings {
@@ -135,10 +187,16 @@ export function normalizeShortcutBindings(value: unknown): ShortcutBindings {
   for (const [actionId, shortcut] of Object.entries(value)) {
     if (
       actionId in defaultShortcutBindings &&
-      typeof shortcut === 'string' &&
-      isValidShortcutBinding(shortcut)
+      typeof shortcut === 'string'
     ) {
-      normalized[actionId] = shortcut.trim()
+      const normalizedShortcut = normalizeShortcutBinding(
+        actionId as ShortcutActionId,
+        shortcut,
+      )
+
+      if (normalizedShortcut) {
+        normalized[actionId] = normalizedShortcut
+      }
     }
   }
 
@@ -149,7 +207,12 @@ export function getShortcutBinding(
   bindings: ShortcutBindings,
   actionId: ShortcutActionId,
 ) {
-  return bindings[actionId] ?? defaultShortcutBindings[actionId] ?? ''
+  const shortcut = bindings[actionId]
+  const normalizedShortcut = shortcut
+    ? normalizeShortcutBinding(actionId, shortcut)
+    : null
+
+  return normalizedShortcut ?? defaultShortcutBindings[actionId] ?? ''
 }
 
 export function formatShortcutForDisplay(shortcut: string) {

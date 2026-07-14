@@ -1,8 +1,18 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import { eventMatchesShortcutModifiers } from '../../shortcuts/shortcutMatching'
+import {
+  defaultShortcutBindings,
+  getShortcutBinding,
+  shortcutActionIds,
+} from '../../shortcuts/shortcutSettings'
 import { cloneSelections, isEmptySelection } from './markdownSelection'
 
 const LEFT_MOUSE_BUTTON = 0
 const LEFT_MOUSE_BUTTON_MASK = 1
+const DEFAULT_MODIFIER_SHORTCUT = getShortcutBinding(
+  defaultShortcutBindings,
+  shortcutActionIds.editorAddSelectionRange,
+)
 
 type AdditiveSelectionGesture = {
   anchorPosition: monaco.Position
@@ -10,23 +20,23 @@ type AdditiveSelectionGesture = {
   currentSelection: monaco.Selection | null
 }
 
-export function isAdditiveSelectionMouseGesture(event: MouseEvent) {
+export function isAdditiveSelectionMouseGesture(
+  event: MouseEvent,
+  modifierShortcut = DEFAULT_MODIFIER_SHORTCUT,
+) {
   return (
     event.button === LEFT_MOUSE_BUTTON &&
-    event.ctrlKey &&
-    event.shiftKey &&
-    event.altKey &&
-    !event.metaKey
+    eventMatchesShortcutModifiers(event, modifierShortcut)
   )
 }
 
-function isAdditiveSelectionMouseMove(event: MouseEvent) {
+function isAdditiveSelectionMouseMove(
+  event: MouseEvent,
+  modifierShortcut: string,
+) {
   return (
     (event.buttons & LEFT_MOUSE_BUTTON_MASK) === LEFT_MOUSE_BUTTON_MASK &&
-    event.ctrlKey &&
-    event.shiftKey &&
-    event.altKey &&
-    !event.metaKey
+    eventMatchesShortcutModifiers(event, modifierShortcut)
   )
 }
 
@@ -136,6 +146,7 @@ function addWordSelectionAtPosition(
 
 export function registerAdditiveSelectionGesture(
   editor: monaco.editor.IStandaloneCodeEditor,
+  getModifierShortcut: () => string = () => DEFAULT_MODIFIER_SHORTCUT,
 ): monaco.IDisposable {
   const editorNode = editor.getDomNode()
 
@@ -161,7 +172,7 @@ export function registerAdditiveSelectionGesture(
   }
 
   const handleMouseDown = (event: MouseEvent) => {
-    if (!isAdditiveSelectionMouseGesture(event)) {
+    if (!isAdditiveSelectionMouseGesture(event, getModifierShortcut())) {
       return
     }
 
@@ -190,7 +201,7 @@ export function registerAdditiveSelectionGesture(
 
     consumeMouseEvent(event)
 
-    if (!isAdditiveSelectionMouseMove(event)) {
+    if (!isAdditiveSelectionMouseMove(event, getModifierShortcut())) {
       finishGesture()
       return
     }
@@ -218,7 +229,7 @@ export function registerAdditiveSelectionGesture(
   }
 
   const handleDoubleClick = (event: MouseEvent) => {
-    if (!isAdditiveSelectionMouseGesture(event)) {
+    if (!isAdditiveSelectionMouseGesture(event, getModifierShortcut())) {
       return
     }
 

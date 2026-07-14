@@ -662,10 +662,14 @@ public class SettingsWindowViewModel : BaseViewModel
 
     public void SetShortcut(string actionId, string shortcut)
     {
-        if (string.IsNullOrWhiteSpace(actionId) || !ShortcutSettingsCatalog.IsValidShortcut(shortcut))
+        if (string.IsNullOrWhiteSpace(actionId)
+            || !ShortcutSettingsCatalog.TryNormalizeShortcut(
+                actionId,
+                shortcut,
+                out string normalizedShortcut))
+        {
             return;
-
-        string normalizedShortcut = shortcut.Trim();
+        }
 
         if (string.Equals(GetShortcut(actionId), normalizedShortcut, StringComparison.Ordinal))
             return;

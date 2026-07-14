@@ -1,10 +1,18 @@
 namespace Draft.Settings.Shortcuts;
 
+public enum ShortcutFixedMouseGesture
+{
+    None,
+    LeftClick,
+    LeftDragOrDoubleClick,
+}
+
 public sealed record ShortcutActionDefinition(
     string Id,
     string Title,
     string Description,
     string DefaultShortcut,
+    ShortcutFixedMouseGesture FixedMouseGesture = ShortcutFixedMouseGesture.None,
     bool IsEditable = true);
 
 public sealed record ShortcutCategoryDefinition(
@@ -13,18 +21,6 @@ public sealed record ShortcutCategoryDefinition(
 
 public static class ShortcutSettingsCatalog
 {
-    private static readonly HashSet<string> ModifierNames = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Alt",
-        "Cmd",
-        "Command",
-        "Control",
-        "Ctrl",
-        "Shift",
-        "Win",
-        "Windows",
-    };
-
     public static IReadOnlyList<ShortcutCategoryDefinition> Categories { get; } =
         new[]
         {
@@ -105,9 +101,9 @@ public static class ShortcutSettingsCatalog
                     new ShortcutActionDefinition(
                         ShortcutActionIds.EditorAddSelectionRange,
                         "Add separate selection",
-                        "Add another independent text selection without clearing existing selections. Ctrl + Shift + Alt + double-click adds the clicked word.",
-                        "Ctrl + Shift + Alt + Mouse Drag",
-                        IsEditable: false),
+                        "Hold the configured modifier keys and drag with the left mouse button to add another independent selection. Double-click a word while holding the modifiers to add that word as another selection.",
+                        "Ctrl + Shift + Alt",
+                        FixedMouseGesture: ShortcutFixedMouseGesture.LeftDragOrDoubleClick),
                     new ShortcutActionDefinition(
                         ShortcutActionIds.EditorContinueMarkdownBlock,
                         "Continue Markdown block",
@@ -236,9 +232,9 @@ public static class ShortcutSettingsCatalog
                     new ShortcutActionDefinition(
                         ShortcutActionIds.QuickInsertKeepOpen,
                         "Insert and keep menu open",
-                        "Insert the selected Quick Insert item and keep the menu open for the next empty line.",
-                        "Shift + Left Click",
-                        IsEditable: false),
+                        "Hold the configured modifier keys and click a Quick Insert item with the left mouse button to insert it and keep the menu open for the next empty line.",
+                        "Shift",
+                        FixedMouseGesture: ShortcutFixedMouseGesture.LeftClick),
                 }),
         };
 
@@ -266,10 +262,13 @@ public static class ShortcutSettingsCatalog
 
         foreach ((string id, string shortcut) in shortcuts)
         {
-            if (!ActionById.ContainsKey(id) || !IsValidShortcut(shortcut))
+            if (!ActionById.TryGetValue(id, out ShortcutActionDefinition? action)
+                || !TryNormalizeShortcut(action, shortcut, out string normalizedShortcut))
+            {
                 continue;
+            }
 
-            normalized[id] = shortcut.Trim();
+            normalized[id] = normalizedShortcut;
         }
 
         return normalized;
@@ -281,9 +280,10 @@ public static class ShortcutSettingsCatalog
     {
         if (shortcuts is not null
             && shortcuts.TryGetValue(id, out string? shortcut)
-            && !string.IsNullOrWhiteSpace(shortcut))
+            && ActionById.TryGetValue(id, out ShortcutActionDefinition? storedAction)
+            && TryNormalizeShortcut(storedAction, shortcut, out string normalizedShortcut))
         {
-            return shortcut;
+            return normalizedShortcut;
         }
 
         return ActionById.TryGetValue(id, out ShortcutActionDefinition? action)
@@ -297,7 +297,66 @@ public static class ShortcutSettingsCatalog
             return false;
 
         return SplitShortcutParts(shortcut)
-            .Any(part => !ModifierNames.Contains(part));
+            .Any(part => NormalizeModifierName(part) is null);
+    }
+
+    public static bool TryNormalizeShortcut(
+        string actionId,
+        string shortcut,
+        out string normalizedShortcut)
+    {
+        normalizedShortcut = string.Empty;
+
+        return ActionById.TryGetValue(actionId, out ShortcutActionDefinition? action)
+            && TryNormalizeShortcut(action, shortcut, out normalizedShortcut);
+    }
+
+    private static bool TryNormalizeShortcut(
+        ShortcutActionDefinition action,
+        string shortcut,
+        out string normalizedShortcut)
+    {
+        normalizedShortcut = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(shortcut))
+            return false;
+
+        if (action.FixedMouseGesture == ShortcutFixedMouseGesture.None)
+        {
+            if (!IsValidShortcut(shortcut))
+                return false;
+
+            normalizedShortcut = shortcut.Trim();
+            return true;
+        }
+
+        HashSet<string> modifiers = SplitShortcutParts(shortcut)
+            .Select(NormalizeModifierName)
+            .Where(modifier => modifier is not null)
+            .Select(modifier => modifier!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        string[] orderedModifiers = new[] { "Ctrl", "Shift", "Alt", "Win" }
+            .Where(modifiers.Contains)
+            .ToArray();
+
+        if (orderedModifiers.Length == 0)
+            return false;
+
+        normalizedShortcut = string.Join(" + ", orderedModifiers);
+        return true;
+    }
+
+    private static string? NormalizeModifierName(string part)
+    {
+        return part.Trim().ToUpperInvariant() switch
+        {
+            "CMD" or "COMMAND" or "CONTROL" or "CTRL" => "Ctrl",
+            "SHIFT" => "Shift",
+            "ALT" or "OPTION" => "Alt",
+            "WIN" or "WINDOWS" => "Win",
+            _ => null,
+        };
     }
 
     private static IEnumerable<string> SplitShortcutParts(string shortcut)

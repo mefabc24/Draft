@@ -11,7 +11,10 @@ import {
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { CalloutType } from '../../markdown/callouts'
 import { useTranslation } from '../../localization/useTranslation'
-import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
+import {
+  eventMatchesShortcutAction,
+  eventMatchesShortcutActionModifiers,
+} from '../../shortcuts/shortcutMatching'
 import {
   shortcutActionIds,
   type ShortcutBindings,
@@ -196,10 +199,6 @@ function isEditableMenuTarget(target: EventTarget | null) {
   )
 }
 
-function shouldKeepMenuOpen(event: ReactMouseEvent<HTMLElement>) {
-  return event.shiftKey && event.button === 0
-}
-
 function shouldAdvanceToNextEmptyLine(
   target: EditorQuickInsertMenuAnchor | null,
   keepOpen: boolean,
@@ -241,6 +240,16 @@ function EditorQuickInsertMenu({
     [position],
   )
   const menuOpen = editor !== null && target !== null && position !== null
+  const shouldKeepQuickInsertOpen = useCallback(
+    (event: ReactMouseEvent<HTMLElement>) =>
+      event.button === 0 &&
+      eventMatchesShortcutActionModifiers(
+        event,
+        shortcutBindings,
+        shortcutActionIds.quickInsertKeepOpen,
+      ),
+    [shortcutBindings],
+  )
 
   useLayoutEffect(() => {
     if (!menuOpen) {
@@ -567,13 +576,13 @@ function EditorQuickInsertMenu({
           label={t(labelKey, entry.label)}
           nested={nested}
           onSelect={(event) => {
-            runCommand(entry.command, shouldKeepMenuOpen(event))
+            runCommand(entry.command, shouldKeepQuickInsertOpen(event))
           }}
           shortcut={entry.shortcut}
         />
       )
     },
-    [runCommand, t],
+    [runCommand, shouldKeepQuickInsertOpen, t],
   )
 
   const renderCalloutSectionChildren = useCallback(
@@ -663,23 +672,37 @@ function EditorQuickInsertMenu({
           }}
         >
           {entry.id === 'table' ? (
-            <EditorQuickInsertTableControls onConfirm={confirmTable} />
+            <EditorQuickInsertTableControls
+              onConfirm={confirmTable}
+              shouldKeepOpen={shouldKeepQuickInsertOpen}
+            />
           ) : entry.id === 'codeblocks' ? (
-            <EditorQuickInsertCodeblockControls onConfirm={confirmCodeBlock} />
+            <EditorQuickInsertCodeblockControls
+              onConfirm={confirmCodeBlock}
+              shouldKeepOpen={shouldKeepQuickInsertOpen}
+            />
           ) : entry.id === 'image' ? (
             <EditorQuickInsertInlineMediaControls
               type="image"
               onConfirm={confirmImage}
+              shouldKeepOpen={shouldKeepQuickInsertOpen}
             />
           ) : entry.id === 'link' ? (
             <EditorQuickInsertInlineMediaControls
               type="link"
               onConfirm={confirmLink}
+              shouldKeepOpen={shouldKeepQuickInsertOpen}
             />
           ) : entry.id === 'expander' ? (
-            <EditorQuickInsertExpanderControls onConfirm={confirmExpander} />
+            <EditorQuickInsertExpanderControls
+              onConfirm={confirmExpander}
+              shouldKeepOpen={shouldKeepQuickInsertOpen}
+            />
           ) : entry.id === 'tag' ? (
-            <EditorQuickInsertTagControls onConfirm={confirmTag} />
+            <EditorQuickInsertTagControls
+              onConfirm={confirmTag}
+              shouldKeepOpen={shouldKeepQuickInsertOpen}
+            />
           ) : entry.id === 'callouts' ? (
             renderCalloutSectionChildren(entry)
           ) : (
@@ -702,6 +725,7 @@ function EditorQuickInsertMenu({
       expandedSections,
       renderCalloutSectionChildren,
       renderCommandItem,
+      shouldKeepQuickInsertOpen,
       t,
       target,
     ],

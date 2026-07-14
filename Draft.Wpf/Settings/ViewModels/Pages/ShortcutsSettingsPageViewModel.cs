@@ -116,6 +116,9 @@ public sealed class ShortcutItemViewModel : BaseViewModel
 
     public bool IsEditable => _definition.IsEditable;
 
+    public bool ModifiersOnly =>
+        _definition.FixedMouseGesture != ShortcutFixedMouseGesture.None;
+
     public string Shortcut
     {
         get => _settings.GetShortcut(_definition.Id);

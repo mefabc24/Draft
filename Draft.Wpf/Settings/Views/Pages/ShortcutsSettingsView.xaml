@@ -22,6 +22,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         DefaultShortcutText="{Binding DefaultShortcut}"
+                        ModifiersOnly="{Binding ModifiersOnly}"
                         ShortcutText="{Binding Shortcut, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Visibility="{Binding IsEditable, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <Border>

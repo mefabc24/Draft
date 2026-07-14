@@ -1,6 +1,7 @@
 import {
   configurableShortcutActionIds,
   defaultShortcutBindings,
+  fixedMouseGestureShortcutActionIds,
   shortcutActionIds,
   type ShortcutActionId,
   type ShortcutBindings,
@@ -243,7 +244,7 @@ const globallyBlockedChangedDefaultActions = configurableShortcutActionIds.filte
     actionId !== shortcutActionIds.editorIndentListItem &&
     actionId !== shortcutActionIds.toolbarConfirmEdit &&
     actionId !== shortcutActionIds.toolbarClose &&
-    actionId !== shortcutActionIds.quickInsertKeepOpen,
+    !fixedMouseGestureShortcutActionIds.includes(actionId),
 )
 
 export const blockedBrowserShortcuts: readonly BrowserShortcutDevelopmentRule[] = [

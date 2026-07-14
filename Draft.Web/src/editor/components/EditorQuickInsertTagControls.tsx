@@ -15,14 +15,11 @@ import { useTranslation } from '../../localization/useTranslation'
 
 type EditorQuickInsertTagControlsProps = {
   onConfirm: (data: CreateInlineTagMarkdownData, keepOpen?: boolean) => void
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 const DEFAULT_TAG_COLOR = '#FFFFFF'
 const validTagColorPattern = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/iu
-
-function shouldKeepOpen(event: ReactMouseEvent<HTMLButtonElement>) {
-  return event.shiftKey && event.button === 0
-}
 
 function getTagPreviewColor(value: string) {
   const trimmedValue = value.trim()
@@ -34,6 +31,7 @@ function getTagPreviewColor(value: string) {
 
 function EditorQuickInsertTagControls({
   onConfirm,
+  shouldKeepOpen,
 }: EditorQuickInsertTagControlsProps) {
   const { t } = useTranslation()
   const colorInputId = useId()

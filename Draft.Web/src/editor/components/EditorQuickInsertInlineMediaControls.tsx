@@ -5,7 +5,7 @@ import type {
   CreateInlineLinkMarkdownData,
 } from '../commands/createInlineLinkMarkdown'
 
-type EditorQuickInsertInlineMediaControlsProps =
+type EditorQuickInsertInlineMediaControlsProps = (
   | {
       onConfirm: (
         data: CreateInlineImageMarkdownData,
@@ -20,9 +20,8 @@ type EditorQuickInsertInlineMediaControlsProps =
       ) => void
       type: 'link'
     }
-
-function shouldKeepOpen(event: ReactMouseEvent<HTMLButtonElement>) {
-  return event.shiftKey && event.button === 0
+) & {
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 function EditorQuickInsertInlineMediaControls(
@@ -97,7 +96,7 @@ function EditorQuickInsertInlineMediaControls(
         type="button"
         className="editor-quick-insert-inline-media-confirm"
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
-          confirm(shouldKeepOpen(event))
+          confirm(props.shouldKeepOpen(event))
         }}
       >
         {t('common.create')}

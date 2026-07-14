@@ -96,11 +96,17 @@ function isEditableKeyboardTarget(target: EventTarget | null) {
   )
 }
 
-function shouldAllowSelectionDragAndDrop(event: MouseEvent) {
+function shouldAllowSelectionDragAndDrop(
+  event: MouseEvent,
+  additiveSelectionModifierShortcut: string,
+) {
   return (
     event.button === 0 &&
     event.shiftKey &&
-    !isAdditiveSelectionMouseGesture(event)
+    !isAdditiveSelectionMouseGesture(
+      event,
+      additiveSelectionModifierShortcut,
+    )
   )
 }
 
@@ -458,14 +464,29 @@ export function useMonacoMarkdownEditor({
       editor.trigger('draft.globalUndoRedo', isUndo ? 'undo' : 'redo', null)
     }
     const handleSelectionDragMouseDown = (event: MouseEvent) => {
+      const additiveSelectionModifierShortcut = getShortcutBinding(
+        settingsRef.current.shortcuts,
+        shortcutActionIds.editorAddSelectionRange,
+      )
+
       editor.updateOptions({
-        dragAndDrop: shouldAllowSelectionDragAndDrop(event),
+        dragAndDrop: shouldAllowSelectionDragAndDrop(
+          event,
+          additiveSelectionModifierShortcut,
+        ),
       })
     }
     const disableSelectionDragAndDrop = () => {
       editor.updateOptions({ dragAndDrop: false })
     }
-    const additiveSelectionGestureSub = registerAdditiveSelectionGesture(editor)
+    const additiveSelectionGestureSub = registerAdditiveSelectionGesture(
+      editor,
+      () =>
+        getShortcutBinding(
+          settingsRef.current.shortcuts,
+          shortcutActionIds.editorAddSelectionRange,
+        ),
+    )
 
     editorRef.current = editor
     setEditorInstance(editor)

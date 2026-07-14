@@ -13,6 +13,18 @@ type ParsedShortcut = {
   shiftKey: boolean
 }
 
+type ShortcutModifierEvent = Pick<
+  KeyboardEvent | MouseEvent,
+  'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'
+>
+
+type ParsedShortcutModifiers = {
+  altKey: boolean
+  ctrlKey: boolean
+  metaKey: boolean
+  shiftKey: boolean
+}
+
 const keyAliases: Record<string, string> = {
   arrowdown: 'down',
   arrowleft: 'left',
@@ -163,6 +175,72 @@ function normalizeKeyName(value: string) {
   }
 
   return keyAliases[normalized] ?? normalized
+}
+
+export function parseShortcutModifiers(
+  shortcut: string,
+): ParsedShortcutModifiers | null {
+  const parts = shortcut ? splitShortcutParts(shortcut) : []
+  const modifiers: ParsedShortcutModifiers = {
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+  }
+
+  for (const part of parts) {
+    const normalized = normalizeKeyName(part)
+
+    if (normalized === 'ctrl' || normalized === 'cmd' || normalized === 'command') {
+      modifiers.ctrlKey = true
+      continue
+    }
+
+    if (normalized === 'shift') {
+      modifiers.shiftKey = true
+      continue
+    }
+
+    if (normalized === 'alt' || normalized === 'option') {
+      modifiers.altKey = true
+      continue
+    }
+
+    if (normalized === 'win' || normalized === 'windows') {
+      modifiers.metaKey = true
+      continue
+    }
+
+    return null
+  }
+
+  return Object.values(modifiers).some(Boolean) ? modifiers : null
+}
+
+export function eventMatchesShortcutModifiers(
+  event: ShortcutModifierEvent,
+  shortcut: string,
+) {
+  const modifiers = parseShortcutModifiers(shortcut)
+
+  return (
+    modifiers !== null &&
+    event.altKey === modifiers.altKey &&
+    event.ctrlKey === modifiers.ctrlKey &&
+    event.metaKey === modifiers.metaKey &&
+    event.shiftKey === modifiers.shiftKey
+  )
+}
+
+export function eventMatchesShortcutActionModifiers(
+  event: ShortcutModifierEvent,
+  bindings: ShortcutBindings,
+  actionId: ShortcutActionId,
+) {
+  return eventMatchesShortcutModifiers(
+    event,
+    getShortcutBinding(bindings, actionId),
+  )
 }
 
 export function parseShortcut(shortcut: string): ParsedShortcut | null {

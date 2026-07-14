@@ -10,13 +10,10 @@ import { useTranslation } from '../../localization/useTranslation'
 
 type EditorQuickInsertExpanderControlsProps = {
   onConfirm: (data: CreateExpanderMarkdownData, keepOpen?: boolean) => void
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 const contentMaxRows = 8
-
-function shouldKeepOpen(event: ReactMouseEvent<HTMLButtonElement>) {
-  return event.shiftKey && event.button === 0
-}
 
 function getTextareaLineHeight(textarea: HTMLTextAreaElement) {
   const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight)
@@ -38,6 +35,7 @@ function resizeContentTextarea(textarea: HTMLTextAreaElement) {
 
 function EditorQuickInsertExpanderControls({
   onConfirm,
+  shouldKeepOpen,
 }: EditorQuickInsertExpanderControlsProps) {
   const { t } = useTranslation()
   const [title, setTitle] = useState('')

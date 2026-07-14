@@ -5,6 +5,7 @@ import NumberSpinner from './NumberSpinner'
 
 type EditorQuickInsertTableControlsProps = {
   onConfirm: (tableData: CreateTableMarkdownData, keepOpen?: boolean) => void
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 const DEFAULT_ROWS = 3
@@ -31,6 +32,7 @@ function createTableData(
 
 function EditorQuickInsertTableControls({
   onConfirm,
+  shouldKeepOpen,
 }: EditorQuickInsertTableControlsProps) {
   const { t } = useTranslation()
   const [rows, setRows] = useState(DEFAULT_ROWS)
@@ -95,7 +97,7 @@ function EditorQuickInsertTableControls({
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
           onConfirm(
             createTableData(rows, columns, populateWithSampleText),
-            event.shiftKey && event.button === 0,
+            shouldKeepOpen(event),
           )
         }}
       >

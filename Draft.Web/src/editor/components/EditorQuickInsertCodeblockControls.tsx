@@ -21,6 +21,7 @@ type EditorQuickInsertCodeblockControlsProps = {
     codeBlockData: CreateCodeBlockMarkdownData,
     keepOpen?: boolean,
   ) => void
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 const codeblockLanguageOptions: CodeblockLanguageOption[] = [
@@ -208,6 +209,7 @@ function filterLanguageOptions(
 
 function EditorQuickInsertCodeblockControls({
   onConfirm,
+  shouldKeepOpen,
 }: EditorQuickInsertCodeblockControlsProps) {
   const { t } = useTranslation()
   const [selectedLanguage, setSelectedLanguage] = useState(
@@ -388,7 +390,7 @@ function EditorQuickInsertCodeblockControls({
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
           onConfirm(
             { language: selectedLanguage.value },
-            event.shiftKey && event.button === 0,
+            shouldKeepOpen(event),
           )
         }}
       >
