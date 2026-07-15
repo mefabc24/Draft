@@ -760,8 +760,13 @@
 }
 
 .editor-quick-insert-keyboard-label {
-  color: #91908f;
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
   margin-top: 0;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0;
@@ -822,8 +827,8 @@
 
 .editor-quick-insert-keyboard-action {
   display: inline-flex;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -840,7 +845,9 @@
   background: rgba(255, 255, 255, 0.065);
 }
 
-.editor-quick-insert-keyboard-action:focus-visible {
+.editor-quick-insert-keyboard-action:not(
+    .editor-quick-insert-keyboard-record
+  ):focus-visible {
   outline: 1px solid currentColor;
   outline-offset: -2px;
 }
@@ -856,15 +863,15 @@
 }
 
 .editor-quick-insert-keyboard-record svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   fill: currentColor;
 }
 
 .editor-quick-insert-keyboard-clear-icon {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -876,30 +883,30 @@
   height: 36px;
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid #2c2d2f;
+  border: 1px solid var(--quick-insert-control-border);
   border-radius: 6px;
-  outline: 0;
-  background: #131313;
-  color: #91908f;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
   cursor: pointer;
-  font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
-  transition: background 140ms ease;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
 }
 
-.editor-quick-insert-keyboard-confirm:hover:not(:disabled) {
-  background: #1b1b1b;
-}
-
-.editor-quick-insert-keyboard-confirm:focus-visible {
-  outline: 1px solid #91908f;
-  outline-offset: -2px;
+.editor-quick-insert-keyboard-confirm:hover:not(:disabled),
+.editor-quick-insert-keyboard-confirm:focus-visible:not(:disabled) {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
 }
 
 .editor-quick-insert-keyboard-confirm:disabled {
-  color: #575757;
+  color: var(--markdown-toolbar-muted);
   cursor: default;
 }
 
