@@ -8,6 +8,7 @@ export type EditorQuickInsertIconName =
   | 'expander'
   | 'heading'
   | 'image'
+  | 'keyboard'
   | 'link'
   | 'list'
   | 'misc'
@@ -140,6 +141,15 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'link',
     id: 'link',
     label: 'Link',
+    type: 'section',
+  },
+  {
+    canInsertIntoNonEmptyLine: true,
+    children: [],
+    defaultExpanded: false,
+    icon: 'keyboard',
+    id: 'keyboard',
+    label: 'Keyboard',
     type: 'section',
   },
   {

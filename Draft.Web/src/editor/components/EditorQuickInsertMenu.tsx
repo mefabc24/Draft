@@ -28,6 +28,7 @@ import {
   insertEditorQuickInsertCodeBlock,
   insertEditorQuickInsertExpander,
   insertEditorQuickInsertImage,
+  insertEditorQuickInsertKeyboard,
   insertEditorQuickInsertLink,
   insertEditorQuickInsertTag,
   insertEditorQuickInsertTable,
@@ -42,6 +43,7 @@ import type {
   CreateInlineTagMarkdownData,
 } from '../commands/createInlineLinkMarkdown'
 import type { CreateTableMarkdownData } from '../commands/createTableMarkdown'
+import type { CreateKeyboardMarkdownData } from '../commands/createKeyboardMarkdown'
 import type {
   EditorQuickInsertMenuAnchor,
   EditorQuickInsertMenuPosition,
@@ -54,6 +56,7 @@ import {
 import EditorQuickInsertCodeblockControls from './EditorQuickInsertCodeblockControls'
 import EditorQuickInsertExpanderControls from './EditorQuickInsertExpanderControls'
 import EditorQuickInsertInlineMediaControls from './EditorQuickInsertInlineMediaControls'
+import EditorQuickInsertKeyboardControls from './EditorQuickInsertKeyboardControls'
 import EditorQuickInsertMenuItem from './EditorQuickInsertMenuItem'
 import EditorQuickInsertMenuSection from './EditorQuickInsertMenuSection'
 import EditorQuickInsertScrollArea from './EditorQuickInsertScrollArea'
@@ -89,6 +92,7 @@ const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
   expander: 'icons/Expander.svg',
   heading: 'icons/Headline.svg',
   image: 'icons/Image.svg',
+  keyboard: 'icons/Key.svg',
   link: 'icons/Link2.svg',
   list: 'icons/List.svg',
   misc: 'icons/Misc.svg',
@@ -586,6 +590,40 @@ function EditorQuickInsertMenu({
     [editor, onClose, onKeepOpenAction, target],
   )
 
+  const confirmKeyboard = useCallback(
+    (keyboardData: CreateKeyboardMarkdownData, keepOpen = false) => {
+      const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
+        target,
+        keepOpen,
+      )
+      const runAction = () => {
+        if (!editor || target === null) {
+          return null
+        }
+
+        const result = insertEditorQuickInsertKeyboard(
+          editor,
+          target,
+          keyboardData,
+          {
+            advanceToNextEmptyLine,
+          },
+        )
+
+        return result ? result.nextLineNumber : null
+      }
+
+      if (advanceToNextEmptyLine) {
+        onKeepOpenAction(runAction)
+        return
+      }
+
+      runAction()
+      onClose()
+    },
+    [editor, onClose, onKeepOpenAction, target],
+  )
+
   const renderCommandItem = useCallback(
     (entry: EditorQuickInsertCommandEntry, nested = false) => {
       const labelKey = entry.calloutType
@@ -683,6 +721,11 @@ function EditorQuickInsertMenu({
 
       return (
         <EditorQuickInsertMenuSection
+          className={
+            entry.id === 'keyboard'
+              ? 'editor-quick-insert-keyboard-section'
+              : undefined
+          }
           expanded={expanded}
           icon={getQuickInsertIcon(entry.icon)}
           key={entry.id}
@@ -716,6 +759,11 @@ function EditorQuickInsertMenu({
               onConfirm={confirmLink}
               shouldKeepOpen={shouldKeepQuickInsertOpen}
             />
+          ) : entry.id === 'keyboard' ? (
+            <EditorQuickInsertKeyboardControls
+              onConfirm={confirmKeyboard}
+              shouldKeepOpen={shouldKeepQuickInsertOpen}
+            />
           ) : entry.id === 'expander' ? (
             <EditorQuickInsertExpanderControls
               onConfirm={confirmExpander}
@@ -742,6 +790,7 @@ function EditorQuickInsertMenu({
       confirmCodeBlock,
       confirmExpander,
       confirmImage,
+      confirmKeyboard,
       confirmLink,
       confirmTag,
       confirmTable,

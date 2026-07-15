@@ -745,6 +745,180 @@
   color: var(--markdown-toolbar-foreground);
 }
 
+.editor-quick-insert-keyboard-section
+  .editor-quick-insert-section-trigger,
+.editor-quick-insert-keyboard-controls {
+  font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
+}
+
+.editor-quick-insert-keyboard-section .editor-quick-insert-item-label {
+  font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
+}
+
+.editor-quick-insert-keyboard-section
+  :is(.editor-quick-insert-item-icon, .editor-quick-insert-chevron) {
+  color: #91908f;
+}
+
+.editor-quick-insert-keyboard-controls {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+}
+
+.editor-quick-insert-keyboard-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.editor-quick-insert-keyboard-label {
+  color: #91908f;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.editor-quick-insert-keyboard-recorder {
+  box-sizing: border-box;
+  display: grid;
+  width: 100%;
+  height: 44px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 0 5px 0 12px;
+  border: 1px solid #2c2d2f;
+  border-radius: 6px;
+  background: #131313;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.editor-quick-insert-keyboard-recorder.is-recording {
+  border-color: #e25e5e;
+  box-shadow:
+    0 0 0 1px rgba(226, 94, 94, 0.32),
+    0 0 12px rgba(226, 94, 94, 0.72);
+}
+
+.editor-quick-insert-keyboard-value {
+  min-width: 0;
+  overflow: hidden;
+  color: #91908f;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-quick-insert-keyboard-value.is-placeholder {
+  color: #575757;
+  font-weight: 500;
+}
+
+.editor-quick-insert-keyboard-recorder.is-recording
+  .editor-quick-insert-keyboard-value {
+  color: #e25e5e;
+}
+
+.editor-quick-insert-keyboard-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.editor-quick-insert-keyboard-action {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  outline: 0;
+  background: transparent;
+  color: #91908f;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.editor-quick-insert-keyboard-action:hover {
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.editor-quick-insert-keyboard-action:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: -2px;
+}
+
+.editor-quick-insert-keyboard-recorder.is-recording
+  .editor-quick-insert-keyboard-action {
+  color: #e25e5e;
+}
+
+.editor-quick-insert-keyboard-recorder.is-recording
+  .editor-quick-insert-keyboard-action:hover {
+  background: rgba(226, 94, 94, 0.12);
+}
+
+.editor-quick-insert-keyboard-action svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.editor-quick-insert-keyboard-clear-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
+.editor-quick-insert-keyboard-confirm {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #2c2d2f;
+  border-radius: 6px;
+  outline: 0;
+  background: #131313;
+  color: #91908f;
+  cursor: pointer;
+  font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  transition: background 140ms ease;
+}
+
+.editor-quick-insert-keyboard-confirm:hover:not(:disabled) {
+  background: #1b1b1b;
+}
+
+.editor-quick-insert-keyboard-confirm:focus-visible {
+  outline: 1px solid #91908f;
+  outline-offset: -2px;
+}
+
+.editor-quick-insert-keyboard-confirm:disabled {
+  color: #575757;
+  cursor: default;
+}
+
 .editor-quick-insert-tag-controls {
   display: grid;
   gap: 8px;
@@ -1259,6 +1433,9 @@
   .editor-quick-insert-expander-field input,
   .editor-quick-insert-expander-field textarea,
   .editor-quick-insert-expander-confirm,
+  .editor-quick-insert-keyboard-recorder,
+  .editor-quick-insert-keyboard-action,
+  .editor-quick-insert-keyboard-confirm,
   .editor-quick-insert-tag-field > input,
   .editor-quick-insert-tag-color-input,
   .editor-quick-insert-tag-confirm,

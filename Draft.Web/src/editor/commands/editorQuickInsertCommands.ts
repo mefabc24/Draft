@@ -22,6 +22,10 @@ import {
   createTableMarkdown,
   type CreateTableMarkdownData,
 } from './createTableMarkdown'
+import {
+  createKeyboardMarkdown,
+  type CreateKeyboardMarkdownData,
+} from './createKeyboardMarkdown'
 
 export type EditorQuickInsertCommand =
   | 'blockquote'
@@ -418,6 +422,21 @@ export function insertEditorQuickInsertExpander(
     editor,
     target,
     createExpanderMarkdown(expanderData),
+    undefined,
+    options,
+  )
+}
+
+export function insertEditorQuickInsertKeyboard(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  target: EditorQuickInsertTarget,
+  keyboardData: CreateKeyboardMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
+) {
+  return insertQuickInsertText(
+    editor,
+    target,
+    createKeyboardMarkdown(keyboardData),
     undefined,
     options,
   )
