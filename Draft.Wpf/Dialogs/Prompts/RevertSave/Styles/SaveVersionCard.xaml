@@ -83,7 +83,7 @@
                         </DataTrigger>
 
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#333538" />
+                            <Setter TargetName="border" Property="Background" Value="#242528" />
                             <Setter TargetName="border" Property="BorderBrush" Value="#A5C8FF" />
                             <Setter TargetName="Icon" Property="Fill" Value="#A5C8FF" />
                             <Setter TargetName="TitleText" Property="Foreground" Value="#A5C8FF" />
@@ -99,7 +99,7 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="border" Property="Background" Value="#2E3033" />
+                            <Setter TargetName="border" Property="Background" Value="#2B2D31" />
                             <Setter Property="Cursor" Value="Hand" />
                         </MultiTrigger>
 
