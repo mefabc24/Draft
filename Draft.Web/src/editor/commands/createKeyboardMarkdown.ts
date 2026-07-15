@@ -12,5 +12,12 @@ function escapeHtmlText(value: string) {
 }
 
 export function createKeyboardMarkdown({ keybind }: CreateKeyboardMarkdownData) {
-  return `<kbd>${escapeHtmlText(keybind.trim() || 'Key')}</kbd>`
+  const keys = (keybind.trim() || 'Key')
+    .split('+')
+    .map((key) => key.trim())
+    .filter(Boolean)
+
+  return keys
+    .map((key) => `<kbd>${escapeHtmlText(key)}</kbd>`)
+    .join('+')
 }
