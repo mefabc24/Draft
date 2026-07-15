@@ -151,23 +151,6 @@ public sealed class ShellDialogCoordinator
         return result.Id == "close-draft";
     }
 
-    public bool ConfirmOpenExternalLink(Uri uri)
-    {
-        MessageDialogResult result = ShowConfirmationDialog(
-            LocalizationService.Translate("dialog.openExternalLink.title", "Open External Link"),
-            LocalizationService.TranslateFormat(
-                "dialog.openExternalLink.description",
-                "Open this link in your default browser?\n{url}",
-                new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    ["url"] = uri.AbsoluteUri,
-                }),
-            LocalizationService.Translate("dialog.openExternalLink.openLink", "Open Link"),
-            "open-link");
-
-        return result.Id == "open-link";
-    }
-
     public MissingFilePathSaveAction ShowMissingFilePathSavePrompt(string filePath)
     {
         MessageDialogResult result = _messageDialogService.ShowMessage(

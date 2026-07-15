@@ -86,17 +86,17 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
-                    Title="{i18n:Loc settings.statusBar.appVersion}"
-                    Margin="0,0,0,12"
-                    Description="{i18n:Loc settings.statusBar.appVersion.description}">
-                    <CheckBox IsChecked="{Binding Settings.IsStatusBarAppVersionVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
-                </settings:SettingCard>
-
-                <settings:SettingCard
                     Title="{i18n:Loc settings.statusBar.reportBugButton}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.statusBar.reportBugButton.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarReportBugButtonVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard
+                    Title="{i18n:Loc settings.statusBar.appVersion}"
+                    Margin="0,0,0,12"
+                    Description="{i18n:Loc settings.statusBar.appVersion.description}">
+                    <CheckBox IsChecked="{Binding Settings.IsStatusBarAppVersionVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
             </StackPanel>
         </ScrollViewer>

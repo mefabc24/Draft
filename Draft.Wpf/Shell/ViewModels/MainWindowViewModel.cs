@@ -39,6 +39,7 @@ public class MainWindowViewModel : BaseViewModel
     private bool _saveOnFocusLost;
     private bool _includeMarkdownSyntaxInCharacterCount;
     private bool _confirmBeforeClosingUnsavedFiles = true;
+    private bool _confirmBeforeOpeningExternalLinks = true;
     private bool _isStatusBarVisible = true;
     private bool _isStatusBarFileTypeVisible = true;
     private bool _isStatusBarEncodingVisible = true;
@@ -345,6 +346,12 @@ public class MainWindowViewModel : BaseViewModel
         }
     }
 
+    public bool ConfirmBeforeOpeningExternalLinks
+    {
+        get => _confirmBeforeOpeningExternalLinks;
+        private set => SetProperty(ref _confirmBeforeOpeningExternalLinks, value);
+    }
+
     public bool IsStatusBarFileTypeVisible
     {
         get => _isStatusBarFileTypeVisible;
@@ -612,6 +619,7 @@ public class MainWindowViewModel : BaseViewModel
         SaveOnFocusLost = settings.SaveOnFocusLost;
         IncludeMarkdownSyntaxInCharacterCount = settings.IncludeMarkdownSyntaxInCharacterCount;
         ConfirmBeforeClosingUnsavedFiles = settings.ConfirmBeforeClosingUnsavedFiles;
+        ConfirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks;
         DefaultSaveLocation = settings.DefaultSaveLocation;
         IsStatusBarVisible = settings.IsStatusBarVisible;
         IsStatusBarFileTypeVisible = settings.IsStatusBarFileTypeVisible;

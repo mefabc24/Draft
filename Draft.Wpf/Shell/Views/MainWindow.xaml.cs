@@ -5,6 +5,7 @@ using Draft.Dialogs.Prompts.GoToPosition.Models;
 using Draft.Dialogs.Prompts.RevertSave.Models;
 using Draft.Export.Models;
 using Draft.Export.Services;
+using Draft.ExternalLinks.Services;
 using Draft.Save.Models;
 using Draft.Settings.Shortcuts;
 using Draft.Shell.Services;
@@ -12,7 +13,6 @@ using Draft.Shell.ViewModels;
 using Draft.WebWorkspace.Services;
 using Microsoft.Web.WebView2.Core;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Security;
 using System.Text.Json;
@@ -35,6 +35,7 @@ public partial class MainWindow : Window
     private const string ReportBugUrl = "https://github.com/mefabc24/Draft/issues";
     private readonly MainWindowSessionService _sessionService = new();
     private readonly ShellDialogCoordinator _dialogCoordinator = new();
+    private readonly ExternalLinkService _externalLinkService;
     private readonly ShellFileDialogService _fileDialogService = new();
     private readonly DocumentExportService _documentExportService = new();
     private readonly DraftWebViewHostService _webViewHostService = new();
@@ -84,6 +85,7 @@ public partial class MainWindow : Window
     public MainWindow(MainWindowViewModel viewModel, DraftSettings settings)
     {
         InitializeComponent();
+        _externalLinkService = new ExternalLinkService();
         _settings = AppSettingsStore.Normalize(settings);
         LocalizationService.SetCurrentAppLanguage(_settings.AppLanguage);
         _windowSizingService.ApplyStartupWindowSize(this);
@@ -1104,66 +1106,13 @@ public partial class MainWindow : Window
 
     private void OpenExternalUrl(string url)
     {
-        if (!TryCreateExternalUri(url, out Uri? uri))
-            return;
-
-        if (_settings.ConfirmBeforeOpeningExternalLinks
-            && !_dialogCoordinator.ConfirmOpenExternalLink(uri))
-        {
-            return;
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri)
-            {
-                UseShellExecute = true,
-            });
-        }
-        catch (Exception ex) when (IsExternalLinkException(ex))
-        {
-            _dialogCoordinator.ShowMessage(
-                LocalizationService.Translate("dialog.openExternalLink.title", "Open External Link"),
-                LocalizationService.Translate(
-                    "dialog.openExternalLink.openFailed",
-                    "The link could not be opened in your default browser."),
-                MessageDialogType.Error);
-        }
-    }
-
-    private static bool TryCreateExternalUri(string url, out Uri uri)
-    {
-        uri = null!;
-
-        if (string.IsNullOrWhiteSpace(url)
-            || !Uri.TryCreate(url, UriKind.Absolute, out Uri? parsedUri))
-        {
-            return false;
-        }
-
-        if (!string.Equals(parsedUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(parsedUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(parsedUri.Scheme, Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        uri = parsedUri;
-        return true;
+        _externalLinkService.TryOpen(url, _settings.ConfirmBeforeOpeningExternalLinks);
     }
 
     private static bool IsInternalWebViewUri(string url)
     {
         return Uri.TryCreate(url, UriKind.Absolute, out Uri? uri)
             && string.Equals(uri.Host, WebHostName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsExternalLinkException(Exception ex)
-    {
-        return ex is Win32Exception
-            or InvalidOperationException
-            or FileNotFoundException
-            or SecurityException;
     }
 
     private static bool IsFileOperationException(Exception ex)
