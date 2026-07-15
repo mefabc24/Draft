@@ -69,7 +69,7 @@
                     <RadioButton
                         DataContext="{Binding LastManualSaveCard}"
                         GroupName="SaveOptions"
-                        IsChecked="True"
+                        IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         IsEnabled="{Binding IsAvailable}"
                         Style="{StaticResource SaveVersionCard}" />
                     <RadioButton
