@@ -6,6 +6,7 @@
 
     <i18n:LocalizedDisplayValueConverter x:Key="LocalizedDisplayValueConverter" />
     <i18n:LanguageFlagImageConverter x:Key="LanguageFlagImageConverter" />
+    <SolidColorBrush x:Key="SettingsComboBoxPopupBackground" Color="#181818" />
 
     <DataTemplate x:Key="LocalizedComboBoxItemTemplate">
         <TextBlock>
@@ -195,7 +196,7 @@
 
                             <Border
                                 MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
-                                Background="{StaticResource Brush.Background.Surface}"
+                                Background="{StaticResource SettingsComboBoxPopupBackground}"
                                 BorderBrush="{StaticResource Brush.Background.Secondary}"
                                 BorderThickness="1"
                                 CornerRadius="3">
