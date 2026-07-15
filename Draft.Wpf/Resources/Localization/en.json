@@ -128,6 +128,8 @@
                          "settings.about.github.description":  "Open the Draft project repository.",
                          "settings.about.openGitHub":  "Open GitHub",
                          "settings.about.projectLinks":  "PROJECT \u0026 LINKS",
+                         "settings.about.reportBug":  "Report Bug",
+                         "settings.about.reportBug.description":  "Open the GitHub issue tracker to report a bug.",
                          "settings.about.tagline":  "A focused Markdown editor for writing, previewing, and saving clean Markdown documents in a calm desktop workspace.",
                          "settings.about.version":  "Version",
                          "settings.about.versionUpdates":  "VERSION \u0026 UPDATES",

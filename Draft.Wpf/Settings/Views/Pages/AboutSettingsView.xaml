@@ -34,12 +34,24 @@
                     StatusText="{Binding Status.StatusText, Source={x:Static helpers:UpdateCoordinator.Current}}" />
 
                 <section:SectionHeader Title="{i18n:Loc settings.about.projectLinks}" />
-                <settings:SettingCard Title="{i18n:Loc settings.about.github}" Description="{i18n:Loc settings.about.github.description}">
+                <settings:SettingCard
+                    Title="{i18n:Loc settings.about.github}"
+                    Margin="0,0,0,12"
+                    Description="{i18n:Loc settings.about.github.description}">
                     <Button
                         Width="120"
                         Height="36"
                         Click="GitHubButton_Click"
                         Content="{i18n:Loc settings.about.openGitHub}"
+                        Style="{StaticResource SettingButton}" />
+                </settings:SettingCard>
+
+                <settings:SettingCard Title="{i18n:Loc settings.about.reportBug}" Description="{i18n:Loc settings.about.reportBug.description}">
+                    <Button
+                        Width="120"
+                        Height="36"
+                        Click="ReportBugButton_Click"
+                        Content="{i18n:Loc settings.about.reportBug}"
                         Style="{StaticResource SettingButton}" />
                 </settings:SettingCard>
             </StackPanel>

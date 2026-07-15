@@ -8,6 +8,7 @@ namespace Draft.Settings.Views.Pages;
 public partial class AboutSettingsView : UserControl
 {
     private const string ProjectUrl = "https://github.com/mefabc24/Draft";
+    private const string ReportBugUrl = "https://github.com/mefabc24/Draft/issues";
 
     public string VersionText { get; } = GetVersionText();
 
@@ -51,6 +52,15 @@ public partial class AboutSettingsView : UserControl
         Process.Start(new ProcessStartInfo
         {
             FileName = ProjectUrl,
+            UseShellExecute = true,
+        });
+    }
+
+    private void ReportBugButton_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = ReportBugUrl,
             UseShellExecute = true,
         });
     }
