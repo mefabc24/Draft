@@ -48,6 +48,7 @@ public partial class MainWindow : Window
     private bool _isWebWorkspaceReady;
     private bool _hasSentStartupState;
     private bool _hasWebAppliedStartupState;
+    private bool _isWebKeyboardShortcutRecording;
     private int _documentGeneration = 1;
     private bool _isSettingsWindowOpen;
     private bool _isPromptWindowOpen;
@@ -758,6 +759,9 @@ public partial class MainWindow : Window
 
         _shortcutInputBindings.Clear();
 
+        if (_isWebKeyboardShortcutRecording)
+            return;
+
         if (ViewModel is not MainWindowViewModel viewModel)
             return;
 
@@ -940,6 +944,7 @@ public partial class MainWindow : Window
 
     private void ResetWebWorkspaceReadiness()
     {
+        SetWebKeyboardShortcutRecording(false);
         _isWebViewNavigationReady = false;
         _isWebWorkspaceReady = false;
         _hasSentStartupState = false;
@@ -1092,9 +1097,19 @@ public partial class MainWindow : Window
             UpdateContentFromWeb,
             viewModel.UpdateCursorPosition,
             UpdateClipboardTextFromWeb,
+            SetWebKeyboardShortcutRecording,
             () => viewModel.SaveFileCommand.Execute(null),
             () => viewModel.OpenFileCommand.Execute(null),
             OpenExternalUrl);
+    }
+
+    private void SetWebKeyboardShortcutRecording(bool isRecording)
+    {
+        if (_isWebKeyboardShortcutRecording == isRecording)
+            return;
+
+        _isWebKeyboardShortcutRecording = isRecording;
+        RefreshShellShortcutBindings();
     }
 
     private void UpdateClipboardTextFromWeb(string text)

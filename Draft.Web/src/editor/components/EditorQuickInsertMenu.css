@@ -745,39 +745,26 @@
   color: var(--markdown-toolbar-foreground);
 }
 
-.editor-quick-insert-keyboard-section
-  .editor-quick-insert-section-trigger,
-.editor-quick-insert-keyboard-controls {
-  font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
-}
-
-.editor-quick-insert-keyboard-section .editor-quick-insert-item-label {
-  font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
-}
-
-.editor-quick-insert-keyboard-section
-  :is(.editor-quick-insert-item-icon, .editor-quick-insert-chevron) {
-  color: #91908f;
-}
-
 .editor-quick-insert-keyboard-controls {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   padding: 0;
+  font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
 }
 
 .editor-quick-insert-keyboard-field {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .editor-quick-insert-keyboard-label {
   color: #91908f;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  margin-top: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -786,10 +773,10 @@
   box-sizing: border-box;
   display: grid;
   width: 100%;
-  height: 44px;
+  height: 36px;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  padding: 0 5px 0 12px;
+  padding: 0 3px 0 12px;
   border: 1px solid #2c2d2f;
   border-radius: 6px;
   background: #131313;
@@ -809,9 +796,9 @@
   min-width: 0;
   overflow: hidden;
   color: #91908f;
-  font-size: 15px;
-  font-weight: 650;
-  letter-spacing: 0.02em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -835,8 +822,8 @@
 
 .editor-quick-insert-keyboard-action {
   display: inline-flex;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -868,9 +855,9 @@
   background: rgba(226, 94, 94, 0.12);
 }
 
-.editor-quick-insert-keyboard-action svg {
-  width: 24px;
-  height: 24px;
+.editor-quick-insert-keyboard-record svg {
+  width: 22px;
+  height: 22px;
   fill: currentColor;
 }
 
@@ -878,19 +865,16 @@
   display: block;
   width: 16px;
   height: 16px;
-  background: currentColor;
-  mask-position: center;
-  mask-repeat: no-repeat;
-  mask-size: contain;
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: contain;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
 }
 
 .editor-quick-insert-keyboard-confirm {
   width: 100%;
-  height: 44px;
-  min-height: 44px;
+  height: 36px;
+  min-height: 36px;
   padding: 0 14px;
   border: 1px solid #2c2d2f;
   border-radius: 6px;
@@ -899,7 +883,7 @@
   color: #91908f;
   cursor: pointer;
   font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1;
   transition: background 140ms ease;

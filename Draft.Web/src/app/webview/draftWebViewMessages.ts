@@ -20,6 +20,8 @@ const CLIPBOARD_TEXT_COPIED_MESSAGE_TYPE = 'clipboardTextCopied'
 const SAVE_REQUESTED_MESSAGE_TYPE = 'saveRequested'
 const OPEN_REQUESTED_MESSAGE_TYPE = 'openRequested'
 const OPEN_EXTERNAL_URL_MESSAGE_TYPE = 'openExternalUrl'
+const KEYBOARD_SHORTCUT_RECORDING_CHANGED_MESSAGE_TYPE =
+  'keyboardShortcutRecordingChanged'
 
 export type WorkspaceModeMessage = {
   type: 'workspaceModeChanged'
@@ -297,5 +299,12 @@ export function postOpenExternalUrl(url: string) {
   postWebViewMessage({
     type: OPEN_EXTERNAL_URL_MESSAGE_TYPE,
     url,
+  })
+}
+
+export function postKeyboardShortcutRecordingChanged(isRecording: boolean) {
+  postWebViewMessage({
+    type: KEYBOARD_SHORTCUT_RECORDING_CHANGED_MESSAGE_TYPE,
+    isRecording,
   })
 }

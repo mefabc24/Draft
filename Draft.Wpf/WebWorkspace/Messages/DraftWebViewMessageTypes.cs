@@ -15,4 +15,5 @@ public static class DraftWebViewMessageTypes
     public const string SaveRequested = "saveRequested";
     public const string OpenRequested = "openRequested";
     public const string OpenExternalUrl = "openExternalUrl";
+    public const string KeyboardShortcutRecordingChanged = "keyboardShortcutRecordingChanged";
 }

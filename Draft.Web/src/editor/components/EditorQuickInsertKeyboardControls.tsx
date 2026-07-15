@@ -1,9 +1,11 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
 } from 'react'
+import { postKeyboardShortcutRecordingChanged } from '../../app/webview/draftWebViewMessages'
 import { useTranslation } from '../../localization/useTranslation'
 import type { CreateKeyboardMarkdownData } from '../commands/createKeyboardMarkdown'
 
@@ -172,11 +174,33 @@ function EditorQuickInsertKeyboardControls({
   const [keybind, setKeybind] = useState('')
   const [recordingText, setRecordingText] = useState('')
   const [isRecording, setIsRecording] = useState(false)
+  const isRecordingRef = useRef(false)
   const recordButtonRef = useRef<HTMLButtonElement | null>(null)
-  const clearIconUrl = `${import.meta.env.BASE_URL}icons/Failed.svg`
   const placeholder = t(
     'quickInsert.keyboard.placeholder',
     'Press keys to record',
+  )
+
+  const setRecordingActive = useCallback((nextIsRecording: boolean) => {
+    if (isRecordingRef.current === nextIsRecording) {
+      return
+    }
+
+    isRecordingRef.current = nextIsRecording
+    postKeyboardShortcutRecordingChanged(nextIsRecording)
+    setIsRecording(nextIsRecording)
+  }, [])
+
+  useEffect(
+    () => () => {
+      if (!isRecordingRef.current) {
+        return
+      }
+
+      isRecordingRef.current = false
+      postKeyboardShortcutRecordingChanged(false)
+    },
+    [],
   )
 
   useEffect(() => {
@@ -227,13 +251,13 @@ function EditorQuickInsertKeyboardControls({
       if (hasRecordedKey && pressedKeys.size === 0) {
         setKeybind(pendingKeybind)
         setRecordingText('')
-        setIsRecording(false)
+        setRecordingActive(false)
       }
     }
 
     const cancelRecording = () => {
       setRecordingText('')
-      setIsRecording(false)
+      setRecordingActive(false)
     }
 
     window.addEventListener('keydown', handleKeyDown, true)
@@ -245,23 +269,23 @@ function EditorQuickInsertKeyboardControls({
       window.removeEventListener('keyup', handleKeyUp, true)
       window.removeEventListener('blur', cancelRecording)
     }
-  }, [isRecording])
+  }, [isRecording, setRecordingActive])
 
   const toggleRecording = () => {
     if (isRecording) {
       setRecordingText('')
-      setIsRecording(false)
+      setRecordingActive(false)
       return
     }
 
     setRecordingText(keybind)
-    setIsRecording(true)
+    setRecordingActive(true)
     recordButtonRef.current?.focus()
   }
 
   const clearKeybind = () => {
     setRecordingText('')
-    setIsRecording(false)
+    setRecordingActive(false)
     setKeybind('')
     recordButtonRef.current?.focus()
   }
@@ -307,14 +331,14 @@ function EditorQuickInsertKeyboardControls({
                 )}
                 type="button"
               >
-                <span
+                <svg
                   aria-hidden="true"
                   className="editor-quick-insert-keyboard-clear-icon"
-                  style={{
-                    WebkitMaskImage: `url("${clearIconUrl}")`,
-                    maskImage: `url("${clearIconUrl}")`,
-                  }}
-                />
+                  focusable="false"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="m4 4 8 8M12 4 4 12" />
+                </svg>
               </button>
             ) : null}
             <button

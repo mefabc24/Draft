@@ -721,11 +721,6 @@ function EditorQuickInsertMenu({
 
       return (
         <EditorQuickInsertMenuSection
-          className={
-            entry.id === 'keyboard'
-              ? 'editor-quick-insert-keyboard-section'
-              : undefined
-          }
           expanded={expanded}
           icon={getQuickInsertIcon(entry.icon)}
           key={entry.id}

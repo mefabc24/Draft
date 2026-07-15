@@ -158,6 +158,7 @@ public sealed class DraftWebViewMessageBridge
         Action<string, int?> documentChanged,
         Action<int, int, int> cursorPositionChanged,
         Action<string> clipboardTextCopied,
+        Action<bool> keyboardShortcutRecordingChanged,
         Action saveRequested,
         Action openRequested,
         Action<string> openExternalUrl)
@@ -194,6 +195,11 @@ public sealed class DraftWebViewMessageBridge
                     break;
                 case DraftWebViewMessageTypes.ClipboardTextCopied:
                     DispatchClipboardTextCopiedMessage(root, clipboardTextCopied);
+                    break;
+                case DraftWebViewMessageTypes.KeyboardShortcutRecordingChanged:
+                    DispatchKeyboardShortcutRecordingChangedMessage(
+                        root,
+                        keyboardShortcutRecordingChanged);
                     break;
                 case DraftWebViewMessageTypes.SaveRequested:
                     saveRequested();
@@ -282,6 +288,17 @@ public sealed class DraftWebViewMessageBridge
         if (!string.IsNullOrEmpty(text))
         {
             clipboardTextCopied(text);
+        }
+    }
+
+    private static void DispatchKeyboardShortcutRecordingChangedMessage(
+        JsonElement root,
+        Action<bool> keyboardShortcutRecordingChanged)
+    {
+        if (root.TryGetProperty("isRecording", out JsonElement isRecordingElement)
+            && isRecordingElement.ValueKind is JsonValueKind.True or JsonValueKind.False)
+        {
+            keyboardShortcutRecordingChanged(isRecordingElement.GetBoolean());
         }
     }
 
