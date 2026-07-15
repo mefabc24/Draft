@@ -863,8 +863,9 @@
 }
 
 .editor-quick-insert-keyboard-record svg {
-  width: 26px;
-  height: 26px;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
   fill: currentColor;
 }
 
