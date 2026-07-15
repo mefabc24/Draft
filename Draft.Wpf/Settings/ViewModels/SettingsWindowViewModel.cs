@@ -63,6 +63,7 @@ public class SettingsWindowViewModel : BaseViewModel
     private bool _isStatusBarSaveStatusVisible = true;
     private bool _isStatusBarAutosaveStatusVisible = true;
     private bool _isStatusBarAppVersionVisible = true;
+    private bool _isStatusBarReportBugButtonVisible = true;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _toolbarControlbarPosition = AppSettingsStore.DefaultToolbarPosition;
     private Dictionary<string, string> _shortcuts =
@@ -646,6 +647,12 @@ public class SettingsWindowViewModel : BaseViewModel
         set => SetSetting(ref _isStatusBarAppVersionVisible, value);
     }
 
+    public bool IsStatusBarReportBugButtonVisible
+    {
+        get => _isStatusBarReportBugButtonVisible;
+        set => SetSetting(ref _isStatusBarReportBugButtonVisible, value);
+    }
+
     public string WindowBorderAccentMode
     {
         get => GetWindowBorderAccentModeDisplayName(_windowBorderAccentMode);
@@ -796,6 +803,7 @@ public class SettingsWindowViewModel : BaseViewModel
         _isStatusBarSaveStatusVisible = settings.IsStatusBarSaveStatusVisible;
         _isStatusBarAutosaveStatusVisible = settings.IsStatusBarAutosaveStatusVisible;
         _isStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible;
+        _isStatusBarReportBugButtonVisible = settings.IsStatusBarReportBugButtonVisible;
         _windowBorderAccentMode = EnsureOptionValue(
             GetWindowBorderAccentModeValues(),
             settings.WindowBorderAccentMode,
@@ -923,6 +931,7 @@ public class SettingsWindowViewModel : BaseViewModel
             IsStatusBarSaveStatusVisible = IsStatusBarSaveStatusVisible,
             IsStatusBarAutosaveStatusVisible = IsStatusBarAutosaveStatusVisible,
             IsStatusBarAppVersionVisible = IsStatusBarAppVersionVisible,
+            IsStatusBarReportBugButtonVisible = IsStatusBarReportBugButtonVisible,
             WindowBorderAccentMode = _windowBorderAccentMode,
             ToolbarControlbarPosition = ToolbarControlbarPosition,
             Shortcuts = ShortcutSettingsCatalog.Normalize(_shortcuts),
@@ -1045,6 +1054,7 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsStatusBarSaveStatusVisible));
         OnPropertyChanged(nameof(IsStatusBarAutosaveStatusVisible));
         OnPropertyChanged(nameof(IsStatusBarAppVersionVisible));
+        OnPropertyChanged(nameof(IsStatusBarReportBugButtonVisible));
         OnPropertyChanged(nameof(WindowBorderAccentMode));
         OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         OnPropertyChanged(nameof(ToolbarControlbarPosition));

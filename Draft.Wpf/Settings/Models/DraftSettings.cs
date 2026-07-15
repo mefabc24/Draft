@@ -93,6 +93,8 @@ public sealed class DraftSettings
 
     public bool IsStatusBarAppVersionVisible { get; set; } = true;
 
+    public bool IsStatusBarReportBugButtonVisible { get; set; } = true;
+
     public string WindowBorderAccentMode { get; set; } = SettingsDefaults.WindowBorderAccentDisabled;
 
     public string ToolbarControlbarPosition { get; set; } = "Top";

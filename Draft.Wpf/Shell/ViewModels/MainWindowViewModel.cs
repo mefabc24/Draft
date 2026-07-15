@@ -49,6 +49,7 @@ public class MainWindowViewModel : BaseViewModel
     private bool _isStatusBarSaveStatusVisible = true;
     private bool _isStatusBarAutosaveStatusVisible = true;
     private bool _isStatusBarAppVersionVisible = true;
+    private bool _isStatusBarReportBugButtonVisible = true;
     private bool _isCopyMarkdownFeedbackVisible;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _openShortcut = ShortcutSettingsCatalog.GetShortcut(null, ShortcutActionIds.AppOpen);
@@ -398,6 +399,12 @@ public class MainWindowViewModel : BaseViewModel
         private set => SetProperty(ref _isStatusBarAppVersionVisible, value);
     }
 
+    public bool IsStatusBarReportBugButtonVisible
+    {
+        get => _isStatusBarReportBugButtonVisible;
+        private set => SetProperty(ref _isStatusBarReportBugButtonVisible, value);
+    }
+
     public string WindowBorderAccentMode
     {
         get => _windowBorderAccentMode;
@@ -478,6 +485,8 @@ public class MainWindowViewModel : BaseViewModel
 
     public ICommand OpenAboutSettingsCommand { get; }
 
+    public ICommand OpenReportBugCommand { get; }
+
     public ICommand OpenCursorPositionPromptCommand { get; }
 
     public ICommand OpenAutosavePromptCommand { get; }
@@ -509,6 +518,8 @@ public class MainWindowViewModel : BaseViewModel
     public event EventHandler? OpenSettingsRequested;
 
     public event EventHandler? OpenAboutSettingsRequested;
+
+    public event EventHandler? OpenReportBugRequested;
 
     public event EventHandler? OpenCursorPositionPromptRequested;
 
@@ -548,6 +559,8 @@ public class MainWindowViewModel : BaseViewModel
         OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
         OpenAboutSettingsCommand = new RelayCommand(
             () => OpenAboutSettingsRequested?.Invoke(this, EventArgs.Empty));
+        OpenReportBugCommand = new RelayCommand(
+            () => OpenReportBugRequested?.Invoke(this, EventArgs.Empty));
         OpenCursorPositionPromptCommand = new RelayCommand(
             () => OpenCursorPositionPromptRequested?.Invoke(this, EventArgs.Empty));
         OpenAutosavePromptCommand = new RelayCommand(
@@ -610,6 +623,7 @@ public class MainWindowViewModel : BaseViewModel
         IsStatusBarSaveStatusVisible = settings.IsStatusBarSaveStatusVisible;
         IsStatusBarAutosaveStatusVisible = settings.IsStatusBarAutosaveStatusVisible;
         IsStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible;
+        IsStatusBarReportBugButtonVisible = settings.IsStatusBarReportBugButtonVisible;
         WindowBorderAccentMode = settings.WindowBorderAccentMode;
         OpenShortcut = ShortcutSettingsCatalog.GetShortcut(settings.Shortcuts, ShortcutActionIds.AppOpen);
         SaveShortcut = ShortcutSettingsCatalog.GetShortcut(settings.Shortcuts, ShortcutActionIds.AppSave);

@@ -32,6 +32,7 @@ public partial class MainWindow : Window
             new PropertyMetadata(false));
 
     private const string WebHostName = "draft.local";
+    private const string ReportBugUrl = "https://github.com/mefabc24/Draft/issues";
     private readonly MainWindowSessionService _sessionService = new();
     private readonly ShellDialogCoordinator _dialogCoordinator = new();
     private readonly ShellFileDialogService _fileDialogService = new();
@@ -226,6 +227,7 @@ public partial class MainWindow : Window
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
         viewModel.OpenAboutSettingsRequested += ViewModel_OpenAboutSettingsRequested;
+        viewModel.OpenReportBugRequested += ViewModel_OpenReportBugRequested;
         viewModel.OpenCursorPositionPromptRequested += ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested += ViewModel_OpenAutosavePromptRequested;
         viewModel.OpenRevertSavePromptRequested += ViewModel_OpenRevertSavePromptRequested;
@@ -242,6 +244,7 @@ public partial class MainWindow : Window
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
         viewModel.OpenAboutSettingsRequested -= ViewModel_OpenAboutSettingsRequested;
+        viewModel.OpenReportBugRequested -= ViewModel_OpenReportBugRequested;
         viewModel.OpenCursorPositionPromptRequested -= ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested -= ViewModel_OpenAutosavePromptRequested;
         viewModel.OpenRevertSavePromptRequested -= ViewModel_OpenRevertSavePromptRequested;
@@ -463,6 +466,11 @@ public partial class MainWindow : Window
     private void ViewModel_OpenAboutSettingsRequested(object? sender, EventArgs e)
     {
         ShowSettings(SettingsPage.About);
+    }
+
+    private void ViewModel_OpenReportBugRequested(object? sender, EventArgs e)
+    {
+        OpenExternalUrl(ReportBugUrl);
     }
 
     public void ShowSettings(SettingsPage initialPage = SettingsPage.General)
@@ -688,6 +696,7 @@ public partial class MainWindow : Window
             IsStatusBarSaveStatusVisible = settings.IsStatusBarSaveStatusVisible,
             IsStatusBarAutosaveStatusVisible = settings.IsStatusBarAutosaveStatusVisible,
             IsStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible,
+            IsStatusBarReportBugButtonVisible = settings.IsStatusBarReportBugButtonVisible,
             WindowBorderAccentMode = settings.WindowBorderAccentMode,
             ToolbarControlbarPosition = settings.ToolbarControlbarPosition,
             Shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts),
