@@ -781,7 +781,7 @@
   height: 36px;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  padding: 0 3px 0 12px;
+  padding: 0 4px 0 12px;
   border: 1px solid #2c2d2f;
   border-radius: 6px;
   background: #131313;
@@ -822,7 +822,7 @@
 .editor-quick-insert-keyboard-actions {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .editor-quick-insert-keyboard-action {
@@ -863,8 +863,8 @@
 }
 
 .editor-quick-insert-keyboard-record svg {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   fill: currentColor;
 }
 

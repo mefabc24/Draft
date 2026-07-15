@@ -92,7 +92,7 @@ const quickInsertIconPaths: Record<EditorQuickInsertIconName, string> = {
   expander: 'icons/Expander.svg',
   heading: 'icons/Headline.svg',
   image: 'icons/Image.svg',
-  keyboard: 'icons/Key.svg',
+  keyboard: 'icons/Enter.svg',
   link: 'icons/Link2.svg',
   list: 'icons/List.svg',
   misc: 'icons/Misc.svg',
