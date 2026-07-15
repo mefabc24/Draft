@@ -7,6 +7,7 @@ type ToolbarButtonProps = {
   ariaHasPopup?: 'dialog' | 'menu'
   ariaLabel: string
   children: ReactNode
+  className?: string
   onClick: () => void
   onTooltipHide?: () => void
   onTooltipShow?: (
@@ -22,6 +23,7 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(function
   ariaHasPopup,
   ariaLabel,
   children,
+  className,
   onClick,
   onTooltipHide,
   onTooltipShow,
@@ -31,7 +33,9 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(function
     <button
       ref={ref}
       type="button"
-      className={`markdown-toolbar-button${active ? ' is-active' : ''}`}
+      className={`markdown-toolbar-button${active ? ' is-active' : ''}${
+        className ? ` ${className}` : ''
+      }`}
       aria-label={ariaLabel}
       aria-expanded={ariaExpanded}
       aria-haspopup={ariaHasPopup}

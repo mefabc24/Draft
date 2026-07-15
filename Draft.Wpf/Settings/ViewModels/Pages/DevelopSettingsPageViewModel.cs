@@ -15,10 +15,12 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
     private readonly IGoToPositionPromptService _goToPositionPromptService = new GoToPositionPromptService();
     private bool _isDemoUpdateAvailable;
     private bool _isDemoUpdateChecking;
-    private string _demoUpdateStatus = "Test card. Scan to simulate an available update.";
+    private string _demoUpdateStatus = LocalizationService.Translate(
+        "settings.develop.demoUpdateStatus.initial",
+        "Test card. Scan to simulate an available update.");
 
     public DevelopSettingsPageViewModel(SettingsWindowViewModel settings)
-        : base("Develop", settings)
+        : base("settings.develop", "Develop", settings)
     {
         ShowInfoDialogCommand = new RelayCommand(() => ShowDialog(MessageDialogType.Info, InfoDialogButtonCount));
         ShowWarningDialogCommand = new RelayCommand(() => ShowDialog(MessageDialogType.Warning, WarningDialogButtonCount));
@@ -77,9 +79,11 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
         get
         {
             if (_isDemoUpdateChecking)
-                return "Checking...";
+                return LocalizationService.Translate("updates.checking", "Checking...");
 
-            return IsDemoUpdateAvailable ? "Install" : "Check for updates";
+            return IsDemoUpdateAvailable
+                ? LocalizationService.Translate("updates.install", "Install")
+                : LocalizationService.Translate("updates.checkForUpdates", "Check for updates");
         }
     }
 
@@ -97,23 +101,31 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
         }
 
         SetDemoUpdateChecking(true);
-        DemoUpdateStatus = "Checking for updates...";
+        DemoUpdateStatus = LocalizationService.Translate(
+            "updates.checkingForUpdates",
+            "Checking for updates...");
 
         try
         {
             await Task.Delay(350);
             IsDemoUpdateAvailable = true;
-            DemoUpdateStatus = "Update available.";
+            DemoUpdateStatus = LocalizationService.Translate("updates.available", "Update available.");
 
             MessageDialogResult installResult = _dialogService.ShowMessage(
                 new MessageDialogRequest(
-                    "Update Available",
-                    "Draft 99.0.0-test is available. Install this update now? Draft will restart to finish installing.",
+                    LocalizationService.Translate("updates.availableTitle", "Update Available"),
+                    LocalizationService.Translate(
+                        "settings.develop.demoUpdateAvailableDescription",
+                        "Draft 99.0.0-test is available. Install this update now? Draft will restart to finish installing."),
                     MessageDialogType.Info,
                     new[]
                     {
-                        MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
-                        MessageDialogButtonDefinition.Primary("Install", new MessageDialogResult(InstallDemoUpdateResultId)),
+                        MessageDialogButtonDefinition.Secondary(
+                            LocalizationService.Translate("common.cancel", "Cancel"),
+                            MessageDialogResult.Cancel),
+                        MessageDialogButtonDefinition.Primary(
+                            LocalizationService.Translate("updates.install", "Install"),
+                            new MessageDialogResult(InstallDemoUpdateResultId)),
                     }));
 
             if (installResult.Id == InstallDemoUpdateResultId)
@@ -131,12 +143,16 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
     {
         _dialogService.ShowMessage(
             new MessageDialogRequest(
-                "Test Update Card",
-                "This is a development-only update demo. No update was installed.",
+                LocalizationService.Translate("settings.develop.testUpdateCard", "Test update card"),
+                LocalizationService.Translate(
+                    "settings.develop.demoUpdateInstalledDescription",
+                    "This is a development-only update demo. No update was installed."),
                 MessageDialogType.Info,
                 new[]
                 {
-                    MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
+                    MessageDialogButtonDefinition.Primary(
+                        LocalizationService.Translate("common.okay", "Okay"),
+                        MessageDialogResult.Ok),
                 }));
     }
 
@@ -153,20 +169,32 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
     {
         string title = dialogType switch
         {
-            MessageDialogType.Info => "Info Dialog",
-            MessageDialogType.Warning => "Warning Dialog",
-            MessageDialogType.Error => "Error Dialog",
-            MessageDialogType.Success => "Success Dialog",
-            _ => "Dialog",
+            MessageDialogType.Info => LocalizationService.Translate(
+                "settings.develop.infoDialog.previewTitle",
+                "Info Dialog"),
+            MessageDialogType.Warning => LocalizationService.Translate("settings.develop.warningDialog.previewTitle", "Warning Dialog"),
+            MessageDialogType.Error => LocalizationService.Translate("settings.develop.errorDialog.previewTitle", "Error Dialog"),
+            MessageDialogType.Success => LocalizationService.Translate("settings.develop.successDialog.previewTitle", "Success Dialog"),
+            _ => LocalizationService.Translate("dialog.title", "Dialog"),
         };
 
         string description = dialogType switch
         {
-            MessageDialogType.Info => "This is a development preview of an informational dialog.",
-            MessageDialogType.Warning => "This is a development preview of a warning dialog.",
-            MessageDialogType.Error => "This is a development preview of an error dialog.",
-            MessageDialogType.Success => "This is a development preview of a success dialog.",
-            _ => "This is a development preview dialog.",
+            MessageDialogType.Info => LocalizationService.Translate(
+                "settings.develop.infoDialog.previewDescription",
+                "This is a development preview of an informational dialog."),
+            MessageDialogType.Warning => LocalizationService.Translate(
+                "settings.develop.warningDialog.previewDescription",
+                "This is a development preview of a warning dialog."),
+            MessageDialogType.Error => LocalizationService.Translate(
+                "settings.develop.errorDialog.previewDescription",
+                "This is a development preview of an error dialog."),
+            MessageDialogType.Success => LocalizationService.Translate(
+                "settings.develop.successDialog.previewDescription",
+                "This is a development preview of a success dialog."),
+            _ => LocalizationService.Translate(
+                "settings.develop.dialog.previewDescription",
+                "This is a development preview dialog."),
         };
 
         _dialogService.ShowMessage(
@@ -183,18 +211,30 @@ public sealed class DevelopSettingsPageViewModel : SettingsPageViewModel
         {
             2 => new[]
             {
-                MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
-                MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
+                MessageDialogButtonDefinition.Secondary(
+                    LocalizationService.Translate("common.cancel", "Cancel"),
+                    MessageDialogResult.Cancel),
+                MessageDialogButtonDefinition.Primary(
+                    LocalizationService.Translate("common.okay", "Okay"),
+                    MessageDialogResult.Ok),
             },
             3 => new[]
             {
-                MessageDialogButtonDefinition.Secondary("Cancel", MessageDialogResult.Cancel),
-                MessageDialogButtonDefinition.Secondary("Later", new MessageDialogResult("later")),
-                MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
+                MessageDialogButtonDefinition.Secondary(
+                    LocalizationService.Translate("common.cancel", "Cancel"),
+                    MessageDialogResult.Cancel),
+                MessageDialogButtonDefinition.Secondary(
+                    LocalizationService.Translate("common.later", "Later"),
+                    new MessageDialogResult("later")),
+                MessageDialogButtonDefinition.Primary(
+                    LocalizationService.Translate("common.okay", "Okay"),
+                    MessageDialogResult.Ok),
             },
             _ => new[]
             {
-                MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
+                MessageDialogButtonDefinition.Primary(
+                    LocalizationService.Translate("common.okay", "Okay"),
+                    MessageDialogResult.Ok),
             },
         };
     }

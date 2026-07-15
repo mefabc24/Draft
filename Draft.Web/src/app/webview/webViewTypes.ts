@@ -14,8 +14,18 @@ export type DraftWebView = {
   postMessage: (message: string) => void
 }
 
+export type DraftPreviewExportOptions = {
+  layout?: 'html' | 'pdf' | 'png'
+  previewThemeId?: string | null
+}
+
+export type DraftExportApi = {
+  createPreviewHtml: (options?: DraftPreviewExportOptions) => string
+}
+
 declare global {
   interface Window {
+    draftExport?: DraftExportApi
     setDraftViewMode?: (mode: ViewMode) => void
     chrome?: {
       webview?: DraftWebView

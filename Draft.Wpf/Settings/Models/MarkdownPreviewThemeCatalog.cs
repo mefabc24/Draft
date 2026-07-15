@@ -35,7 +35,7 @@ public static class MarkdownPreviewThemeCatalog
 
     public static string GetThemeLabel(string value)
     {
-        return FindThemeOption(value)?.Label ?? SettingsDefaults.DefaultMarkdownTheme;
+        return FindThemeOption(value)?.Label ?? GetDefaultThemeLabel();
     }
 
     private static MarkdownPreviewThemeOption? FindThemeOption(string value)
@@ -46,6 +46,13 @@ public static class MarkdownPreviewThemeCatalog
         return ThemeOptions.FirstOrDefault(option =>
             string.Equals(option.Id, value, StringComparison.OrdinalIgnoreCase)
             || string.Equals(option.Label, value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string GetDefaultThemeLabel()
+    {
+        return ThemeOptions.FirstOrDefault(option =>
+            string.Equals(option.Id, DefaultThemeId, StringComparison.OrdinalIgnoreCase))?.Label
+            ?? SettingsDefaults.DefaultMarkdownTheme;
     }
 
     private static IReadOnlyList<MarkdownPreviewThemeOption> LoadThemeOptions()
@@ -236,4 +243,10 @@ public static class MarkdownPreviewThemeCatalog
     private sealed record PreviewThemeManifestOption(string? Id, string? Label);
 }
 
-public sealed record MarkdownPreviewThemeOption(string Id, string Label);
+public sealed record MarkdownPreviewThemeOption(string Id, string Label)
+{
+    public override string ToString()
+    {
+        return Label;
+    }
+}

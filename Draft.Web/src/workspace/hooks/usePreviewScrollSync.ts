@@ -6,6 +6,12 @@ import type { ViewMode } from '../workspaceTypes'
 const FOLLOW_EDITED_SECTION_DEBOUNCE_MS = 60
 const FOLLOW_EDITED_SECTION_SCROLL_PADDING = 16
 
+type PreviewSourceAnchor = {
+  editorScrollTop: number
+  previewScrollTop: number
+  sourceLine: number
+}
+
 type CurrentRef<T> = {
   current: T
 }
@@ -20,6 +26,222 @@ type UsePreviewScrollSyncOptions = {
 function getPreviewBlockSourceLine(element: HTMLElement) {
   const value = Number(element.dataset.sourceLine)
   return Number.isFinite(value) && value > 0 ? value : null
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
+}
+
+function interpolate(
+  value: number,
+  inputStart: number,
+  inputEnd: number,
+  outputStart: number,
+  outputEnd: number,
+) {
+  if (inputEnd <= inputStart) {
+    return value >= inputEnd ? outputEnd : outputStart
+  }
+
+  const progress = clamp((value - inputStart) / (inputEnd - inputStart), 0, 1)
+  return outputStart + (outputEnd - outputStart) * progress
+}
+
+function getEditorMaxScrollTop(editor: monaco.editor.IStandaloneCodeEditor) {
+  return Math.max(editor.getScrollHeight() - editor.getLayoutInfo().height, 0)
+}
+
+function getPreviewMaxScrollTop(previewScrollElement: HTMLDivElement) {
+  return Math.max(
+    previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
+    0,
+  )
+}
+
+function getPreviewElementScrollTop(
+  previewScrollElement: HTMLDivElement,
+  targetElement: HTMLElement,
+) {
+  const previewBounds = previewScrollElement.getBoundingClientRect()
+  const targetBounds = targetElement.getBoundingClientRect()
+
+  return targetBounds.top - previewBounds.top + previewScrollElement.scrollTop
+}
+
+function getEditorScrollTopForLine(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  lineNumber: number,
+  maxScrollTop: number,
+) {
+  const model = editor.getModel()
+  const lineCount = model?.getLineCount() ?? lineNumber
+  const clampedLineNumber = clamp(Math.trunc(lineNumber), 1, lineCount)
+
+  return clamp(editor.getTopForLineNumber(clampedLineNumber), 0, maxScrollTop)
+}
+
+function getPreviewSourceAnchors(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  previewScrollElement: HTMLDivElement,
+): PreviewSourceAnchor[] {
+  const previewTopBySourceLine = new Map<number, number>()
+  const editorMaxScrollTop = getEditorMaxScrollTop(editor)
+  const previewMaxScrollTop = getPreviewMaxScrollTop(previewScrollElement)
+  const elements = previewScrollElement.querySelectorAll<HTMLElement>(
+    '[data-source-line]',
+  )
+
+  for (const element of elements) {
+    const sourceLine = getPreviewBlockSourceLine(element)
+
+    if (sourceLine === null) {
+      continue
+    }
+
+    const previewScrollTop = clamp(
+      getPreviewElementScrollTop(previewScrollElement, element),
+      0,
+      previewMaxScrollTop,
+    )
+    const previousScrollTop = previewTopBySourceLine.get(sourceLine)
+
+    previewTopBySourceLine.set(
+      sourceLine,
+      previousScrollTop === undefined
+        ? previewScrollTop
+        : Math.min(previousScrollTop, previewScrollTop),
+    )
+  }
+
+  return Array.from(previewTopBySourceLine, ([sourceLine, previewScrollTop]) => ({
+    editorScrollTop: getEditorScrollTopForLine(
+      editor,
+      sourceLine,
+      editorMaxScrollTop,
+    ),
+    previewScrollTop,
+    sourceLine,
+  })).sort((left, right) => left.sourceLine - right.sourceLine)
+}
+
+function getPreviewScrollTopFromEditor(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  previewScrollElement: HTMLDivElement,
+) {
+  const editorMaxScrollTop = getEditorMaxScrollTop(editor)
+  const previewMaxScrollTop = getPreviewMaxScrollTop(previewScrollElement)
+  const editorScrollTop = clamp(editor.getScrollTop(), 0, editorMaxScrollTop)
+  const anchors = getPreviewSourceAnchors(editor, previewScrollElement)
+
+  if (editorMaxScrollTop === 0 || previewMaxScrollTop === 0) {
+    return 0
+  }
+
+  if (anchors.length === 0) {
+    return (editorScrollTop / editorMaxScrollTop) * previewMaxScrollTop
+  }
+
+  if (editorMaxScrollTop - editorScrollTop < 1) {
+    return previewMaxScrollTop
+  }
+
+  const firstAnchor = anchors[0]
+  const lastAnchor = anchors[anchors.length - 1]
+
+  if (editorScrollTop <= firstAnchor.editorScrollTop) {
+    return interpolate(
+      editorScrollTop,
+      0,
+      firstAnchor.editorScrollTop,
+      0,
+      firstAnchor.previewScrollTop,
+    )
+  }
+
+  for (let index = 1; index < anchors.length; index += 1) {
+    const previousAnchor = anchors[index - 1]
+    const nextAnchor = anchors[index]
+
+    if (editorScrollTop <= nextAnchor.editorScrollTop) {
+      return interpolate(
+        editorScrollTop,
+        previousAnchor.editorScrollTop,
+        nextAnchor.editorScrollTop,
+        previousAnchor.previewScrollTop,
+        nextAnchor.previewScrollTop,
+      )
+    }
+  }
+
+  return interpolate(
+    editorScrollTop,
+    lastAnchor.editorScrollTop,
+    editorMaxScrollTop,
+    lastAnchor.previewScrollTop,
+    previewMaxScrollTop,
+  )
+}
+
+function getEditorScrollTopFromPreview(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  previewScrollElement: HTMLDivElement,
+) {
+  const editorMaxScrollTop = getEditorMaxScrollTop(editor)
+  const previewMaxScrollTop = getPreviewMaxScrollTop(previewScrollElement)
+  const previewScrollTop = clamp(
+    previewScrollElement.scrollTop,
+    0,
+    previewMaxScrollTop,
+  )
+  const anchors = getPreviewSourceAnchors(editor, previewScrollElement)
+
+  if (editorMaxScrollTop === 0 || previewMaxScrollTop === 0) {
+    return 0
+  }
+
+  if (anchors.length === 0) {
+    return (previewScrollTop / previewMaxScrollTop) * editorMaxScrollTop
+  }
+
+  if (previewMaxScrollTop - previewScrollTop < 1) {
+    return editorMaxScrollTop
+  }
+
+  const firstAnchor = anchors[0]
+  const lastAnchor = anchors[anchors.length - 1]
+
+  if (previewScrollTop <= firstAnchor.previewScrollTop) {
+    return interpolate(
+      previewScrollTop,
+      0,
+      firstAnchor.previewScrollTop,
+      0,
+      firstAnchor.editorScrollTop,
+    )
+  }
+
+  for (let index = 1; index < anchors.length; index += 1) {
+    const previousAnchor = anchors[index - 1]
+    const nextAnchor = anchors[index]
+
+    if (previewScrollTop <= nextAnchor.previewScrollTop) {
+      return interpolate(
+        previewScrollTop,
+        previousAnchor.previewScrollTop,
+        nextAnchor.previewScrollTop,
+        previousAnchor.editorScrollTop,
+        nextAnchor.editorScrollTop,
+      )
+    }
+  }
+
+  return interpolate(
+    previewScrollTop,
+    lastAnchor.previewScrollTop,
+    previewMaxScrollTop,
+    lastAnchor.editorScrollTop,
+    editorMaxScrollTop,
+  )
 }
 
 function findPreviewBlockForEditorLine(
@@ -60,19 +282,36 @@ function getPreviewScrollTopForElement(
   previewScrollElement: HTMLDivElement,
   targetElement: HTMLElement,
 ) {
-  const previewBounds = previewScrollElement.getBoundingClientRect()
-  const targetBounds = targetElement.getBoundingClientRect()
-  const targetTop =
-    targetBounds.top - previewBounds.top + previewScrollElement.scrollTop
-  const maxScrollTop = Math.max(
-    previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
-    0,
+  const targetTop = getPreviewElementScrollTop(
+    previewScrollElement,
+    targetElement,
   )
+  const maxScrollTop = getPreviewMaxScrollTop(previewScrollElement)
 
   return Math.min(
     Math.max(targetTop - FOLLOW_EDITED_SECTION_SCROLL_PADDING, 0),
     maxScrollTop,
   )
+}
+
+function isAfterLastPreviewSourceLine(
+  previewScrollElement: HTMLDivElement,
+  lineNumber: number,
+) {
+  const elements = previewScrollElement.querySelectorAll<HTMLElement>(
+    '[data-source-line]',
+  )
+  let lastSourceLine = -Infinity
+
+  for (const element of elements) {
+    const sourceLine = getPreviewBlockSourceLine(element)
+
+    if (sourceLine !== null) {
+      lastSourceLine = Math.max(lastSourceLine, sourceLine)
+    }
+  }
+
+  return Number.isFinite(lastSourceLine) && lineNumber > lastSourceLine
 }
 
 export function usePreviewScrollSync({
@@ -145,18 +384,10 @@ export function usePreviewScrollSync({
       return
     }
 
-    const editorMaxScrollTop = Math.max(
-      editor.getScrollHeight() - editor.getLayoutInfo().height,
-      0,
+    const nextScrollTop = getPreviewScrollTopFromEditor(
+      editor,
+      previewScrollElement,
     )
-    const previewMaxScrollTop = Math.max(
-      previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
-      0,
-    )
-    const nextScrollTop =
-      editorMaxScrollTop === 0
-        ? 0
-        : (editor.getScrollTop() / editorMaxScrollTop) * previewMaxScrollTop
 
     if (Math.abs(previewScrollElement.scrollTop - nextScrollTop) < 1) {
       return
@@ -189,18 +420,10 @@ export function usePreviewScrollSync({
       return
     }
 
-    const previewMaxScrollTop = Math.max(
-      previewScrollElement.scrollHeight - previewScrollElement.clientHeight,
-      0,
+    const nextScrollTop = getEditorScrollTopFromPreview(
+      editor,
+      previewScrollElement,
     )
-    const editorMaxScrollTop = Math.max(
-      editor.getScrollHeight() - editor.getLayoutInfo().height,
-      0,
-    )
-    const nextScrollTop =
-      previewMaxScrollTop === 0
-        ? 0
-        : (previewScrollElement.scrollTop / previewMaxScrollTop) * editorMaxScrollTop
 
     if (Math.abs(editor.getScrollTop() - nextScrollTop) < 1) {
       return
@@ -242,10 +465,12 @@ export function usePreviewScrollSync({
       return
     }
 
-    const nextScrollTop = getPreviewScrollTopForElement(
+    const nextScrollTop = isAfterLastPreviewSourceLine(
       previewScrollElement,
-      targetElement,
+      lineNumber,
     )
+      ? getPreviewMaxScrollTop(previewScrollElement)
+      : getPreviewScrollTopForElement(previewScrollElement, targetElement)
 
     if (Math.abs(previewScrollElement.scrollTop - nextScrollTop) < 1) {
       return

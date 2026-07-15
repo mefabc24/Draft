@@ -58,11 +58,8 @@ export function getEditorToolbarPosition(
   )
   const maxLeft = container.clientWidth - toolbarWidth - TOOLBAR_EDGE_PADDING
   const maxTop = container.clientHeight - toolbarHeight - TOOLBAR_EDGE_PADDING
-  const left = clamp(
-    editorOffsetLeft + centerX - toolbarWidth / 2,
-    TOOLBAR_EDGE_PADDING,
-    maxLeft,
-  )
+  const preferredLeft = editorOffsetLeft + centerX - toolbarWidth / 2
+  const left = clamp(preferredLeft, TOOLBAR_EDGE_PADDING, maxLeft)
   const preferredTop =
     editorOffsetTop + selectionTop - toolbarHeight - TOOLBAR_SELECTION_OFFSET
   const fallbackTop =
@@ -73,7 +70,7 @@ export function getEditorToolbarPosition(
     maxTop,
   )
 
-  return { left, top }
+  return { left, preferredLeft, top }
 }
 
 export function getPreviewToolbarPosition(
@@ -93,8 +90,11 @@ export function getPreviewToolbarPosition(
   const preferredTop = selectionTop - toolbarHeight - TOOLBAR_SELECTION_OFFSET
   const fallbackTop = selectionBottom + TOOLBAR_SELECTION_OFFSET
 
+  const preferredLeft = centerX - toolbarWidth / 2
+
   return {
-    left: clamp(centerX - toolbarWidth / 2, TOOLBAR_EDGE_PADDING, maxLeft),
+    left: clamp(preferredLeft, TOOLBAR_EDGE_PADDING, maxLeft),
+    preferredLeft,
     top: clamp(
       preferredTop >= TOOLBAR_EDGE_PADDING ? preferredTop : fallbackTop,
       TOOLBAR_EDGE_PADDING,

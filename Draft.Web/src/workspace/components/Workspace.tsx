@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -16,6 +17,8 @@ import { getEditorTheme, getPreviewTheme, getPreviewThemeStyle } from '../../the
 import { useEditorScrollbar } from '../../editor/hooks/useEditorScrollbar'
 import { useMonacoMarkdownEditor } from '../../editor/hooks/useMonacoMarkdownEditor'
 import { countMarkdownWords } from '../../markdown'
+import { LocalizationProvider } from '../../localization/LocalizationProvider'
+import { translate } from '../../localization/localization'
 import { DEFAULT_EDITOR_SETTINGS } from '../../settings/defaultEditorSettings'
 import { parseSettingsChangedMessage } from '../../settings/settingsMessageParser'
 import type {
@@ -24,25 +27,38 @@ import type {
 } from '../../settings/settingsTypes'
 import {
   addWebViewMessageListener,
+  setPreviewExportHtmlHandler,
   setDraftViewModeHandler,
 } from '../../app/webview/draftWebViewBridge'
 import {
   DEFAULT_FILE_NAME,
   parseGoToPositionMessage,
   parseLoadDocumentMessage,
+  parseStartupStateMessage,
   parseWebViewRecord,
   parseWorkspaceModeMessage,
   postCursorPositionChanged as postCursorPositionChangedMessage,
   postDocumentChanged,
+  postOpenRequested,
   postSaveRequested,
+  postStartupStateApplied,
+  postWorkspaceReady,
   postWorkspaceMode,
   type GoToPositionMessage,
   type LoadDocumentMessage,
+  type StartupStateMessage,
 } from '../../app/webview/draftWebViewMessages'
 import type { WebViewMessageEvent } from '../../app/webview/webViewTypes'
+import { createPreviewExportHtml } from '../../export/previewExport'
+import {
+  addBrowserShortcutGuard,
+  type BrowserShortcutDraftCommand,
+} from '../../shortcuts/browserShortcutGuard'
+import { defaultShortcutBindings } from '../../shortcuts/shortcutSettings'
 import { usePreviewScrollSync } from '../hooks/usePreviewScrollSync'
 import { useSplitSizing } from '../hooks/useSplitSizing'
 import { isViewMode, type ViewMode } from '../workspaceTypes'
+import { usePreviewClipboardHistory } from '../../preview/hooks/usePreviewClipboardHistory'
 
 function getSelectedCharacterCount(editor: monaco.editor.IStandaloneCodeEditor) {
   const model = editor.getModel()
@@ -75,6 +91,10 @@ function postCursorPositionChanged(editor: monaco.editor.IStandaloneCodeEditor) 
   })
 }
 
+function isDraftWebViewHost() {
+  return window.chrome?.webview !== undefined
+}
+
 function Workspace() {
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [markdown, setMarkdown] = useState('')
@@ -91,9 +111,14 @@ function Workspace() {
   const [activePreviewThemeId, setActivePreviewThemeId] = useState(
     DEFAULT_EDITOR_SETTINGS.activePreviewThemeId,
   )
+  const [shortcutBindings, setShortcutBindings] = useState(defaultShortcutBindings)
+  const [appLanguage, setAppLanguage] = useState(
+    DEFAULT_EDITOR_SETTINGS.appLanguage,
+  )
   const initialMarkdownRef = useRef(markdown)
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
+  const fileNameRef = useRef(fileName)
   const workspaceRef = useRef<HTMLElement | null>(null)
   const editorBodyRef = useRef<HTMLDivElement | null>(null)
   const editorHostRef = useRef<HTMLDivElement | null>(null)
@@ -105,6 +130,11 @@ function Workspace() {
   const draftEditorSettingsRef = useRef<DraftEditorSettings>(DEFAULT_EDITOR_SETTINGS)
   const viewModeRef = useRef<ViewMode>(viewMode)
   const suppressNextWorkspaceModePostRef = useRef(false)
+  const hasAppliedStartupStateRef = useRef(false)
+  const documentGenerationRef = useRef<number | null>(null)
+  const postCurrentDocumentChanged = useCallback((content: string) => {
+    postDocumentChanged(content, documentGenerationRef.current)
+  }, [])
   const {
     clampedSplitEditorRatio,
     isSplitResizing,
@@ -128,6 +158,7 @@ function Workspace() {
     settingsRef: draftEditorSettingsRef,
     viewModeRef,
   })
+  usePreviewClipboardHistory(previewContentRef)
   const {
     applyEditorSettings,
     resyncEditorLayout,
@@ -138,13 +169,14 @@ function Workspace() {
     initialMarkdownRef,
     isApplyingDocumentFromHostRef,
     onCursorPositionChanged: postCursorPositionChanged,
-    onDocumentChanged: postDocumentChanged,
+    onDocumentChanged: postCurrentDocumentChanged,
     onFollowEditedSection: scheduleFollowEditedSection,
     onMarkdownChange: setMarkdown,
     onSyncEditorScrollbar: syncEditorScrollbarPosition,
     onSyncPreviewScrollFromEditor: syncPreviewScrollFromEditor,
     setEditorInstance,
     settingsRef: draftEditorSettingsRef,
+    shortcutBindings,
   })
   const activeEditorTheme = useMemo(
     () => getEditorTheme(activeEditorThemeId),
@@ -170,16 +202,24 @@ function Workspace() {
 
   const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
     draftEditorSettingsRef.current = settings
+    setAppLanguage(settings.appLanguage)
     setFloatingMarkdownToolbarMode(settings.floatingMarkdownToolbarMode)
     setActiveEditorThemeId(settings.activeEditorThemeId)
     setActivePreviewThemeId(settings.activePreviewThemeId)
+    setShortcutBindings(settings.shortcuts)
     applyEditorSettings(settings)
   }
 
-  const applyDocumentFromHost = (message: LoadDocumentMessage) => {
+  const applyDocumentContentFromHost = (message: {
+    content: string
+    documentGeneration: number | null
+    fileName: string
+  }) => {
     const editor = editorInstanceRef.current
 
     hasReceivedDocumentFromHostRef.current = true
+    hasAppliedStartupStateRef.current = true
+    documentGenerationRef.current = message.documentGeneration
     isApplyingDocumentFromHostRef.current = true
     initialMarkdownRef.current = message.content
     setFileName(message.fileName)
@@ -196,6 +236,28 @@ function Workspace() {
     } else {
       isApplyingDocumentFromHostRef.current = false
     }
+  }
+
+  const applyDocumentFromHost = (message: LoadDocumentMessage) => {
+    applyDocumentContentFromHost(message)
+  }
+
+  const applyStartupStateFromHost = (message: StartupStateMessage) => {
+    applyDraftEditorSettings(message.settings)
+    hasAppliedStartupStateRef.current = true
+    documentGenerationRef.current = message.documentGeneration
+
+    if (message.workspaceMode !== viewModeRef.current) {
+      suppressNextWorkspaceModePostRef.current = true
+      setViewMode(message.workspaceMode)
+    }
+
+    applyDocumentContentFromHost({
+      content: message.document.content,
+      documentGeneration: message.documentGeneration,
+      fileName: message.document.displayFileName,
+    })
+    postStartupStateApplied(message.documentGeneration)
   }
 
   const applyGoToPositionFromHost = (message: GoToPositionMessage) => {
@@ -228,6 +290,19 @@ function Workspace() {
   }, [viewMode])
 
   useEffect(() => {
+    fileNameRef.current = fileName
+  }, [fileName])
+
+  useEffect(() => {
+    return setPreviewExportHtmlHandler((options) =>
+      createPreviewExportHtml({
+        fileName: fileNameRef.current,
+        layout: options?.layout,
+      }),
+    )
+  }, [])
+
+  useEffect(() => {
     return setDraftViewModeHandler((mode) => {
       if (isViewMode(mode) && mode !== viewModeRef.current) {
         suppressNextWorkspaceModePostRef.current = true
@@ -241,6 +316,13 @@ function Workspace() {
       const record = parseWebViewRecord(event.data)
 
       if (!record) {
+        return
+      }
+
+      const startupStateMessage = parseStartupStateMessage(record)
+
+      if (startupStateMessage) {
+        applyStartupStateFromHost(startupStateMessage)
         return
       }
 
@@ -275,12 +357,37 @@ function Workspace() {
       }
     }
 
-    return addWebViewMessageListener(handleWebViewMessage)
+    const removeWebViewMessageListener = addWebViewMessageListener(handleWebViewMessage)
+    const readyFrameId = window.requestAnimationFrame(() => {
+      postWorkspaceReady()
+    })
+    const fallbackTimeoutId = window.setTimeout(() => {
+      if (
+        hasAppliedStartupStateRef.current ||
+        hasReceivedDocumentFromHostRef.current
+      ) {
+        return
+      }
+
+      hasAppliedStartupStateRef.current = true
+      hasReceivedDocumentFromHostRef.current = true
+      documentGenerationRef.current = null
+    }, 5000)
+
+    return () => {
+      window.cancelAnimationFrame(readyFrameId)
+      window.clearTimeout(fallbackTimeoutId)
+      removeWebViewMessageListener()
+    }
     // WebView messages read current editor/session state through refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
+    if (!hasAppliedStartupStateRef.current) {
+      return
+    }
+
     if (suppressNextWorkspaceModePostRef.current) {
       suppressNextWorkspaceModePostRef.current = false
       return
@@ -290,27 +397,22 @@ function Workspace() {
   }, [viewMode])
 
   useEffect(() => {
-    const handleSaveShortcut = (event: KeyboardEvent) => {
-      const isSaveShortcut =
-        (event.ctrlKey || event.metaKey) &&
-        !event.altKey &&
-        !event.shiftKey &&
-        (event.key.toLowerCase() === 's' || event.code === 'KeyS')
-
-      if (!isSaveShortcut) {
-        return
+    const handleDraftShortcutCommand = (command: BrowserShortcutDraftCommand) => {
+      switch (command) {
+        case 'open':
+          postOpenRequested()
+          return
+        case 'save':
+          postSaveRequested()
+          return
       }
-
-      event.preventDefault()
-      event.stopPropagation()
-      postSaveRequested()
     }
 
-    document.addEventListener('keydown', handleSaveShortcut, true)
-
-    return () => {
-      document.removeEventListener('keydown', handleSaveShortcut, true)
-    }
+    return addBrowserShortcutGuard({
+      allowDeveloperShortcuts: import.meta.env.DEV && !isDraftWebViewHost(),
+      getShortcutBindings: () => draftEditorSettingsRef.current.shortcuts,
+      onDraftCommand: handleDraftShortcutCommand,
+    })
   }, [])
 
   useEffect(() => {
@@ -333,73 +435,100 @@ function Workspace() {
   const previewWordCount = useMemo(() => {
     return countMarkdownWords(markdown)
   }, [markdown])
+  const livePreviewLabel = useMemo(
+    () =>
+      translate('workspace.livePreview', {
+        language: appLanguage,
+      }),
+    [appLanguage],
+  )
+  const previewWordCountLabel = useMemo(
+    () =>
+      translate(
+        previewWordCount === 1
+          ? 'workspace.wordCountOne'
+          : 'workspace.wordCount',
+        {
+          language: appLanguage,
+          params: { count: previewWordCount },
+        },
+      ),
+    [appLanguage, previewWordCount],
+  )
 
   return (
-    <main className="app-shell" onContextMenu={(event) => event.preventDefault()}>
-      <section
-        ref={workspaceRef}
-        className={`workspace ${viewMode}`}
-        style={workspaceStyle}
-        data-split-resizing={isSplitResizing ? 'true' : 'false'}
+    <LocalizationProvider language={appLanguage}>
+      <main
+        className="app-shell"
+        onContextMenu={(event) => event.preventDefault()}
       >
-        <MarkdownEditorPane
-          ariaHidden={viewMode === 'preview'}
-          editor={editorInstance}
-          editorBodyRef={editorBodyRef}
-          editorHostRef={editorHostRef}
-          header={(
-            <PaneHeader
-              leftLabel={fileName}
-              rightItems={['UTF-8', 'Markdown']}
-            />
-          )}
-          scrollbarProps={editorScrollbarProps}
-          scrollbarRef={editorScrollbarRef}
-          thumbProps={editorThumbProps}
-          thumbRef={editorThumbRef}
-        />
+        <section
+          ref={workspaceRef}
+          className={`workspace ${viewMode}`}
+          style={workspaceStyle}
+          data-split-resizing={isSplitResizing ? 'true' : 'false'}
+        >
+          <MarkdownEditorPane
+            ariaHidden={viewMode === 'preview'}
+            editor={editorInstance}
+            editorBodyRef={editorBodyRef}
+            shortcutBindings={shortcutBindings}
+            editorHostRef={editorHostRef}
+            header={(
+              <PaneHeader
+                leftLabel={fileName}
+                rightItems={['UTF-8', 'Markdown']}
+              />
+            )}
+            scrollbarProps={editorScrollbarProps}
+            scrollbarRef={editorScrollbarRef}
+            thumbProps={editorThumbProps}
+            thumbRef={editorThumbRef}
+          />
 
-        <WorkspaceSplitResizer
-          isResizing={isSplitResizing}
-          resizerProps={splitResizerProps}
-          resizerRef={splitResizerRef}
-        />
+          <WorkspaceSplitResizer
+            isResizing={isSplitResizing}
+            resizerProps={splitResizerProps}
+            resizerRef={splitResizerRef}
+          />
 
-        <PreviewPane
-          markdown={markdown}
-          header={(
-            <PaneHeader
-              leftLabel="Live Preview"
-              rightItems={[`${previewWordCount} words`]}
-            />
-          )}
-          ariaHidden={viewMode === 'editor'}
-          previewTheme={activePreviewTheme}
-          previewThemeStyle={previewThemeStyle}
-          previewContentElementRef={previewContentRef}
-          previewScrollElementRef={previewScrollRef}
-          onPreviewScroll={handlePreviewScroll}
+          <PreviewPane
+            markdown={markdown}
+            header={(
+              <PaneHeader
+                leftLabel={livePreviewLabel}
+                rightItems={[previewWordCountLabel]}
+              />
+            )}
+            ariaHidden={viewMode === 'editor'}
+            previewTheme={activePreviewTheme}
+            previewThemeStyle={previewThemeStyle}
+            previewContentElementRef={previewContentRef}
+            previewScrollElementRef={previewScrollRef}
+            onPreviewScroll={handlePreviewScroll}
+          />
+          <FloatingMarkdownToolbar
+            editor={editorInstance}
+            editorBodyRef={editorBodyRef}
+            onRequestEditorMode={() => {
+              setViewMode((currentViewMode) =>
+                currentViewMode === 'preview' ? 'editor' : currentViewMode,
+              )
+            }}
+            previewContentRef={previewContentRef}
+            previewScrollElementRef={previewScrollRef}
+            shortcutBindings={shortcutBindings}
+            toolbarMode={floatingMarkdownToolbarMode}
+            viewMode={viewMode}
+            workspaceRef={workspaceRef}
+          />
+        </section>
+        <WorkspaceDevMenu
+          activePreviewThemeId={activePreviewThemeId}
+          onPreviewThemeChange={setActivePreviewThemeId}
         />
-        <FloatingMarkdownToolbar
-          editor={editorInstance}
-          editorBodyRef={editorBodyRef}
-          onRequestEditorMode={() => {
-            setViewMode((currentViewMode) =>
-              currentViewMode === 'preview' ? 'editor' : currentViewMode,
-            )
-          }}
-          previewContentRef={previewContentRef}
-          previewScrollElementRef={previewScrollRef}
-          toolbarMode={floatingMarkdownToolbarMode}
-          viewMode={viewMode}
-          workspaceRef={workspaceRef}
-        />
-      </section>
-      <WorkspaceDevMenu
-        activePreviewThemeId={activePreviewThemeId}
-        onPreviewThemeChange={setActivePreviewThemeId}
-      />
-    </main>
+      </main>
+    </LocalizationProvider>
   )
 }
 

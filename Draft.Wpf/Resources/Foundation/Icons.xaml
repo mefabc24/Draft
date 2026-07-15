@@ -1,8 +1,206 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Icons -->
+    <!-- Vector equivalents of Draft.Web/public/icons/flags/*.svg. -->
+    <DrawingImage x:Key="Flag.en">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="#012169">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,30,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="-2.19922,-2.89844,41.7,3.6">
+                            <RectangleGeometry.Transform>
+                                <RotateTransform Angle="30" CenterX="-2.19922" CenterY="-2.89844" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="-4,17.9492,41.7,3.6">
+                            <RectangleGeometry.Transform>
+                                <RotateTransform Angle="-30" CenterX="-4" CenterY="17.9492" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="17.4004,9.19922,15.4,1.4">
+                            <RectangleGeometry.Transform>
+                                <RotateTransform Angle="30" CenterX="17.4004" CenterY="9.19922" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,15.4,1.4">
+                            <RectangleGeometry.Transform>
+                                <MatrixTransform Matrix="0.866025,-0.5,-0.5,-0.866025,17.4004,8.01172" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,15.4433,1.4">
+                            <RectangleGeometry.Transform>
+                                <RotateTransform Angle="30" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,15.4433,1.4">
+                            <RectangleGeometry.Transform>
+                                <MatrixTransform Matrix="0.866025,-0.5,-0.5,-0.866025,0,18.9336" />
+                            </RectangleGeometry.Transform>
+                        </RectangleGeometry>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="12,0,6,18.1" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,6.05078,30,6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="13.1992,0,3.6,18.1" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C8102E">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,7.30078,30,3.6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="Flag.de">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="Black">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,30,6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#DD0000">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,6,30,6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFCE00">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,12,30,6" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="Flag.es">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="#AD1519">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,30,5" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FABD00">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,5,30,8" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#AD1519">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,13,30,5" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="Flag.it">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="#009246">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,10,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="10,0,10,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#CE2B37">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="20,0,10,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="Flag.br">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.ClipGeometry>
+                    <RectangleGeometry Rect="0,0,30,18" RadiusX="1" RadiusY="1" />
+                </DrawingGroup.ClipGeometry>
+                <GeometryDrawing Brush="#009C3B">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,30,18" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFDF00" Geometry="M15,2 L27,9 L15,16 L3,9 Z" />
+                <GeometryDrawing Brush="#002776">
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="15,9" RadiusX="5" RadiusY="5" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing
+                    Brush="White"
+                    Geometry="M10.5986,7.14746 C10.9091,7.15802 11.3509,7.17893 11.8799,7.22168 C12.9369,7.30713 14.3511,7.47875 15.7617,7.82617 C17.1853,8.17683 18.3459,8.70853 19.1514,9.15137 C19.481,9.33263 19.7511,9.50104 19.957,9.63574 C19.9203,9.92541 19.8605,10.2075 19.7764,10.4795 C19.7372,10.4517 19.6914,10.4182 19.6377,10.3818 C19.4397,10.2479 19.1448,10.0601 18.7656,9.85156 C18.0065,9.43422 16.9107,8.93388 15.5693,8.60352 C14.2153,8.27007 12.8484,8.10297 11.8164,8.01953 C11.3012,7.97788 10.8704,7.9565 10.5703,7.94629 C10.4208,7.94121 10.303,7.93969 10.2236,7.93848 C10.1842,7.93787 10.1538,7.93764 10.1338,7.9375 C10.125,7.93744 10.1181,7.93748 10.1133,7.9375 C10.1728,7.66275 10.2548,7.39651 10.3574,7.14062 C10.4254,7.14223 10.5064,7.14432 10.5986,7.14746 Z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
     <Geometry x:Key="Icon.Save">
         M62 12V12.1309C62.6814 12.3092 63.31 12.6655 63.8164 13.1719L82.8281 32.1836C83.5783 32.9337 84 33.9518 84 35.0127V76C84 80.4183 80.4183 84 76 84H20C15.5817 84 12 80.4183 12 76V20C12 15.5817 15.5817 12 20 12H62ZM21.333 18C19.4923 18.0002 18.0002 19.4923 18 21.333V74.667C18.0002 76.5077 19.4923 77.9998 21.333 78H24V52C24 49.7909 25.7909 48 28 48H68C70.2091 48 72 49.7909 72 52V78H74.667C76.5077 77.9998 77.9998 76.5077 78 74.667V36.6221C77.9999 36.0917 77.7891 35.583 77.4141 35.208L62 19.7939V32C62 34.2091 60.2091 36 58 36H28C25.7909 36 24 34.2091 24 32V18H21.333ZM32 54C30.8954 54 30 54.8954 30 56V78H66V56C66 54.8954 65.1046 54 64 54H32ZM30 28C30 29.1046 30.8954 30 32 30H54C55.1046 30 56 29.1046 56 28V18H30V28Z
+    </Geometry>
+
+    <GeometryGroup x:Key="Icon.SaveAs" FillRule="Nonzero">
+        <Geometry>F0 M69 42C81.1503 42 91 51.8497 91 64C91 76.1503 81.1503 86 69 86C56.8497 86 47 76.1503 47 64C47 51.8497 56.8497 42 69 42ZM69 48C67.8954 48 67 48.8954 67 50V62H55C53.8954 62 53 62.8954 53 64C53 65.1046 53.8954 66 55 66H67V78C67 79.1046 67.8954 80 69 80C70.1046 80 71 79.1046 71 78V66H83C84.1046 66 85 65.1046 85 64C85 62.8954 84.1046 62 83 62H71V50C71 48.8954 70.1046 48 69 48Z</Geometry>
+        <Geometry>F0 M55 10.1309C55.6814 10.3092 56.31 10.6655 56.8164 11.1719L75.8281 30.1836C76.5783 30.9337 77 31.9518 77 33.0127V39.2559C75.0872 38.6379 73.078 38.2343 71 38.0762V34.6221C70.9999 34.0917 70.7891 33.583 70.4141 33.208L55 17.7939V30C55 32.2091 53.2091 34 51 34H21C18.7909 34 17 32.2091 17 30V16H14.333C12.4923 16.0002 11.0002 17.4923 11 19.333V72.667C11.0002 74.5077 12.4923 75.9998 14.333 76H17V50C17 47.7909 18.7909 46 21 46H50.2393C48.5339 47.777 47.0795 49.796 45.9307 52H25C23.8954 52 23 52.8954 23 54V76H45.9307C47.0795 78.204 48.5339 80.223 50.2393 82H13C8.58172 82 5 78.4183 5 74V18C5 13.5817 8.58172 10 13 10H55V10.1309ZM23 26C23 27.1046 23.8954 28 25 28H47C48.1046 28 49 27.1046 49 26V16H23V26Z</Geometry>
+    </GeometryGroup>
+
+    <Geometry x:Key="Icon.AddCircle">
+        F0 M22 0C34.1503 0 44 9.84974 44 22C44 34.1503 34.1503 44 22 44C9.84974 44 0 34.1503 0 22C0 9.84974 9.84974 0 22 0ZM22 6C20.8954 6 20 6.89543 20 8V20H8C6.89543 20 6 20.8954 6 22C6 23.1046 6.89543 24 8 24H20V36C20 37.1046 20.8954 38 22 38C23.1046 38 24 37.1046 24 36V24H36C37.1046 24 38 23.1046 38 22C38 20.8954 37.1046 20 36 20H24V8C24 6.89543 23.1046 6 22 6Z
     </Geometry>
 
     <Geometry x:Key="Icon.Settings">
@@ -16,6 +214,14 @@
     <Geometry x:Key="Icon.Sync">
         M42.6 64.25L61.0909 45.8875L56.3455 41.175L42.5182 54.9063L35.6455 48.0813L30.9818 52.7125L42.6 64.25ZM30 74C25.0364 74 20.7955 72.2938 17.2773 68.8813C13.7591 65.4688 12 61.2979 12 56.3688C12 52.1438 13.2818 48.3792 15.8455 45.075C18.4091 41.7708 21.7636 39.6583 25.9091 38.7375C27.2727 33.7542 30 29.7188 34.0909 26.6313C38.1818 23.5438 42.8182 22 48 22C54.3818 22 59.7955 24.2073 64.2409 28.6219C68.6864 33.0365 70.9091 38.4125 70.9091 44.75C74.6727 45.1833 77.7955 46.7948 80.2773 49.5844C82.7591 52.374 84 55.6375 84 59.375C84 63.4375 82.5682 66.8906 79.7045 69.7344C76.8409 72.5781 73.3636 74 69.2727 74H30ZM30 67.5H69.2727C71.5636 67.5 73.5 66.7146 75.0818 65.1438C76.6636 63.5729 77.4545 61.65 77.4545 59.375C77.4545 57.1 76.6636 55.1771 75.0818 53.6063C73.5 52.0354 71.5636 51.25 69.2727 51.25H64.3636V44.75C64.3636 40.2542 62.7682 36.4219 59.5773 33.2531C56.3864 30.0844 52.5273 28.5 48 28.5C43.4727 28.5 39.6136 30.0844 36.4227 33.2531C33.2318 36.4219 31.6364 40.2542 31.6364 44.75H30C26.8364 44.75 24.1364 45.8604 21.9 48.0813C19.6636 50.3021 18.5455 52.9833 18.5455 56.125C18.5455 59.2667 19.6636 61.9479 21.9 64.1688C24.1364 66.3896 26.8364 67.5 30 67.5Z
     </Geometry>
+
+    <GeometryGroup x:Key="Icon.Record" FillRule="EvenOdd">
+        <Geometry>M28.8 24C28.8 26.651 26.651 28.8 24 28.8C21.349 28.8 19.2 26.651 19.2 24C19.2 21.349 21.349 19.2 24 19.2C26.651 19.2 28.8 21.349 28.8 24Z</Geometry>
+        <Geometry>M13.2 27.6C13.8627 27.6 14.4 28.1373 14.4 28.8V31.2C14.4 32.5255 15.4745 33.6 16.8 33.6H19.2C19.8627 33.6 20.4 34.1373 20.4 34.8C20.4 35.4627 19.8627 36 19.2 36H16.8C14.149 36 12 33.851 12 31.2V28.8C12 28.1373 12.5373 27.6 13.2 27.6Z</Geometry>
+        <Geometry>M36 31.2C36 33.851 33.851 36 31.2 36H28.8C28.1373 36 27.6 35.4627 27.6 34.8C27.6 34.1373 28.1373 33.6 28.8 33.6H31.2C32.5255 33.6 33.6 32.5255 33.6 31.2V28.8C33.6 28.1373 34.1373 27.6 34.8 27.6C35.4627 27.6 36 28.1373 36 28.8V31.2Z</Geometry>
+        <Geometry>M31.2 12C33.851 12 36 14.149 36 16.8V19.2C36 19.8627 35.4627 20.4 34.8 20.4C34.1373 20.4 33.6 19.8627 33.6 19.2V16.8C33.6 15.4745 32.5255 14.4 31.2 14.4H28.8C28.1373 14.4 27.6 13.8627 27.6 13.2C27.6 12.5373 28.1373 12 28.8 12H31.2Z</Geometry>
+        <Geometry>M20.4 13.2C20.4 13.8627 19.8627 14.4 19.2 14.4H16.8C15.4745 14.4 14.4 15.4745 14.4 16.8V19.2C14.4 19.8627 13.8627 20.4 13.2 20.4C12.5373 20.4 12 19.8627 12 19.2V16.8C12 14.149 14.149 12 16.8 12H19.2C19.8627 12 20.4 12.5373 20.4 13.2Z</Geometry>
+    </GeometryGroup>
 
     <Geometry x:Key="Icon.Checkmark">
         M17.6818 4.33634C18.1061 4.78478 18.1061 5.51186 17.6818 5.96031L8.46364 15.7042C8.06597 16.1245 7.35397 16.0718 6.92728 15.7042L2.31819 10.8322C1.89394 10.3838 1.89394 9.65671 2.31819 9.20826C2.74245 8.75982 3.4303 8.75982 3.85455 9.20826L7.69546 13.2682L16.1454 4.33634C16.5697 3.88789 17.2576 3.88789 17.6818 4.33634Z
@@ -36,6 +242,17 @@
     <Geometry x:Key="Icon.Dialog.Success">
         M12,2 A 10,10 0 1 1 11.99,2 M 7,12 L 10.5,15.5 L 17,8.5
     </Geometry>
+
+    <GeometryGroup x:Key="Icon.Spinner" FillRule="EvenOdd">
+        <Geometry>M23.52 29.5385C25.3757 29.5385 26.88 30.9849 26.88 32.7692C26.88 34.5535 25.3757 36 23.52 36C21.6643 36 20.16 34.5535 20.16 32.7692C20.16 30.9849 21.6643 29.5385 23.52 29.5385ZM23.52 31.3846C22.7247 31.3846 22.08 32.0045 22.08 32.7692C22.08 33.5339 22.7247 34.1538 23.52 34.1538C24.3153 34.1538 24.96 33.5339 24.96 32.7692C24.96 32.0045 24.3153 31.3846 23.52 31.3846Z</Geometry>
+        <Geometry>M31.68 26.7692C33.2706 26.7692 34.56 28.0091 34.56 29.5385C34.56 31.0679 33.2706 32.3077 31.68 32.3077C30.0894 32.3077 28.8 31.0679 28.8 29.5385C28.8 28.0091 30.0894 26.7692 31.68 26.7692ZM31.68 28.6154C31.1498 28.6154 30.72 29.0287 30.72 29.5385C30.72 30.0483 31.1498 30.4615 31.68 30.4615C32.2102 30.4615 32.64 30.0483 32.64 29.5385C32.64 29.0287 32.2102 28.6154 31.68 28.6154Z</Geometry>
+        <Geometry>M15.84 29.0769C16.3702 29.0769 16.8 29.4902 16.8 30C16.8 30.5098 16.3702 30.9231 15.84 30.9231C15.3098 30.9231 14.88 30.5098 14.88 30C14.88 29.4902 15.3098 29.0769 15.84 29.0769Z</Geometry>
+        <Geometry>M13.2 23.0769C13.8627 23.0769 14.4 23.5935 14.4 24.2308C14.4 24.868 13.8627 25.3846 13.2 25.3846C12.5373 25.3846 12 24.868 12 24.2308C12 23.5935 12.5373 23.0769 13.2 23.0769Z</Geometry>
+        <Geometry>M33.6 19.3846C34.9255 19.3846 36 20.4178 36 21.6923C36 22.9668 34.9255 24 33.6 24C32.2745 24 31.2 22.9668 31.2 21.6923C31.2 20.4178 32.2745 19.3846 33.6 19.3846ZM33.6 21.2308C33.3349 21.2308 33.12 21.4374 33.12 21.6923C33.12 21.9472 33.3349 22.1538 33.6 22.1538C33.8651 22.1538 34.08 21.9472 34.08 21.6923C34.08 21.4374 33.8651 21.2308 33.6 21.2308Z</Geometry>
+        <Geometry>M14.88 16.1538C15.6753 16.1538 16.32 16.7738 16.32 17.5385C16.32 18.3032 15.6753 18.9231 14.88 18.9231C14.0847 18.9231 13.44 18.3032 13.44 17.5385C13.44 16.7738 14.0847 16.1538 14.88 16.1538Z</Geometry>
+        <Geometry>M29.52 13.3846C30.7129 13.3846 31.68 14.3145 31.68 15.4615C31.68 16.6086 30.7129 17.5385 29.52 17.5385C28.3271 17.5385 27.36 16.6086 27.36 15.4615C27.36 14.3145 28.3271 13.3846 29.52 13.3846ZM29.52 15.2308C29.3875 15.2308 29.28 15.3341 29.28 15.4615C29.28 15.589 29.3875 15.6923 29.52 15.6923C29.6525 15.6923 29.76 15.589 29.76 15.4615C29.76 15.3341 29.6525 15.2308 29.52 15.2308Z</Geometry>
+        <Geometry>M21.6 12C22.5278 12 23.28 12.7232 23.28 13.6154C23.28 14.5075 22.5278 15.2308 21.6 15.2308C20.6722 15.2308 19.92 14.5075 19.92 13.6154C19.92 12.7232 20.6722 12 21.6 12Z</Geometry>
+    </GeometryGroup>
 
     <Geometry x:Key="Icon.Undo">
         M21.667 12.6092C22.0575 12.2188 22.6906 12.2188 23.0811 12.6092C23.4714 12.9996 23.4714 13.6327 23.0811 14.0232L18.4238 18.6804H27.4404C27.4261 18.6804 27.4547 18.6804 27.4404 18.6804C32.1349 18.6804 35.9834 22.485 35.9834 27.1795C35.9834 31.8635 32.1947 35.6685 27.5146 35.6853H13.0176C12.4654 35.6853 12.0178 35.2374 12.0176 34.6853C12.0176 34.133 12.4653 33.6853 13.0176 33.6853H22.0156C22.0133 33.6834 22.0111 33.6814 22.0088 33.6795H27.4834C31.0732 33.6795 33.9834 30.7693 33.9834 27.1795C33.9834 23.5987 31.088 20.6942 27.5107 20.6795L18.4238 20.6804L23.0811 25.3377C23.4713 25.7282 23.4715 26.3613 23.0811 26.7517C22.6906 27.1419 22.0574 27.1419 21.667 26.7517L15.3027 20.3875C14.9125 19.997 14.9125 19.3639 15.3027 18.9734L21.667 12.6092Z
@@ -66,6 +283,11 @@
         <Geometry>M65 69H32V63H65V69Z</Geometry>
         <Geometry>M65 57H32V51H65V57Z</Geometry>
         <Geometry>M52.7051 12C53.7659 12 54.784 12.4217 55.5342 13.1719L75.8281 33.4658C76.5783 34.216 77 35.2341 77 36.2949V78C77 81.3137 74.3137 84 71 84H26C22.6863 84 20 81.3137 20 78V18C20 14.6863 22.6863 12 26 12H52.7051ZM30 18C27.7909 18 26 19.7909 26 22V74C26 76.2091 27.7909 78 30 78H67C69.2091 78 71 76.2091 71 74V38H53C51.8954 38 51 37.1046 51 36V18H30Z</Geometry>
+    </GeometryGroup>
+
+    <GeometryGroup x:Key="Icon.Export" FillRule="EvenOdd">
+        <Geometry>M20.1719 10.5C20.7022 10.5001 21.2109 10.7109 21.5859 11.0859L29.4141 18.9141C29.7891 19.2891 29.9999 19.7978 30 20.3281V23.5H28V21.5H21C19.8954 21.5 19 20.6046 19 19.5V12.5H12C11.4477 12.5 11 12.9477 11 13.5V34.5C11 35.0523 11.4477 35.5 12 35.5H27C27.5523 35.5 28 35.0523 28 34.5V29.5H30V35.5C30 36.6046 29.1046 37.5 28 37.5H11C9.89543 37.5 9 36.6046 9 35.5V12.5C9 11.3954 9.89543 10.5 11 10.5H20.1719ZM21 18.5C21 19.0523 21.4477 19.5 22 19.5H27L21 13.5V18.5Z</Geometry>
+        <Geometry>M31.3809 19.7822C31.7884 19.3968 32.426 19.4073 32.8203 19.8066L38.6973 25.7588C39.1013 26.168 39.1013 26.832 38.6973 27.2412L32.8203 33.1934C32.4259 33.5927 31.7884 33.6032 31.3809 33.2178L31.3281 33.168C30.9008 32.7635 30.8895 32.0802 31.3027 31.6611L35.4121 27.5H21C20.4477 27.5 20 27.0523 20 26.5C20 25.9477 20.4477 25.5 21 25.5H35.4121L31.3027 21.3389C30.8895 20.9198 30.9008 20.2365 31.3281 19.832L31.3809 19.7822Z</Geometry>
     </GeometryGroup>
 
     <GeometryGroup x:Key="Icon.EditFile" FillRule="EvenOdd">

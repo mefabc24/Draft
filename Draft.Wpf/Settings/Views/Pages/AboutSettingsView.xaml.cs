@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using Draft.ExternalLinks.Services;
 using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -8,6 +8,8 @@ namespace Draft.Settings.Views.Pages;
 public partial class AboutSettingsView : UserControl
 {
     private const string ProjectUrl = "https://github.com/mefabc24/Draft";
+    private const string ReportBugUrl = "https://github.com/mefabc24/Draft/issues";
+    private readonly ExternalLinkService _externalLinkService = new();
 
     public string VersionText { get; } = GetVersionText();
 
@@ -48,11 +50,20 @@ public partial class AboutSettingsView : UserControl
 
     private void GitHubButton_Click(object sender, System.Windows.RoutedEventArgs e)
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = ProjectUrl,
-            UseShellExecute = true,
-        });
+        OpenExternalLink(ProjectUrl);
+    }
+
+    private void ReportBugButton_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        OpenExternalLink(ReportBugUrl);
+    }
+
+    private void OpenExternalLink(string url)
+    {
+        bool confirmBeforeOpening = DataContext is not AboutSettingsPageViewModel viewModel
+            || viewModel.Settings.ConfirmBeforeOpeningExternalLinks;
+
+        _externalLinkService.TryOpen(url, confirmBeforeOpening);
     }
 
 }

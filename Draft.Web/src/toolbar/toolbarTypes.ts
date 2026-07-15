@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { FloatingMarkdownToolbarMode } from '../settings/settingsTypes'
+import type { ShortcutBindings } from '../shortcuts/shortcutSettings'
 import type { ViewMode } from '../workspace/workspaceTypes'
 import type { ToolbarTooltipContent } from './components/ToolbarTooltip'
 import type { ActiveFormats, HeadingValue, ListValue } from '../markdown'
@@ -11,6 +12,7 @@ export type ToolbarSelectionSource = 'editor' | 'preview'
 
 export type ToolbarPosition = {
   left: number
+  preferredLeft?: number
   top: number
 }
 
@@ -26,6 +28,7 @@ export type FloatingMarkdownToolbarProps = {
   onRequestEditorMode: () => void
   previewContentRef: RefObject<HTMLDivElement | null>
   previewScrollElementRef: RefObject<HTMLDivElement | null>
+  shortcutBindings: ShortcutBindings
   toolbarMode: FloatingMarkdownToolbarMode
   viewMode: ViewMode
   workspaceRef: RefObject<HTMLElement | null>

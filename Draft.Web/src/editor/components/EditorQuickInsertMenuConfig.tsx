@@ -1,9 +1,14 @@
 import type { EditorQuickInsertCommand } from '../commands/editorQuickInsertCommands'
+import { calloutLabels, type CalloutType } from '../../markdown/callouts'
 
 export type EditorQuickInsertIconName =
+  | 'blockquote'
+  | 'callout'
   | 'codeblock'
+  | 'expander'
   | 'heading'
   | 'image'
+  | 'keyboard'
   | 'link'
   | 'list'
   | 'misc'
@@ -11,6 +16,7 @@ export type EditorQuickInsertIconName =
   | 'table'
 
 type EditorQuickInsertCommandItem = {
+  calloutType?: CalloutType
   canInsertIntoNonEmptyLine: boolean
   command: EditorQuickInsertCommand
   icon?: EditorQuickInsertIconName
@@ -141,9 +147,157 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     canInsertIntoNonEmptyLine: true,
     children: [],
     defaultExpanded: false,
+    icon: 'keyboard',
+    id: 'keyboard',
+    label: 'Keyboard',
+    type: 'section',
+  },
+  {
+    canInsertIntoNonEmptyLine: false,
+    children: [],
+    defaultExpanded: false,
+    icon: 'expander',
+    id: 'expander',
+    label: 'Expander',
+    type: 'section',
+  },
+  {
+    canInsertIntoNonEmptyLine: true,
+    children: [],
+    defaultExpanded: false,
     icon: 'tag',
     id: 'tag',
     label: 'Tag',
+    type: 'section',
+  },
+  {
+    canInsertIntoNonEmptyLine: false,
+    command: 'blockquote',
+    icon: 'blockquote',
+    id: 'blockquote',
+    label: 'Blockquote',
+    type: 'item',
+  },
+  {
+    children: [
+      {
+        calloutType: 'note',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-note',
+        id: 'callout-note',
+        label: calloutLabels.note,
+        type: 'item',
+      },
+      {
+        calloutType: 'tip',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-tip',
+        id: 'callout-tip',
+        label: calloutLabels.tip,
+        type: 'item',
+      },
+      {
+        calloutType: 'important',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-important',
+        id: 'callout-important',
+        label: calloutLabels.important,
+        type: 'item',
+      },
+      {
+        calloutType: 'warning',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-warning',
+        id: 'callout-warning',
+        label: calloutLabels.warning,
+        type: 'item',
+      },
+      {
+        calloutType: 'caution',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-caution',
+        id: 'callout-caution',
+        label: calloutLabels.caution,
+        type: 'item',
+      },
+      {
+        calloutType: 'info',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-info',
+        id: 'callout-info',
+        label: calloutLabels.info,
+        type: 'item',
+      },
+      {
+        calloutType: 'question',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-question',
+        id: 'callout-question',
+        label: calloutLabels.question,
+        type: 'item',
+      },
+      {
+        calloutType: 'todo',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-todo',
+        id: 'callout-todo',
+        label: calloutLabels.todo,
+        type: 'item',
+      },
+      {
+        calloutType: 'success',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-success',
+        id: 'callout-success',
+        label: calloutLabels.success,
+        type: 'item',
+      },
+      {
+        calloutType: 'good',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-good',
+        id: 'callout-good',
+        label: calloutLabels.good,
+        type: 'item',
+      },
+      {
+        calloutType: 'pro',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-pro',
+        id: 'callout-pro',
+        label: calloutLabels.pro,
+        type: 'item',
+      },
+      {
+        calloutType: 'error',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-error',
+        id: 'callout-error',
+        label: calloutLabels.error,
+        type: 'item',
+      },
+      {
+        calloutType: 'bad',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-bad',
+        id: 'callout-bad',
+        label: calloutLabels.bad,
+        type: 'item',
+      },
+      {
+        calloutType: 'con',
+        canInsertIntoNonEmptyLine: false,
+        command: 'callout-con',
+        id: 'callout-con',
+        label: calloutLabels.con,
+        type: 'item',
+      },
+    ],
+    canInsertIntoNonEmptyLine: false,
+    defaultExpanded: false,
+    icon: 'callout',
+    id: 'callouts',
+    label: 'Callouts',
     type: 'section',
   },
   {
@@ -166,14 +320,6 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
   },
   {
     children: [
-      {
-        canInsertIntoNonEmptyLine: false,
-        command: 'blockquote',
-        id: 'blockquote',
-        label: 'Quote',
-        shortcut: '>',
-        type: 'item',
-      },
       {
         canInsertIntoNonEmptyLine: false,
         command: 'horizontal-rule',

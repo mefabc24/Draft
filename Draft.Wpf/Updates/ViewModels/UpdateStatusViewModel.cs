@@ -8,7 +8,9 @@ public sealed class UpdateStatusViewModel : BaseViewModel
     private UpdateCheckResult? _availableUpdate;
     private bool _isCheckingForUpdates;
     private bool _isInstallingUpdate;
-    private string _statusText = "Updates are checked automatically at launch.";
+    private string _statusText = LocalizationService.Translate(
+        "updates.checkedAutomatically",
+        "Updates are checked automatically at launch.");
 
     public string StatusText
     {
@@ -25,12 +27,14 @@ public sealed class UpdateStatusViewModel : BaseViewModel
         get
         {
             if (_isInstallingUpdate)
-                return "Installing...";
+                return LocalizationService.Translate("updates.installing", "Installing...");
 
             if (_isCheckingForUpdates)
-                return "Checking...";
+                return LocalizationService.Translate("updates.checking", "Checking...");
 
-            return HasAvailableUpdate ? "Install" : "Check for updates";
+            return HasAvailableUpdate
+                ? LocalizationService.Translate("updates.install", "Install")
+                : LocalizationService.Translate("updates.checkForUpdates", "Check for updates");
         }
     }
 
@@ -48,7 +52,7 @@ public sealed class UpdateStatusViewModel : BaseViewModel
             : null;
         StatusText = _availableUpdate is null
             ? StatusText
-            : "Update available.";
+            : LocalizationService.Translate("updates.available", "Update available.");
 
         RaiseUpdateActionPropertiesChanged();
     }

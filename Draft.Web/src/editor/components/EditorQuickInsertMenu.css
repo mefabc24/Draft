@@ -11,11 +11,11 @@
     var(--markdown-toolbar-foreground) 86%,
     transparent
   );
+  display: flex;
+  flex-direction: column;
   width: min(294px, calc(100% - 16px));
   max-height: calc(100% - 16px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 8px;
+  overflow: hidden;
   border: 1px solid var(--markdown-toolbar-border);
   border-radius: 12px;
   background: var(--markdown-toolbar-background);
@@ -23,22 +23,33 @@
   color: var(--markdown-toolbar-foreground);
   font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
   line-height: 1;
-  scrollbar-color: var(--editor-scrollbar-thumb) transparent;
-  scrollbar-width: thin;
   user-select: none;
 }
 
-.editor-quick-insert-menu::-webkit-scrollbar {
-  width: 6px;
+.editor-quick-insert-menu-scroll-wrap {
+  position: relative;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: inherit;
 }
 
-.editor-quick-insert-menu::-webkit-scrollbar-track {
-  background: transparent;
+.editor-quick-insert-menu-scroll {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: inherit;
+  width: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.editor-quick-insert-menu::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: var(--editor-scrollbar-thumb);
+.editor-quick-insert-menu-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .editor-quick-insert-menu-list {
@@ -232,6 +243,90 @@
 .editor-quick-insert-chevron svg {
   width: 18px;
   height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.editor-quick-insert-callout-extra-frame {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    grid-template-rows 190ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 120ms ease;
+}
+
+.editor-quick-insert-callout-extra-frame.is-expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.editor-quick-insert-callout-extra-list {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  transform: translateY(-4px);
+  transition: transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.editor-quick-insert-callout-extra-frame.is-expanded
+  .editor-quick-insert-callout-extra-list {
+  transform: translateY(0);
+}
+
+.editor-quick-insert-callout-expand-button {
+  display: flex;
+  width: 100%;
+  height: 20px;
+  min-height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 82%,
+    transparent
+  );
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-callout-expand-button:hover,
+.editor-quick-insert-callout-expand-button:focus-visible {
+  background: var(--markdown-toolbar-hover-background);
+  color: var(--markdown-toolbar-foreground);
+  outline: none;
+}
+
+.editor-quick-insert-callout-expand-chevron {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 180ms ease;
+}
+
+.editor-quick-insert-callout-expand-chevron.is-expanded {
+  transform: rotate(180deg);
+}
+
+.editor-quick-insert-callout-expand-chevron svg {
+  width: 16px;
+  height: 16px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -551,6 +646,269 @@
   border-color: var(--quick-insert-control-border-hover);
   background: var(--quick-insert-control-hover-background);
   color: var(--markdown-toolbar-foreground);
+}
+
+.editor-quick-insert-expander-controls {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+}
+
+.editor-quick-insert-expander-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-quick-insert-expander-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
+  margin-top: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.editor-quick-insert-expander-field input,
+.editor-quick-insert-expander-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  outline: 0;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.editor-quick-insert-expander-field input {
+  height: 36px;
+}
+
+.editor-quick-insert-expander-field textarea {
+  resize: none;
+  overflow-y: hidden;
+  padding: 8px 12px;
+}
+
+.editor-quick-insert-expander-field input::placeholder,
+.editor-quick-insert-expander-field textarea::placeholder {
+  color: var(--markdown-toolbar-muted);
+}
+
+.editor-quick-insert-expander-field input:focus,
+.editor-quick-insert-expander-field textarea:focus {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-background);
+  box-shadow: none;
+}
+
+.editor-quick-insert-expander-confirm {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  cursor: pointer;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-expander-confirm:hover,
+.editor-quick-insert-expander-confirm:focus-visible {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
+}
+
+.editor-quick-insert-keyboard-controls {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  font-family: 'Space Grotesk', var(--font-ui), system-ui, sans-serif;
+}
+
+.editor-quick-insert-keyboard-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-quick-insert-keyboard-label {
+  color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-foreground) 78%,
+    transparent
+  );
+  margin-top: 0;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.editor-quick-insert-keyboard-recorder {
+  box-sizing: border-box;
+  display: grid;
+  width: 100%;
+  height: 36px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 0 4px 0 12px;
+  border: 1px solid #2c2d2f;
+  border-radius: 6px;
+  background: #131313;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.editor-quick-insert-keyboard-recorder.is-recording {
+  border-color: #e25e5e;
+  box-shadow:
+    0 0 0 1px rgba(226, 94, 94, 0.32),
+    0 0 12px rgba(226, 94, 94, 0.72);
+}
+
+.editor-quick-insert-keyboard-value {
+  min-width: 0;
+  overflow: hidden;
+  color: #91908f;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-quick-insert-keyboard-value.is-placeholder {
+  color: #575757;
+  font-weight: 500;
+}
+
+.editor-quick-insert-keyboard-recorder.is-recording
+  .editor-quick-insert-keyboard-value {
+  color: #e25e5e;
+}
+
+.editor-quick-insert-keyboard-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-quick-insert-keyboard-action {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  outline: 0;
+  background: transparent;
+  color: #91908f;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.editor-quick-insert-keyboard-action:hover {
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.editor-quick-insert-keyboard-action:not(
+    .editor-quick-insert-keyboard-record
+  ):focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: -2px;
+}
+
+.editor-quick-insert-keyboard-recorder.is-recording
+  .editor-quick-insert-keyboard-action {
+  color: #e25e5e;
+}
+
+.editor-quick-insert-keyboard-recorder.is-recording
+  .editor-quick-insert-keyboard-action:hover {
+  background: rgba(226, 94, 94, 0.12);
+}
+
+.editor-quick-insert-keyboard-record svg {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  fill: currentColor;
+}
+
+.editor-quick-insert-keyboard-clear-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.editor-quick-insert-keyboard-confirm {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--quick-insert-control-border);
+  border-radius: 6px;
+  background: var(--quick-insert-control-background);
+  color: var(--quick-insert-control-foreground);
+  cursor: pointer;
+  font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.editor-quick-insert-keyboard-confirm:hover:not(:disabled),
+.editor-quick-insert-keyboard-confirm:focus-visible:not(:disabled) {
+  border-color: var(--quick-insert-control-border-hover);
+  background: var(--quick-insert-control-hover-background);
+  color: var(--markdown-toolbar-foreground);
+}
+
+.editor-quick-insert-keyboard-confirm:disabled {
+  color: var(--markdown-toolbar-muted);
+  cursor: default;
 }
 
 .editor-quick-insert-tag-controls {
@@ -1054,12 +1412,22 @@
   .editor-quick-insert-section-content,
   .editor-quick-insert-section-content .editor-quick-insert-menu-item,
   .editor-quick-insert-chevron,
+  .editor-quick-insert-callout-extra-frame,
+  .editor-quick-insert-callout-extra-list,
+  .editor-quick-insert-callout-expand-button,
+  .editor-quick-insert-callout-expand-chevron,
   .number-spinner-button,
   .editor-quick-insert-table-sample-box,
   .editor-quick-insert-table-sample-box svg,
   .editor-quick-insert-table-confirm,
   .editor-quick-insert-inline-media-field input,
   .editor-quick-insert-inline-media-confirm,
+  .editor-quick-insert-expander-field input,
+  .editor-quick-insert-expander-field textarea,
+  .editor-quick-insert-expander-confirm,
+  .editor-quick-insert-keyboard-recorder,
+  .editor-quick-insert-keyboard-action,
+  .editor-quick-insert-keyboard-confirm,
   .editor-quick-insert-tag-field > input,
   .editor-quick-insert-tag-color-input,
   .editor-quick-insert-tag-confirm,

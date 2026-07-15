@@ -1,12 +1,19 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import {
+  explicitCalloutTypes,
+  getCalloutMarker,
+  type ExplicitCalloutType,
+} from '../../markdown/callouts'
+import {
   createCodeBlockMarkdown,
   type CreateCodeBlockMarkdownData,
 } from './createCodeBlockMarkdown'
 import {
+  createExpanderMarkdown,
   createInlineImageMarkdown,
   createInlineLinkMarkdown,
   createInlineTagMarkdown,
+  type CreateExpanderMarkdownData,
   type CreateInlineImageMarkdownData,
   type CreateInlineLinkMarkdownData,
   type CreateInlineTagMarkdownData,
@@ -15,10 +22,15 @@ import {
   createTableMarkdown,
   type CreateTableMarkdownData,
 } from './createTableMarkdown'
+import {
+  createKeyboardMarkdown,
+  type CreateKeyboardMarkdownData,
+} from './createKeyboardMarkdown'
 
 export type EditorQuickInsertCommand =
   | 'blockquote'
   | 'bullet-list'
+  | EditorQuickInsertCalloutCommand
   | 'heading-1'
   | 'heading-2'
   | 'heading-3'
@@ -29,6 +41,9 @@ export type EditorQuickInsertCommand =
   | 'numbered-list'
   | 'task-list-checked'
   | 'task-list-unchecked'
+
+export type EditorQuickInsertCalloutCommand =
+  `callout-${ExplicitCalloutType}`
 
 type EditorQuickInsertSnippet = {
   selection?: monaco.Selection
@@ -53,6 +68,12 @@ export type EditorQuickInsertTarget = {
 
 const lineMarkers: Partial<Record<EditorQuickInsertCommand, string>> = {
   blockquote: '> ',
+  ...Object.fromEntries(
+    explicitCalloutTypes.map((calloutType) => [
+      `callout-${calloutType}`,
+      `> ${getCalloutMarker(calloutType)}\n> `,
+    ]),
+  ),
   'bullet-list': '- ',
   'heading-1': '# ',
   'heading-2': '## ',
@@ -64,6 +85,26 @@ const lineMarkers: Partial<Record<EditorQuickInsertCommand, string>> = {
   'task-list-unchecked': '- [ ] ',
 }
 
+function getLineMarkerSelection(
+  target: EditorQuickInsertTarget,
+  lineMarker: string,
+) {
+  const endPosition = getInsertedTextEndPosition(
+    {
+      column: getQuickInsertStartColumn(target),
+      lineNumber: target.lineNumber,
+    },
+    lineMarker,
+  )
+
+  return new monaco.Selection(
+    endPosition.lineNumber,
+    endPosition.column,
+    endPosition.lineNumber,
+    endPosition.column,
+  )
+}
+
 function getQuickInsertSnippet(
   command: EditorQuickInsertCommand,
   target: EditorQuickInsertTarget,
@@ -73,12 +114,7 @@ function getQuickInsertSnippet(
 
   if (lineMarker) {
     return {
-      selection: new monaco.Selection(
-        target.lineNumber,
-        insertColumn + lineMarker.length,
-        target.lineNumber,
-        insertColumn + lineMarker.length,
-      ),
+      selection: getLineMarkerSelection(target, lineMarker),
       text: lineMarker,
     }
   }
@@ -371,6 +407,36 @@ export function insertEditorQuickInsertTag(
     editor,
     target,
     createInlineTagMarkdown(tagData),
+    undefined,
+    options,
+  )
+}
+
+export function insertEditorQuickInsertExpander(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  target: EditorQuickInsertTarget,
+  expanderData: CreateExpanderMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
+) {
+  return insertQuickInsertText(
+    editor,
+    target,
+    createExpanderMarkdown(expanderData),
+    undefined,
+    options,
+  )
+}
+
+export function insertEditorQuickInsertKeyboard(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  target: EditorQuickInsertTarget,
+  keyboardData: CreateKeyboardMarkdownData,
+  options: EditorQuickInsertInsertOptions = {},
+) {
+  return insertQuickInsertText(
+    editor,
+    target,
+    createKeyboardMarkdown(keyboardData),
     undefined,
     options,
   )

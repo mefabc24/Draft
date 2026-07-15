@@ -42,6 +42,7 @@ public sealed class AppStartupService
     public void Start(Application application, StartupEventArgs e)
     {
         DraftSettings settings = AppSettingsStore.Load();
+        LocalizationService.SetCurrentAppLanguage(settings.AppLanguage);
         _ = _snapshotCleanupService.CleanupOldSnapshotsAsync();
 
         if (settings.AssociateTxtFilesWithDraft)
@@ -92,12 +93,20 @@ public sealed class AppStartupService
     {
         _messageDialogService.ShowMessage(
             new MessageDialogRequest(
-                "Open File",
-                $"Unable to open the startup file. {message}",
+                LocalizationService.Translate("dialog.openFile.title", "Open File"),
+                LocalizationService.TranslateFormat(
+                    "errors.openStartupFile",
+                    "Unable to open the startup file. {message}",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["message"] = message,
+                    }),
                 MessageDialogType.Error,
                 new[]
                 {
-                    MessageDialogButtonDefinition.Primary("Okay", MessageDialogResult.Ok),
+                    MessageDialogButtonDefinition.Primary(
+                        LocalizationService.Translate("common.okay", "Okay"),
+                        MessageDialogResult.Ok),
                 }));
     }
 }

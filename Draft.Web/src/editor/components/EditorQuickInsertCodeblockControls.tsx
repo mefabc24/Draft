@@ -7,6 +7,7 @@ import {
 } from 'react'
 import type { CreateCodeBlockMarkdownData } from '../commands/createCodeBlockMarkdown'
 import { useToolbarMenuScrollbar } from '../../toolbar/hooks/useToolbarMenuScrollbar'
+import { useTranslation } from '../../localization/useTranslation'
 
 type CodeblockLanguageOption = {
   aliases?: string[]
@@ -20,6 +21,7 @@ type EditorQuickInsertCodeblockControlsProps = {
     codeBlockData: CreateCodeBlockMarkdownData,
     keepOpen?: boolean,
   ) => void
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 const codeblockLanguageOptions: CodeblockLanguageOption[] = [
@@ -128,21 +130,37 @@ function isSubsequence(query: string, candidate: string) {
   return false
 }
 
-function getOptionSearchValues(option: CodeblockLanguageOption) {
+function getLanguageOptionLabel(
+  option: CodeblockLanguageOption,
+  t: (key: string, fallback: string) => string,
+) {
+  const languageKey = option.value || 'none'
+
+  return t(`quickInsert.codeblock.languages.${languageKey}`, option.label)
+}
+
+function getOptionSearchValues(
+  option: CodeblockLanguageOption,
+  t: (key: string, fallback: string) => string,
+) {
   return [
-    option.label,
+    getLanguageOptionLabel(option, t),
     option.value,
     option.code,
     ...(option.aliases ?? []),
   ].map(normalizeSearchValue)
 }
 
-function getOptionScore(option: CodeblockLanguageOption, query: string) {
+function getOptionScore(
+  option: CodeblockLanguageOption,
+  query: string,
+  t: (key: string, fallback: string) => string,
+) {
   if (!query) {
     return 0
   }
 
-  const values = getOptionSearchValues(option)
+  const values = getOptionSearchValues(option, t)
   const bestScore = values.reduce<number | null>((score, value) => {
     let nextScore: number | null = null
 
@@ -166,14 +184,17 @@ function getOptionScore(option: CodeblockLanguageOption, query: string) {
   return bestScore
 }
 
-function filterLanguageOptions(searchValue: string) {
+function filterLanguageOptions(
+  searchValue: string,
+  t: (key: string, fallback: string) => string,
+) {
   const query = normalizeSearchValue(searchValue)
 
   return codeblockLanguageOptions
     .map((option, index) => ({
       index,
       option,
-      score: getOptionScore(option, query),
+      score: getOptionScore(option, query, t),
     }))
     .filter((result) => result.score !== null)
     .sort((left, right) => {
@@ -188,7 +209,9 @@ function filterLanguageOptions(searchValue: string) {
 
 function EditorQuickInsertCodeblockControls({
   onConfirm,
+  shouldKeepOpen,
 }: EditorQuickInsertCodeblockControlsProps) {
+  const { t } = useTranslation()
   const [selectedLanguage, setSelectedLanguage] = useState(
     codeblockLanguageOptions[0],
   )
@@ -207,8 +230,8 @@ function EditorQuickInsertCodeblockControls({
     handleThumbPointerUp,
   } = useToolbarMenuScrollbar(open)
   const filteredOptions = useMemo(
-    () => filterLanguageOptions(searchValue),
-    [searchValue],
+    () => filterLanguageOptions(searchValue, t),
+    [searchValue, t],
   )
 
   useEffect(() => {
@@ -226,7 +249,9 @@ function EditorQuickInsertCodeblockControls({
   return (
     <div className="editor-quick-insert-codeblock-controls">
       <div className="editor-quick-insert-codeblock-field">
-        <span className="editor-quick-insert-codeblock-label">Type</span>
+        <span className="editor-quick-insert-codeblock-label">
+          {t('quickInsert.codeblock.type')}
+        </span>
         <div
           className={`editor-quick-insert-codeblock-select${
             open ? ' is-open' : ''
@@ -249,7 +274,7 @@ function EditorQuickInsertCodeblockControls({
               })
             }}
           >
-            <span>{selectedLanguage.label}</span>
+            <span>{getLanguageOptionLabel(selectedLanguage, t)}</span>
             <span className="editor-quick-insert-codeblock-combobox-chevron">
               <ChevronIcon />
             </span>
@@ -272,7 +297,9 @@ function EditorQuickInsertCodeblockControls({
                   ref={searchInputRef}
                   type="text"
                   value={searchValue}
-                  placeholder="Search languages..."
+                  placeholder={t(
+                    'quickInsert.codeblock.searchLanguages',
+                  )}
                   tabIndex={open ? undefined : -1}
                   onChange={(event) => {
                     setSearchValue(event.target.value)
@@ -289,7 +316,9 @@ function EditorQuickInsertCodeblockControls({
                   ref={optionsScrollRef}
                   className="editor-quick-insert-codeblock-options"
                   role="listbox"
-                  aria-label="Codeblock language"
+                  aria-label={t(
+                    'quickInsert.codeblock.language',
+                  )}
                   data-scrollable="false"
                 >
                   {filteredOptions.length > 0 ? (
@@ -313,7 +342,7 @@ function EditorQuickInsertCodeblockControls({
                           }}
                         >
                           <span className="editor-quick-insert-codeblock-option-label">
-                            {option.label}
+                            {getLanguageOptionLabel(option, t)}
                           </span>
                           {selected ? (
                             <span className="editor-quick-insert-codeblock-option-check">
@@ -329,7 +358,7 @@ function EditorQuickInsertCodeblockControls({
                     })
                   ) : (
                     <div className="editor-quick-insert-codeblock-empty">
-                      No languages found
+                      {t('quickInsert.codeblock.noLanguagesFound')}
                     </div>
                   )}
                 </div>
@@ -361,11 +390,11 @@ function EditorQuickInsertCodeblockControls({
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
           onConfirm(
             { language: selectedLanguage.value },
-            event.shiftKey && event.button === 0,
+            shouldKeepOpen(event),
           )
         }}
       >
-        Create
+        {t('common.create')}
       </button>
     </div>
   )

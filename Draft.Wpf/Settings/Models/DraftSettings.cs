@@ -1,9 +1,12 @@
 using Draft.Settings.Services;
+using Draft.Settings.Shortcuts;
 
 namespace Draft.Settings.Models;
 
 public sealed class DraftSettings
 {
+    public string AppLanguage { get; set; } = SettingsDefaults.DefaultAppLanguage;
+
     public bool ReopenLastWorkspaceOnStartup { get; set; } = false;
 
     public bool CheckForUpdatesOnStartup { get; set; } = true;
@@ -72,7 +75,30 @@ public sealed class DraftSettings
 
     public bool IsStatusBarVisible { get; set; } = true;
 
+    public bool IsStatusBarFileTypeVisible { get; set; } = true;
+
+    public bool IsStatusBarEncodingVisible { get; set; } = true;
+
+    public bool IsStatusBarWordCountVisible { get; set; } = true;
+
+    public bool IsStatusBarCharacterCountVisible { get; set; } = true;
+
+    public bool IsStatusBarCursorPositionVisible { get; set; } = true;
+
+    public bool IsStatusBarRevertButtonVisible { get; set; } = true;
+
+    public bool IsStatusBarSaveStatusVisible { get; set; } = true;
+
+    public bool IsStatusBarAutosaveStatusVisible { get; set; } = true;
+
+    public bool IsStatusBarAppVersionVisible { get; set; } = true;
+
+    public bool IsStatusBarReportBugButtonVisible { get; set; } = true;
+
     public string WindowBorderAccentMode { get; set; } = SettingsDefaults.WindowBorderAccentDisabled;
 
     public string ToolbarControlbarPosition { get; set; } = "Top";
+
+    public Dictionary<string, string> Shortcuts { get; set; } =
+        ShortcutSettingsCatalog.CreateDefaultShortcuts();
 }

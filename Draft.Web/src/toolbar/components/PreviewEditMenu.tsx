@@ -8,6 +8,12 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
 } from 'react'
+import { useTranslation } from '../../localization/useTranslation'
+import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
+import {
+  shortcutActionIds,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
 import { clamp } from '../../shared/utils/clamp'
 import type { ToolbarTooltipContent } from './ToolbarTooltip'
 import ToolbarButton from './ToolbarButton'
@@ -25,8 +31,10 @@ type PreviewEditMenuProps = {
     tooltip: ToolbarTooltipContent,
   ) => void
   open: boolean
+  shortcutBindings: ShortcutBindings
   sourceText: string
   toolbarRef: RefObject<HTMLDivElement | null>
+  triggerShortcut: string
   workspaceRef: RefObject<HTMLElement | null>
 }
 
@@ -67,10 +75,13 @@ function PreviewEditMenu({
   onTooltipHide,
   onTooltipShow,
   open,
+  shortcutBindings,
   sourceText,
   toolbarRef,
+  triggerShortcut,
   workspaceRef,
 }: PreviewEditMenuProps) {
+  const { t } = useTranslation()
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -281,13 +292,25 @@ function PreviewEditMenu({
   const handleKeyDown = (event: ReactKeyboardEvent) => {
     event.stopPropagation()
 
-    if (event.key === 'Escape') {
+    if (
+      eventMatchesShortcutAction(
+        event.nativeEvent,
+        shortcutBindings,
+        shortcutActionIds.toolbarClose,
+      )
+    ) {
       event.preventDefault()
       onCancel()
       return
     }
 
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (
+      eventMatchesShortcutAction(
+        event.nativeEvent,
+        shortcutBindings,
+        shortcutActionIds.toolbarConfirmEdit,
+      )
+    ) {
       event.preventDefault()
       handleConfirm()
     }
@@ -300,11 +323,11 @@ function PreviewEditMenu({
         active={open}
         ariaExpanded={open}
         ariaHasPopup="dialog"
-        ariaLabel="Edit selected Markdown"
+        ariaLabel={t('toolbar.editSelectedMarkdown')}
         onClick={handleOpen}
         onTooltipHide={onTooltipHide}
         onTooltipShow={onTooltipShow}
-        tooltip={{ label: 'Edit', shortcut: 'CTRL + SHIFT + E' }}
+        tooltip={{ label: t('common.edit'), shortcut: triggerShortcut }}
       >
         <ToolbarIcon name="edit" />
       </ToolbarButton>
@@ -316,7 +339,7 @@ function PreviewEditMenu({
           data-toolbar-popup="true"
           data-preview-edit-menu="true"
           role="dialog"
-          aria-label="Edit selected Markdown source"
+          aria-label={t('toolbar.editSelectedMarkdownSource')}
           style={menuStyle}
           onKeyDown={handleKeyDown}
         >
@@ -337,14 +360,14 @@ function PreviewEditMenu({
               className="preview-edit-action preview-edit-action-secondary"
               onClick={onCancel}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="button"
               className="preview-edit-action preview-edit-action-primary"
               onClick={handleConfirm}
             >
-              Confirm
+              {t('common.confirm')}
             </button>
           </div>
         </div>

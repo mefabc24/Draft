@@ -1,4 +1,5 @@
 import { useRef, type WheelEvent } from 'react'
+import { useTranslation } from '../../localization/useTranslation'
 
 type NumberSpinnerProps = {
   label: string
@@ -53,6 +54,7 @@ function NumberSpinner({
   onChange,
   value,
 }: NumberSpinnerProps) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const maximumValue = max ?? DEFAULT_MAX
   const decreaseDisabled = value <= min
@@ -114,7 +116,7 @@ function NumberSpinner({
         type="button"
         className="number-spinner-button"
         disabled={decreaseDisabled}
-        aria-label={`Decrease ${label}`}
+        aria-label={t('numberSpinner.decrease', { label })}
         onClick={() => {
           setSpinnerValue(Math.max(min, value - 1))
         }}
@@ -161,7 +163,7 @@ function NumberSpinner({
         type="button"
         className="number-spinner-button"
         disabled={increaseDisabled}
-        aria-label={`Increase ${label}`}
+        aria-label={t('numberSpinner.increase', { label })}
         onClick={() => {
           setSpinnerValue(Math.min(maximumValue, value + 1))
         }}

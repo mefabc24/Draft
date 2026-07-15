@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using System.IO;
+using Draft.Localization;
 
 namespace Draft.Settings.Services;
 
@@ -9,7 +10,9 @@ public sealed class SettingsFileDialogService
     {
         OpenFolderDialog dialog = new()
         {
-            Title = "Choose default save location",
+            Title = LocalizationService.Translate(
+                "settings.general.defaultSaveLocation.dialogTitle",
+                "Choose default save location"),
             InitialDirectory = Directory.Exists(currentLocation)
                 ? currentLocation
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),

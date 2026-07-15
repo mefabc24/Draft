@@ -7,6 +7,14 @@ import {
   type RefObject,
 } from 'react'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import {
+  getMonacoShortcutKeybinding,
+} from '../../shortcuts/shortcutMatching'
+import {
+  shortcutActionIds,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
+import { useTranslation } from '../../localization/useTranslation'
 import { clamp } from '../../shared/utils/clamp'
 import {
   getEditorQuickInsertTargetFromPosition,
@@ -23,6 +31,8 @@ const MENU_EDGE_PADDING = 8
 const MENU_GAP = 8
 const MENU_ESTIMATED_WIDTH = 294
 const MENU_ESTIMATED_HEIGHT = 324
+const MENU_LIST_SELECTOR = '.editor-quick-insert-menu-list'
+const MENU_SCROLL_SELECTOR = '.editor-quick-insert-menu-scroll'
 
 export type EditorQuickInsertMenuAnchor = EditorQuickInsertTarget & {
   anchor: 'cursor' | 'gutter'
@@ -30,15 +40,20 @@ export type EditorQuickInsertMenuAnchor = EditorQuickInsertTarget & {
 
 export type EditorQuickInsertMenuPosition = {
   left: number
+  maxHeight: number
   top: number
 }
 
 type EditorQuickInsertMenuTarget = EditorQuickInsertMenuAnchor
+type EditorQuickInsertMenuPreferredPosition = Omit<
+  EditorQuickInsertMenuPosition,
+  'maxHeight'
+>
 
 function getQuickInsertMenuPreferredPosition(
   editor: monaco.editor.IStandaloneCodeEditor,
   target: EditorQuickInsertMenuTarget,
-): EditorQuickInsertMenuPosition | null {
+): EditorQuickInsertMenuPreferredPosition | null {
   if (!isEditorQuickInsertTarget(editor, target)) {
     return null
   }
@@ -63,33 +78,73 @@ function getQuickInsertMenuPreferredPosition(
   }
 }
 
+function getQuickInsertMenuNaturalHeight(menu: HTMLDivElement | null) {
+  if (!menu) {
+    return MENU_ESTIMATED_HEIGHT
+  }
+
+  const scrollElement =
+    menu.querySelector<HTMLDivElement>(MENU_SCROLL_SELECTOR)
+
+  if (!scrollElement) {
+    return menu.offsetHeight
+  }
+
+  const menuChromeHeight = Math.max(
+    menu.offsetHeight - scrollElement.clientHeight,
+    0,
+  )
+
+  return Math.max(
+    menu.offsetHeight,
+    scrollElement.scrollHeight + menuChromeHeight,
+  )
+}
+
 function clampQuickInsertMenuPosition(
   editorBody: HTMLDivElement,
   menu: HTMLDivElement | null,
-  position: EditorQuickInsertMenuPosition,
+  position: EditorQuickInsertMenuPreferredPosition,
 ) {
   const menuWidth = menu?.offsetWidth ?? MENU_ESTIMATED_WIDTH
-  const menuHeight = menu?.offsetHeight ?? MENU_ESTIMATED_HEIGHT
+  const maximumAvailableHeight = Math.max(
+    editorBody.clientHeight - MENU_EDGE_PADDING * 2,
+    0,
+  )
+  const menuHeight = Math.min(
+    getQuickInsertMenuNaturalHeight(menu),
+    maximumAvailableHeight,
+  )
   const maxLeft = editorBody.clientWidth - menuWidth - MENU_EDGE_PADDING
   const maxTop = editorBody.clientHeight - menuHeight - MENU_EDGE_PADDING
 
+  const top = clamp(position.top, MENU_EDGE_PADDING, maxTop)
+  const availableHeight = Math.max(
+    editorBody.clientHeight - top - MENU_EDGE_PADDING,
+    0,
+  )
+
   return {
     left: clamp(position.left, MENU_EDGE_PADDING, maxLeft),
-    top: clamp(position.top, MENU_EDGE_PADDING, maxTop),
+    maxHeight: availableHeight,
+    top,
   }
 }
 
 export function useEditorQuickInsertMenu(
   editor: monaco.editor.IStandaloneCodeEditor | null,
   editorBodyRef: RefObject<HTMLDivElement | null>,
+  shortcutBindings: ShortcutBindings,
 ) {
+  const { t } = useTranslation()
   const [menuTarget, setMenuTarget] =
     useState<EditorQuickInsertMenuTarget | null>(null)
   const [menuPosition, setMenuPosition] =
     useState<EditorQuickInsertMenuPosition | null>(null)
+  const [menuInstanceKey, setMenuInstanceKey] = useState(0)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const menuPreferredPositionRef =
-    useRef<EditorQuickInsertMenuPosition | null>(null)
+    useRef<EditorQuickInsertMenuPreferredPosition | null>(null)
   const menuTargetRef = useRef<EditorQuickInsertMenuTarget | null>(null)
   const keepOpenActionRef = useRef(false)
   const lockMenuPositionRef = useRef(false)
@@ -172,6 +227,7 @@ export function useEditorQuickInsertMenu(
 
       if (
         nextPosition.left === currentPosition.left &&
+        nextPosition.maxHeight === currentPosition.maxHeight &&
         nextPosition.top === currentPosition.top
       ) {
         return currentPosition
@@ -219,6 +275,7 @@ export function useEditorQuickInsertMenu(
       menuPreferredPositionRef.current = preferredPosition
       menuTargetRef.current = anchor
       lockMenuPositionRef.current = false
+      setMenuInstanceKey((currentKey) => currentKey + 1)
       setMenuTarget(anchor)
       setMenuPosition(nextPosition)
       scheduleMenuPositionUpdate()
@@ -315,7 +372,13 @@ export function useEditorQuickInsertMenu(
     }
 
     const resizeObserver = new ResizeObserver(scheduleMenuBoundsUpdate)
+    const menuList = menu.querySelector<HTMLDivElement>(MENU_LIST_SELECTOR)
+
     resizeObserver.observe(menu)
+
+    if (menuList) {
+      resizeObserver.observe(menuList)
+    }
 
     if (editorBody) {
       resizeObserver.observe(editorBody)
@@ -335,8 +398,15 @@ export function useEditorQuickInsertMenu(
 
     const action = editor.addAction({
       id: 'draft.editorQuickInsert.openMenu',
-      label: 'Quick Insert: Open Menu',
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space],
+      label: t('commands.quickInsert.openMenu'),
+      keybindings: (() => {
+        const keybinding = getMonacoShortcutKeybinding(
+          shortcutBindings,
+          shortcutActionIds.quickInsertOpenMenu,
+        )
+
+        return keybinding === null ? [] : [keybinding]
+      })(),
       run: () => {
         openMenuAtCursor()
       },
@@ -345,7 +415,7 @@ export function useEditorQuickInsertMenu(
     return () => {
       action.dispose()
     }
-  }, [editor, openMenuAtCursor])
+  }, [editor, openMenuAtCursor, shortcutBindings, t])
 
   useEffect(() => {
     if (!editor || !menuTarget) {
@@ -425,11 +495,13 @@ export function useEditorQuickInsertMenu(
 
   return {
     closeMenu,
+    menuInstanceKey,
     menuPosition,
     menuRef,
     openMenu,
     openMenuAtCursor,
     runMenuActionKeepingOpen,
     target: menuTarget,
+    updateMenuBounds: clampMenuPositionToViewport,
   }
 }

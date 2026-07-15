@@ -43,8 +43,13 @@ public sealed class UpdateService
         }
         catch (Exception ex)
         {
-            return UpdateCheckResult.Failed(
-                $"Unable to check for updates. Make sure Draft releases are public and try again.\n\n{ex.Message}");
+            return UpdateCheckResult.Failed(LocalizationService.TranslateFormat(
+                "updates.checkFailedDescription",
+                "Unable to check for updates. Make sure Draft releases are public and try again.\n\n{message}",
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["message"] = ex.Message,
+                }));
         }
     }
 
@@ -56,7 +61,9 @@ public sealed class UpdateService
         if (updateCheckResult.Status != UpdateCheckStatus.UpdateAvailable
             || updateCheckResult.UpdateInfo is null)
         {
-            throw new InvalidOperationException("No Draft update is available to install.");
+            throw new InvalidOperationException(LocalizationService.Translate(
+                "updates.noUpdateAvailableToInstall",
+                "No Draft update is available to install."));
         }
 
         await _updateManager.DownloadUpdatesAsync(

@@ -1,3 +1,9 @@
+import {
+  calloutLabels,
+  normalizeCalloutType,
+  type CalloutType,
+} from '../../markdown/callouts'
+import { translate } from '../../localization/localization'
 import type { HastNode } from '../previewTypes'
 
 type DraftExtensionFragment =
@@ -43,6 +49,7 @@ const skippedDraftExtensionElementTags = new Set([
 ])
 
 const validTagColorPattern = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/iu
+const calloutMarkerPattern = /^\[!([A-Za-z]+)\](?:[ \t]*(?:\r?\n|$))/u
 
 function getSourceOffset(value: unknown) {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
@@ -275,6 +282,25 @@ function createTextNode(
     value,
     position: createSourcePosition(sourceNode, startIndex, endIndex),
   } satisfies HastNode
+}
+
+function getClassNames(properties: Record<string, unknown> | undefined) {
+  const className = properties?.className
+
+  if (Array.isArray(className)) {
+    return className.filter(
+      (value): value is string => typeof value === 'string',
+    )
+  }
+
+  return typeof className === 'string' ? className.split(/\s+/u) : []
+}
+
+function addClassNames(node: HastNode, classNames: string[]) {
+  node.properties = {
+    ...node.properties,
+    className: [...getClassNames(node.properties), ...classNames],
+  }
 }
 
 function createDraftExtensionElement(
@@ -514,10 +540,128 @@ function isEmptyParagraph(node: HastNode) {
   )
 }
 
+function isWhitespaceTextNode(node: HastNode) {
+  return node.type === 'text' && !node.value?.trim()
+}
+
+function getFirstMeaningfulChild(children: HastNode[]) {
+  for (const child of children) {
+    if (!isWhitespaceTextNode(child)) {
+      return child
+    }
+  }
+
+  return null
+}
+
+function getCalloutMarkerFromParagraph(paragraphNode: HastNode) {
+  if (paragraphNode.type !== 'element' || paragraphNode.tagName !== 'p') {
+    return null
+  }
+
+  const firstChild = paragraphNode.children?.[0]
+
+  if (firstChild?.type !== 'text' || typeof firstChild.value !== 'string') {
+    return null
+  }
+
+  const markerMatch = calloutMarkerPattern.exec(firstChild.value)
+
+  if (!markerMatch) {
+    return null
+  }
+
+  return {
+    calloutType: normalizeCalloutType(markerMatch[1] ?? ''),
+    firstChild,
+    markerEndIndex: markerMatch[0].length,
+  }
+}
+
+function removeCalloutMarkerFromParagraph(
+  paragraphNode: HastNode,
+  markerNode: HastNode,
+  markerEndIndex: number,
+) {
+  if (!paragraphNode.children || typeof markerNode.value !== 'string') {
+    return
+  }
+
+  const remainingValue = markerNode.value.slice(markerEndIndex)
+  const markerNodeIndex = paragraphNode.children.indexOf(markerNode)
+
+  if (markerNodeIndex === -1) {
+    return
+  }
+
+  if (!remainingValue) {
+    paragraphNode.children.splice(markerNodeIndex, 1)
+    return
+  }
+
+  paragraphNode.children.splice(
+    markerNodeIndex,
+    1,
+    createTextNode(
+      markerNode,
+      remainingValue,
+      markerEndIndex,
+      markerNode.value.length,
+    ),
+  )
+}
+
+function annotateCalloutBlockquote(node: HastNode, calloutType: CalloutType) {
+  addClassNames(node, [
+    'preview-callout',
+    `preview-callout-${calloutType}`,
+  ])
+  node.properties = {
+    ...node.properties,
+    'data-callout-label': translate(
+      calloutType === 'default' ? 'callout.quote' : `callout.${calloutType}`,
+      {
+        fallback: calloutLabels[calloutType],
+      },
+    ),
+    'data-callout-type': calloutType,
+  }
+}
+
+function transformCalloutBlockquote(node: HastNode) {
+  if (
+    node.type !== 'element' ||
+    node.tagName !== 'blockquote' ||
+    !node.children
+  ) {
+    return
+  }
+
+  const firstMeaningfulChild = getFirstMeaningfulChild(node.children)
+  if (!firstMeaningfulChild) {
+    return
+  }
+
+  const marker = getCalloutMarkerFromParagraph(firstMeaningfulChild)
+
+  if (!marker) {
+    return
+  }
+
+  removeCalloutMarkerFromParagraph(
+    firstMeaningfulChild,
+    marker.firstChild,
+    marker.markerEndIndex,
+  )
+  annotateCalloutBlockquote(node, marker.calloutType)
+}
+
 function transformDraftExtensionNode(node: HastNode) {
   if (!node.children || isSkippedDraftExtensionElement(node)) {
     return
   }
+
+  transformCalloutBlockquote(node)
 
   const children: HastNode[] = []
 

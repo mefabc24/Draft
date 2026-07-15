@@ -11,17 +11,15 @@ import {
 } from 'react'
 import { HexColorPicker } from 'react-colorful'
 import type { CreateInlineTagMarkdownData } from '../commands/createInlineLinkMarkdown'
+import { useTranslation } from '../../localization/useTranslation'
 
 type EditorQuickInsertTagControlsProps = {
   onConfirm: (data: CreateInlineTagMarkdownData, keepOpen?: boolean) => void
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 const DEFAULT_TAG_COLOR = '#FFFFFF'
 const validTagColorPattern = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/iu
-
-function shouldKeepOpen(event: ReactMouseEvent<HTMLButtonElement>) {
-  return event.shiftKey && event.button === 0
-}
 
 function getTagPreviewColor(value: string) {
   const trimmedValue = value.trim()
@@ -33,7 +31,9 @@ function getTagPreviewColor(value: string) {
 
 function EditorQuickInsertTagControls({
   onConfirm,
+  shouldKeepOpen,
 }: EditorQuickInsertTagControlsProps) {
+  const { t } = useTranslation()
   const colorInputId = useId()
   const colorFieldRef = useRef<HTMLDivElement | null>(null)
   const [text, setText] = useState('')
@@ -104,11 +104,13 @@ function EditorQuickInsertTagControls({
   return (
     <div className="editor-quick-insert-tag-controls">
       <label className="editor-quick-insert-tag-field">
-        <span className="editor-quick-insert-tag-label">Text</span>
+        <span className="editor-quick-insert-tag-label">
+          {t('quickInsert.tag.text')}
+        </span>
         <input
           type="text"
           value={text}
-          placeholder="Text"
+          placeholder={t('quickInsert.tag.text')}
           onChange={(event) => {
             setText(event.target.value)
           }}
@@ -120,13 +122,16 @@ function EditorQuickInsertTagControls({
         ref={colorFieldRef}
       >
         <label className="editor-quick-insert-tag-label" htmlFor={colorInputId}>
-          Color
+          {t('quickInsert.tag.color')}
         </label>
         <span className="editor-quick-insert-tag-color-input">
           <button
             type="button"
             className="editor-quick-insert-tag-color-preview-button"
-            aria-label="Toggle tag color picker"
+            aria-label={t(
+              'quickInsert.tag.toggleColorPicker',
+              'Toggle tag color picker',
+            )}
             aria-expanded={isColorPickerOpen}
             onClick={toggleColorPicker}
           >
@@ -140,7 +145,7 @@ function EditorQuickInsertTagControls({
             id={colorInputId}
             type="text"
             value={color}
-            placeholder="Color Code"
+            placeholder={t('quickInsert.tag.colorCode')}
             onChange={(event) => {
               setColor(event.target.value)
             }}
@@ -163,7 +168,7 @@ function EditorQuickInsertTagControls({
           confirm(shouldKeepOpen(event))
         }}
       >
-        Create
+        {t('common.create')}
       </button>
     </div>
   )

@@ -1,5 +1,11 @@
 export { countMarkdownWords } from './wordCount'
-export { addBlockquotePrefix, addHeadingPrefix, removeBlockquotePrefix, removeHeadingPrefix } from './commands/blockFormatting'
+export {
+  addBlockquotePrefix,
+  addCalloutBlockquotePrefix,
+  addHeadingPrefix,
+  removeBlockquotePrefix,
+  removeHeadingPrefix,
+} from './commands/blockFormatting'
 export { toggleFencedCodeBlockText } from './commands/codeBlockFormatting'
 export {
   findContainingInlineFormatRange,

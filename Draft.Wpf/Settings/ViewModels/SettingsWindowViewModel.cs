@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Draft.Settings.Shortcuts;
 
 namespace Draft.Settings.ViewModels;
 
@@ -9,6 +10,7 @@ public class SettingsWindowViewModel : BaseViewModel
     private readonly EditorSettingsPageViewModel _editorSettingsPage;
     private readonly PreviewSettingsPageViewModel _previewSettingsPage;
     private readonly AppearanceSettingsPageViewModel _appearanceSettingsPage;
+    private readonly StatusBarSettingsPageViewModel _statusBarSettingsPage;
     private readonly ShortcutsSettingsPageViewModel _shortcutsSettingsPage;
     private readonly DevelopSettingsPageViewModel _developSettingsPage;
     private readonly AboutSettingsPageViewModel _aboutSettingsPage;
@@ -18,6 +20,7 @@ public class SettingsWindowViewModel : BaseViewModel
     private SettingsPage _selectedPage = SettingsPage.General;
     private SettingsPageViewModel _currentSettingsPage;
 
+    private string _appLanguage = AppSettingsStore.DefaultAppLanguage;
     private bool _reopenLastWorkspaceOnStartup;
     private bool _checkForUpdatesOnStartup = true;
     private bool _autosaveEnabled;
@@ -51,13 +54,29 @@ public class SettingsWindowViewModel : BaseViewModel
     private string _floatingMarkdownToolbarMode = AppSettingsStore.DefaultFloatingMarkdownToolbarMode;
     private string _appTheme = "Dark";
     private bool _isStatusBarVisible = true;
+    private bool _isStatusBarFileTypeVisible = true;
+    private bool _isStatusBarEncodingVisible = true;
+    private bool _isStatusBarWordCountVisible = true;
+    private bool _isStatusBarCharacterCountVisible = true;
+    private bool _isStatusBarCursorPositionVisible = true;
+    private bool _isStatusBarRevertButtonVisible = true;
+    private bool _isStatusBarSaveStatusVisible = true;
+    private bool _isStatusBarAutosaveStatusVisible = true;
+    private bool _isStatusBarAppVersionVisible = true;
+    private bool _isStatusBarReportBugButtonVisible = true;
     private string _windowBorderAccentMode = AppSettingsStore.WindowBorderAccentDisabled;
     private string _toolbarControlbarPosition = AppSettingsStore.DefaultToolbarPosition;
+    private Dictionary<string, string> _shortcuts =
+        ShortcutSettingsCatalog.CreateDefaultShortcuts();
+    private IReadOnlyList<ShortcutConflict> _shortcutConflicts =
+        Array.Empty<ShortcutConflict>();
 
     public SettingsWindowViewModel()
     {
         BrowseDefaultSaveLocationCommand = new RelayCommand(BrowseDefaultSaveLocation);
-        ApplySettingsCommand = new RelayCommand(ApplyChanges);
+        ApplySettingsCommand = new RelayCommand(
+            ApplyChanges,
+            () => !HasShortcutConflicts);
         CancelSettingsCommand = new RelayCommand(CancelChanges);
         ResetToDefaultsCommand = new RelayCommand(ResetToDefaults);
 
@@ -68,14 +87,19 @@ public class SettingsWindowViewModel : BaseViewModel
         _editorSettingsPage = new EditorSettingsPageViewModel(this);
         _previewSettingsPage = new PreviewSettingsPageViewModel(this);
         _appearanceSettingsPage = new AppearanceSettingsPageViewModel(this);
+        _statusBarSettingsPage = new StatusBarSettingsPageViewModel(this);
         _shortcutsSettingsPage = new ShortcutsSettingsPageViewModel(this);
         _developSettingsPage = new DevelopSettingsPageViewModel(this);
         _aboutSettingsPage = new AboutSettingsPageViewModel(this);
         _currentSettingsPage = _generalSettingsPage;
+        RefreshShortcutConflicts();
     }
 
     public static IReadOnlyList<string> AutosaveIntervalOptionValues =>
         SettingsOptionCatalog.AutosaveIntervalOptions;
+
+    public IReadOnlyList<string> AppLanguageOptions =>
+        SettingsOptionCatalog.AppLanguageOptions;
 
     public IReadOnlyList<string> AutosaveIntervalOptions => AutosaveIntervalOptionValues;
 
@@ -115,6 +139,9 @@ public class SettingsWindowViewModel : BaseViewModel
     public IReadOnlyList<string> FloatingMarkdownToolbarModeOptions =>
         SettingsOptionCatalog.FloatingMarkdownToolbarModeOptions;
 
+    public IReadOnlyList<string> FloatingMarkdownToolbarModeValueOptions =>
+        SettingsOptionCatalog.FloatingMarkdownToolbarModeValues;
+
     public IReadOnlyList<string> AppThemeOptions =>
         SettingsOptionCatalog.AppThemeOptions;
 
@@ -137,6 +164,52 @@ public class SettingsWindowViewModel : BaseViewModel
     public event EventHandler<ResetConfirmationRequestedEventArgs>? ResetConfirmationRequested;
 
     public event EventHandler? CloseRequested;
+
+    public string SettingsTitle =>
+        LocalizationService.Translate("settings.title", "Settings", AppLanguage);
+
+    public string SettingsConfigurationLabel =>
+        LocalizationService.Translate("settings.configuration", "Configuration", AppLanguage);
+
+    public string SettingsResetDefaultsTooltip =>
+        LocalizationService.Translate("settings.resetDefaults", "Restore Default Settings", AppLanguage);
+
+    public string GeneralSettingsMenuLabel =>
+        LocalizationService.Translate("settings.general", "General", AppLanguage);
+
+    public string EditorSettingsMenuLabel =>
+        LocalizationService.Translate("settings.editor", "Editor", AppLanguage);
+
+    public string PreviewSettingsMenuLabel =>
+        LocalizationService.Translate("settings.preview", "Preview", AppLanguage);
+
+    public string AppearanceSettingsMenuLabel =>
+        LocalizationService.Translate("settings.appearance", "Appearance", AppLanguage);
+
+    public string StatusBarSettingsMenuLabel =>
+        LocalizationService.Translate("settings.statusBar", "Status Bar", AppLanguage);
+
+    public string ShortcutsSettingsMenuLabel =>
+        LocalizationService.Translate("settings.shortcuts", "Shortcuts", AppLanguage);
+
+    public string DevelopSettingsMenuLabel =>
+        LocalizationService.Translate("settings.develop", "Develop", AppLanguage);
+
+    public string AboutSettingsMenuLabel =>
+        LocalizationService.Translate("settings.about", "About", AppLanguage);
+
+    public string CancelButtonText =>
+        LocalizationService.Translate("common.cancel", "Cancel", AppLanguage);
+
+    public string ApplyChangesButtonText =>
+        LocalizationService.Translate("common.applyChanges", "Apply Changes", AppLanguage);
+
+    public string ShortcutConflictSummary => LocalizationService.Translate(
+        "shortcuts.resolveConflicts",
+        "Resolve shortcut conflicts before applying changes.",
+        AppLanguage);
+
+    public bool HasShortcutConflicts => _shortcutConflicts.Count > 0;
 
     public SettingsPageViewModel CurrentSettingsPage
     {
@@ -191,6 +264,16 @@ public class SettingsWindowViewModel : BaseViewModel
         }
     }
 
+    public bool IsStatusBarSettingsSelected
+    {
+        get => _selectedPage == SettingsPage.StatusBar;
+        set
+        {
+            if (value)
+                SelectSettingsPage(SettingsPage.StatusBar);
+        }
+    }
+
     public bool IsShortcutsSettingsSelected
     {
         get => _selectedPage == SettingsPage.Shortcuts;
@@ -230,6 +313,24 @@ public class SettingsWindowViewModel : BaseViewModel
         {
             if (value)
                 SelectSettingsPage(SettingsPage.About);
+        }
+    }
+
+    public string AppLanguage
+    {
+        get => _appLanguage;
+        set
+        {
+            string nextLanguage = EnsureOption(
+                AppLanguageOptions,
+                LocalizationService.NormalizeAppLanguageValue(value),
+                AppSettingsStore.DefaultAppLanguage);
+
+            if (SetSetting(ref _appLanguage, nextLanguage))
+            {
+                LocalizationService.SetCurrentAppLanguage(nextLanguage);
+                NotifyLocalizedPropertiesChanged();
+            }
         }
     }
 
@@ -468,6 +569,16 @@ public class SettingsWindowViewModel : BaseViewModel
             GetFloatingMarkdownToolbarModeValue(value));
     }
 
+    public string FloatingMarkdownToolbarModeValue
+    {
+        get => _floatingMarkdownToolbarMode;
+        set => SetSetting(
+            ref _floatingMarkdownToolbarMode,
+            SettingsDisplayValueMapper.NormalizeFloatingMarkdownToolbarMode(
+                value,
+                AppSettingsStore.DefaultFloatingMarkdownToolbarMode));
+    }
+
     public string AppTheme
     {
         get => _appTheme;
@@ -480,6 +591,66 @@ public class SettingsWindowViewModel : BaseViewModel
     {
         get => _isStatusBarVisible;
         set => SetSetting(ref _isStatusBarVisible, value);
+    }
+
+    public bool IsStatusBarFileTypeVisible
+    {
+        get => _isStatusBarFileTypeVisible;
+        set => SetSetting(ref _isStatusBarFileTypeVisible, value);
+    }
+
+    public bool IsStatusBarEncodingVisible
+    {
+        get => _isStatusBarEncodingVisible;
+        set => SetSetting(ref _isStatusBarEncodingVisible, value);
+    }
+
+    public bool IsStatusBarWordCountVisible
+    {
+        get => _isStatusBarWordCountVisible;
+        set => SetSetting(ref _isStatusBarWordCountVisible, value);
+    }
+
+    public bool IsStatusBarCharacterCountVisible
+    {
+        get => _isStatusBarCharacterCountVisible;
+        set => SetSetting(ref _isStatusBarCharacterCountVisible, value);
+    }
+
+    public bool IsStatusBarCursorPositionVisible
+    {
+        get => _isStatusBarCursorPositionVisible;
+        set => SetSetting(ref _isStatusBarCursorPositionVisible, value);
+    }
+
+    public bool IsStatusBarRevertButtonVisible
+    {
+        get => _isStatusBarRevertButtonVisible;
+        set => SetSetting(ref _isStatusBarRevertButtonVisible, value);
+    }
+
+    public bool IsStatusBarSaveStatusVisible
+    {
+        get => _isStatusBarSaveStatusVisible;
+        set => SetSetting(ref _isStatusBarSaveStatusVisible, value);
+    }
+
+    public bool IsStatusBarAutosaveStatusVisible
+    {
+        get => _isStatusBarAutosaveStatusVisible;
+        set => SetSetting(ref _isStatusBarAutosaveStatusVisible, value);
+    }
+
+    public bool IsStatusBarAppVersionVisible
+    {
+        get => _isStatusBarAppVersionVisible;
+        set => SetSetting(ref _isStatusBarAppVersionVisible, value);
+    }
+
+    public bool IsStatusBarReportBugButtonVisible
+    {
+        get => _isStatusBarReportBugButtonVisible;
+        set => SetSetting(ref _isStatusBarReportBugButtonVisible, value);
     }
 
     public string WindowBorderAccentMode
@@ -503,6 +674,36 @@ public class SettingsWindowViewModel : BaseViewModel
                 AppSettingsStore.DefaultToolbarPosition));
     }
 
+    public string GetShortcut(string actionId)
+    {
+        return ShortcutSettingsCatalog.GetShortcut(_shortcuts, actionId);
+    }
+
+    public void SetShortcut(string actionId, string shortcut)
+    {
+        if (string.IsNullOrWhiteSpace(actionId)
+            || !ShortcutSettingsCatalog.TryNormalizeShortcut(
+                actionId,
+                shortcut,
+                out string normalizedShortcut))
+        {
+            return;
+        }
+
+        if (string.Equals(GetShortcut(actionId), normalizedShortcut, StringComparison.Ordinal))
+            return;
+
+        _shortcuts[actionId] = normalizedShortcut;
+        RefreshShortcutConflicts();
+    }
+
+    public ShortcutConflict? GetShortcutConflict(string actionId)
+    {
+        return _shortcutConflicts.FirstOrDefault(conflict =>
+            string.Equals(conflict.FirstActionId, actionId, StringComparison.Ordinal)
+            || string.Equals(conflict.SecondActionId, actionId, StringComparison.Ordinal));
+    }
+
     public void SelectSettingsPage(SettingsPage page)
     {
         if (page == SettingsPage.Develop && !IsDevelopSettingsVisible)
@@ -518,6 +719,7 @@ public class SettingsWindowViewModel : BaseViewModel
             SettingsPage.Editor => _editorSettingsPage,
             SettingsPage.Preview => _previewSettingsPage,
             SettingsPage.Appearance => _appearanceSettingsPage,
+            SettingsPage.StatusBar => _statusBarSettingsPage,
             SettingsPage.Shortcuts => _shortcutsSettingsPage,
             SettingsPage.Develop => IsDevelopSettingsVisible
                 ? _developSettingsPage
@@ -530,6 +732,7 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsEditorSettingsSelected));
         OnPropertyChanged(nameof(IsPreviewSettingsSelected));
         OnPropertyChanged(nameof(IsAppearanceSettingsSelected));
+        OnPropertyChanged(nameof(IsStatusBarSettingsSelected));
         OnPropertyChanged(nameof(IsShortcutsSettingsSelected));
         OnPropertyChanged(nameof(IsDevelopSettingsSelected));
         OnPropertyChanged(nameof(IsAboutSettingsSelected));
@@ -539,6 +742,11 @@ public class SettingsWindowViewModel : BaseViewModel
     {
         AppSettingsStore.Normalize(settings);
 
+        _appLanguage = EnsureOption(
+            AppLanguageOptions,
+            LocalizationService.NormalizeAppLanguageValue(settings.AppLanguage),
+            AppSettingsStore.DefaultAppLanguage);
+        LocalizationService.SetCurrentAppLanguage(_appLanguage);
         _reopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup;
         _checkForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
         _autosaveEnabled = settings.AutosaveEnabled;
@@ -586,6 +794,16 @@ public class SettingsWindowViewModel : BaseViewModel
             AppSettingsStore.DefaultFloatingMarkdownToolbarMode);
         _appTheme = EnsureOption(AppThemeOptions, settings.AppTheme, "Dark");
         _isStatusBarVisible = settings.IsStatusBarVisible;
+        _isStatusBarFileTypeVisible = settings.IsStatusBarFileTypeVisible;
+        _isStatusBarEncodingVisible = settings.IsStatusBarEncodingVisible;
+        _isStatusBarWordCountVisible = settings.IsStatusBarWordCountVisible;
+        _isStatusBarCharacterCountVisible = settings.IsStatusBarCharacterCountVisible;
+        _isStatusBarCursorPositionVisible = settings.IsStatusBarCursorPositionVisible;
+        _isStatusBarRevertButtonVisible = settings.IsStatusBarRevertButtonVisible;
+        _isStatusBarSaveStatusVisible = settings.IsStatusBarSaveStatusVisible;
+        _isStatusBarAutosaveStatusVisible = settings.IsStatusBarAutosaveStatusVisible;
+        _isStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible;
+        _isStatusBarReportBugButtonVisible = settings.IsStatusBarReportBugButtonVisible;
         _windowBorderAccentMode = EnsureOptionValue(
             GetWindowBorderAccentModeValues(),
             settings.WindowBorderAccentMode,
@@ -594,6 +812,9 @@ public class SettingsWindowViewModel : BaseViewModel
             ToolbarControlbarPositionOptions,
             settings.ToolbarControlbarPosition,
             AppSettingsStore.DefaultToolbarPosition);
+        _shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts);
+        _shortcutsSettingsPage?.RefreshShortcuts();
+        RefreshShortcutConflicts();
     }
 
     private void BrowseDefaultSaveLocation()
@@ -607,8 +828,16 @@ public class SettingsWindowViewModel : BaseViewModel
 
     private void ApplyChanges()
     {
+        if (HasShortcutConflicts)
+        {
+            SelectSettingsPage(SettingsPage.Shortcuts);
+            return;
+        }
+
         DraftSettings settings = CaptureSettings();
-        _settingsApplicationService.SaveAndApply(settings);
+        if (!_settingsApplicationService.SaveAndApply(settings))
+            return;
+
         _originalSettings = settings;
         OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         SettingsApplied?.Invoke(this, new SettingsAppliedEventArgs(settings));
@@ -646,10 +875,19 @@ public class SettingsWindowViewModel : BaseViewModel
         return SetProperty(ref field, value, propertyName);
     }
 
+    private void RefreshShortcutConflicts()
+    {
+        _shortcutConflicts = ShortcutConflictDetector.FindConflicts(_shortcuts);
+        _shortcutsSettingsPage?.RefreshShortcutConflicts();
+        OnPropertyChanged(nameof(HasShortcutConflicts));
+        CommandManager.InvalidateRequerySuggested();
+    }
+
     private DraftSettings CaptureSettings()
     {
         return AppSettingsStore.Normalize(new DraftSettings
         {
+            AppLanguage = AppLanguage,
             ReopenLastWorkspaceOnStartup = ReopenLastWorkspaceOnStartup,
             CheckForUpdatesOnStartup = CheckForUpdatesOnStartup,
             AutosaveEnabled = AutosaveEnabled,
@@ -684,8 +922,19 @@ public class SettingsWindowViewModel : BaseViewModel
             ScrollPreviewToEditedSection = false,
             AppTheme = AppTheme,
             IsStatusBarVisible = IsStatusBarVisible,
+            IsStatusBarFileTypeVisible = IsStatusBarFileTypeVisible,
+            IsStatusBarEncodingVisible = IsStatusBarEncodingVisible,
+            IsStatusBarWordCountVisible = IsStatusBarWordCountVisible,
+            IsStatusBarCharacterCountVisible = IsStatusBarCharacterCountVisible,
+            IsStatusBarCursorPositionVisible = IsStatusBarCursorPositionVisible,
+            IsStatusBarRevertButtonVisible = IsStatusBarRevertButtonVisible,
+            IsStatusBarSaveStatusVisible = IsStatusBarSaveStatusVisible,
+            IsStatusBarAutosaveStatusVisible = IsStatusBarAutosaveStatusVisible,
+            IsStatusBarAppVersionVisible = IsStatusBarAppVersionVisible,
+            IsStatusBarReportBugButtonVisible = IsStatusBarReportBugButtonVisible,
             WindowBorderAccentMode = _windowBorderAccentMode,
             ToolbarControlbarPosition = ToolbarControlbarPosition,
+            Shortcuts = ShortcutSettingsCatalog.Normalize(_shortcuts),
         });
     }
 
@@ -759,6 +1008,7 @@ public class SettingsWindowViewModel : BaseViewModel
 
     private void RaiseAllSettingsPropertiesChanged()
     {
+        OnPropertyChanged(nameof(AppLanguage));
         OnPropertyChanged(nameof(ReopenLastWorkspaceOnStartup));
         OnPropertyChanged(nameof(CheckForUpdatesOnStartup));
         OnPropertyChanged(nameof(AutosaveEnabled));
@@ -792,10 +1042,50 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(ConfirmBeforeOpeningExternalLinks));
         OnPropertyChanged(nameof(PreviewScrollSyncMode));
         OnPropertyChanged(nameof(FloatingMarkdownToolbarMode));
+        OnPropertyChanged(nameof(FloatingMarkdownToolbarModeValue));
         OnPropertyChanged(nameof(AppTheme));
         OnPropertyChanged(nameof(IsStatusBarVisible));
+        OnPropertyChanged(nameof(IsStatusBarFileTypeVisible));
+        OnPropertyChanged(nameof(IsStatusBarEncodingVisible));
+        OnPropertyChanged(nameof(IsStatusBarWordCountVisible));
+        OnPropertyChanged(nameof(IsStatusBarCharacterCountVisible));
+        OnPropertyChanged(nameof(IsStatusBarCursorPositionVisible));
+        OnPropertyChanged(nameof(IsStatusBarRevertButtonVisible));
+        OnPropertyChanged(nameof(IsStatusBarSaveStatusVisible));
+        OnPropertyChanged(nameof(IsStatusBarAutosaveStatusVisible));
+        OnPropertyChanged(nameof(IsStatusBarAppVersionVisible));
+        OnPropertyChanged(nameof(IsStatusBarReportBugButtonVisible));
         OnPropertyChanged(nameof(WindowBorderAccentMode));
         OnPropertyChanged(nameof(AppliedWindowBorderAccentMode));
         OnPropertyChanged(nameof(ToolbarControlbarPosition));
+        NotifyLocalizedPropertiesChanged();
+        _shortcutsSettingsPage.RefreshShortcuts();
+    }
+
+    private void NotifyLocalizedPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(SettingsTitle));
+        OnPropertyChanged(nameof(SettingsConfigurationLabel));
+        OnPropertyChanged(nameof(SettingsResetDefaultsTooltip));
+        OnPropertyChanged(nameof(GeneralSettingsMenuLabel));
+        OnPropertyChanged(nameof(EditorSettingsMenuLabel));
+        OnPropertyChanged(nameof(PreviewSettingsMenuLabel));
+        OnPropertyChanged(nameof(AppearanceSettingsMenuLabel));
+        OnPropertyChanged(nameof(StatusBarSettingsMenuLabel));
+        OnPropertyChanged(nameof(ShortcutsSettingsMenuLabel));
+        OnPropertyChanged(nameof(DevelopSettingsMenuLabel));
+        OnPropertyChanged(nameof(AboutSettingsMenuLabel));
+        OnPropertyChanged(nameof(CancelButtonText));
+        OnPropertyChanged(nameof(ApplyChangesButtonText));
+        OnPropertyChanged(nameof(ShortcutConflictSummary));
+
+        _generalSettingsPage.RefreshLocalization();
+        _editorSettingsPage.RefreshLocalization();
+        _previewSettingsPage.RefreshLocalization();
+        _appearanceSettingsPage.RefreshLocalization();
+        _statusBarSettingsPage.RefreshLocalization();
+        _shortcutsSettingsPage.RefreshLocalization();
+        _developSettingsPage.RefreshLocalization();
+        _aboutSettingsPage.RefreshLocalization();
     }
 }

@@ -93,7 +93,9 @@ public sealed class GoToPositionPromptViewModel : BaseViewModel
 
         if (string.IsNullOrWhiteSpace(value))
         {
-            errorMessage = "Enter a value like 14, 15:53, or :44.";
+            errorMessage = LocalizationService.Translate(
+                "goToPosition.error.empty",
+                "Enter a value like 14, 15:53, or :44.");
             return false;
         }
 
@@ -104,7 +106,9 @@ public sealed class GoToPositionPromptViewModel : BaseViewModel
             if (string.IsNullOrWhiteSpace(columnText)
                 || !TryParsePositiveNumber(columnText, out int currentLineColumn))
             {
-                errorMessage = "For a column-only jump, enter : followed by a positive number.";
+                errorMessage = LocalizationService.Translate(
+                    "goToPosition.error.columnOnly",
+                    "For a column-only jump, enter : followed by a positive number.");
                 return false;
             }
 
@@ -118,7 +122,9 @@ public sealed class GoToPositionPromptViewModel : BaseViewModel
         {
             if (!TryParsePositiveNumber(parts[0], out int line))
             {
-                errorMessage = "Line must be a positive number.";
+                errorMessage = LocalizationService.Translate(
+                    "goToPosition.error.linePositive",
+                    "Line must be a positive number.");
                 return false;
             }
 
@@ -134,7 +140,9 @@ public sealed class GoToPositionPromptViewModel : BaseViewModel
             return true;
         }
 
-        errorMessage = "Enter a line as 14, a line and column as 15:53, or only a column as :44.";
+        errorMessage = LocalizationService.Translate(
+            "goToPosition.error.invalid",
+            "Enter a line as 14, a line and column as 15:53, or only a column as :44.");
         return false;
     }
 

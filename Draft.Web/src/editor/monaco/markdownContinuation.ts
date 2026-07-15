@@ -1,5 +1,10 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { getFencedCodeBlockContextFromLines } from '../../markdown'
+import {
+  getFollowingOrderedListRenumberings,
+  getNextOrderedListNumber,
+  parseMarkdownOrderedListItem,
+} from './markdownOrderedList'
 
 const MARKDOWN_CONTINUATION_EDIT_SOURCE = 'draft.markdownContinuation'
 const LIST_PREFIX_PATTERN = /^(\s*)([-*+]|\d+[.)])\s+/u
@@ -127,6 +132,7 @@ function insertContinuationPrefix(
   model: monaco.editor.ITextModel,
   position: monaco.Position,
   nextPrefix: string,
+  followingRenumberEdits: monaco.editor.IIdentifiedSingleEditOperation[],
 ) {
   const nextLineNumber = position.lineNumber + 1
   const nextColumn = nextPrefix.length + 1
@@ -143,6 +149,7 @@ function insertContinuationPrefix(
       text: `${model.getEOL()}${nextPrefix}`,
       forceMoveMarkers: true,
     },
+    ...followingRenumberEdits,
   ])
   editor.setSelection(
     new monaco.Selection(nextLineNumber, nextColumn, nextLineNumber, nextColumn),
@@ -190,6 +197,32 @@ export function continueMarkdownBlockOnEnter(
     return true
   }
 
-  insertContinuationPrefix(editor, model, position, continuation.nextPrefix)
+  const orderedListItem = parseMarkdownOrderedListItem(line)
+  const followingRenumberEdits = orderedListItem
+    ? getFollowingOrderedListRenumberings(
+        (lineNumber) => model.getLineContent(lineNumber),
+        model.getLineCount(),
+        position.lineNumber,
+        orderedListItem,
+        getNextOrderedListNumber(orderedListItem.numberText),
+      ).map(({ item, lineNumber, numberText }) => ({
+        forceMoveMarkers: true,
+        range: new monaco.Range(
+          lineNumber,
+          item.numberStartOffset + 1,
+          lineNumber,
+          item.numberEndOffset + 1,
+        ),
+        text: numberText,
+      }))
+    : []
+
+  insertContinuationPrefix(
+    editor,
+    model,
+    position,
+    continuation.nextPrefix,
+    followingRenumberEdits,
+  )
   return true
 }

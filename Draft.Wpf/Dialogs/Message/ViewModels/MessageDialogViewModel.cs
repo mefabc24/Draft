@@ -14,6 +14,8 @@ public sealed class MessageDialogViewModel : BaseViewModel
         Title = request.Title;
         Description = request.Description;
         DialogType = request.DialogType;
+        Width = request.Width;
+        TextMaxWidth = request.TextMaxWidth;
         CancelCommand = new RelayCommand(Cancel);
         Buttons = request.Buttons
             .Select(button => new MessageDialogButtonViewModel(button, HandleButtonClicked))
@@ -25,6 +27,10 @@ public sealed class MessageDialogViewModel : BaseViewModel
     public string Description { get; }
 
     public MessageDialogType DialogType { get; }
+
+    public double Width { get; }
+
+    public double TextMaxWidth { get; }
 
     public IReadOnlyList<MessageDialogButtonViewModel> Buttons { get; }
 

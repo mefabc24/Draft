@@ -1,9 +1,11 @@
 import { useState, type MouseEvent as ReactMouseEvent } from 'react'
 import type { CreateTableMarkdownData } from '../commands/createTableMarkdown'
+import { useTranslation } from '../../localization/useTranslation'
 import NumberSpinner from './NumberSpinner'
 
 type EditorQuickInsertTableControlsProps = {
   onConfirm: (tableData: CreateTableMarkdownData, keepOpen?: boolean) => void
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 const DEFAULT_ROWS = 3
@@ -30,7 +32,9 @@ function createTableData(
 
 function EditorQuickInsertTableControls({
   onConfirm,
+  shouldKeepOpen,
 }: EditorQuickInsertTableControlsProps) {
+  const { t } = useTranslation()
   const [rows, setRows] = useState(DEFAULT_ROWS)
   const [columns, setColumns] = useState(DEFAULT_COLUMNS)
   const [populateWithSampleText, setPopulateWithSampleText] = useState(false)
@@ -39,18 +43,22 @@ function EditorQuickInsertTableControls({
     <div className="editor-quick-insert-table-controls">
       <div className="editor-quick-insert-table-fields">
         <div className="editor-quick-insert-table-field">
-          <span className="editor-quick-insert-table-label">Columns</span>
+          <span className="editor-quick-insert-table-label">
+            {t('quickInsert.table.columns')}
+          </span>
           <NumberSpinner
-            label="Columns"
+            label={t('quickInsert.table.columns')}
             min={MIN_COLUMNS}
             value={columns}
             onChange={setColumns}
           />
         </div>
         <div className="editor-quick-insert-table-field">
-          <span className="editor-quick-insert-table-label">Rows</span>
+          <span className="editor-quick-insert-table-label">
+            {t('quickInsert.table.rows')}
+          </span>
           <NumberSpinner
-            label="Rows"
+            label={t('quickInsert.table.rows')}
             min={MIN_ROWS}
             value={rows}
             onChange={setRows}
@@ -80,7 +88,7 @@ function EditorQuickInsertTableControls({
           </svg>
         </span>
         <span className="editor-quick-insert-table-sample-text">
-          Populate with sample text
+          {t('quickInsert.table.populateWithSampleText')}
         </span>
       </label>
       <button
@@ -89,11 +97,11 @@ function EditorQuickInsertTableControls({
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
           onConfirm(
             createTableData(rows, columns, populateWithSampleText),
-            event.shiftKey && event.button === 0,
+            shouldKeepOpen(event),
           )
         }}
       >
-        Create
+        {t('common.create')}
       </button>
     </div>
   )

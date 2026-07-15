@@ -12,6 +12,7 @@ import {
   canRunMarkdownToolbarCommand,
   cloneSelections,
   createSelectionFromOffsets,
+  detectCalloutType,
   detectHeadingValue,
   detectInlineFormats,
   detectListValue,
@@ -33,6 +34,7 @@ import type {
   MarkdownLinkContext,
   ListValue,
 } from '../../markdown'
+import type { CalloutType } from '../../markdown/callouts'
 import {
   createMarkdownImageText,
   createMarkdownLinkText,
@@ -42,6 +44,11 @@ import {
   getPreviewSelectionRangeForEditedMarkdown,
 } from '../../markdown'
 import type { FloatingMarkdownToolbarMode } from '../../settings/settingsTypes'
+import { eventMatchesShortcutAction } from '../../shortcuts/shortcutMatching'
+import {
+  shortcutActionIds,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
 import type { ViewMode } from '../../workspace/workspaceTypes'
 import {
   getPreviewSelectionSnapshot,
@@ -73,6 +80,7 @@ type UseFloatingToolbarStateOptions = {
   previewContentRef: RefObject<HTMLDivElement | null>
   previewScrollElementRef: RefObject<HTMLDivElement | null>
   setPosition: Dispatch<SetStateAction<ToolbarPosition | null>>
+  shortcutBindings: ShortcutBindings
   toolbarMode: FloatingMarkdownToolbarMode
   toolbarRef: RefObject<HTMLDivElement | null>
   viewMode: ViewMode
@@ -151,6 +159,7 @@ export function useFloatingToolbarState({
   previewContentRef,
   previewScrollElementRef,
   setPosition,
+  shortcutBindings,
   toolbarMode,
   toolbarRef,
   viewMode,
@@ -181,6 +190,7 @@ export function useFloatingToolbarState({
   const restoreEditorFocusOnNextToolbarUpdateRef = useRef(false)
   const [openDropdown, setOpenDropdown] = useState<DropdownId | null>(null)
   const [headingValue, setHeadingValue] = useState<HeadingValue>('normal')
+  const [calloutType, setCalloutType] = useState<CalloutType | null>(null)
   const [listValue, setListValue] = useState<ListValue>('none')
   const [selectionSource, setSelectionSource] =
     useState<ToolbarSelectionSource | null>(null)
@@ -227,6 +237,7 @@ export function useFloatingToolbarState({
     savedSelectionsRef.current = null
     savedSelectionSourceRef.current = null
     setSelectionSource(null)
+    setCalloutType(null)
     setPreviewEditRange(null)
     setPreviewEditSession(null)
     setLinkEditRange(null)
@@ -554,8 +565,15 @@ export function useFloatingToolbarState({
             toolbarRef.current,
           )
 
+    const nextHeadingValue = detectHeadingValue(editor, currentSelections)
+
     setActiveFormats(detectInlineFormats(editor, currentSelections))
-    setHeadingValue(detectHeadingValue(editor, currentSelections))
+    setHeadingValue(nextHeadingValue)
+    setCalloutType(
+      nextHeadingValue === 'blockquote'
+        ? detectCalloutType(editor, currentSelections)
+        : null,
+    )
     setListValue(detectListValue(editor, currentSelections))
     setPosition((currentPosition) => {
       if (
@@ -822,7 +840,13 @@ export function useFloatingToolbarState({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (
+        eventMatchesShortcutAction(
+          event,
+          shortcutBindings,
+          shortcutActionIds.toolbarClose,
+        )
+      ) {
         const currentSelections = getNonEmptySelections(editor)
         const savedSelections = savedSelectionsRef.current
         const savedSource = savedSelectionSourceRef.current
@@ -859,6 +883,7 @@ export function useFloatingToolbarState({
     clearToolbarTooltip,
     editor,
     previewContentRef,
+    shortcutBindings,
     setPosition,
     toolbarRef,
   ])
@@ -1025,10 +1050,11 @@ export function useFloatingToolbarState({
     const handlePreviewEditShortcut = (event: KeyboardEvent) => {
       if (
         savedSelectionSourceRef.current !== 'preview' ||
-        !(event.ctrlKey || event.metaKey) ||
-        !event.shiftKey ||
-        event.altKey ||
-        event.key.toLowerCase() !== 'e' ||
+        !eventMatchesShortcutAction(
+          event,
+          shortcutBindings,
+          shortcutActionIds.toolbarEditPreviewSelection,
+        ) ||
         isEditableKeyboardTarget(event.target)
       ) {
         return
@@ -1049,7 +1075,7 @@ export function useFloatingToolbarState({
     return () => {
       document.removeEventListener('keydown', handlePreviewEditShortcut)
     }
-  }, [editor, openPreviewEditMenu])
+  }, [editor, openPreviewEditMenu, shortcutBindings])
 
   const closePreviewEditMenu = useCallback(() => {
     setPreviewEditSession(null)
@@ -1500,6 +1526,7 @@ export function useFloatingToolbarState({
     editor,
     runEditorCommand,
     savedSelectionSourceRef,
+    shortcutBindings,
   })
 
   const previewEditAvailable =
@@ -1524,6 +1551,7 @@ export function useFloatingToolbarState({
 
   return {
     activeFormats,
+    calloutType,
     headingValue,
     listValue,
     markToolbarInteraction,

@@ -19,6 +19,7 @@ The project is split into:
 * Do not redesign UI unless explicitly requested.
 * Preserve existing styling unless the task specifically asks for styling changes.
 * Reuse existing components, services, hooks, styles, and theme tokens where possible.
+* Put all user-facing display text into the corresponding localization JSON files and load it from there. When adding or changing a localization key, add the same key to every existing language file; use the English text as the temporary value in non-English files so it can be translated manually later.
 
 ## Architecture Preferences
 

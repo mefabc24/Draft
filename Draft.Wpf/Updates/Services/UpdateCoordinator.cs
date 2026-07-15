@@ -77,7 +77,7 @@ public sealed class UpdateCoordinator : BaseViewModel
         {
             _status.SetCheckingForUpdates(true);
             _status.ClearAvailableUpdate();
-            SetStatusText("Checking for updates...");
+            SetStatusText(LocalizationService.Translate("updates.checkingForUpdates", "Checking for updates..."));
 
             UpdateCheckResult result = await _updateService.CheckForUpdatesAsync(cancellationToken);
 
@@ -90,7 +90,7 @@ public sealed class UpdateCoordinator : BaseViewModel
         }
         catch (OperationCanceledException)
         {
-            SetStatusText("Update check canceled.");
+            SetStatusText(LocalizationService.Translate("updates.checkCanceled", "Update check canceled."));
         }
         finally
         {
@@ -115,19 +115,21 @@ public sealed class UpdateCoordinator : BaseViewModel
                 if (showNoUpdateDialog)
                 {
                     _interactionService.ShowMessage(
-                        "Check for Updates",
+                        LocalizationService.Translate("updates.checkForUpdatesTitle", "Check for Updates"),
                         result.Message,
                         MessageDialogType.Info);
                 }
                 return;
             case UpdateCheckStatus.Failed:
                 _status.ClearAvailableUpdate();
-                SetStatusText("Unable to check for updates.");
+                SetStatusText(LocalizationService.Translate(
+                    "updates.checkFailed",
+                    "Unable to check for updates."));
 
                 if (showFailureDialog)
                 {
                     _interactionService.ShowMessage(
-                        "Check for Updates",
+                        LocalizationService.Translate("updates.checkForUpdatesTitle", "Check for Updates"),
                         result.Message,
                         MessageDialogType.Error);
                 }
@@ -153,7 +155,7 @@ public sealed class UpdateCoordinator : BaseViewModel
             if (_status.AvailableUpdate is null)
             {
                 _status.ClearAvailableUpdate();
-                SetStatusText("No update available.");
+                SetStatusText(LocalizationService.Translate("updates.noneAvailable", "No update available."));
                 return;
             }
 
@@ -196,13 +198,19 @@ public sealed class UpdateCoordinator : BaseViewModel
         {
             _status.ClearAvailableUpdate();
             _status.SetInstallingUpdate(true);
-            SetStatusText("Downloading update...");
+            SetStatusText(LocalizationService.Translate("updates.downloading", "Downloading update..."));
 
             await _updateService.DownloadAndApplyUpdateAsync(
                 result,
                 progress => _interactionService.InvokeOnUiThread(() =>
                 {
-                    SetStatusText($"Downloading update... {progress}%");
+                    SetStatusText(LocalizationService.TranslateFormat(
+                        "updates.downloadingProgress",
+                        "Downloading update... {progress}%",
+                        new Dictionary<string, string>(StringComparer.Ordinal)
+                        {
+                            ["progress"] = progress.ToString(),
+                        }));
                 }),
                 cancellationToken);
         }
@@ -214,10 +222,16 @@ public sealed class UpdateCoordinator : BaseViewModel
         catch (Exception ex)
         {
             _status.ClearAvailableUpdate();
-            SetStatusText("Unable to install update.");
+            SetStatusText(LocalizationService.Translate("updates.installFailed", "Unable to install update."));
             _interactionService.ShowMessage(
-                "Install Update",
-                $"Unable to install the update. {ex.Message}",
+                LocalizationService.Translate("updates.installTitle", "Install Update"),
+                LocalizationService.TranslateFormat(
+                    "updates.installFailedDescription",
+                    "Unable to install the update. {message}",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["message"] = ex.Message,
+                    }),
                 MessageDialogType.Error);
         }
     }

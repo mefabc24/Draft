@@ -1,5 +1,8 @@
 import type { ViewMode } from '../../workspace/workspaceTypes'
-import type { WebViewMessageEvent } from './webViewTypes'
+import type {
+  DraftPreviewExportOptions,
+  WebViewMessageEvent,
+} from './webViewTypes'
 
 export function addWebViewMessageListener(
   listener: (event: WebViewMessageEvent) => void,
@@ -22,6 +25,18 @@ export function setDraftViewModeHandler(handler: (mode: ViewMode) => void) {
 
   return () => {
     window.setDraftViewMode = undefined
+  }
+}
+
+export function setPreviewExportHtmlHandler(
+  handler: (options?: DraftPreviewExportOptions) => string,
+) {
+  window.draftExport = {
+    createPreviewHtml: handler,
+  }
+
+  return () => {
+    window.draftExport = undefined
   }
 }
 

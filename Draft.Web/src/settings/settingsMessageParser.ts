@@ -1,6 +1,9 @@
 import { DEFAULT_EDITOR_SETTINGS } from './defaultEditorSettings'
+import { normalizeShortcutBindings } from '../shortcuts/shortcutSettings'
+import { normalizeAppLanguage } from '../localization/localization'
 import type {
   CursorStyle,
+  DraftEditorSettings,
   FloatingMarkdownToolbarMode,
   PreviewScrollSyncMode,
   SettingsChangedMessage,
@@ -8,6 +11,29 @@ import type {
 } from './settingsTypes'
 
 export const SETTINGS_CHANGED_MESSAGE_TYPE = 'settingsChanged'
+
+const FLOATING_MARKDOWN_TOOLBAR_MODE_ALIASES: Record<
+  string,
+  FloatingMarkdownToolbarMode
+> = {
+  both: 'EditorAndPreview',
+  disabled: 'Disabled',
+  editor: 'Editor',
+  'editor & preview': 'EditorAndPreview',
+  'editor and preview': 'EditorAndPreview',
+  'editor only': 'Editor',
+  'editor-only': 'Editor',
+  editorandpreview: 'EditorAndPreview',
+  editoronly: 'Editor',
+  editorpreview: 'EditorAndPreview',
+  'editor+preview': 'EditorAndPreview',
+  off: 'Disabled',
+  preview: 'Preview',
+  'preview only': 'Preview',
+  'preview-only': 'Preview',
+  previewonly: 'Preview',
+  always: 'EditorAndPreview',
+}
 
 export function readRecordValue(
   record: Record<string, unknown>,
@@ -89,33 +115,22 @@ function readFloatingMarkdownToolbarMode(
 ): FloatingMarkdownToolbarMode {
   const value = readRecordValue(record, 'floatingMarkdownToolbarMode')
 
-  if (
-    value === 'Disabled' ||
-    value === 'Editor' ||
-    value === 'Preview' ||
-    value === 'EditorAndPreview'
-  ) {
-    return value
-  }
+  if (typeof value === 'string') {
+    const mode =
+      FLOATING_MARKDOWN_TOOLBAR_MODE_ALIASES[value.trim().toLowerCase()]
 
-  if (value === 'Always' || value === 'Editor & Preview') {
-    return 'EditorAndPreview'
+    if (mode) {
+      return mode
+    }
   }
 
   return DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarMode
 }
 
-export function parseSettingsChangedMessage(
+export function parseDraftEditorSettings(
   record: Record<string, unknown>,
-): SettingsChangedMessage | null {
-  const type = record.type ?? record.Type
-
-  if (type !== SETTINGS_CHANGED_MESSAGE_TYPE) {
-    return null
-  }
-
+): DraftEditorSettings {
   return {
-    type: SETTINGS_CHANGED_MESSAGE_TYPE,
     activeEditorThemeId: readString(
       record,
       'activeEditorThemeId',
@@ -125,6 +140,11 @@ export function parseSettingsChangedMessage(
       record,
       'activePreviewThemeId',
       DEFAULT_EDITOR_SETTINGS.activePreviewThemeId,
+    ),
+    appLanguage: normalizeAppLanguage(
+      readRecordValue(record, 'appLanguage') ??
+        readRecordValue(record, 'language') ??
+        DEFAULT_EDITOR_SETTINGS.appLanguage,
     ),
     autoPairBrackets: readBoolean(
       record,
@@ -174,6 +194,7 @@ export function parseSettingsChangedMessage(
       DEFAULT_EDITOR_SETTINGS.markdownSyntaxHighlighting,
     ),
     previewScrollSyncMode: readPreviewScrollSyncMode(record),
+    shortcuts: normalizeShortcutBindings(readRecordValue(record, 'shortcuts')),
     showIndentationGuides: readBoolean(
       record,
       'showIndentationGuides',
@@ -187,5 +208,20 @@ export function parseSettingsChangedMessage(
     showWhitespaceCharacters: readShowWhitespaceCharacters(record),
     tabSize: readNumber(record, 'tabSize', DEFAULT_EDITOR_SETTINGS.tabSize),
     wordWrap: readBoolean(record, 'wordWrap', DEFAULT_EDITOR_SETTINGS.wordWrap),
+  }
+}
+
+export function parseSettingsChangedMessage(
+  record: Record<string, unknown>,
+): SettingsChangedMessage | null {
+  const type = record.type ?? record.Type
+
+  if (type !== SETTINGS_CHANGED_MESSAGE_TYPE) {
+    return null
+  }
+
+  return {
+    type: SETTINGS_CHANGED_MESSAGE_TYPE,
+    ...parseDraftEditorSettings(record),
   }
 }

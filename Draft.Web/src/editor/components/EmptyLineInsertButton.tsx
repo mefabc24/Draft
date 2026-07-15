@@ -4,6 +4,8 @@ import {
   type RefObject,
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import { useTranslation } from '../../localization/useTranslation'
+import type { ShortcutBindings } from '../../shortcuts/shortcutSettings'
 import { useEditorQuickInsertMenu } from '../hooks/useEditorQuickInsertMenu'
 import { useHoveredEditorLine } from '../hooks/useHoveredEditorLine'
 import EditorQuickInsertMenu from './EditorQuickInsertMenu'
@@ -11,12 +13,15 @@ import EditorQuickInsertMenu from './EditorQuickInsertMenu'
 type EmptyLineInsertButtonProps = {
   editor: monaco.editor.IStandaloneCodeEditor | null
   editorBodyRef: RefObject<HTMLDivElement | null>
+  shortcutBindings: ShortcutBindings
 }
 
 function EmptyLineInsertButton({
   editor,
   editorBodyRef,
+  shortcutBindings,
 }: EmptyLineInsertButtonProps) {
+  const { t } = useTranslation()
   const {
     clearPendingHide,
     hoveredLine,
@@ -25,12 +30,14 @@ function EmptyLineInsertButton({
   } = useHoveredEditorLine(editor)
   const {
     closeMenu,
+    menuInstanceKey,
     menuPosition,
     menuRef,
     openMenu,
     runMenuActionKeepingOpen,
     target,
-  } = useEditorQuickInsertMenu(editor, editorBodyRef)
+    updateMenuBounds,
+  } = useEditorQuickInsertMenu(editor, editorBodyRef, shortcutBindings)
   const buttonStyle = useMemo(
     () =>
       hoveredLine
@@ -50,7 +57,10 @@ function EmptyLineInsertButton({
     <>
       {hoveredLine ? (
         <button
-          aria-label="Open Editor Quick Insert Menu"
+          aria-label={t(
+            'quickInsert.openEditorQuickInsertMenu',
+            'Open Editor Quick Insert Menu',
+          )}
           className="empty-line-insert-button"
           onClick={() => {
             openMenu({
@@ -96,15 +106,13 @@ function EmptyLineInsertButton({
       ) : null}
       <EditorQuickInsertMenu
         editor={editor}
-        key={
-          target === null
-            ? 'closed'
-            : `${target.lineNumber}:${target.column}:${target.mode}`
-        }
+        key={target === null ? 'closed' : `open:${menuInstanceKey}`}
         menuRef={menuRef}
         onClose={closeMenu}
+        onContentLayoutChange={updateMenuBounds}
         onKeepOpenAction={runMenuActionKeepingOpen}
         position={menuPosition}
+        shortcutBindings={shortcutBindings}
         target={target}
       />
     </>

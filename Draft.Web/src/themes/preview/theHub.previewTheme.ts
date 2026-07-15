@@ -55,6 +55,10 @@ const theHubPreviewColorVariables = {
   '--preview-inline-code-background': draftDarkTokens.theHubAccent,
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#000',
+  '--preview-kbd-background': '#000',
+  '--preview-kbd-foreground': draftDarkTokens.theHubAccent,
+  '--preview-kbd-border': '#5A3708',
+  '--preview-kbd-border-bottom': draftDarkTokens.theHubAccent,
 
   // Draft inline extensions
   '--preview-highlight-background': 'rgba(247, 152, 23, 0.32)',
@@ -81,10 +85,26 @@ const theHubPreviewColorVariables = {
   '--preview-code-block-copy-icon-foreground': '#000',
   '--preview-code-block-foreground': '#000',
 
-  // Blockquotes
-  '--preview-blockquote-background': 'rgba(247, 152, 23, 10%)',
-  '--preview-blockquote-border': draftDarkTokens.theHubAccent,
-  '--preview-blockquote-foreground': '#fff',
+  // Blockquote colors
+  '--preview-blockquote-default-color': draftDarkTokens.theHubAccent,
+  '--preview-blockquote-note-color': '#A5C8FF',
+  '--preview-blockquote-info-color': '#339CFF',
+  '--preview-blockquote-tip-color': '#79A986',
+  '--preview-blockquote-important-color': '#BD7561',
+  '--preview-blockquote-warning-color': draftDarkTokens.theHubAccent,
+  '--preview-blockquote-caution-color': '#F97316',
+  '--preview-blockquote-error-color': '#E25E5E',
+  '--preview-blockquote-success-color': '#31C559',
+  '--preview-blockquote-good-color': '#31C559',
+  '--preview-blockquote-bad-color': '#E25E5E',
+  '--preview-blockquote-pro-color': '#31C559',
+  '--preview-blockquote-con-color': '#E25E5E',
+  '--preview-blockquote-question-color': '#8AE9F8',
+  '--preview-blockquote-todo-color': '#ACABAA',
+  // background-opacity is a decimal alpha used to tint the blockquote color.
+  '--preview-blockquote-background-opacity': '0.1',
+  // true colors bold callout text with the callout color. false keeps normal text color.
+  '--preview-blockquote-bold-uses-callout-color': 'true',
 
   // Tables
   '--preview-table-border': 'blue',
@@ -174,6 +194,14 @@ const theHubPreviewLayoutVariables = {
   '--preview-inline-code-border-radius': '6px',
   '--preview-inline-code-border-width': '0',
   '--preview-inline-code-padding': '2px 6px',
+  '--preview-kbd-border-radius': '5px',
+  '--preview-kbd-border-width': '1px',
+  '--preview-kbd-border-bottom-width': '2px',
+  '--preview-kbd-min-width': '1.65em',
+  '--preview-kbd-padding': '1px 6px 2px',
+  '--preview-kbd-margin': '0 0.08em',
+  '--preview-kbd-line-height': '1.25',
+  '--preview-kbd-vertical-align': '0.08em',
 
   // Draft inline extensions
   // Padding inline/block controls how far the highlight or pill extends beyond text.
@@ -221,12 +249,14 @@ const theHubPreviewLayoutVariables = {
   '--preview-code-block-copy-button-border-radius': '6px',
   '--preview-code-block-padding': '14px',
 
-  // Blockquotes
+  // Blockquote layout
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.
   '--preview-blockquote-border-inset': '0',
   '--preview-blockquote-border-line-radius': '2px',
   '--preview-blockquote-border-radius': '0 8px 8px 0',
   '--preview-blockquote-border-width': '4px',
+  '--preview-blockquote-icon-position': 'left',
+  '--preview-blockquote-icon-size': '44px',
   '--preview-blockquote-padding': '8px 16px',
 
   // Tables
@@ -243,9 +273,12 @@ const theHubPreviewLayoutVariables = {
 // Typography tokens: font stacks used inside rendered markdown.
 const theHubPreviewTypographyVariables = {
   // Code
-  // CSS font-family stack used by inline code and code blocks.
+  // CSS font-family stack used by inline code, keyboard input, and code blocks.
   '--font-mono':
     "'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace",
+  '--preview-kbd-font-family': 'var(--font-mono)',
+  '--preview-kbd-font-size': '0.78em',
+  '--preview-kbd-font-weight': '700',
 
   // Markdown body
   // CSS font-family stack used by normal markdown text.

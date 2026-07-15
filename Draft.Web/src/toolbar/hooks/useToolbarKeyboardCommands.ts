@@ -1,5 +1,15 @@
 import { useEffect, type RefObject } from 'react'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import {
+  shortcutActionIds,
+  type ShortcutActionId,
+  type ShortcutBindings,
+} from '../../shortcuts/shortcutSettings'
+import {
+  eventMatchesShortcutAction,
+  getMonacoShortcutKeybinding,
+} from '../../shortcuts/shortcutMatching'
+import { useTranslation } from '../../localization/useTranslation'
 import {
   applyHeadingStyle,
   toggleImageSelection,
@@ -23,13 +33,35 @@ type UseToolbarKeyboardCommandsOptions = {
   editor: monaco.editor.IStandaloneCodeEditor | null
   runEditorCommand: RunToolbarEditorCommand
   savedSelectionSourceRef: RefObject<ToolbarSelectionSource | null>
+  shortcutBindings: ShortcutBindings
+}
+
+type ToolbarShortcutCommand = {
+  actionId: ShortcutActionId
+  command: MarkdownEditorCommand
+  options?: {
+    focusEditor?: boolean
+    switchPreviewLinkToEditor?: boolean
+  }
+}
+
+function getToolbarActionKeybindings(
+  bindings: ShortcutBindings,
+  actionId: ShortcutActionId,
+) {
+  const keybinding = getMonacoShortcutKeybinding(bindings, actionId)
+
+  return keybinding === null ? [] : [keybinding]
 }
 
 export function useToolbarKeyboardCommands({
   editor,
   runEditorCommand,
   savedSelectionSourceRef,
+  shortcutBindings,
 }: UseToolbarKeyboardCommandsOptions) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     if (!editor) {
       return
@@ -45,8 +77,11 @@ export function useToolbarKeyboardCommands({
     const actions = [
       editor.addAction({
         id: 'draft.markdownToolbar.bold',
-        label: 'Markdown: Toggle Bold',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB],
+        label: t('commands.markdownToolbar.bold'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarBold,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             toggleWrappedSelection(activeEditor, '**', '**', commandOptions)
@@ -55,8 +90,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.italic',
-        label: 'Markdown: Toggle Italic',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI],
+        label: t('commands.markdownToolbar.italic'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarItalic,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
@@ -65,8 +103,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.underline',
-        label: 'Markdown: Toggle Underline',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyU],
+        label: t('commands.markdownToolbar.underline'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarUnderline,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             toggleWrappedSelection(activeEditor, '<u>', '</u>', commandOptions)
@@ -75,8 +116,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.inlineCode',
-        label: 'Markdown: Toggle Inline Code',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE],
+        label: t('commands.markdownToolbar.inlineCode'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarInlineCode,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
@@ -85,10 +129,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.spoiler',
-        label: 'Markdown: Toggle Spoiler',
-        keybindings: [
-          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS,
-        ],
+        label: t('commands.markdownToolbar.spoiler'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarSpoiler,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             toggleWrappedSelection(activeEditor, '||', '||', commandOptions)
@@ -96,11 +141,38 @@ export function useToolbarKeyboardCommands({
         },
       }),
       editor.addAction({
+        id: 'draft.markdownToolbar.highlight',
+        label: t('commands.markdownToolbar.highlight'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarHighlight,
+        ),
+        run: () => {
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '==', '==', commandOptions)
+          })
+        },
+      }),
+      editor.addAction({
+        id: 'draft.markdownToolbar.comment',
+        label: t('commands.markdownToolbar.comment'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarComment,
+        ),
+        run: () => {
+          runKeyboardCommand((activeEditor, commandOptions) => {
+            toggleWrappedSelection(activeEditor, '%%', '%%', commandOptions)
+          })
+        },
+      }),
+      editor.addAction({
         id: 'draft.markdownToolbar.strikethrough',
-        label: 'Markdown: Toggle Strikethrough',
-        keybindings: [
-          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyX,
-        ],
+        label: t('commands.markdownToolbar.strikethrough'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarStrikethrough,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             toggleWrappedSelection(activeEditor, '~~', '~~', commandOptions)
@@ -109,26 +181,33 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.link',
-        label: 'Markdown: Toggle Link',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
+        label: t('commands.markdownToolbar.link'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarLink,
+        ),
         run: () => {
           runKeyboardCommand(toggleLinkSelection)
         },
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.image',
-        label: 'Markdown: Toggle Image',
-        keybindings: [
-          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyI,
-        ],
+        label: t('commands.markdownToolbar.image'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarImage,
+        ),
         run: () => {
           runKeyboardCommand(toggleImageSelection)
         },
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading1',
-        label: 'Markdown: Heading 1',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit1],
+        label: t('commands.markdownToolbar.heading1'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarHeading1,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             applyHeadingStyle(activeEditor, 'h1', commandOptions)
@@ -137,8 +216,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading2',
-        label: 'Markdown: Heading 2',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit2],
+        label: t('commands.markdownToolbar.heading2'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarHeading2,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             applyHeadingStyle(activeEditor, 'h2', commandOptions)
@@ -147,8 +229,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading3',
-        label: 'Markdown: Heading 3',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit3],
+        label: t('commands.markdownToolbar.heading3'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarHeading3,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             applyHeadingStyle(activeEditor, 'h3', commandOptions)
@@ -157,8 +242,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading4',
-        label: 'Markdown: Heading 4',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit4],
+        label: t('commands.markdownToolbar.heading4'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarHeading4,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             applyHeadingStyle(activeEditor, 'h4', commandOptions)
@@ -167,8 +255,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading5',
-        label: 'Markdown: Heading 5',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit5],
+        label: t('commands.markdownToolbar.heading5'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarHeading5,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             applyHeadingStyle(activeEditor, 'h5', commandOptions)
@@ -177,8 +268,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.heading6',
-        label: 'Markdown: Heading 6',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Digit6],
+        label: t('commands.markdownToolbar.heading6'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarHeading6,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             applyHeadingStyle(activeEditor, 'h6', commandOptions)
@@ -187,8 +281,11 @@ export function useToolbarKeyboardCommands({
       }),
       editor.addAction({
         id: 'draft.markdownToolbar.normal',
-        label: 'Markdown: Normal Text',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN],
+        label: t('commands.markdownToolbar.normalText'),
+        keybindings: getToolbarActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.toolbarNormalText,
+        ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
             applyHeadingStyle(activeEditor, 'normal', commandOptions)
@@ -202,85 +299,116 @@ export function useToolbarKeyboardCommands({
         action.dispose()
       }
     }
-  }, [editor, runEditorCommand])
+  }, [editor, runEditorCommand, shortcutBindings, t])
 
   useEffect(() => {
     if (!editor) {
       return
     }
 
+    const previewToolbarCommands: ToolbarShortcutCommand[] = [
+      {
+        actionId: shortcutActionIds.toolbarBold,
+        command: (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '**', '**', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarItalic,
+        command: (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarUnderline,
+        command: (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '<u>', '</u>', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarInlineCode,
+        command: (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarSpoiler,
+        command: (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '||', '||', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarHighlight,
+        command: (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '==', '==', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarComment,
+        command: (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '%%', '%%', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarStrikethrough,
+        command: (activeEditor, commandOptions) => {
+          toggleWrappedSelection(activeEditor, '~~', '~~', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarLink,
+        command: toggleLinkSelection,
+        options: {
+          focusEditor: true,
+          switchPreviewLinkToEditor: true,
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarImage,
+        command: toggleImageSelection,
+        options: {
+          focusEditor: true,
+          switchPreviewLinkToEditor: true,
+        },
+      },
+      {
+        actionId: shortcutActionIds.toolbarNormalText,
+        command: (activeEditor, commandOptions) => {
+          applyHeadingStyle(activeEditor, 'normal', commandOptions)
+        },
+      },
+      ...(
+        [
+          [shortcutActionIds.toolbarHeading1, 'h1'],
+          [shortcutActionIds.toolbarHeading2, 'h2'],
+          [shortcutActionIds.toolbarHeading3, 'h3'],
+          [shortcutActionIds.toolbarHeading4, 'h4'],
+          [shortcutActionIds.toolbarHeading5, 'h5'],
+          [shortcutActionIds.toolbarHeading6, 'h6'],
+        ] as const
+      ).map<ToolbarShortcutCommand>(([actionId, heading]) => ({
+        actionId,
+        command: (activeEditor, commandOptions) => {
+          applyHeadingStyle(activeEditor, heading as HeadingValue, commandOptions)
+        },
+      })),
+    ]
+
     const handlePreviewKeyDown = (event: KeyboardEvent) => {
-      if (
-        savedSelectionSourceRef.current !== 'preview' ||
-        !(event.ctrlKey || event.metaKey)
-      ) {
+      if (savedSelectionSourceRef.current !== 'preview') {
         return
       }
 
-      const key = event.key.toLowerCase()
-      const code = event.code
-      let command: MarkdownEditorCommand | null = null
-      let options: {
-        focusEditor?: boolean
-        switchPreviewLinkToEditor?: boolean
-      } = { focusEditor: false }
-
-      if (!event.shiftKey && event.altKey && key === 'i') {
-        command = toggleImageSelection
-        options = {
-          focusEditor: true,
-          switchPreviewLinkToEditor: true,
-        }
-      } else if (!event.shiftKey && !event.altKey && key === 'b') {
-        command = (activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '**', '**', commandOptions)
-        }
-      } else if (!event.shiftKey && !event.altKey && key === 'i') {
-        command = (activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '*', '*', commandOptions)
-        }
-      } else if (!event.shiftKey && !event.altKey && key === 'u') {
-        command = (activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '<u>', '</u>', commandOptions)
-        }
-      } else if (!event.shiftKey && !event.altKey && key === 'e') {
-        command = (activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '`', '`', commandOptions)
-        }
-      } else if (event.shiftKey && !event.altKey && key === 's') {
-        command = (activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '||', '||', commandOptions)
-        }
-      } else if (event.shiftKey && !event.altKey && key === 'x') {
-        command = (activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '~~', '~~', commandOptions)
-        }
-      } else if (!event.shiftKey && !event.altKey && key === 'k') {
-        command = toggleLinkSelection
-        options = {
-          focusEditor: true,
-          switchPreviewLinkToEditor: true,
-        }
-      } else if (!event.shiftKey && !event.altKey && key === 'n') {
-        command = (activeEditor, commandOptions) => {
-          applyHeadingStyle(activeEditor, 'normal', commandOptions)
-        }
-      } else if (!event.shiftKey && !event.altKey && /^Digit[1-6]$/u.test(code)) {
-        command = (activeEditor, commandOptions) => {
-          applyHeadingStyle(
-            activeEditor,
-            `h${code.replace('Digit', '')}` as HeadingValue,
-            commandOptions,
-          )
-        }
-      }
+      const command = previewToolbarCommands.find((entry) =>
+        eventMatchesShortcutAction(event, shortcutBindings, entry.actionId),
+      )
 
       if (!command) {
         return
       }
 
       event.preventDefault()
-      runEditorCommand(command, options)
+      runEditorCommand(command.command, command.options ?? { focusEditor: false })
     }
 
     document.addEventListener('keydown', handlePreviewKeyDown)
@@ -288,5 +416,5 @@ export function useToolbarKeyboardCommands({
     return () => {
       document.removeEventListener('keydown', handlePreviewKeyDown)
     }
-  }, [editor, runEditorCommand, savedSelectionSourceRef])
+  }, [editor, runEditorCommand, savedSelectionSourceRef, shortcutBindings])
 }

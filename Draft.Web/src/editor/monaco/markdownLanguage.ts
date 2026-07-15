@@ -3,17 +3,26 @@ import {
   conf as baseMarkdownConfiguration,
   language as baseMarkdownLanguage,
 } from 'monaco-editor/esm/vs/basic-languages/markdown/markdown.js'
+import { draftAutoClosingQuotePairs } from './autoClosingWrapperPairs'
 
 let markdownTokensProvider: monaco.IDisposable | null = null
 let markdownLanguageConfiguration: monaco.IDisposable | null = null
 let plaintextLanguageConfiguration: monaco.IDisposable | null = null
 let markdownLanguageRegistered = false
 
-const draftQuotePairs = [
-  { open: "'", close: "'" },
-  { open: '"', close: '"' },
-  { open: '`', close: '`' },
+const draftEmptyHtmlTagRules: monaco.languages.IMonarchLanguageRule[] = [
+  [/<>/, 'tag'],
+  [/<\/>/, 'tag'],
 ]
+
+type LanguagePair = {
+  close: string
+  open: string
+}
+
+function isAngleBracketPair(pair: LanguagePair) {
+  return pair.open === '<' && pair.close === '>'
+}
 
 export function registerDraftMarkdownLanguage() {
   if (!markdownLanguageRegistered) {
@@ -27,11 +36,15 @@ export function registerDraftMarkdownLanguage() {
       {
         ...baseMarkdownConfiguration,
         autoClosingPairs: [
-          ...(baseMarkdownConfiguration.autoClosingPairs ?? []),
-          ...draftQuotePairs,
+          ...(baseMarkdownConfiguration.autoClosingPairs ?? []).filter(
+            (pair) => !isAngleBracketPair(pair),
+          ),
+          ...draftAutoClosingQuotePairs,
         ],
         surroundingPairs: [
-          ...(baseMarkdownConfiguration.surroundingPairs ?? []),
+          ...(baseMarkdownConfiguration.surroundingPairs ?? []).filter(
+            (pair) => !isAngleBracketPair(pair),
+          ),
           { open: "'", close: "'" },
           { open: '"', close: '"' },
         ],
@@ -43,8 +56,8 @@ export function registerDraftMarkdownLanguage() {
     plaintextLanguageConfiguration = monaco.languages.setLanguageConfiguration(
       'plaintext',
       {
-        autoClosingPairs: draftQuotePairs,
-        surroundingPairs: draftQuotePairs,
+        autoClosingPairs: draftAutoClosingQuotePairs,
+        surroundingPairs: draftAutoClosingQuotePairs,
       },
     )
   }
@@ -59,6 +72,10 @@ export function registerDraftMarkdownLanguage() {
     ...language,
     tokenizer: {
       ...language.tokenizer,
+      html: [
+        ...draftEmptyHtmlTagRules,
+        ...(language.tokenizer.html ?? []),
+      ],
       root: [
         [/^\s*\|/, '@rematch', '@table_header'],
         [

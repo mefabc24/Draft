@@ -7,9 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
-    <Version>2.0.0</Version>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <FileVersion>2.0.0</FileVersion>
+    <Version>3.0.0</Version>
+    <AssemblyVersion>3.0.0</AssemblyVersion>
+    <FileVersion>3.0.0</FileVersion>
     <StartupObject>Draft.App</StartupObject>
     <DefaultItemExcludes>$(DefaultItemExcludes);.build-check\**;Draft.Wpf\**</DefaultItemExcludes>
     <ApplicationIcon>Assets\Icons\draft.ico</ApplicationIcon>
@@ -21,6 +21,7 @@
     <None Remove="Assets\Fonts\Manrope-VariableFont_wght.ttf" />
     <None Remove="Assets\Fonts\SpaceGrotesk-VariableFont_wght.ttf" />
     <None Remove="Assets\Icons\draft.ico" />
+    <None Remove="Resources\Localization\*.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,10 @@
   <ItemGroup>
     <Content Include="..\Draft.Web\dist\**\*">
       <Link>Web\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\Localization\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

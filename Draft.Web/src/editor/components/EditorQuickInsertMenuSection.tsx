@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 type EditorQuickInsertMenuSectionProps = {
   children: ReactNode
+  className?: string
   expanded: boolean
   icon: ReactNode
   label: string
@@ -10,6 +11,7 @@ type EditorQuickInsertMenuSectionProps = {
 
 function EditorQuickInsertMenuSection({
   children,
+  className,
   expanded,
   icon,
   label,
@@ -19,7 +21,7 @@ function EditorQuickInsertMenuSection({
     <section
       className={`editor-quick-insert-menu-section${
         expanded ? ' is-expanded' : ''
-      }`}
+      }${className ? ` ${className}` : ''}`}
     >
       <button
         aria-expanded={expanded}

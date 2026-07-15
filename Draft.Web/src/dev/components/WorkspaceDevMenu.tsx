@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from '../../localization/useTranslation'
 import { getPreviewThemeOptions } from '../../themes'
 
 type WorkspaceDevMenuProps = {
@@ -14,6 +15,7 @@ function WorkspaceDevMenu({
   activePreviewThemeId,
   onPreviewThemeChange,
 }: WorkspaceDevMenuProps) {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const previewThemeOptions = useMemo(() => getPreviewThemeOptions(), [])
@@ -59,12 +61,12 @@ function WorkspaceDevMenu({
         aria-haspopup="menu"
         onClick={() => setIsOpen((current) => !current)}
       >
-        Dev
+        {t('dev.menu')}
       </button>
       {isOpen && (
         <div className="workspace-dev-menu-popover" role="menu">
           <label className="workspace-dev-menu-item">
-            <span>Theme</span>
+            <span>{t('dev.theme')}</span>
             <select
               value={activePreviewThemeId}
               onChange={(event) => onPreviewThemeChange(event.target.value)}

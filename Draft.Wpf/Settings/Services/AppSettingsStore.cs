@@ -1,15 +1,17 @@
 using System.IO;
 using System.Security;
 using Draft.Settings.Models;
+using Draft.Settings.Shortcuts;
 using System.Text.Json;
 
 namespace Draft.Settings.Services;
 
 public static class AppSettingsStore
 {
+    public const string DefaultAppLanguage = SettingsDefaults.DefaultAppLanguage;
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";
-    public const string DefaultMarkdownTheme = "Draft Theme";
+    public const string DefaultMarkdownTheme = SettingsDefaults.DefaultMarkdownTheme;
     public const string DefaultToolbarPosition = "Top";
     public const string PreviewScrollSyncOff = "Off";
     public const string PreviewScrollSyncEditorToPreview = "EditorToPreview";
@@ -21,7 +23,7 @@ public static class AppSettingsStore
     public const string FloatingMarkdownToolbarEditor = "Editor";
     public const string FloatingMarkdownToolbarPreview = "Preview";
     public const string FloatingMarkdownToolbarEditorAndPreview = "EditorAndPreview";
-    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditorAndPreview;
+    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditor;
     public const string WindowBorderAccentDisabled = "Disabled";
     public const string WindowBorderAccentAlways = "Always";
     public const string WindowBorderAccentFocusedOnly = "FocusedWindowOnly";
@@ -72,6 +74,9 @@ public static class AppSettingsStore
         {
             Normalize(settings);
 
+            if (ShortcutConflictDetector.HasConflicts(settings.Shortcuts))
+                return false;
+
             string? directoryPath = Path.GetDirectoryName(SettingsFilePath);
 
             if (!string.IsNullOrWhiteSpace(directoryPath))
@@ -100,10 +105,12 @@ public static class AppSettingsStore
         bool hasPreviewScrollSyncMode = true,
         bool? legacySyncScrollWithEditor = null)
     {
+        settings.AppLanguage = NormalizeAppLanguage(settings.AppLanguage);
         settings.DefaultSaveLocation = NormalizeSaveLocation(settings.DefaultSaveLocation);
         settings.DefaultFileExtension = DefaultFileExtension;
         settings.MarkdownTheme = MarkdownPreviewThemeCatalog.GetThemeLabel(settings.MarkdownTheme);
         settings.ToolbarControlbarPosition = DefaultToolbarPosition;
+        settings.Shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts);
         settings.WindowBorderAccentMode = IsWindowBorderAccentMode(settings.WindowBorderAccentMode)
             ? settings.WindowBorderAccentMode
             : WindowBorderAccentDisabled;
@@ -130,9 +137,8 @@ public static class AppSettingsStore
             settings.ScrollPreviewToEditedSection = false;
         }
 
-        settings.FloatingMarkdownToolbarMode = IsFloatingMarkdownToolbarMode(settings.FloatingMarkdownToolbarMode)
-            ? settings.FloatingMarkdownToolbarMode
-            : DefaultFloatingMarkdownToolbarMode;
+        settings.FloatingMarkdownToolbarMode = NormalizeFloatingMarkdownToolbarMode(
+            settings.FloatingMarkdownToolbarMode);
 
         TryEnsureDefaultSaveLocationDirectory(settings.DefaultSaveLocation);
 
@@ -288,12 +294,11 @@ public static class AppSettingsStore
             or PreviewScrollSyncFollowEditedSection;
     }
 
-    private static bool IsFloatingMarkdownToolbarMode(string value)
+    private static string NormalizeFloatingMarkdownToolbarMode(string value)
     {
-        return value is FloatingMarkdownToolbarDisabled
-            or FloatingMarkdownToolbarEditor
-            or FloatingMarkdownToolbarPreview
-            or FloatingMarkdownToolbarEditorAndPreview;
+        return SettingsDisplayValueMapper.NormalizeFloatingMarkdownToolbarMode(
+            value,
+            DefaultFloatingMarkdownToolbarMode);
     }
 
     private static bool IsWindowMinimumSizeScale(double value)
@@ -311,6 +316,15 @@ public static class AppSettingsStore
             or WindowBorderAccentAlways
             or WindowBorderAccentFocusedOnly
             or WindowBorderAccentUnfocusedOnly;
+    }
+
+    private static string NormalizeAppLanguage(string? value)
+    {
+        string normalizedValue = LocalizationService.NormalizeAppLanguageValue(value);
+
+        return LanguageCatalog.IsSupportedAppLanguage(normalizedValue)
+            ? normalizedValue
+            : DefaultAppLanguage;
     }
 
     private static bool TryGetStringProperty(JsonElement root, string name, out string? value)

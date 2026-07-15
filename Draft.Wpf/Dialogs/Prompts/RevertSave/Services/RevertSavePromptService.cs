@@ -40,7 +40,7 @@ public sealed class RevertSavePromptService : IRevertSavePromptService
 
         BaseDialogWindow window = new(view)
         {
-            Title = "Revert Save",
+            Title = LocalizationService.Translate("revertSave.messageTitle", "Revert Save"),
             Focusable = true,
         };
 

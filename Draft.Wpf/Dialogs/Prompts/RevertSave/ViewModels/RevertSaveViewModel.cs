@@ -84,20 +84,26 @@ public sealed class RevertSaveViewModel : BaseViewModel
         {
             return new RevertSaveOptionViewModel(
                 RevertSaveOptionKind.LastManualSave,
-                "LAST MANUAL SAVE",
-                "Unavailable",
-                "Save manually to create a restore point.",
+                LocalizationService.Translate("revertSave.lastManualSave", "LAST MANUAL SAVE"),
+                LocalizationService.Translate("common.unavailable", "Unavailable"),
+                LocalizationService.Translate(
+                    "revertSave.manualUnavailableDescription",
+                    "Save manually to create a restore point."),
                 false,
                 false,
-                "No manual save snapshot exists for this file.",
+                LocalizationService.Translate(
+                    "revertSave.noManualSnapshot",
+                    "No manual save snapshot exists for this file."),
                 SelectOption);
         }
 
         return new RevertSaveOptionViewModel(
             RevertSaveOptionKind.LastManualSave,
-            "LAST MANUAL SAVE",
+            LocalizationService.Translate("revertSave.lastManualSave", "LAST MANUAL SAVE"),
             _optionFormatter.FormatWordCount(_lastManualSnapshot.Metadata.WordCount),
-            _optionFormatter.FormatVersionTimestamp("Saved", _lastManualSnapshot.Metadata.UpdatedAtUtc),
+            _optionFormatter.FormatVersionTimestamp(
+                LocalizationService.Translate("revertSave.savedAction", "Saved"),
+                _lastManualSnapshot.Metadata.UpdatedAtUtc),
             isLatest,
             true,
             string.Empty,
@@ -110,20 +116,26 @@ public sealed class RevertSaveViewModel : BaseViewModel
         {
             return new RevertSaveOptionViewModel(
                 RevertSaveOptionKind.LastAutosave,
-                "LAST AUTOSAVE",
-                "Unavailable",
-                "Autosave has not created a restore point for this file.",
+                LocalizationService.Translate("revertSave.lastAutosave", "LAST AUTOSAVE"),
+                LocalizationService.Translate("common.unavailable", "Unavailable"),
+                LocalizationService.Translate(
+                    "revertSave.autosaveUnavailableDescription",
+                    "Autosave has not created a restore point for this file."),
                 false,
                 false,
-                "No autosave snapshot exists for this file.",
+                LocalizationService.Translate(
+                    "revertSave.noAutosaveSnapshot",
+                    "No autosave snapshot exists for this file."),
                 SelectOption);
         }
 
         return new RevertSaveOptionViewModel(
             RevertSaveOptionKind.LastAutosave,
-            "LAST AUTOSAVE",
+            LocalizationService.Translate("revertSave.lastAutosave", "LAST AUTOSAVE"),
             _optionFormatter.FormatWordCount(_lastAutosaveSnapshot.Metadata.WordCount),
-            _optionFormatter.FormatVersionTimestamp("Auto-saved", _lastAutosaveSnapshot.Metadata.UpdatedAtUtc),
+            _optionFormatter.FormatVersionTimestamp(
+                LocalizationService.Translate("revertSave.autoSavedAction", "Auto-saved"),
+                _lastAutosaveSnapshot.Metadata.UpdatedAtUtc),
             isLatest,
             true,
             string.Empty,

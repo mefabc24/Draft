@@ -10,6 +10,12 @@ export type InlineFormatConfig = InlineFormatMarkerPair & {
 }
 
 export const inlineFormatConfig = {
+  badge: {
+    closingMarker: ']',
+    mergeAdjacent: false,
+    openingMarker: '[badge:',
+    parseInsideInlineCode: false,
+  },
   bold: {
     closingMarker: '**',
     mergeAdjacent: true,
@@ -44,6 +50,18 @@ export const inlineFormatConfig = {
     closingMarker: '||',
     mergeAdjacent: false,
     openingMarker: '||',
+    parseInsideInlineCode: false,
+  },
+  highlight: {
+    closingMarker: '==',
+    mergeAdjacent: true,
+    openingMarker: '==',
+    parseInsideInlineCode: false,
+  },
+  comment: {
+    closingMarker: '%%',
+    mergeAdjacent: true,
+    openingMarker: '%%',
     parseInsideInlineCode: false,
   },
 } satisfies Record<WrappableInlineFormat, InlineFormatConfig>
@@ -83,7 +101,10 @@ export function isParsedInlineFormat(
   value: string,
 ): value is ParsedInlineFormat {
   return (
+    value === 'badge' ||
     value === 'bold' ||
+    value === 'comment' ||
+    value === 'highlight' ||
     value === 'image' ||
     value === 'inlineCode' ||
     value === 'italic' ||

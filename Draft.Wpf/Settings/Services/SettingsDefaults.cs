@@ -5,9 +5,10 @@ namespace Draft.Settings.Services;
 
 public static class SettingsDefaults
 {
+    public const string DefaultAppLanguage = LocalizationService.EnglishLanguageCode;
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";
-    public const string DefaultMarkdownTheme = "Draft Theme";
+    public const string DefaultMarkdownTheme = "Draft Dark";
     public const string DefaultToolbarPosition = "Top";
     public const string PreviewScrollSyncOff = "Off";
     public const string PreviewScrollSyncEditorToPreview = "EditorToPreview";
@@ -19,7 +20,7 @@ public static class SettingsDefaults
     public const string FloatingMarkdownToolbarEditor = "Editor";
     public const string FloatingMarkdownToolbarPreview = "Preview";
     public const string FloatingMarkdownToolbarEditorAndPreview = "EditorAndPreview";
-    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditorAndPreview;
+    public const string DefaultFloatingMarkdownToolbarMode = FloatingMarkdownToolbarEditor;
     public const string WindowBorderAccentDisabled = "Disabled";
     public const string WindowBorderAccentAlways = "Always";
     public const string WindowBorderAccentFocusedOnly = "FocusedWindowOnly";

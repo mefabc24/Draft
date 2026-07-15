@@ -1,16 +1,21 @@
 using Draft.Dialogs.Message.Models;
 using Draft.Dialogs.Prompts.Autosave.Models;
+using Draft.Dialogs.Prompts.Export.Models;
 using Draft.Dialogs.Prompts.GoToPosition.Models;
 using Draft.Dialogs.Prompts.RevertSave.Models;
+using Draft.Export.Models;
+using Draft.Export.Services;
+using Draft.ExternalLinks.Services;
 using Draft.Save.Models;
+using Draft.Settings.Shortcuts;
 using Draft.Shell.Services;
 using Draft.Shell.ViewModels;
 using Draft.WebWorkspace.Services;
 using Microsoft.Web.WebView2.Core;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Security;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -27,18 +32,33 @@ public partial class MainWindow : Window
             new PropertyMetadata(false));
 
     private const string WebHostName = "draft.local";
+    private const string ReportBugUrl = "https://github.com/mefabc24/Draft/issues";
     private readonly MainWindowSessionService _sessionService = new();
     private readonly ShellDialogCoordinator _dialogCoordinator = new();
+    private readonly ExternalLinkService _externalLinkService;
     private readonly ShellFileDialogService _fileDialogService = new();
+    private readonly DocumentExportService _documentExportService = new();
     private readonly DraftWebViewHostService _webViewHostService = new();
     private readonly DraftWebViewMessageBridge _webViewMessageBridge = new();
+    private readonly ClipboardTextService _clipboardTextService = new();
+    private readonly List<InputBinding> _shortcutInputBindings = new();
     private readonly WindowSizingService _windowSizingService = new();
     private DraftSettings _settings;
-    private bool _isWebViewReady;
+    private bool _isWebViewNavigationReady;
+    private bool _isWebWorkspaceReady;
+    private bool _hasSentStartupState;
+    private bool _hasWebAppliedStartupState;
+    private bool _isWebKeyboardShortcutRecording;
+    private int _documentGeneration = 1;
     private bool _isSettingsWindowOpen;
     private bool _isPromptWindowOpen;
     private bool _hasHandledFocusLostSave;
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+    private bool CanPostToWebWorkspace => _isWebViewNavigationReady
+        && _isWebWorkspaceReady
+        && WorkspaceWebView.CoreWebView2 is not null;
+    private bool CanPostRuntimeWorkspaceMessage => CanPostToWebWorkspace
+        && _hasWebAppliedStartupState;
 
     public bool IsWindowSnapped
     {
@@ -66,11 +86,14 @@ public partial class MainWindow : Window
     public MainWindow(MainWindowViewModel viewModel, DraftSettings settings)
     {
         InitializeComponent();
+        _externalLinkService = new ExternalLinkService();
         _settings = AppSettingsStore.Normalize(settings);
+        LocalizationService.SetCurrentAppLanguage(_settings.AppLanguage);
         _windowSizingService.ApplyStartupWindowSize(this);
         _windowSizingService.ApplyMinimumWindowSize(this, _settings);
         viewModel.ApplySettings(_settings);
         DataContext = viewModel;
+        RefreshShellShortcutBindings();
         SubscribeToViewModel(viewModel);
         Loaded += MainWindow_Loaded;
         LocationChanged += MainWindow_PositionChanged;
@@ -90,6 +113,24 @@ public partial class MainWindow : Window
             WorkspaceWebView_NavigationStarting,
             WorkspaceWebView_NewWindowRequested,
             WorkspaceWebView_NavigationCompleted);
+
+        _ = WarmUpExportWebViewAsync();
+    }
+
+    private async Task WarmUpExportWebViewAsync()
+    {
+        try
+        {
+            await ExportWebView.EnsureCoreWebView2Async();
+
+            ExportWebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            ExportWebView.CoreWebView2.Settings.IsZoomControlEnabled = false;
+            ExportWebView.ZoomFactor = 1.0;
+        }
+        catch
+        {
+            // The export WebView is still initialized on demand if background warm-up is unavailable.
+        }
     }
 
     protected override void OnActivated(EventArgs e)
@@ -184,9 +225,12 @@ public partial class MainWindow : Window
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         viewModel.OpenFileRequested += ViewModel_OpenFileRequested;
         viewModel.SaveFileAsRequested += ViewModel_SaveFileAsRequested;
+        viewModel.MissingFilePathSaveRequested += ViewModel_MissingFilePathSaveRequested;
+        viewModel.OpenExportPromptRequested += ViewModel_OpenExportPromptRequested;
         viewModel.NewFileRequested += ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested += ViewModel_OpenSettingsRequested;
         viewModel.OpenAboutSettingsRequested += ViewModel_OpenAboutSettingsRequested;
+        viewModel.OpenReportBugRequested += ViewModel_OpenReportBugRequested;
         viewModel.OpenCursorPositionPromptRequested += ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested += ViewModel_OpenAutosavePromptRequested;
         viewModel.OpenRevertSavePromptRequested += ViewModel_OpenRevertSavePromptRequested;
@@ -198,9 +242,12 @@ public partial class MainWindow : Window
         viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         viewModel.OpenFileRequested -= ViewModel_OpenFileRequested;
         viewModel.SaveFileAsRequested -= ViewModel_SaveFileAsRequested;
+        viewModel.MissingFilePathSaveRequested -= ViewModel_MissingFilePathSaveRequested;
+        viewModel.OpenExportPromptRequested -= ViewModel_OpenExportPromptRequested;
         viewModel.NewFileRequested -= ViewModel_NewFileRequested;
         viewModel.OpenSettingsRequested -= ViewModel_OpenSettingsRequested;
         viewModel.OpenAboutSettingsRequested -= ViewModel_OpenAboutSettingsRequested;
+        viewModel.OpenReportBugRequested -= ViewModel_OpenReportBugRequested;
         viewModel.OpenCursorPositionPromptRequested -= ViewModel_OpenCursorPositionPromptRequested;
         viewModel.OpenAutosavePromptRequested -= ViewModel_OpenAutosavePromptRequested;
         viewModel.OpenRevertSavePromptRequested -= ViewModel_OpenRevertSavePromptRequested;
@@ -227,31 +274,181 @@ public partial class MainWindow : Window
         try
         {
             ViewModel.LoadDocumentFromPath(filePath);
+            AdvanceDocumentGeneration();
             PostDocumentToWebView();
         }
         catch (Exception ex) when (IsFileOperationException(ex))
         {
-            _dialogCoordinator.ShowFileOperationError("Open File", ex);
+            _dialogCoordinator.ShowFileOperationError(
+                LocalizationService.Translate("dialog.openFile.title", "Open File"),
+                ex);
         }
     }
 
     private async void ViewModel_SaveFileAsRequested(object? sender, EventArgs e)
     {
-        if (ViewModel is null)
+        if (ViewModel is not MainWindowViewModel viewModel)
             return;
 
+        await SaveDocumentAsAsync(viewModel);
+    }
+
+    private async void ViewModel_MissingFilePathSaveRequested(
+        object? sender,
+        MissingFilePathSaveRequestedEventArgs e)
+    {
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        MissingFilePathSaveAction action = _dialogCoordinator.ShowMissingFilePathSavePrompt(e.FilePath);
+
+        switch (action)
+        {
+            case MissingFilePathSaveAction.SelectFile:
+                await SaveDocumentToSelectedExistingFileAsync(viewModel, e.FilePath);
+                break;
+            case MissingFilePathSaveAction.SaveAs:
+                await SaveDocumentAsAsync(viewModel);
+                break;
+            case MissingFilePathSaveAction.Recreate:
+                await viewModel.SaveDocumentToPathAsync(
+                    e.FilePath,
+                    LocalizationService.Translate("errors.saveCurrentFile", "Unable to save the current file."),
+                    DocumentSaveKind.Manual);
+                break;
+        }
+    }
+
+    private async Task<bool> SaveDocumentToSelectedExistingFileAsync(
+        MainWindowViewModel viewModel,
+        string missingFilePath)
+    {
+        string? filePath = _fileDialogService.ShowSelectExistingSaveTargetDialog(
+            this,
+            viewModel.DisplayFileName,
+            missingFilePath,
+            viewModel.DefaultSaveLocation);
+        if (filePath is null)
+            return false;
+
+        return await SaveDocumentToSelectedPathAsync(viewModel, filePath);
+    }
+
+    private async Task<bool> SaveDocumentAsAsync(MainWindowViewModel viewModel)
+    {
         string? filePath = _fileDialogService.ShowSaveFileDialog(
             this,
-            ViewModel.DisplayFileName,
-            ViewModel.DefaultSaveLocation);
+            viewModel.DisplayFileName,
+            viewModel.CurrentFilePath,
+            viewModel.DefaultSaveLocation);
+        if (filePath is null)
+            return false;
+
+        return await SaveDocumentToSelectedPathAsync(viewModel, filePath);
+    }
+
+    private async Task<bool> SaveDocumentToSelectedPathAsync(
+        MainWindowViewModel viewModel,
+        string filePath)
+    {
+        bool didSave = await viewModel.SaveDocumentToPathAsync(
+            filePath,
+            LocalizationService.Translate("errors.saveCurrentFile", "Unable to save the current file."),
+            DocumentSaveKind.Manual);
+
+        if (!didSave)
+            return false;
+
+        AdvanceDocumentGeneration();
+        PostDocumentToWebView();
+        return true;
+    }
+
+    private async void ViewModel_OpenExportPromptRequested(object? sender, EventArgs e)
+    {
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        _isPromptWindowOpen = true;
+        ExportPromptResult result;
+
+        try
+        {
+            result = _dialogCoordinator.ShowExportPrompt(this, _settings.MarkdownTheme);
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
+        }
+
+        if (!result.IsConfirmed)
+            return;
+
+        string? filePath = _fileDialogService.ShowExportSaveFileDialog(
+            this,
+            result.Format,
+            viewModel.CurrentFilePath,
+            viewModel.DefaultSaveLocation);
         if (filePath is null)
             return;
 
-        await ViewModel.SaveDocumentToPathAsync(
-            filePath,
-            "Unable to save the current file.",
-            DocumentSaveKind.Manual);
-        PostDocumentToWebView();
+        if (!CanPostRuntimeWorkspaceMessage)
+        {
+            _dialogCoordinator.ShowMessage(
+                LocalizationService.Translate("export.messageTitle", "Export"),
+                LocalizationService.Translate(
+                    "export.previewNotReady",
+                    "The Markdown preview is not ready yet. Try exporting again after the workspace finishes loading."),
+                MessageDialogType.Warning);
+            return;
+        }
+
+        _isPromptWindowOpen = true;
+
+        try
+        {
+            using (IDisposable exportProgress = _dialogCoordinator.ShowDelayedProgress(
+                this,
+                GetExportProgressTitle(result.Format),
+                GetExportProgressMessage(result.Format),
+                TimeSpan.FromSeconds(1)))
+            {
+                string htmlDocument = await _webViewMessageBridge.GetPreviewExportHtmlAsync(
+                    WorkspaceWebView.CoreWebView2,
+                    GetPreviewExportLayout(result.Format),
+                    result.PreviewThemeId);
+
+                await _documentExportService.ExportAsync(
+                    new DocumentExportRequest(
+                        result.Format,
+                        filePath,
+                        htmlDocument),
+                    ExportWebView,
+                    WebHostName);
+            }
+
+            _dialogCoordinator.ShowMessage(
+                LocalizationService.Translate("export.completeTitle", "Export Complete"),
+                LocalizationService.TranslateFormat(
+                    "export.completeDescription",
+                    "The document was exported successfully as {format}.",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["format"] = GetExportFormatDisplayName(result.Format),
+                    }),
+                MessageDialogType.Success);
+        }
+        catch (Exception ex) when (IsExportException(ex))
+        {
+            _dialogCoordinator.ShowMessage(
+                LocalizationService.Translate("export.messageTitle", "Export"),
+                ex.Message,
+                MessageDialogType.Error);
+        }
+        finally
+        {
+            _isPromptWindowOpen = false;
+        }
     }
 
     private void ViewModel_NewFileRequested(object? sender, EventArgs e)
@@ -260,6 +457,7 @@ public partial class MainWindow : Window
             return;
 
         ViewModel.CreateNewDocument();
+        AdvanceDocumentGeneration();
         PostDocumentToWebView();
     }
 
@@ -271,6 +469,11 @@ public partial class MainWindow : Window
     private void ViewModel_OpenAboutSettingsRequested(object? sender, EventArgs e)
     {
         ShowSettings(SettingsPage.About);
+    }
+
+    private void ViewModel_OpenReportBugRequested(object? sender, EventArgs e)
+    {
+        OpenExternalUrl(ReportBugUrl);
     }
 
     public void ShowSettings(SettingsPage initialPage = SettingsPage.General)
@@ -372,8 +575,10 @@ public partial class MainWindow : Window
         if (!viewModel.HasFilePath)
         {
             _dialogCoordinator.ShowMessage(
-                "Revert Save",
-                "Open or save a file before restoring a saved version.",
+                LocalizationService.Translate("revertSave.messageTitle", "Revert Save"),
+                LocalizationService.Translate(
+                    "revertSave.openOrSaveFirst",
+                    "Open or save a file before restoring a saved version."),
                 MessageDialogType.Warning);
             return;
         }
@@ -398,8 +603,10 @@ public partial class MainWindow : Window
         if (result.RestoredContent is null)
         {
             _dialogCoordinator.ShowMessage(
-                "Revert Save",
-                "The selected saved version could not be restored.",
+                LocalizationService.Translate("revertSave.messageTitle", "Revert Save"),
+                LocalizationService.Translate(
+                    "revertSave.restoreFailed",
+                    "The selected saved version could not be restored."),
                 MessageDialogType.Error);
             return;
         }
@@ -407,12 +614,13 @@ public partial class MainWindow : Window
         try
         {
             viewModel.RestoreContentFromSnapshot(result.RestoredContent);
+            AdvanceDocumentGeneration();
             PostDocumentToWebView();
         }
         catch (Exception ex) when (IsFileOperationException(ex))
         {
             _dialogCoordinator.ShowMessage(
-                "Revert Save",
+                LocalizationService.Translate("revertSave.messageTitle", "Revert Save"),
                 ex.Message,
                 MessageDialogType.Error);
         }
@@ -420,8 +628,15 @@ public partial class MainWindow : Window
 
     private void SyncWebViewWithWorkspaceState()
     {
-        if (ViewModel is null || !_isWebViewReady)
+        if (ViewModel is null)
             return;
+
+        if (!CanPostRuntimeWorkspaceMessage)
+        {
+            MarkStartupStatePending();
+            TrySendStartupStateToWebWorkspace();
+            return;
+        }
 
         PostWorkspaceMode(ViewModel.WorkspaceMode);
     }
@@ -429,8 +644,10 @@ public partial class MainWindow : Window
     private void ApplySettings(DraftSettings settings)
     {
         _settings = AppSettingsStore.Normalize(settings);
+        LocalizationService.SetCurrentAppLanguage(_settings.AppLanguage);
         _windowSizingService.ApplyMinimumWindowSize(this, _settings);
         ViewModel?.ApplySettings(_settings);
+        RefreshShellShortcutBindings();
         PostSettingsToWebView();
     }
 
@@ -438,7 +655,9 @@ public partial class MainWindow : Window
     {
         return new DraftSettings
         {
+            AppLanguage = settings.AppLanguage,
             ReopenLastWorkspaceOnStartup = settings.ReopenLastWorkspaceOnStartup,
+            CheckForUpdatesOnStartup = settings.CheckForUpdatesOnStartup,
             AutosaveEnabled = settings.AutosaveEnabled,
             AutosaveInterval = settings.AutosaveInterval,
             SaveOnFocusLost = settings.SaveOnFocusLost,
@@ -471,34 +690,58 @@ public partial class MainWindow : Window
             ScrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection,
             AppTheme = settings.AppTheme,
             IsStatusBarVisible = settings.IsStatusBarVisible,
+            IsStatusBarFileTypeVisible = settings.IsStatusBarFileTypeVisible,
+            IsStatusBarEncodingVisible = settings.IsStatusBarEncodingVisible,
+            IsStatusBarWordCountVisible = settings.IsStatusBarWordCountVisible,
+            IsStatusBarCharacterCountVisible = settings.IsStatusBarCharacterCountVisible,
+            IsStatusBarCursorPositionVisible = settings.IsStatusBarCursorPositionVisible,
+            IsStatusBarRevertButtonVisible = settings.IsStatusBarRevertButtonVisible,
+            IsStatusBarSaveStatusVisible = settings.IsStatusBarSaveStatusVisible,
+            IsStatusBarAutosaveStatusVisible = settings.IsStatusBarAutosaveStatusVisible,
+            IsStatusBarAppVersionVisible = settings.IsStatusBarAppVersionVisible,
+            IsStatusBarReportBugButtonVisible = settings.IsStatusBarReportBugButtonVisible,
             WindowBorderAccentMode = settings.WindowBorderAccentMode,
             ToolbarControlbarPosition = settings.ToolbarControlbarPosition,
+            Shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts),
         };
     }
 
     private void PostSettingsToWebView()
     {
-        if (!_isWebViewReady)
+        if (!CanPostRuntimeWorkspaceMessage)
+        {
+            MarkStartupStatePending();
+            TrySendStartupStateToWebWorkspace();
             return;
+        }
 
         _webViewMessageBridge.PostSettings(WorkspaceWebView.CoreWebView2, _settings);
-
     }
 
     private void PostDocumentToWebView()
     {
-        if (ViewModel is null || !_isWebViewReady)
+        if (ViewModel is null)
             return;
+
+        if (!CanPostRuntimeWorkspaceMessage)
+        {
+            MarkStartupStatePending();
+            TrySendStartupStateToWebWorkspace();
+            return;
+        }
 
         _webViewMessageBridge.PostDocument(
             WorkspaceWebView.CoreWebView2,
             ViewModel.CurrentContent,
-            ViewModel.DisplayFileName);
+            ViewModel.DisplayFileName,
+            ViewModel.CurrentFilePath,
+            !ViewModel.HasFilePath,
+            _documentGeneration);
     }
 
     private void PostGoToPosition(int line, int column)
     {
-        if (!_isWebViewReady)
+        if (!CanPostRuntimeWorkspaceMessage)
             return;
 
         _webViewMessageBridge.PostGoToPosition(
@@ -507,9 +750,187 @@ public partial class MainWindow : Window
             column);
     }
 
+    private void RefreshShellShortcutBindings()
+    {
+        foreach (InputBinding binding in _shortcutInputBindings)
+        {
+            InputBindings.Remove(binding);
+        }
+
+        _shortcutInputBindings.Clear();
+
+        if (_isWebKeyboardShortcutRecording)
+            return;
+
+        if (ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        AddShellShortcutBinding(ShortcutActionIds.AppSave, viewModel.SaveFileCommand);
+        AddShellShortcutBinding(ShortcutActionIds.AppOpen, viewModel.OpenFileCommand);
+    }
+
+    private void AddShellShortcutBinding(string actionId, ICommand command)
+    {
+        string shortcut = ShortcutSettingsCatalog.GetShortcut(_settings.Shortcuts, actionId);
+
+        if (!TryCreateKeyGesture(shortcut, out KeyGesture? gesture))
+            return;
+
+        KeyBinding binding = new(command, gesture);
+        InputBindings.Add(binding);
+        _shortcutInputBindings.Add(binding);
+    }
+
+    private static bool TryCreateKeyGesture(string shortcut, out KeyGesture? gesture)
+    {
+        gesture = null;
+
+        if (string.IsNullOrWhiteSpace(shortcut))
+            return false;
+
+        string[] parts = SplitShortcutParts(shortcut);
+        ModifierKeys modifiers = ModifierKeys.None;
+        Key key = Key.None;
+
+        foreach (string part in parts)
+        {
+            if (TryReadModifier(part, ref modifiers))
+                continue;
+
+            if (key != Key.None || !TryReadShortcutKey(part, out key))
+                return false;
+        }
+
+        if (key == Key.None)
+            return false;
+
+        try
+        {
+            gesture = new KeyGesture(key, modifiers);
+            return true;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    private static string[] SplitShortcutParts(string shortcut)
+    {
+        string trimmedShortcut = shortcut.Trim();
+
+        if (trimmedShortcut.Contains(" + ", StringComparison.Ordinal))
+        {
+            return trimmedShortcut
+                .Split(" + ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        }
+
+        return trimmedShortcut
+            .Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    private static bool TryReadModifier(string part, ref ModifierKeys modifiers)
+    {
+        switch (part.Trim().ToUpperInvariant())
+        {
+            case "CTRL":
+            case "CONTROL":
+                modifiers |= ModifierKeys.Control;
+                return true;
+            case "SHIFT":
+                modifiers |= ModifierKeys.Shift;
+                return true;
+            case "ALT":
+                modifiers |= ModifierKeys.Alt;
+                return true;
+            case "WIN":
+            case "WINDOWS":
+                modifiers |= ModifierKeys.Windows;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryReadShortcutKey(string part, out Key key)
+    {
+        string normalized = part.Trim();
+
+        if (normalized.Length == 1)
+        {
+            char character = char.ToUpperInvariant(normalized[0]);
+
+            if (character is >= 'A' and <= 'Z')
+            {
+                key = (Key)((int)Key.A + (character - 'A'));
+                return true;
+            }
+
+            if (character is >= '0' and <= '9')
+            {
+                key = (Key)((int)Key.D0 + (character - '0'));
+                return true;
+            }
+        }
+
+        if (normalized.StartsWith("F", StringComparison.OrdinalIgnoreCase)
+            && int.TryParse(normalized[1..], out int functionKey)
+            && functionKey is >= 1 and <= 24)
+        {
+            key = (Key)((int)Key.F1 + (functionKey - 1));
+            return true;
+        }
+
+        if (normalized.StartsWith("Num ", StringComparison.OrdinalIgnoreCase)
+            && normalized.Length == 5
+            && char.IsDigit(normalized[4]))
+        {
+            key = (Key)((int)Key.NumPad0 + (normalized[4] - '0'));
+            return true;
+        }
+
+        key = normalized.ToUpperInvariant() switch
+        {
+            "ENTER" => Key.Return,
+            "ESC" or "ESCAPE" => Key.Escape,
+            "SPACE" => Key.Space,
+            "BACKSPACE" => Key.Back,
+            "DELETE" => Key.Delete,
+            "TAB" => Key.Tab,
+            "LEFT" => Key.Left,
+            "RIGHT" => Key.Right,
+            "UP" => Key.Up,
+            "DOWN" => Key.Down,
+            "HOME" => Key.Home,
+            "END" => Key.End,
+            "INSERT" => Key.Insert,
+            "PAGE UP" => Key.PageUp,
+            "PAGE DOWN" => Key.PageDown,
+            "/" => Key.OemQuestion,
+            "+" => Key.OemPlus,
+            "-" => Key.OemMinus,
+            "NUM +" => Key.Add,
+            "NUM -" => Key.Subtract,
+            "NUM *" => Key.Multiply,
+            "NUM /" => Key.Divide,
+            "NUM ." => Key.Decimal,
+            "," => Key.OemComma,
+            "." => Key.OemPeriod,
+            "[" => Key.OemOpenBrackets,
+            "]" => Key.OemCloseBrackets,
+            ";" => Key.OemSemicolon,
+            "'" => Key.OemQuotes,
+            "`" => Key.OemTilde,
+            "\\" => Key.OemBackslash,
+            _ => Key.None,
+        };
+
+        return key != Key.None;
+    }
+
     private void FocusWorkspaceWebView()
     {
-        if (!_isWebViewReady || _isSettingsWindowOpen || _isPromptWindowOpen)
+        if (!_isWebViewNavigationReady || _isSettingsWindowOpen || _isPromptWindowOpen)
             return;
 
         WorkspaceWebView.Focus();
@@ -521,23 +942,132 @@ public partial class MainWindow : Window
         _sessionService.Apply(this, sessionState);
     }
 
-    private void WorkspaceWebView_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+    private void ResetWebWorkspaceReadiness()
     {
-        _isWebViewReady = e.IsSuccess;
-        if (e.IsSuccess)
+        SetWebKeyboardShortcutRecording(false);
+        _isWebViewNavigationReady = false;
+        _isWebWorkspaceReady = false;
+        _hasSentStartupState = false;
+        _hasWebAppliedStartupState = false;
+        WorkspaceLoaderOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void HandleWebWorkspaceReady()
+    {
+        _isWebWorkspaceReady = true;
+        TrySendStartupStateToWebWorkspace();
+    }
+
+    private void HandleStartupStateApplied(int? documentGeneration)
+    {
+        if (!IsCurrentDocumentGeneration(documentGeneration))
+            return;
+
+        _hasWebAppliedStartupState = true;
+        WorkspaceLoaderOverlay.Visibility = Visibility.Collapsed;
+        FocusWorkspaceWebView();
+    }
+
+    private void TrySendStartupStateToWebWorkspace()
+    {
+        if (!CanPostToWebWorkspace || _hasSentStartupState || ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        _hasSentStartupState = true;
+        _hasWebAppliedStartupState = false;
+
+        _webViewMessageBridge.PostStartupState(
+            WorkspaceWebView.CoreWebView2,
+            _settings,
+            viewModel.CurrentContent,
+            viewModel.DisplayFileName,
+            viewModel.CurrentFilePath,
+            !viewModel.HasFilePath,
+            viewModel.IsDirty,
+            viewModel.WorkspaceMode,
+            _documentGeneration);
+    }
+
+    private void MarkStartupStatePending()
+    {
+        if (_hasWebAppliedStartupState)
+            return;
+
+        _hasSentStartupState = false;
+    }
+
+    private void AdvanceDocumentGeneration()
+    {
+        unchecked
         {
-            WorkspaceLoaderOverlay.Visibility = Visibility.Collapsed;
+            _documentGeneration = _documentGeneration == int.MaxValue
+                ? 1
+                : _documentGeneration + 1;
         }
 
-        PostSettingsToWebView();
-        SyncWebViewWithWorkspaceState();
-        PostDocumentToWebView();
+        if (!_hasWebAppliedStartupState)
+        {
+            _hasSentStartupState = false;
+        }
+    }
+
+    private void ApplyWorkspaceModeFromWeb(string mode)
+    {
+        if (!_hasWebAppliedStartupState || ViewModel is not MainWindowViewModel viewModel)
+            return;
+
+        viewModel.SetWorkspaceMode(mode);
+    }
+
+    private void UpdateContentFromWeb(string content, int? documentGeneration)
+    {
+        if (!_hasWebAppliedStartupState || !IsCurrentDocumentGeneration(documentGeneration))
+            return;
+
+        ViewModel?.UpdateContentFromWeb(content);
+    }
+
+    private bool IsCurrentDocumentGeneration(int? documentGeneration)
+    {
+        return !documentGeneration.HasValue
+            || documentGeneration.Value <= 0
+            || documentGeneration.Value == _documentGeneration;
+    }
+
+    private bool IsCurrentDocumentPath(string path)
+    {
+        if (ViewModel?.CurrentFilePath is not string currentFilePath)
+            return false;
+
+        try
+        {
+            return string.Equals(
+                Path.GetFullPath(path),
+                Path.GetFullPath(currentFilePath),
+                StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (IsFileOperationException(ex))
+        {
+            return string.Equals(path, currentFilePath, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private void WorkspaceWebView_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+    {
+        _isWebViewNavigationReady = e.IsSuccess;
+        if (e.IsSuccess)
+        {
+            TrySendStartupStateToWebWorkspace();
+        }
     }
 
     private void WorkspaceWebView_NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
     {
         if (IsInternalWebViewUri(e.Uri))
+        {
+            ResetWebWorkspaceReadiness();
             return;
+        }
 
         e.Cancel = true;
         OpenExternalUrl(e.Uri);
@@ -561,73 +1091,43 @@ public partial class MainWindow : Window
 
         _webViewMessageBridge.DispatchIncomingMessage(
             e.TryGetWebMessageAsString(),
-            viewModel.SetWorkspaceMode,
-            viewModel.UpdateContentFromWeb,
+            HandleWebWorkspaceReady,
+            HandleStartupStateApplied,
+            ApplyWorkspaceModeFromWeb,
+            UpdateContentFromWeb,
             viewModel.UpdateCursorPosition,
+            UpdateClipboardTextFromWeb,
+            SetWebKeyboardShortcutRecording,
             () => viewModel.SaveFileCommand.Execute(null),
+            () => viewModel.OpenFileCommand.Execute(null),
             OpenExternalUrl);
+    }
+
+    private void SetWebKeyboardShortcutRecording(bool isRecording)
+    {
+        if (_isWebKeyboardShortcutRecording == isRecording)
+            return;
+
+        _isWebKeyboardShortcutRecording = isRecording;
+        RefreshShellShortcutBindings();
+    }
+
+    private void UpdateClipboardTextFromWeb(string text)
+    {
+        Dispatcher.BeginInvoke(
+            () => _clipboardTextService.SetPlainText(text),
+            DispatcherPriority.Background);
     }
 
     private void OpenExternalUrl(string url)
     {
-        if (!TryCreateExternalUri(url, out Uri? uri))
-            return;
-
-        if (_settings.ConfirmBeforeOpeningExternalLinks
-            && !_dialogCoordinator.ConfirmOpenExternalLink(uri))
-        {
-            return;
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri)
-            {
-                UseShellExecute = true,
-            });
-        }
-        catch (Exception ex) when (IsExternalLinkException(ex))
-        {
-            _dialogCoordinator.ShowMessage(
-                "Open External Link",
-                "The link could not be opened in your default browser.",
-                MessageDialogType.Error);
-        }
-    }
-
-    private static bool TryCreateExternalUri(string url, out Uri uri)
-    {
-        uri = null!;
-
-        if (string.IsNullOrWhiteSpace(url)
-            || !Uri.TryCreate(url, UriKind.Absolute, out Uri? parsedUri))
-        {
-            return false;
-        }
-
-        if (!string.Equals(parsedUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(parsedUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(parsedUri.Scheme, Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        uri = parsedUri;
-        return true;
+        _externalLinkService.TryOpen(url, _settings.ConfirmBeforeOpeningExternalLinks);
     }
 
     private static bool IsInternalWebViewUri(string url)
     {
         return Uri.TryCreate(url, UriKind.Absolute, out Uri? uri)
             && string.Equals(uri.Host, WebHostName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsExternalLinkException(Exception ex)
-    {
-        return ex is Win32Exception
-            or InvalidOperationException
-            or FileNotFoundException
-            or SecurityException;
     }
 
     private static bool IsFileOperationException(Exception ex)
@@ -639,6 +1139,48 @@ public partial class MainWindow : Window
             or PathTooLongException
             or SecurityException
             or InvalidOperationException;
+    }
+
+    private static bool IsExportException(Exception ex)
+    {
+        return IsFileOperationException(ex)
+            || ex is JsonException
+            or NotSupportedException;
+    }
+
+    private static string GetExportFormatDisplayName(ExportFormat format)
+    {
+        return format switch
+        {
+            ExportFormat.Pdf => "PDF",
+            ExportFormat.Html => "HTML",
+            ExportFormat.Png => "PNG",
+            _ => LocalizationService.Translate("export.selectedFormat", "the selected format"),
+        };
+    }
+
+    private static string GetPreviewExportLayout(ExportFormat format)
+    {
+        return format switch
+        {
+            ExportFormat.Pdf => "pdf",
+            ExportFormat.Png => "png",
+            _ => "html",
+        };
+    }
+
+    private static string GetExportProgressTitle(ExportFormat format)
+    {
+        return format == ExportFormat.Png
+            ? LocalizationService.Translate("export.progressPngTitle", "Exporting PNG...")
+            : LocalizationService.Translate("export.progressTitle", "Exporting...");
+    }
+
+    private static string GetExportProgressMessage(ExportFormat format)
+    {
+        return format == ExportFormat.Png
+            ? LocalizationService.Translate("export.progressPngMessage", "Preparing your document image.")
+            : LocalizationService.Translate("export.progressMessage", "Preparing your document for export.");
     }
 
 }

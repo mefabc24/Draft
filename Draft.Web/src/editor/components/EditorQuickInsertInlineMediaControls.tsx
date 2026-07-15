@@ -1,10 +1,11 @@
 import { useState, type KeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react'
+import { useTranslation } from '../../localization/useTranslation'
 import type {
   CreateInlineImageMarkdownData,
   CreateInlineLinkMarkdownData,
 } from '../commands/createInlineLinkMarkdown'
 
-type EditorQuickInsertInlineMediaControlsProps =
+type EditorQuickInsertInlineMediaControlsProps = (
   | {
       onConfirm: (
         data: CreateInlineImageMarkdownData,
@@ -19,14 +20,14 @@ type EditorQuickInsertInlineMediaControlsProps =
       ) => void
       type: 'link'
     }
-
-function shouldKeepOpen(event: ReactMouseEvent<HTMLButtonElement>) {
-  return event.shiftKey && event.button === 0
+) & {
+  shouldKeepOpen: (event: ReactMouseEvent<HTMLButtonElement>) => boolean
 }
 
 function EditorQuickInsertInlineMediaControls(
   props: EditorQuickInsertInlineMediaControlsProps,
 ) {
+  const { t } = useTranslation()
   const [text, setText] = useState('')
   const [url, setUrl] = useState('')
   const isImage = props.type === 'image'
@@ -53,12 +54,18 @@ function EditorQuickInsertInlineMediaControls(
     <div className="editor-quick-insert-inline-media-controls">
       <label className="editor-quick-insert-inline-media-field">
         <span className="editor-quick-insert-inline-media-label">
-          {isImage ? 'Placeholder text' : 'Display text'}
+          {isImage
+            ? t('quickInsert.inlineMedia.placeholderText')
+            : t('quickInsert.inlineMedia.displayText')}
         </span>
         <input
           type="text"
           value={text}
-          placeholder={isImage ? 'Alt text' : 'Display text'}
+          placeholder={
+            isImage
+              ? t('quickInsert.inlineMedia.altText')
+              : t('quickInsert.inlineMedia.displayText')
+          }
           onChange={(event) => {
             setText(event.target.value)
           }}
@@ -67,12 +74,18 @@ function EditorQuickInsertInlineMediaControls(
       </label>
       <label className="editor-quick-insert-inline-media-field">
         <span className="editor-quick-insert-inline-media-label">
-          {isImage ? 'Image link' : 'Link'}
+          {isImage
+            ? t('quickInsert.inlineMedia.imageLink')
+            : t('toolbar.link')}
         </span>
         <input
           type="text"
           value={url}
-          placeholder={isImage ? 'Image URL' : 'URL'}
+          placeholder={
+            isImage
+              ? t('quickInsert.inlineMedia.imageUrl')
+              : t('quickInsert.inlineMedia.url')
+          }
           onChange={(event) => {
             setUrl(event.target.value)
           }}
@@ -83,10 +96,10 @@ function EditorQuickInsertInlineMediaControls(
         type="button"
         className="editor-quick-insert-inline-media-confirm"
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
-          confirm(shouldKeepOpen(event))
+          confirm(props.shouldKeepOpen(event))
         }}
       >
-        Create
+        {t('common.create')}
       </button>
     </div>
   )

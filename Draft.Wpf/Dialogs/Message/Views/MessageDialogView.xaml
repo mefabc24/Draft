@@ -18,7 +18,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Width="460">
+    <Grid Width="{Binding Width}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -84,7 +84,7 @@
 
 
                 <TextBlock
-                    MaxWidth="400"
+                    MaxWidth="{Binding TextMaxWidth}"
                     Margin="0,24,0,8"
                     HorizontalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
@@ -96,7 +96,7 @@
                     TextWrapping="Wrap" />
 
                 <TextBlock
-                    MaxWidth="400"
+                    MaxWidth="{Binding TextMaxWidth}"
                     HorizontalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="16"

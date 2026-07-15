@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i18n="clr-namespace:Draft.Localization"
     xmlns:models="clr-namespace:Draft.Dialogs.Prompts.RevertSave.Models">
     <Style x:Key="SaveVersionCard" TargetType="RadioButton">
         <Setter Property="Template">
@@ -50,7 +51,7 @@
                                         FontFamily="{StaticResource Font.Manrope}"
                                         FontSize="11"
                                         Foreground="{StaticResource Brush.Accent.Primary}"
-                                        Text="Latest" />
+                                        Text="{i18n:Loc revertSave.latest}" />
                                 </Border>
                             </Grid>
 
@@ -82,7 +83,7 @@
                         </DataTrigger>
 
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#333538" />
+                            <Setter TargetName="border" Property="Background" Value="#242528" />
                             <Setter TargetName="border" Property="BorderBrush" Value="#A5C8FF" />
                             <Setter TargetName="Icon" Property="Fill" Value="#A5C8FF" />
                             <Setter TargetName="TitleText" Property="Foreground" Value="#A5C8FF" />
@@ -98,7 +99,7 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="border" Property="Background" Value="#2E3033" />
+                            <Setter TargetName="border" Property="Background" Value="#2B2D31" />
                             <Setter Property="Cursor" Value="Hand" />
                         </MultiTrigger>
 

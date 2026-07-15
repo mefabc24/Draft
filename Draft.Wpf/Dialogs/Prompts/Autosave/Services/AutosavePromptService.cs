@@ -21,7 +21,7 @@ public sealed class AutosavePromptService : IAutosavePromptService
 
         BaseDialogWindow window = new(view)
         {
-            Title = "Autosave",
+            Title = LocalizationService.Translate("autosave.windowTitle", "Autosave"),
             Focusable = true,
         };
 

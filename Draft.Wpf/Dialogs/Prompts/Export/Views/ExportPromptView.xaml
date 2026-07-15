@@ -1,0 +1,130 @@
+<UserControl
+    x:Class="Draft.Dialogs.Prompts.Export.Views.ExportPromptView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i18n="clr-namespace:Draft.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Width="460">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Padding="16">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="40" />
+                    </Grid.ColumnDefinitions>
+
+                    <Path
+                        Grid.Column="1"
+                        Width="52"
+                        Height="52"
+                        Data="{StaticResource Icon.Export}"
+                        Fill="{StaticResource Brush.Accent.Primary}"
+                        Margin="4,0,-4,0"
+                        Stretch="Uniform" />
+
+                    <Button
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource DraftCloseButton}"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Path
+                            Width="12"
+                            Height="12"
+                            Data="{StaticResource Icon.Close}"
+                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Stretch="Uniform" />
+                    </Button>
+                </Grid>
+
+                <TextBlock
+                    MaxWidth="400"
+                    Margin="0,24,0,8"
+                    HorizontalAlignment="Center"
+                    FontFamily="{StaticResource Font.Manrope}"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    Foreground="{StaticResource Brush.Text.Primary}"
+                    Text="{i18n:Loc export.title}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    MaxWidth="400"
+                    HorizontalAlignment="Center"
+                    FontFamily="{StaticResource Font.Manrope}"
+                    FontSize="16"
+                    Foreground="{StaticResource Brush.Text.Secondary}"
+                    Text="{i18n:Loc export.description}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+
+                <StackPanel Margin="0,32,0,0">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        FontFamily="{StaticResource Font.Inter}"
+                        FontSize="11"
+                        Foreground="{StaticResource Brush.Text.Secondary}"
+                        Text="{i18n:Loc export.format}" />
+                    <ComboBox
+                        Height="40"
+                        DisplayMemberPath="DisplayName"
+                        ItemsSource="{Binding FormatOptions}"
+                        SelectedItem="{Binding SelectedFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+
+                    <TextBlock
+                        Margin="0,16,0,8"
+                        FontFamily="{StaticResource Font.Inter}"
+                        FontSize="11"
+                        Foreground="{StaticResource Brush.Text.Secondary}"
+                        Text="{i18n:Loc export.theme}" />
+                    <ComboBox
+                        Height="40"
+                        DisplayMemberPath="Label"
+                        ItemsSource="{Binding PreviewThemeOptions}"
+                        SelectedItem="{Binding SelectedPreviewTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsComboBox}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border
+            Grid.Row="1"
+            Padding="16"
+            Background="{StaticResource Brush.Background.Window}"
+            BorderBrush="{StaticResource Brush.Border.Default}"
+            BorderThickness="0,1,0,0"
+            CornerRadius="0,0,8,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding CancelCommand}"
+                    Content="{i18n:Loc common.cancel}"
+                    Style="{StaticResource MessageDialogSecondaryButton}" />
+                <Button
+                    Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding ConfirmCommand}"
+                    Content="{i18n:Loc common.export}"
+                    Style="{StaticResource MessageDialogPrimaryButton}" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

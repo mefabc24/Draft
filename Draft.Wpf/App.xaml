@@ -10,6 +10,7 @@
                 <ResourceDictionary Source="/Resources/Foundation/Typography.xaml" />
                 <ResourceDictionary Source="/Resources/Foundation/Icons.xaml" />
 
+                <ResourceDictionary Source="/Resources/Components/ToolTip.xaml" />
                 <ResourceDictionary Source="/Resources/Components/ControlBarButton.xaml" />
                 <ResourceDictionary Source="/Resources/Components/WindowControlButton.xaml" />
                 <ResourceDictionary Source="/Resources/Components/StatusBarButton.xaml" />
