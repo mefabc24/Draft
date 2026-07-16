@@ -81,6 +81,7 @@ const theHubPreviewColorVariables = {
   // Code blocks
   // copy-icon-foreground controls only the copy symbol fill color.
   '--preview-code-block-background': draftDarkTokens.theHubAccent,
+  '--preview-code-block-copy-button-background': draftDarkTokens.theHubAccent,
   '--preview-code-block-border': 'transparent',
   '--preview-code-block-copy-icon-foreground': '#000',
   '--preview-code-block-foreground': '#000',

@@ -314,21 +314,16 @@
   padding: 0;
   border: 0;
   border-radius: var(--preview-code-block-copy-button-border-radius, 8px);
-  background: transparent;
+  background: var(
+    --preview-code-block-copy-button-background,
+    var(--preview-code-block-background)
+  );
   color: var(--preview-code-block-foreground);
   cursor: pointer;
-  opacity: 0.86;
   transition:
     background 140ms ease,
     border-color 140ms ease,
-    opacity 140ms ease,
     transform 140ms ease;
-}
-
-.preview-code-block-copy-button:hover,
-.preview-code-block-copy-button:focus-visible,
-.preview-code-block-copy-button.is-copied {
-  opacity: 1;
 }
 
 .preview-code-block-copy-button:hover,

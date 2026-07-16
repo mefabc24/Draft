@@ -81,6 +81,7 @@ const draftDarkPreviewColorVariables = {
   // Code blocks
   // copy-icon-foreground controls only the copy symbol fill color.
   '--preview-code-block-background': '#111827',
+  '--preview-code-block-copy-button-background': '#111827',
   '--preview-code-block-border': '#2f3545',
   '--preview-code-block-copy-icon-foreground': '#e5e7eb',
   '--preview-code-block-foreground': '#e5e7eb',

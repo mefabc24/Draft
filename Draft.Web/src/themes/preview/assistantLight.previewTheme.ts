@@ -79,6 +79,7 @@ const assistantLightPreviewColorVariables = {
 
   // Code blocks
   '--preview-code-block-background': '#F3F4F6',
+  '--preview-code-block-copy-button-background': '#F3F4F6',
   '--preview-code-block-border': 'transparent',
   '--preview-code-block-copy-icon-foreground': '#000000',
   '--preview-code-block-foreground': '#000000',

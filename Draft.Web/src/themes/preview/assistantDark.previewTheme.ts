@@ -81,6 +81,7 @@ const assistantDarkPreviewColorVariables = {
   // Code blocks
   // copy-icon-foreground controls only the copy symbol fill color.
   '--preview-code-block-background': '#242424',
+  '--preview-code-block-copy-button-background': '#242424',
   '--preview-code-block-border': 'transparent',
   '--preview-code-block-copy-icon-foreground': '#fff',
   '--preview-code-block-foreground': '#fff',
