@@ -667,7 +667,7 @@
   outline-offset: var(--preview-expander-focus-ring-offset, -2px);
 }
 
-.preview-content details > summary + div {
+.preview-content details > .preview-expander-content {
   padding: var(--preview-expander-content-padding, 12px 14px);
   background: var(
     --preview-expander-content-background,
@@ -676,11 +676,11 @@
   color: var(--preview-expander-content-foreground, var(--preview-foreground));
 }
 
-.preview-content details > summary + div > :first-child {
+.preview-content details > .preview-expander-content > :first-child {
   margin-top: 0;
 }
 
-.preview-content details > summary + div > :last-child {
+.preview-content details > .preview-expander-content > :last-child {
   margin-bottom: 0;
 }
 

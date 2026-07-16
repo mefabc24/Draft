@@ -1,4 +1,5 @@
 import {
+  Children,
   createContext,
   isValidElement,
   useContext,
@@ -49,6 +50,9 @@ type PreviewCodeBlockProps = ComponentPropsWithoutRef<'pre'> & {
   sourceLine?: number
 }
 type PreviewBlockquoteProps = ComponentPropsWithoutRef<'blockquote'> & {
+  sourceLine?: number
+}
+type PreviewDetailsProps = ComponentPropsWithoutRef<'details'> & {
   sourceLine?: number
 }
 
@@ -596,7 +600,31 @@ function PreviewUnorderedList({
   )
 }
 
+function PreviewDetails({
+  children,
+  sourceLine,
+  ...props
+}: PreviewDetailsProps) {
+  const childNodes = Children.toArray(children)
+  const summaryIndex = childNodes.findIndex(
+    (child) => isValidElement(child) && child.type === 'summary',
+  )
+  const contentStartIndex = summaryIndex >= 0 ? summaryIndex + 1 : 0
+
+  return (
+    <details {...props} data-source-line={sourceLine}>
+      {childNodes.slice(0, contentStartIndex)}
+      <div className="preview-expander-content">
+        {childNodes.slice(contentStartIndex)}
+      </div>
+    </details>
+  )
+}
+
 const previewComponents: Components = {
+  details({ node, ...props }) {
+    return <PreviewDetails {...props} sourceLine={getSourceLine(node)} />
+  },
   h1({ node, ...props }) {
     return <h1 {...props} data-source-line={getSourceLine(node)} />
   },
