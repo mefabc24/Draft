@@ -594,6 +594,96 @@
   margin-bottom: 0;
 }
 
+/* Expanders */
+.preview-content details {
+  box-sizing: border-box;
+  margin: var(--preview-expander-margin, 16px 0);
+  overflow: hidden;
+  border: var(--preview-expander-border-width, 1px) solid
+    var(--preview-expander-border, currentColor);
+  border-radius: var(--preview-expander-border-radius, 8px);
+  background: var(--preview-expander-background, transparent);
+  color: var(--preview-expander-content-foreground, var(--preview-foreground));
+}
+
+.preview-content details > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--preview-expander-summary-gap, 10px);
+  padding: var(--preview-expander-summary-padding, 10px 14px);
+  border-bottom: 0 solid
+    var(
+      --preview-expander-divider,
+      var(--preview-expander-border, currentColor)
+    );
+  background: var(--preview-expander-summary-background, transparent);
+  color: var(--preview-expander-summary-foreground, var(--preview-foreground));
+  cursor: pointer;
+  font-weight: var(--preview-expander-summary-font-weight, 600);
+  list-style: none;
+  user-select: none;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.preview-content details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.preview-content details > summary::before {
+  content: '';
+  flex: 0 0 auto;
+  width: var(--preview-expander-marker-size, 10px);
+  height: var(--preview-expander-marker-size, 10px);
+  background: var(--preview-expander-marker-foreground, currentColor);
+  clip-path: polygon(15% 0, 85% 50%, 15% 100%);
+  transform-origin: center;
+  transition: transform 140ms ease;
+}
+
+.preview-content details[open] > summary {
+  border-bottom-width: var(--preview-expander-divider-width, 1px);
+}
+
+.preview-content details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.preview-content details > summary:hover {
+  background: var(
+    --preview-expander-summary-hover-background,
+    var(--preview-expander-summary-background, transparent)
+  );
+  color: var(
+    --preview-expander-summary-hover-foreground,
+    var(--preview-expander-summary-foreground, var(--preview-foreground))
+  );
+}
+
+.preview-content details > summary:focus-visible {
+  outline: var(--preview-expander-focus-ring-width, 2px) solid
+    var(--preview-expander-focus-ring, var(--preview-link-foreground));
+  outline-offset: var(--preview-expander-focus-ring-offset, -2px);
+}
+
+.preview-content details > summary + div {
+  padding: var(--preview-expander-content-padding, 12px 14px);
+  background: var(
+    --preview-expander-content-background,
+    var(--preview-expander-background, transparent)
+  );
+  color: var(--preview-expander-content-foreground, var(--preview-foreground));
+}
+
+.preview-content details > summary + div > :first-child {
+  margin-top: 0;
+}
+
+.preview-content details > summary + div > :last-child {
+  margin-bottom: 0;
+}
+
 /* Tables */
 .preview-content table {
   width: var(--preview-table-width, 100%);

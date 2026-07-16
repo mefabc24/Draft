@@ -106,6 +106,19 @@ const draftDarkPreviewColorVariables = {
   // true colors bold callout text with the callout color. false keeps normal text color.
   '--preview-blockquote-bold-uses-callout-color': 'true',
 
+  // Expanders
+  '--preview-expander-background': '#111827',
+  '--preview-expander-border': '#374151',
+  '--preview-expander-summary-background': '#1f2937',
+  '--preview-expander-summary-foreground': '#f9fafb',
+  '--preview-expander-summary-hover-background': '#2b3646',
+  '--preview-expander-summary-hover-foreground': '#fff',
+  '--preview-expander-marker-foreground': draftDarkTokens.accentBlue,
+  '--preview-expander-content-background': '#111827',
+  '--preview-expander-content-foreground': '#d1d5db',
+  '--preview-expander-divider': '#374151',
+  '--preview-expander-focus-ring': draftDarkTokens.accentBlue,
+
   // Tables
   '--preview-table-border': '#374151',
   '--preview-table-cell-background': '#111827',
@@ -258,6 +271,20 @@ const draftDarkPreviewLayoutVariables = {
   '--preview-blockquote-icon-position': 'left',
   '--preview-blockquote-icon-size': '44px',
   '--preview-blockquote-padding': '8px 8px 8px 16px',
+
+  // Expander layout
+  // Border, marker, and divider values accept CSS lengths; margin and padding use CSS shorthand.
+  '--preview-expander-border-radius': '8px',
+  '--preview-expander-border-width': '1px',
+  '--preview-expander-margin': '16px 0',
+  '--preview-expander-summary-padding': '10px 14px',
+  '--preview-expander-summary-gap': '10px',
+  '--preview-expander-summary-font-weight': '600',
+  '--preview-expander-marker-size': '10px',
+  '--preview-expander-content-padding': '12px 14px',
+  '--preview-expander-divider-width': '1px',
+  '--preview-expander-focus-ring-width': '2px',
+  '--preview-expander-focus-ring-offset': '-2px',
 
   // Tables
   // Border width 0 removes that line. Use row, column, header, and outer widths to shape the grid.

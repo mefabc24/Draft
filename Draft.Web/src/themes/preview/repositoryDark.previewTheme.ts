@@ -106,6 +106,19 @@ const repositoryDarkPreviewColorVariables = {
   // true colors bold callout text with the callout color. false keeps normal text color.
   '--preview-blockquote-bold-uses-callout-color': 'true',
 
+  // Expanders
+  '--preview-expander-background': '#161B22',
+  '--preview-expander-border': '#3D444D',
+  '--preview-expander-summary-background': '#1C1C1C',
+  '--preview-expander-summary-foreground': '#fff',
+  '--preview-expander-summary-hover-background': '#242424',
+  '--preview-expander-summary-hover-foreground': '#fff',
+  '--preview-expander-marker-foreground': '#3D93F8',
+  '--preview-expander-content-background': '#161B22',
+  '--preview-expander-content-foreground': '#fff',
+  '--preview-expander-divider': '#3D444D',
+  '--preview-expander-focus-ring': '#3D93F8',
+
   // Tables
   '--preview-table-border': 'transparent',
   '--preview-table-cell-background': 'transparent',
@@ -258,6 +271,20 @@ const repositoryDarkPreviewLayoutVariables = {
   '--preview-blockquote-icon-position': 'left',
   '--preview-blockquote-icon-size': '44px',
   '--preview-blockquote-padding': '8px 16px',
+
+  // Expander layout
+  // Border, marker, and divider values accept CSS lengths; margin and padding use CSS shorthand.
+  '--preview-expander-border-radius': '0',
+  '--preview-expander-border-width': '1px',
+  '--preview-expander-margin': '16px 0',
+  '--preview-expander-summary-padding': '8px 12px',
+  '--preview-expander-summary-gap': '8px',
+  '--preview-expander-summary-font-weight': '600',
+  '--preview-expander-marker-size': '9px',
+  '--preview-expander-content-padding': '10px 12px',
+  '--preview-expander-divider-width': '1px',
+  '--preview-expander-focus-ring-width': '2px',
+  '--preview-expander-focus-ring-offset': '-2px',
 
   // Tables
   // Border width 0 removes that line. Use row, column, header, and outer widths to shape the grid.

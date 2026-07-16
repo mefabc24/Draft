@@ -106,6 +106,19 @@ const theHubPreviewColorVariables = {
   // true colors bold callout text with the callout color. false keeps normal text color.
   '--preview-blockquote-bold-uses-callout-color': 'true',
 
+  // Expanders
+  '--preview-expander-background': '#000',
+  '--preview-expander-border': draftDarkTokens.theHubAccent,
+  '--preview-expander-summary-background': draftDarkTokens.theHubAccent,
+  '--preview-expander-summary-foreground': '#000',
+  '--preview-expander-summary-hover-background': '#FFAA3D',
+  '--preview-expander-summary-hover-foreground': '#000',
+  '--preview-expander-marker-foreground': '#000',
+  '--preview-expander-content-background': '#000',
+  '--preview-expander-content-foreground': '#fff',
+  '--preview-expander-divider': draftDarkTokens.theHubAccent,
+  '--preview-expander-focus-ring': '#fff',
+
   // Tables
   '--preview-table-border': 'blue',
   '--preview-table-cell-background': 'transparent',
@@ -258,6 +271,20 @@ const theHubPreviewLayoutVariables = {
   '--preview-blockquote-icon-position': 'left',
   '--preview-blockquote-icon-size': '44px',
   '--preview-blockquote-padding': '8px 16px',
+
+  // Expander layout
+  // Border, marker, and divider values accept CSS lengths; margin and padding use CSS shorthand.
+  '--preview-expander-border-radius': '8px',
+  '--preview-expander-border-width': '2px',
+  '--preview-expander-margin': '16px 0',
+  '--preview-expander-summary-padding': '10px 12px',
+  '--preview-expander-summary-gap': '10px',
+  '--preview-expander-summary-font-weight': '700',
+  '--preview-expander-marker-size': '10px',
+  '--preview-expander-content-padding': '12px',
+  '--preview-expander-divider-width': '2px',
+  '--preview-expander-focus-ring-width': '2px',
+  '--preview-expander-focus-ring-offset': '-2px',
 
   // Tables
   // Border width 0 removes that line. Use row, column, header, and outer widths to shape the grid.
