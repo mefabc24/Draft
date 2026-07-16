@@ -284,6 +284,13 @@
 .preview-content .preview-code-block pre {
   margin: 0;
   padding-right: 54px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.preview-content .preview-code-block pre::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .preview-content pre code {
@@ -299,6 +306,51 @@
   display: block;
   min-height: 0;
   line-height: inherit;
+}
+
+.preview-code-block-scrollbar {
+  position: absolute;
+  right: var(--preview-code-block-scrollbar-inset, 8px);
+  bottom: var(--preview-code-block-scrollbar-bottom, 4px);
+  left: var(--preview-code-block-scrollbar-inset, 8px);
+  z-index: 1;
+  height: var(--preview-code-block-scrollbar-height, 6px);
+  overflow: hidden;
+  box-sizing: border-box;
+  border-radius: var(--preview-code-block-scrollbar-border-radius, 999px);
+  background: var(
+    --preview-code-block-scrollbar-track,
+    var(--preview-scrollbar-track)
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.preview-code-block-scrollbar[data-scrollable='false'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preview-code-block:hover
+  .preview-code-block-scrollbar[data-scrollable='true'],
+.preview-code-block-scrollbar[data-dragging='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.preview-code-block-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  border-radius: inherit;
+  background: var(
+    --preview-code-block-scrollbar-thumb,
+    var(--preview-scrollbar-thumb)
+  );
+  touch-action: none;
 }
 
 .preview-code-block-copy-button {

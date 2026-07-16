@@ -83,6 +83,8 @@ const assistantLightPreviewColorVariables = {
   '--preview-code-block-border': 'transparent',
   '--preview-code-block-copy-icon-foreground': '#000000',
   '--preview-code-block-foreground': '#000000',
+  '--preview-code-block-scrollbar-thumb': '#C1C1C1',
+  '--preview-code-block-scrollbar-track': 'transparent',
 
   // Blockquote colors
   '--preview-blockquote-default-color': '#6B7280',

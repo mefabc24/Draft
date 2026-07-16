@@ -40,6 +40,8 @@ import {
   scrollToPreviewAnchor,
 } from '../anchors/scrollToPreviewAnchor'
 import { useTranslation } from '../../localization/useTranslation'
+import { usePreviewCodeBlockScrollbar } from '../hooks/usePreviewCodeBlockScrollbar'
+import PreviewCodeBlockScrollbar from './PreviewCodeBlockScrollbar'
 
 type PreviewMarkdownRendererProps = {
   markdown: string
@@ -389,6 +391,16 @@ function PreviewCodeBlock({
   const [copied, setCopied] = useState(false)
   const resetCopiedTimeoutRef = useRef(0)
   const codeText = getTextFromReactNode(children)
+  const codeBlockScrollRef = useRef<HTMLPreElement | null>(null)
+  const {
+    scrollbarRef,
+    thumbRef,
+    handleTrackPointerDown,
+    handleThumbPointerDown,
+    handleThumbPointerMove,
+    handleThumbPointerUp,
+    handleThumbPointerCancel,
+  } = usePreviewCodeBlockScrollbar(codeBlockScrollRef, codeText)
 
   useEffect(() => {
     return () => {
@@ -423,7 +435,9 @@ function PreviewCodeBlock({
 
   return (
     <div className="preview-code-block" data-source-line={sourceLine}>
-      <pre {...props}>{children}</pre>
+      <pre {...props} ref={codeBlockScrollRef}>
+        {children}
+      </pre>
       <button
         type="button"
         className={`preview-code-block-copy-button${copied ? ' is-copied' : ''}`}
@@ -459,6 +473,15 @@ function PreviewCodeBlock({
           <path d="M3.6 8.4 6.7 11.4 12.6 4.8" />
         </svg>
       </button>
+      <PreviewCodeBlockScrollbar
+        scrollbarRef={scrollbarRef}
+        thumbRef={thumbRef}
+        onTrackPointerDown={handleTrackPointerDown}
+        onThumbPointerDown={handleThumbPointerDown}
+        onThumbPointerMove={handleThumbPointerMove}
+        onThumbPointerUp={handleThumbPointerUp}
+        onThumbPointerCancel={handleThumbPointerCancel}
+      />
     </div>
   )
 }

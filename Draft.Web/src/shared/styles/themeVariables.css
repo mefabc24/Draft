@@ -163,6 +163,12 @@
   --preview-code-block-foreground: #e5e7eb;
   --preview-code-block-line-height: 1.55;
   --preview-code-block-padding: 14px;
+  --preview-code-block-scrollbar-border-radius: 999px;
+  --preview-code-block-scrollbar-bottom: 4px;
+  --preview-code-block-scrollbar-height: 6px;
+  --preview-code-block-scrollbar-inset: 8px;
+  --preview-code-block-scrollbar-thumb: #353535;
+  --preview-code-block-scrollbar-track: transparent;
 
   --preview-blockquote-default-color: #79a986;
   --preview-blockquote-note-color: #a5c8ff;

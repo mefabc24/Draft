@@ -1027,6 +1027,7 @@ body {
 }
 
 .draft-export-preview .preview-code-block-copy-button,
+.draft-export-preview .preview-code-block-scrollbar,
 .draft-export-preview .preview-scrollbar {
   display: none !important;
 }
@@ -1077,6 +1078,7 @@ body {
 function removeExportOnlyUi(previewContent: HTMLElement) {
   const exportOnlyUiSelector = [
     '.preview-code-block-copy-button',
+    '.preview-code-block-scrollbar',
     '.preview-scrollbar',
     '[data-preview-edit-menu]',
   ].join(', ')

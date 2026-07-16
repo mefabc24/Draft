@@ -85,6 +85,8 @@ const draftDarkPreviewColorVariables = {
   '--preview-code-block-border': '#2f3545',
   '--preview-code-block-copy-icon-foreground': '#e5e7eb',
   '--preview-code-block-foreground': '#e5e7eb',
+  '--preview-code-block-scrollbar-thumb': draftDarkTokens.scrollbarThumb,
+  '--preview-code-block-scrollbar-track': 'transparent',
 
   // Blockquote colors
   '--preview-blockquote-default-color': draftDarkTokens.accentGreen,
@@ -262,6 +264,10 @@ const draftDarkPreviewLayoutVariables = {
   '--preview-code-block-border-width': '1px',
   '--preview-code-block-copy-button-border-radius': '8px',
   '--preview-code-block-padding': '14px',
+  '--preview-code-block-scrollbar-border-radius': '999px',
+  '--preview-code-block-scrollbar-bottom': '4px',
+  '--preview-code-block-scrollbar-height': '6px',
+  '--preview-code-block-scrollbar-inset': '8px',
 
   // Blockquote layout
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.

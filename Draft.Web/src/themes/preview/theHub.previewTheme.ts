@@ -85,6 +85,8 @@ const theHubPreviewColorVariables = {
   '--preview-code-block-border': 'transparent',
   '--preview-code-block-copy-icon-foreground': '#000',
   '--preview-code-block-foreground': '#000',
+  '--preview-code-block-scrollbar-thumb': draftDarkTokens.scrollbarThumb,
+  '--preview-code-block-scrollbar-track': 'transparent',
 
   // Blockquote colors
   '--preview-blockquote-default-color': draftDarkTokens.theHubAccent,
@@ -262,6 +264,10 @@ const theHubPreviewLayoutVariables = {
   '--preview-code-block-border-width': '0',
   '--preview-code-block-copy-button-border-radius': '6px',
   '--preview-code-block-padding': '14px',
+  '--preview-code-block-scrollbar-border-radius': '999px',
+  '--preview-code-block-scrollbar-bottom': '4px',
+  '--preview-code-block-scrollbar-height': '6px',
+  '--preview-code-block-scrollbar-inset': '8px',
 
   // Blockquote layout
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.
