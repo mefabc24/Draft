@@ -55,10 +55,12 @@ const assistantDarkPreviewColorVariables = {
   '--preview-inline-code-background': '#242424',
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#f9fafb',
-  '--preview-kbd-background': '#1a1a1a',
-  '--preview-kbd-foreground': '#fff',
-  '--preview-kbd-border': '#3f3f3f',
-  '--preview-kbd-border-bottom': '#6b6b6b',
+
+  // Keyboard keys
+  '--preview-keyboard-key-background': '#1a1a1a',
+  '--preview-keyboard-key-foreground': '#fff',
+  '--preview-keyboard-key-border': '#3f3f3f',
+  '--preview-keyboard-key-border-bottom': '#6b6b6b',
 
   // Draft inline extensions
   '--preview-highlight-background': 'rgba(51, 156, 255, 0.26)',
@@ -210,14 +212,17 @@ const assistantDarkPreviewLayoutVariables = {
   '--preview-inline-code-border-radius': '6px',
   '--preview-inline-code-border-width': '0',
   '--preview-inline-code-padding': '2px 6px',
-  '--preview-kbd-border-radius': '5px',
-  '--preview-kbd-border-width': '1px',
-  '--preview-kbd-border-bottom-width': '2px',
-  '--preview-kbd-min-width': '1.65em',
-  '--preview-kbd-padding': '1px 6px 2px',
-  '--preview-kbd-margin': '0 0.08em',
-  '--preview-kbd-line-height': '1.25',
-  '--preview-kbd-vertical-align': '0.08em',
+
+  // Keyboard keys
+  // Border width 0 removes the border. Radius, spacing, and dimensions accept CSS lengths.
+  '--preview-keyboard-key-border-radius': '5px',
+  '--preview-keyboard-key-border-width': '1px',
+  '--preview-keyboard-key-border-bottom-width': '2px',
+  '--preview-keyboard-key-min-width': '1.65em',
+  '--preview-keyboard-key-padding': '1px 6px 2px',
+  '--preview-keyboard-key-margin': '0 0.08em',
+  '--preview-keyboard-key-line-height': '1.25',
+  '--preview-keyboard-key-vertical-align': '0.08em',
 
   // Draft inline extensions
   // Padding inline/block controls how far the highlight or pill extends beyond text.
@@ -307,12 +312,14 @@ const assistantDarkPreviewLayoutVariables = {
 // Typography tokens: font stacks used inside rendered markdown.
 const assistantDarkPreviewTypographyVariables = {
   // Code
-  // CSS font-family stack used by inline code, keyboard input, and code blocks.
+  // CSS font-family stack used by inline code and code blocks.
   '--font-mono':
     "'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace",
-  '--preview-kbd-font-family': 'var(--font-mono)',
-  '--preview-kbd-font-size': '0.78em',
-  '--preview-kbd-font-weight': '600',
+
+  // Keyboard keys
+  '--preview-keyboard-key-font-family': 'var(--font-mono)',
+  '--preview-keyboard-key-font-size': '0.78em',
+  '--preview-keyboard-key-font-weight': '600',
 
   // Markdown body
   // CSS font-family stack used by normal markdown text.

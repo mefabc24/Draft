@@ -54,10 +54,12 @@ const assistantLightPreviewColorVariables = {
   '--preview-inline-code-background': '#F3F4F6',
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#000000',
-  '--preview-kbd-background': '#F3F4F6',
-  '--preview-kbd-foreground': '#000000',
-  '--preview-kbd-border': '#B3B3B3',
-  '--preview-kbd-border-bottom': '#767676',
+
+  // Keyboard keys
+  '--preview-keyboard-key-background': '#F3F4F6',
+  '--preview-keyboard-key-foreground': '#000000',
+  '--preview-keyboard-key-border': '#B3B3B3',
+  '--preview-keyboard-key-border-bottom': '#767676',
 
   // Draft inline extensions
   '--preview-highlight-background': 'rgba(0, 103, 192, 0.16)',

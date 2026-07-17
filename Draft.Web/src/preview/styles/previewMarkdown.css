@@ -163,28 +163,28 @@
   font-family: var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace);
 }
 
-/* Keyboard input */
+/* Keyboard keys */
 .preview-content kbd {
   box-sizing: border-box;
   display: inline-flex;
-  min-width: var(--preview-kbd-min-width, 1.65em);
+  min-width: var(--preview-keyboard-key-min-width);
   align-items: center;
   justify-content: center;
-  margin: var(--preview-kbd-margin, 0 0.08em);
-  padding: var(--preview-kbd-padding, 1px 6px 2px);
-  border: var(--preview-kbd-border-width, 1px) solid var(--preview-kbd-border, var(--preview-inline-code-border));
-  border-bottom-color: var(--preview-kbd-border-bottom, var(--preview-kbd-border, var(--preview-inline-code-border)));
-  border-bottom-width: var(--preview-kbd-border-bottom-width, 2px);
-  border-radius: var(--preview-kbd-border-radius, 5px);
-  background: var(--preview-kbd-background, var(--preview-inline-code-background));
-  color: var(--preview-kbd-foreground, var(--preview-inline-code-foreground));
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--preview-kbd-foreground, currentColor) 12%, transparent);
-  font-family: var(--preview-kbd-font-family, var(--font-mono, 'JetBrains Mono', Consolas, 'Cascadia Code', 'Cascadia Mono', 'Courier New', monospace));
-  font-size: var(--preview-kbd-font-size, 0.82em);
-  font-weight: var(--preview-kbd-font-weight, 600);
-  line-height: var(--preview-kbd-line-height, 1.25);
+  margin: var(--preview-keyboard-key-margin);
+  padding: var(--preview-keyboard-key-padding);
+  border: var(--preview-keyboard-key-border-width) solid var(--preview-keyboard-key-border);
+  border-bottom-color: var(--preview-keyboard-key-border-bottom);
+  border-bottom-width: var(--preview-keyboard-key-border-bottom-width);
+  border-radius: var(--preview-keyboard-key-border-radius);
+  background: var(--preview-keyboard-key-background);
+  color: var(--preview-keyboard-key-foreground);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--preview-keyboard-key-foreground) 12%, transparent);
+  font-family: var(--preview-keyboard-key-font-family);
+  font-size: var(--preview-keyboard-key-font-size);
+  font-weight: var(--preview-keyboard-key-font-weight);
+  line-height: var(--preview-keyboard-key-line-height);
   white-space: nowrap;
-  vertical-align: var(--preview-kbd-vertical-align, 0.08em);
+  vertical-align: var(--preview-keyboard-key-vertical-align);
 }
 
 /* Draft inline extensions */

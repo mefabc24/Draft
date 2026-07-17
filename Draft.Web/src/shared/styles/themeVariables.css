@@ -153,6 +153,22 @@
   --preview-inline-code-foreground: #f9fafb;
   --preview-inline-code-padding: 2px 6px;
 
+  --preview-keyboard-key-background: #1f2937;
+  --preview-keyboard-key-border: #4b5563;
+  --preview-keyboard-key-border-bottom: #6b7280;
+  --preview-keyboard-key-border-bottom-width: 2px;
+  --preview-keyboard-key-border-radius: 5px;
+  --preview-keyboard-key-border-width: 1px;
+  --preview-keyboard-key-font-family: var(--font-mono);
+  --preview-keyboard-key-font-size: 0.78em;
+  --preview-keyboard-key-font-weight: 600;
+  --preview-keyboard-key-foreground: #f9fafb;
+  --preview-keyboard-key-line-height: 1.25;
+  --preview-keyboard-key-margin: 0 0.08em;
+  --preview-keyboard-key-min-width: 1.65em;
+  --preview-keyboard-key-padding: 1px 6px 2px;
+  --preview-keyboard-key-vertical-align: 0.08em;
+
   --preview-code-block-background: #111827;
   --preview-code-block-border: #2f3545;
   --preview-code-block-border-radius: 10px;
