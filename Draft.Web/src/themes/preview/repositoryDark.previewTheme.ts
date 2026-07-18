@@ -282,9 +282,13 @@ const repositoryDarkPreviewLayoutVariables = {
   '--preview-blockquote-border-width': '4px',
   // Icon position: top | topright | right | bottomright | bottom | bottomleft | left | topleft.
   '--preview-blockquote-icon-position': 'topleft',
-  '--preview-blockquote-icon-size': '44px',
+  '--preview-blockquote-icon-size': '32px',
+  // Label font size accepts CSS sizes such as 12px, 0.875em, or 1rem.
+  '--preview-blockquote-label-font-size': '1em',
+  // Label font weight: normal | bold | 100..900.
+  '--preview-blockquote-label-font-weight': '600',
   // Label text: Hidden | Uppercase | Lowercase | Capitalized.
-  '--preview-blockquote-label-text-transform': 'Hidden',
+  '--preview-blockquote-label-text-transform': 'Uppercase',
   // Label position relative to the icon: Left | Right | Top | Bottom.
   '--preview-blockquote-label-position': 'Right',
   '--preview-blockquote-padding': '8px 16px',

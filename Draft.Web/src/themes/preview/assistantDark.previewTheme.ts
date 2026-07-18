@@ -283,6 +283,10 @@ const assistantDarkPreviewLayoutVariables = {
   // Icon position: top | topright | right | bottomright | bottom | bottomleft | left | topleft.
   '--preview-blockquote-icon-position': 'left',
   '--preview-blockquote-icon-size': '44px',
+  // Label font size accepts CSS sizes such as 12px, 0.875em, or 1rem.
+  '--preview-blockquote-label-font-size': '1em',
+  // Label font weight: normal | bold | 100..900.
+  '--preview-blockquote-label-font-weight': '600',
   // Label text: Hidden | Uppercase | Lowercase | Capitalized.
   '--preview-blockquote-label-text-transform': 'Hidden',
   // Label position relative to the icon: Left | Right | Top | Bottom.

@@ -547,7 +547,6 @@
 
 .preview-content .preview-callout-visual {
   display: inline-flex;
-  align-self: center;
   justify-self: center;
   align-items: center;
   justify-content: center;
@@ -570,7 +569,8 @@
 
 .preview-content .preview-callout-label {
   color: var(--preview-current-blockquote-color);
-  font-weight: 600;
+  font-size: var(--preview-blockquote-label-font-size, 1em);
+  font-weight: var(--preview-blockquote-label-font-weight, 600);
   line-height: 1.2;
   white-space: nowrap;
 }
