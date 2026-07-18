@@ -63,10 +63,10 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-keyboard-key-border-bottom': '#8F8F9D',
 
   // Draft inline extensions
-  '--preview-highlight-background': '#E7FF5F',
+  '--preview-highlight-background': 'rgba(255, 230, 50, 0.4)',
   '--preview-highlight-foreground': '#fff',
   '--preview-spoiler-background': '#050505',
-  '--preview-spoiler-revealed-background': 'rgba(61, 147, 248, 0.12)',
+  '--preview-spoiler-revealed-background': 'rgb(208 208 208 / 0.12)',
   '--preview-spoiler-foreground': '#fff',
   '--preview-tag-default-color': '#3D93F8',
   '--preview-tag-foreground': '#fff',
@@ -228,7 +228,7 @@ const repositoryDarkPreviewLayoutVariables = {
   // Padding inline/block controls how far the highlight or pill extends beyond text.
   '--preview-highlight-border-radius': '0',
   '--preview-highlight-padding-inline': '6px',
-  '--preview-highlight-padding-block': '0',
+  '--preview-highlight-padding-block': '1px',
   '--preview-spoiler-border-radius': '4px',
   '--preview-spoiler-padding-inline': '6px',
   '--preview-spoiler-padding-block': '2px',
