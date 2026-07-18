@@ -10,6 +10,14 @@ const assistantLightPreviewColorVariables = {
   '--preview-background': '#FFFFFF',
   '--preview-foreground': '#000000',
 
+  // Basic text formatting
+  '--preview-bold-foreground': 'currentColor',
+  '--preview-italic-foreground': 'currentColor',
+  '--preview-strikethrough-foreground': 'currentColor',
+  '--preview-strikethrough-text-decoration-color': 'currentColor',
+  '--preview-underline-foreground': 'currentColor',
+  '--preview-underline-text-decoration-color': 'currentColor',
+
   // Headings: text color
   '--preview-heading-foreground': '#000000',
   '--preview-h1-foreground': '#000000',

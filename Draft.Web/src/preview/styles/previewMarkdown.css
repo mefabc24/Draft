@@ -1,8 +1,11 @@
 .preview-content {
   min-height: 100%;
-  line-height: 1.7;
+  line-height: var(--preview-line-height, 1.7);
   color: var(--preview-foreground);
   font-family: var(--font-preview, 'Manrope', 'Segoe UI', Arial, sans-serif);
+  font-size: var(--preview-font-size, 1rem);
+  font-weight: var(--preview-font-weight, 400);
+  letter-spacing: var(--preview-letter-spacing, normal);
 }
 
 .preview-source-text {
@@ -127,6 +130,35 @@
 /* Paragraphs */
 .preview-content p {
   margin: 0 0 14px;
+}
+
+/* Basic text formatting */
+.preview-content :is(strong, b) {
+  color: var(--preview-bold-foreground, inherit);
+  font-weight: var(--preview-bold-font-weight, 700);
+}
+
+.preview-content :is(em, i) {
+  color: var(--preview-italic-foreground, inherit);
+  font-style: var(--preview-italic-font-style, italic);
+}
+
+.preview-content :is(del, s, strike) {
+  color: var(--preview-strikethrough-foreground, inherit);
+  text-decoration-color: var(--preview-strikethrough-text-decoration-color, currentColor);
+  text-decoration-line: var(--preview-strikethrough-text-decoration-line, line-through);
+  text-decoration-style: var(--preview-strikethrough-text-decoration-style, solid);
+  text-decoration-thickness: var(--preview-strikethrough-text-decoration-thickness, 1px);
+}
+
+.preview-content u {
+  color: var(--preview-underline-foreground, inherit);
+  text-decoration-color: var(--preview-underline-text-decoration-color, currentColor);
+  text-decoration-line: var(--preview-underline-text-decoration-line, underline);
+  text-decoration-skip-ink: var(--preview-underline-text-decoration-skip-ink, auto);
+  text-decoration-style: var(--preview-underline-text-decoration-style, solid);
+  text-decoration-thickness: var(--preview-underline-text-decoration-thickness, 1px);
+  text-underline-offset: var(--preview-underline-text-underline-offset, 2px);
 }
 
 /* Images */

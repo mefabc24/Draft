@@ -10,6 +10,14 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-background': draftDarkTokens.chromeBackground,
   '--preview-foreground': '#fff',
 
+  // Basic text formatting
+  '--preview-bold-foreground': 'currentColor',
+  '--preview-italic-foreground': 'currentColor',
+  '--preview-strikethrough-foreground': 'currentColor',
+  '--preview-strikethrough-text-decoration-color': 'currentColor',
+  '--preview-underline-foreground': 'currentColor',
+  '--preview-underline-text-decoration-color': 'currentColor',
+
   // Headings: text color
   '--preview-heading-foreground': '#fff',
   '--preview-h1-foreground': '#fff',
@@ -91,7 +99,7 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-code-block-scrollbar-track': 'transparent',
 
   // Blockquote colors
-  '--preview-blockquote-default-color': '#8F8F9D',
+  '--preview-blockquote-default-color': '#3D444D',
   '--preview-blockquote-note-color': '#A5C8FF',
   '--preview-blockquote-info-color': '#3D93F8',
   '--preview-blockquote-tip-color': '#79A986',
@@ -141,6 +149,28 @@ const repositoryDarkPreviewColorVariables = {
 
 // Layout tokens: radii, border widths, spacing, and table grid behavior.
 const repositoryDarkPreviewLayoutVariables = {
+  // Basic text formatting
+  // Font size and letter spacing accept CSS lengths. Line height accepts a unitless number or CSS length.
+  '--preview-font-size': '1rem',
+  '--preview-font-weight': '400',
+  '--preview-line-height': '1.7',
+  '--preview-letter-spacing': 'normal',
+  // Bold font weight: normal | bold | 100..900. Italic style: normal | italic | oblique.
+  '--preview-bold-font-weight': '630',
+  '--preview-italic-font-style': 'italic',
+  // Strikethrough line: none | line-through. Style: solid | double | dotted | dashed | wavy.
+  // Thickness: auto | from-font | CSS length such as 1px or 0.12em.
+  '--preview-strikethrough-text-decoration-line': 'line-through',
+  '--preview-strikethrough-text-decoration-style': 'solid',
+  '--preview-strikethrough-text-decoration-thickness': '1px',
+  // Underline line: none | underline. Style: solid | double | dotted | dashed | wavy.
+  // Thickness and offset accept auto or a CSS length. Skip ink: auto | none.
+  '--preview-underline-text-decoration-line': 'underline',
+  '--preview-underline-text-decoration-style': 'solid',
+  '--preview-underline-text-decoration-thickness': '1px',
+  '--preview-underline-text-underline-offset': '2px',
+  '--preview-underline-text-decoration-skip-ink': 'auto',
+
   // Headings: text weight
   // font-weight: normal | bold | 100..900.
   '--preview-h1-font-weight': '600',

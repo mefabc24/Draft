@@ -50,6 +50,26 @@
 
   --preview-background: #131313;
   --preview-foreground: #d1d5db;
+  --preview-font-size: 1rem;
+  --preview-font-weight: 400;
+  --preview-line-height: 1.7;
+  --preview-letter-spacing: normal;
+  --preview-bold-foreground: currentColor;
+  --preview-bold-font-weight: 700;
+  --preview-italic-foreground: currentColor;
+  --preview-italic-font-style: italic;
+  --preview-strikethrough-foreground: currentColor;
+  --preview-strikethrough-text-decoration-color: currentColor;
+  --preview-strikethrough-text-decoration-line: line-through;
+  --preview-strikethrough-text-decoration-style: solid;
+  --preview-strikethrough-text-decoration-thickness: 1px;
+  --preview-underline-foreground: currentColor;
+  --preview-underline-text-decoration-color: currentColor;
+  --preview-underline-text-decoration-line: underline;
+  --preview-underline-text-decoration-skip-ink: auto;
+  --preview-underline-text-decoration-style: solid;
+  --preview-underline-text-decoration-thickness: 1px;
+  --preview-underline-text-underline-offset: 2px;
   --preview-heading-foreground: #a5c8ff;
   --preview-h1-foreground: #a5c8ff;
   --preview-h2-foreground: #a5c8ff;
