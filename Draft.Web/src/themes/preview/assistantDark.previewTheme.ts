@@ -280,8 +280,13 @@ const assistantDarkPreviewLayoutVariables = {
   '--preview-blockquote-border-line-radius': '2px',
   '--preview-blockquote-border-radius': '0',
   '--preview-blockquote-border-width': '4px',
+  // Icon position: top | topright | right | bottomright | bottom | bottomleft | left | topleft.
   '--preview-blockquote-icon-position': 'left',
   '--preview-blockquote-icon-size': '44px',
+  // Label text: Hidden | Uppercase | Lowercase | Capitalized.
+  '--preview-blockquote-label-text-transform': 'Hidden',
+  // Label position relative to the icon: Left | Right | Top | Bottom.
+  '--preview-blockquote-label-position': 'Right',
   '--preview-blockquote-padding': '8px 16px',
 
   // Expander layout

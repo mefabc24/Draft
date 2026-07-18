@@ -99,16 +99,27 @@ const previewCalloutIconPaths = {
   todo: 'icons/callouts/Todo.svg',
 } satisfies Record<CalloutType, string>
 const blockquoteIconPositions = [
-  'top-left',
-  'left',
-  'bottom-left',
-  'bottom',
-  'bottom-right',
-  'right',
-  'top-right',
   'top',
+  'topright',
+  'right',
+  'bottomright',
+  'bottom',
+  'bottomleft',
+  'left',
+  'topleft',
 ] as const
 const blockquoteIconPositionSet = new Set<string>(blockquoteIconPositions)
+const blockquoteLabelPositions = ['left', 'right', 'top', 'bottom'] as const
+const blockquoteLabelPositionSet = new Set<string>(blockquoteLabelPositions)
+const blockquoteLabelTextTransforms = [
+  'hidden',
+  'uppercase',
+  'lowercase',
+  'capitalized',
+] as const
+const blockquoteLabelTextTransformSet = new Set<string>(
+  blockquoteLabelTextTransforms,
+)
 
 function getSourceLine(node: SourceMappedNode | undefined) {
   const line = node?.position?.start?.line
@@ -164,12 +175,42 @@ function getCalloutTypeAttribute(props: Record<string, unknown>) {
 }
 
 function getBlockquoteIconPosition(previewTheme: DraftPreviewTheme | null) {
-  const position =
-    previewTheme?.cssVariables['--preview-blockquote-icon-position']
+  const position = previewTheme?.cssVariables[
+    '--preview-blockquote-icon-position'
+  ]
+    ?.trim()
+    .toLowerCase()
+    .replaceAll('-', '')
 
   return position && blockquoteIconPositionSet.has(position)
     ? position
     : 'left'
+}
+
+function getBlockquoteLabelPosition(previewTheme: DraftPreviewTheme | null) {
+  const position = previewTheme?.cssVariables[
+    '--preview-blockquote-label-position'
+  ]
+    ?.trim()
+    .toLowerCase()
+
+  return position && blockquoteLabelPositionSet.has(position)
+    ? position
+    : 'right'
+}
+
+function getBlockquoteLabelTextTransform(
+  previewTheme: DraftPreviewTheme | null,
+) {
+  const textTransform = previewTheme?.cssVariables[
+    '--preview-blockquote-label-text-transform'
+  ]
+    ?.trim()
+    .toLowerCase()
+
+  return textTransform && blockquoteLabelTextTransformSet.has(textTransform)
+    ? textTransform
+    : 'hidden'
 }
 
 function getBlockquoteBoldUsesCalloutColor(
@@ -508,6 +549,7 @@ function PreviewBlockquote({
   }
 
   const iconUrl = getPreviewAssetUrl(previewCalloutIconPaths[calloutType])
+  const calloutLabel = getStringAttribute(props, 'data-callout-label') ?? ''
 
   return (
     <blockquote
@@ -515,16 +557,23 @@ function PreviewBlockquote({
       className={className}
       data-callout-bold-color={getBlockquoteBoldUsesCalloutColor(previewTheme)}
       data-callout-icon-position={getBlockquoteIconPosition(previewTheme)}
+      data-callout-label-position={getBlockquoteLabelPosition(previewTheme)}
+      data-callout-label-text-transform={getBlockquoteLabelTextTransform(
+        previewTheme,
+      )}
       data-source-line={sourceLine}
     >
-      <span
-        className="preview-callout-icon"
-        aria-hidden="true"
-        style={{
-          WebkitMaskImage: `url("${iconUrl}")`,
-          maskImage: `url("${iconUrl}")`,
-        }}
-      />
+      <div className="preview-callout-visual">
+        <span
+          className="preview-callout-icon"
+          aria-hidden="true"
+          style={{
+            WebkitMaskImage: `url("${iconUrl}")`,
+            maskImage: `url("${iconUrl}")`,
+          }}
+        />
+        <span className="preview-callout-label">{calloutLabel}</span>
+      </div>
       <div className="preview-callout-body">{children}</div>
     </blockquote>
   )
