@@ -283,6 +283,10 @@ const draftDarkPreviewLayoutVariables = {
   // Icon position: top | topright | right | bottomright | bottom | bottomleft | left | topleft.
   '--preview-blockquote-icon-position': 'left',
   '--preview-blockquote-icon-size': '44px',
+  // Space between icon and label. Accepts CSS lengths such as 0, 6px, or 0.5em.
+  '--preview-blockquote-icon-label-gap': '6px',
+  // Icon visibility: Visible | Hidden. Hidden does not reserve icon space.
+  '--preview-blockquote-icon-visibility': 'Visible',
   // Label font size accepts CSS sizes such as 12px, 0.875em, or 1rem.
   '--preview-blockquote-label-font-size': '1em',
   // Label font weight: normal | bold | 100..900.

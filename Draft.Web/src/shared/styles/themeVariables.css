@@ -209,6 +209,8 @@
   --preview-blockquote-border-width: 4px;
   --preview-blockquote-icon-position: left;
   --preview-blockquote-icon-size: 48px;
+  --preview-blockquote-icon-label-gap: 6px;
+  --preview-blockquote-icon-visibility: visible;
   --preview-blockquote-label-font-size: 1em;
   --preview-blockquote-label-font-weight: 600;
   --preview-blockquote-label-position: right;

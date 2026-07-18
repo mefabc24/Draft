@@ -112,14 +112,14 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-blockquote-bold-uses-callout-color': 'true',
 
   // Expanders
-  '--preview-expander-background': '#161B22',
-  '--preview-expander-border': '#3D444D',
-  '--preview-expander-summary-background': '#1C1C1C',
+  '--preview-expander-background': 'transparent',
+  '--preview-expander-border': 'transparent',
+  '--preview-expander-summary-background': 'transparent',
   '--preview-expander-summary-foreground': '#fff',
   '--preview-expander-summary-hover-background': '#242424',
   '--preview-expander-summary-hover-foreground': '#fff',
-  '--preview-expander-marker-foreground': '#3D93F8',
-  '--preview-expander-content-background': '#161B22',
+  '--preview-expander-marker-foreground': '#fff',
+  '--preview-expander-content-background': 'transparent',
   '--preview-expander-content-foreground': '#fff',
   '--preview-expander-divider': '#3D444D',
   '--preview-expander-focus-ring': '#3D93F8',
@@ -283,12 +283,16 @@ const repositoryDarkPreviewLayoutVariables = {
   // Icon position: top | topright | right | bottomright | bottom | bottomleft | left | topleft.
   '--preview-blockquote-icon-position': 'topleft',
   '--preview-blockquote-icon-size': '32px',
+  // Space between icon and label. Accepts CSS lengths such as 0, 6px, or 0.5em.
+  '--preview-blockquote-icon-label-gap': '2px',
+  // Icon visibility: Visible | Hidden. Hidden does not reserve icon space.
+  '--preview-blockquote-icon-visibility': 'Visible',
   // Label font size accepts CSS sizes such as 12px, 0.875em, or 1rem.
-  '--preview-blockquote-label-font-size': '1em',
+  '--preview-blockquote-label-font-size': '0.9em',
   // Label font weight: normal | bold | 100..900.
-  '--preview-blockquote-label-font-weight': '600',
+  '--preview-blockquote-label-font-weight': '400',
   // Label text: Hidden | Uppercase | Lowercase | Capitalized.
-  '--preview-blockquote-label-text-transform': 'Uppercase',
+  '--preview-blockquote-label-text-transform': 'Capitalized',
   // Label position relative to the icon: Left | Right | Top | Bottom.
   '--preview-blockquote-label-position': 'Right',
   '--preview-blockquote-padding': '8px 16px',
@@ -296,14 +300,14 @@ const repositoryDarkPreviewLayoutVariables = {
   // Expander layout
   // Border, marker, and divider values accept CSS lengths; margin and padding use CSS shorthand.
   '--preview-expander-border-radius': '0',
-  '--preview-expander-border-width': '1px',
+  '--preview-expander-border-width': '0',
   '--preview-expander-margin': '16px 0',
   '--preview-expander-summary-padding': '8px 12px',
   '--preview-expander-summary-gap': '8px',
   '--preview-expander-summary-font-weight': '600',
   '--preview-expander-marker-size': '9px',
   '--preview-expander-content-padding': '10px 12px',
-  '--preview-expander-divider-width': '1px',
+  '--preview-expander-divider-width': '0',
   '--preview-expander-focus-ring-width': '2px',
   '--preview-expander-focus-ring-offset': '-2px',
 

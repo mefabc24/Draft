@@ -109,6 +109,10 @@ const blockquoteIconPositions = [
   'topleft',
 ] as const
 const blockquoteIconPositionSet = new Set<string>(blockquoteIconPositions)
+const blockquoteIconVisibilities = ['visible', 'hidden'] as const
+const blockquoteIconVisibilitySet = new Set<string>(
+  blockquoteIconVisibilities,
+)
 const blockquoteLabelPositions = ['left', 'right', 'top', 'bottom'] as const
 const blockquoteLabelPositionSet = new Set<string>(blockquoteLabelPositions)
 const blockquoteLabelTextTransforms = [
@@ -185,6 +189,18 @@ function getBlockquoteIconPosition(previewTheme: DraftPreviewTheme | null) {
   return position && blockquoteIconPositionSet.has(position)
     ? position
     : 'left'
+}
+
+function getBlockquoteIconVisibility(previewTheme: DraftPreviewTheme | null) {
+  const visibility = previewTheme?.cssVariables[
+    '--preview-blockquote-icon-visibility'
+  ]
+    ?.trim()
+    .toLowerCase()
+
+  return visibility && blockquoteIconVisibilitySet.has(visibility)
+    ? visibility
+    : 'visible'
 }
 
 function getBlockquoteLabelPosition(previewTheme: DraftPreviewTheme | null) {
@@ -557,6 +573,7 @@ function PreviewBlockquote({
       className={className}
       data-callout-bold-color={getBlockquoteBoldUsesCalloutColor(previewTheme)}
       data-callout-icon-position={getBlockquoteIconPosition(previewTheme)}
+      data-callout-icon-visibility={getBlockquoteIconVisibility(previewTheme)}
       data-callout-label-position={getBlockquoteLabelPosition(previewTheme)}
       data-callout-label-text-transform={getBlockquoteLabelTextTransform(
         previewTheme,
