@@ -106,7 +106,7 @@ const assistantDarkPreviewColorVariables = {
   '--preview-blockquote-con-color': '#E25E5E',
   '--preview-blockquote-question-color': '#8AE9F8',
   '--preview-blockquote-todo-color': '#ACABAA',
-  // background-opacity is a decimal alpha used to tint the blockquote color.
+  // Decimal alpha used to tint the blockquote color. 0 disables the background.
   '--preview-blockquote-background-opacity': '0.1',
   // true colors bold callout text with the callout color. false keeps normal text color.
   '--preview-blockquote-bold-uses-callout-color': 'true',

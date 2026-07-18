@@ -17,7 +17,7 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-h3-foreground': '#fff',
   '--preview-h4-foreground': '#fff',
   '--preview-h5-foreground': '#fff',
-  '--preview-h6-foreground': '#fff',
+  '--preview-h6-foreground': '#aaa',
 
   // Headings: background color
   // Use transparent to disable the background. Values accept any CSS color.
@@ -63,7 +63,7 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-keyboard-key-border-bottom': '#8F8F9D',
 
   // Draft inline extensions
-  '--preview-highlight-background': 'rgba(61, 147, 248, 0.24)',
+  '--preview-highlight-background': '#E7FF5F',
   '--preview-highlight-foreground': '#fff',
   '--preview-spoiler-background': '#050505',
   '--preview-spoiler-revealed-background': 'rgba(61, 147, 248, 0.12)',
@@ -106,8 +106,8 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-blockquote-con-color': '#E25E5E',
   '--preview-blockquote-question-color': '#8AE9F8',
   '--preview-blockquote-todo-color': '#ACABAA',
-  // background-opacity is a decimal alpha used to tint the blockquote color.
-  '--preview-blockquote-background-opacity': '0.1',
+  // Decimal alpha used to tint the blockquote color. 0 disables the background.
+  '--preview-blockquote-background-opacity': '0',
   // true colors bold callout text with the callout color. false keeps normal text color.
   '--preview-blockquote-bold-uses-callout-color': 'true',
 
@@ -226,9 +226,9 @@ const repositoryDarkPreviewLayoutVariables = {
 
   // Draft inline extensions
   // Padding inline/block controls how far the highlight or pill extends beyond text.
-  '--preview-highlight-border-radius': '4px',
+  '--preview-highlight-border-radius': '0',
   '--preview-highlight-padding-inline': '6px',
-  '--preview-highlight-padding-block': '2px',
+  '--preview-highlight-padding-block': '0',
   '--preview-spoiler-border-radius': '4px',
   '--preview-spoiler-padding-inline': '6px',
   '--preview-spoiler-padding-block': '2px',
