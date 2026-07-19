@@ -76,7 +76,8 @@ const assistantLightPreviewColorVariables = {
   '--preview-spoiler-revealed-background': 'rgba(0, 0, 0, 0.06)',
   '--preview-spoiler-foreground': '#000000',
   '--preview-tag-default-color': '#0067C0',
-  '--preview-tag-foreground': '#000000',
+  // Tag text automatically uses the default or per-tag badge color.
+  '--preview-tag-text-decoration-color': 'currentColor',
   '--preview-tag-background-opacity': '12%',
 
   // Task list checkboxes

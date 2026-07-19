@@ -189,6 +189,29 @@
   --preview-keyboard-key-padding: 1px 6px 2px;
   --preview-keyboard-key-vertical-align: 0.08em;
 
+  --preview-tag-default-color: #a5c8ff;
+  --preview-tag-background-opacity: 18%;
+  --preview-tag-border-radius: 999px;
+  --preview-tag-border-width: 1px;
+  --preview-tag-padding-block: 2px;
+  --preview-tag-padding-inline: 8px;
+  --preview-tag-font-family: var(--font-preview);
+  --preview-tag-font-size: 0.78em;
+  --preview-tag-font-style: normal;
+  --preview-tag-font-weight: 700;
+  --preview-tag-letter-spacing: normal;
+  --preview-tag-line-height: 1.2;
+  --preview-tag-text-decoration-color: currentColor;
+  --preview-tag-text-decoration-line: none;
+  --preview-tag-text-decoration-skip-ink: auto;
+  --preview-tag-text-decoration-style: solid;
+  --preview-tag-text-decoration-thickness: auto;
+  --preview-tag-text-transform: none;
+  --preview-tag-text-underline-offset: auto;
+  --preview-tag-vertical-align: 0.08em;
+  --preview-tag-white-space: nowrap;
+  --preview-tag-word-spacing: normal;
+
   --preview-code-block-background: #111827;
   --preview-code-block-border: #2f3545;
   --preview-code-block-border-radius: 10px;

@@ -280,13 +280,23 @@
     var(--preview-current-tag-color) var(--preview-tag-background-opacity, var(--preview-badge-background-opacity, 18%)),
     transparent
   );
-  color: var(--preview-tag-foreground, var(--preview-badge-foreground, currentColor));
+  color: var(--preview-current-tag-color);
   font-family: var(--preview-tag-font-family, var(--preview-badge-font-family, var(--font-preview, 'Manrope', 'Segoe UI', Arial, sans-serif)));
   font-size: var(--preview-tag-font-size, var(--preview-badge-font-size, 0.78em));
+  font-style: var(--preview-tag-font-style, normal);
   font-weight: var(--preview-tag-font-weight, var(--preview-badge-font-weight, 700));
-  line-height: 1.2;
-  vertical-align: 0.08em;
-  white-space: nowrap;
+  letter-spacing: var(--preview-tag-letter-spacing, normal);
+  line-height: var(--preview-tag-line-height, 1.2);
+  text-decoration-color: var(--preview-tag-text-decoration-color, currentColor);
+  text-decoration-line: var(--preview-tag-text-decoration-line, none);
+  text-decoration-skip-ink: var(--preview-tag-text-decoration-skip-ink, auto);
+  text-decoration-style: var(--preview-tag-text-decoration-style, solid);
+  text-decoration-thickness: var(--preview-tag-text-decoration-thickness, auto);
+  text-transform: var(--preview-tag-text-transform, none);
+  text-underline-offset: var(--preview-tag-text-underline-offset, auto);
+  vertical-align: var(--preview-tag-vertical-align, 0.08em);
+  white-space: var(--preview-tag-white-space, nowrap);
+  word-spacing: var(--preview-tag-word-spacing, normal);
 }
 
 /* Code blocks */

@@ -77,7 +77,8 @@ const repositoryDarkPreviewColorVariables = {
   '--preview-spoiler-revealed-background': 'rgb(208 208 208 / 0.12)',
   '--preview-spoiler-foreground': '#fff',
   '--preview-tag-default-color': '#3D93F8',
-  '--preview-tag-foreground': '#fff',
+  // Tag text automatically uses the default or per-tag badge color.
+  '--preview-tag-text-decoration-color': 'currentColor',
   '--preview-tag-background-opacity': '18%',
 
   // Task list checkboxes
@@ -262,7 +263,7 @@ const repositoryDarkPreviewLayoutVariables = {
   '--preview-spoiler-border-radius': '4px',
   '--preview-spoiler-padding-inline': '6px',
   '--preview-spoiler-padding-block': '2px',
-  '--preview-tag-border-radius': '999px',
+  '--preview-tag-border-radius': '4px',
   '--preview-tag-border-width': '1px',
   '--preview-tag-padding-inline': '8px',
   '--preview-tag-padding-block': '2px',
@@ -368,11 +369,31 @@ const repositoryDarkPreviewTypographyVariables = {
   // CSS font-family stack used by normal markdown text.
   '--font-preview': "'Segoe UI', Arial, sans-serif",
 
-  // Tags
-  // CSS font values used by Draft tag pills.
+  // Tags: text
+  // Font family accepts a CSS font stack. Size, letter spacing, and word spacing accept CSS lengths.
   '--preview-tag-font-family': 'var(--font-preview)',
-  '--preview-tag-font-weight': '700',
   '--preview-tag-font-size': '0.78em',
+  // Font style: normal | italic | oblique. Font weight: normal | bold | 100..900.
+  '--preview-tag-font-style': 'normal',
+  '--preview-tag-font-weight': '600',
+  '--preview-tag-letter-spacing': 'normal',
+  // Line height accepts a unitless number or CSS length. Word spacing: normal | CSS length.
+  '--preview-tag-line-height': '1.2',
+  '--preview-tag-word-spacing': 'normal',
+  // Text transform: none | uppercase | lowercase | capitalize.
+  '--preview-tag-text-transform': 'none',
+  // Decoration line: none | underline | overline | line-through.
+  // Style: solid | double | dotted | dashed | wavy. Thickness: auto | from-font | CSS length.
+  '--preview-tag-text-decoration-line': 'none',
+  '--preview-tag-text-decoration-style': 'solid',
+  '--preview-tag-text-decoration-thickness': 'auto',
+  // Underline offset: auto | CSS length. Skip ink: auto | none.
+  '--preview-tag-text-underline-offset': 'auto',
+  '--preview-tag-text-decoration-skip-ink': 'auto',
+  // Vertical align: baseline | middle | text-top | text-bottom | CSS length.
+  // White space: normal | nowrap | pre | pre-wrap | break-spaces.
+  '--preview-tag-vertical-align': '0.08em',
+  '--preview-tag-white-space': 'nowrap',
 } satisfies PreviewThemeVariables
 
 export const repositoryDarkPreviewTheme: DraftPreviewTheme = {
