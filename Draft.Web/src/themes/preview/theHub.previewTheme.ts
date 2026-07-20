@@ -116,7 +116,7 @@ const theHubPreviewColorVariables = {
   '--preview-blockquote-question-color': '#8AE9F8',
   '--preview-blockquote-todo-color': '#ACABAA',
   // Decimal alpha used to tint the blockquote color. 0 disables the background.
-  '--preview-blockquote-background-opacity': '0.1',
+  '--preview-blockquote-background-opacity': '0.2',
   // true colors bold callout text with the callout color. false keeps normal text color.
   '--preview-blockquote-bold-uses-callout-color': 'true',
 
@@ -375,7 +375,7 @@ const theHubPreviewTypographyVariables = {
   '--preview-tag-font-size': '0.78em',
   // Font style: normal | italic | oblique. Font weight: normal | bold | 100..900.
   '--preview-tag-font-style': 'normal',
-  '--preview-tag-font-weight': '700',
+  '--preview-tag-font-weight': '600',
   '--preview-tag-letter-spacing': 'normal',
   // Line height accepts a unitless number or CSS length. Word spacing: normal | CSS length.
   '--preview-tag-line-height': '1.2',
