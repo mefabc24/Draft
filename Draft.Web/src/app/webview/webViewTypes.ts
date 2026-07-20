@@ -20,7 +20,7 @@ export type DraftPreviewExportOptions = {
 }
 
 export type DraftExportApi = {
-  createPreviewHtml: (options?: DraftPreviewExportOptions) => string
+  createPreviewHtml: (options?: DraftPreviewExportOptions) => Promise<string>
 }
 
 declare global {

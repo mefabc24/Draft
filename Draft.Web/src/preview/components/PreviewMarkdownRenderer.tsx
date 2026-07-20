@@ -44,6 +44,7 @@ import { usePreviewCodeBlockScrollbar } from '../hooks/usePreviewCodeBlockScroll
 import PreviewCodeBlockScrollbar from './PreviewCodeBlockScrollbar'
 
 type PreviewMarkdownRendererProps = {
+  fallback?: ReactNode
   markdown: string
   previewTheme: DraftPreviewTheme
 }
@@ -859,6 +860,7 @@ const previewComponents: Components = {
 }
 
 function PreviewMarkdownRenderer({
+  fallback,
   markdown,
   previewTheme,
 }: PreviewMarkdownRendererProps) {
@@ -871,6 +873,7 @@ function PreviewMarkdownRenderer({
     <PreviewThemeContext.Provider value={previewTheme}>
       <MarkdownHooks
         components={previewComponents}
+        fallback={fallback}
         rehypePlugins={rehypePlugins}
         remarkPlugins={remarkPlugins}
       >

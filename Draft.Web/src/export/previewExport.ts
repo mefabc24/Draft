@@ -1,10 +1,12 @@
 import { getPreviewTheme, getPreviewThemeStyle } from '../themes'
 import { getCurrentAppLanguage, translate } from '../localization/localization'
+import { renderPreviewExportContent } from './previewExportRenderer'
 
 type PreviewExportOptions = {
   fileName: string
   layout?: 'html' | 'pdf' | 'png'
-  previewThemeId?: string | null
+  markdown: string
+  previewThemeId: string
 }
 
 const pdfPageWidthInches = 8.5
@@ -86,7 +88,7 @@ function tryReadSvgAssetAsDataUrl(assetUrl: string) {
 
 function resolveInlineStyleUrls(styleText: string) {
   return styleText.replace(cssUrlPattern, (_match, _quote, path: string) => {
-    let assetUrl = path
+    let assetUrl: string
 
     try {
       assetUrl = new URL(path, document.baseURI).href
@@ -952,27 +954,10 @@ body {
 
 .draft-png-export .preview-content pre {
   overflow: visible;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
-.draft-png-export .preview-content pre code {
-  display: block !important;
-  max-width: 100%;
-  white-space: inherit;
-  overflow-wrap: inherit;
-  word-break: inherit;
-}
-
-.draft-png-export .preview-content pre code [data-line],
-.draft-png-export .preview-content pre code > span,
-.draft-png-export .preview-content pre code * {
-  min-width: 0;
-  max-width: 100%;
-  white-space: inherit;
-  overflow-wrap: inherit;
-  word-break: inherit;
+.draft-png-export .preview-content .preview-code-block pre {
+  padding-right: var(--preview-code-block-padding, 14px);
 }
 `
 }
@@ -1108,13 +1093,7 @@ function resolveElementStyleUrls(previewContent: HTMLElement) {
   }
 }
 
-function clonePreviewContent() {
-  const previewContent = document.querySelector<HTMLElement>('.preview-content')
-
-  if (!previewContent) {
-    throw new Error(translate('export.previewContentNotReady'))
-  }
-
+function clonePreviewContent(previewContent: HTMLElement) {
   const clonedPreviewContent = previewContent.cloneNode(true) as HTMLElement
 
   removeExportOnlyUi(clonedPreviewContent)
@@ -1124,31 +1103,27 @@ function clonePreviewContent() {
   return clonedPreviewContent.innerHTML
 }
 
-function getPreviewThemeStyleAttribute() {
-  const previewPane = document.querySelector<HTMLElement>('.preview-pane')
-
-  return previewPane?.getAttribute('style') ?? ''
-}
-
-function getPreviewThemeStyleAttributeForTheme(themeId: string | null | undefined) {
-  if (!themeId) {
-    return getPreviewThemeStyleAttribute()
-  }
-
+function getPreviewThemeStyleAttribute(themeId: string) {
   return Object.entries(getPreviewThemeStyle(getPreviewTheme(themeId)))
     .map(([name, value]) => `${name}: ${String(value)}`)
     .join('; ')
 }
 
-export function createPreviewExportHtml({
+export async function createPreviewExportHtml({
   fileName,
   layout = 'html',
+  markdown,
   previewThemeId,
 }: PreviewExportOptions) {
+  const previewTheme = getPreviewTheme(previewThemeId)
+  const renderedPreviewContent = await renderPreviewExportContent(
+    markdown,
+    previewTheme,
+  )
   const title = getDocumentTitle(fileName)
-  const themeStyle = getPreviewThemeStyleAttributeForTheme(previewThemeId)
+  const themeStyle = getPreviewThemeStyleAttribute(previewTheme.id)
   const escapedThemeStyle = escapeHtml(themeStyle)
-  const previewHtml = clonePreviewContent()
+  const previewHtml = clonePreviewContent(renderedPreviewContent)
   const css = getExportCss(layout)
   const script = layout === 'pdf' ? getPdfExportScript() : ''
   const usesFullWidthExportLayout = layout === 'pdf' || layout === 'png'

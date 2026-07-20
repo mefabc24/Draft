@@ -29,7 +29,7 @@ export function setDraftViewModeHandler(handler: (mode: ViewMode) => void) {
 }
 
 export function setPreviewExportHtmlHandler(
-  handler: (options?: DraftPreviewExportOptions) => string,
+  handler: (options?: DraftPreviewExportOptions) => Promise<string>,
 ) {
   window.draftExport = {
     createPreviewHtml: handler,
