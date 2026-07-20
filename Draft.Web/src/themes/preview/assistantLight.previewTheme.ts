@@ -116,13 +116,13 @@ const assistantLightPreviewColorVariables = {
 
   // Expanders
   '--preview-expander-background': '#FFFFFF',
-  '--preview-expander-border': '#D1D5DB',
-  '--preview-expander-summary-background': '#F3F4F6',
+  '--preview-expander-border': 'transparent',
+  '--preview-expander-summary-background': '#ececec',
   '--preview-expander-summary-foreground': '#000000',
   '--preview-expander-summary-hover-background': '#E5E7EB',
   '--preview-expander-summary-hover-foreground': '#000000',
-  '--preview-expander-marker-foreground': '#0067C0',
-  '--preview-expander-content-background': '#FFFFFF',
+  '--preview-expander-marker-foreground': '#000',
+  '--preview-expander-content-background': '#f4f4f4',
   '--preview-expander-content-foreground': '#000000',
   '--preview-expander-divider': '#D1D5DB',
   '--preview-expander-focus-ring': '#0067C0',
