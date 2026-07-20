@@ -298,6 +298,7 @@ function Workspace() {
       createPreviewExportHtml({
         fileName: fileNameRef.current,
         layout: options?.layout,
+        previewThemeId: options?.previewThemeId,
       }),
     )
   }, [])
