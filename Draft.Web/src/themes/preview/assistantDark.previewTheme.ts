@@ -46,7 +46,7 @@ const assistantDarkPreviewColorVariables = {
   '--preview-h6-line-color': 'transparent',
 
   // Horizontal rule
-  '--preview-rule-border': '#374151',
+  '--preview-rule-border': '#3A3A3A',
 
   // Images
   '--preview-image-border': 'transparent',
@@ -60,19 +60,19 @@ const assistantDarkPreviewColorVariables = {
   '--preview-link-hover-text-decoration-color': '#339CFF',
 
   // Inline code
-  '--preview-inline-code-background': '#242424',
+  '--preview-inline-code-background': '#2f2f2f',
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#f9fafb',
 
   // Keyboard keys
-  '--preview-keyboard-key-background': '#1a1a1a',
-  '--preview-keyboard-key-foreground': '#fff',
-  '--preview-keyboard-key-border': '#3f3f3f',
-  '--preview-keyboard-key-border-bottom': '#6b6b6b',
+  '--preview-keyboard-key-background': '#2f3030',
+  '--preview-keyboard-key-foreground': '#ececec',
+  '--preview-keyboard-key-border': '#4a4b4b',
+  '--preview-keyboard-key-border-bottom': '#868787',
 
   // Draft inline extensions
-  '--preview-highlight-background': 'rgba(51, 156, 255, 0.26)',
-  '--preview-highlight-foreground': '#fff',
+  '--preview-highlight-background': 'rgba(250, 204, 21, 0.25)',
+  '--preview-highlight-foreground': '#f8f0c8',
   '--preview-spoiler-background': '#050505',
   '--preview-spoiler-revealed-background': 'rgba(255, 255, 255, 0.08)',
   '--preview-spoiler-foreground': '#fff',
@@ -122,12 +122,12 @@ const assistantDarkPreviewColorVariables = {
 
   // Expanders
   '--preview-expander-background': '#1F1F1F',
-  '--preview-expander-border': '#3F3F3F',
+  '--preview-expander-border': 'transparent',
   '--preview-expander-summary-background': '#242424',
   '--preview-expander-summary-foreground': '#fff',
   '--preview-expander-summary-hover-background': '#303030',
   '--preview-expander-summary-hover-foreground': '#fff',
-  '--preview-expander-marker-foreground': '#339CFF',
+  '--preview-expander-marker-foreground': '#fff',
   '--preview-expander-content-background': '#1F1F1F',
   '--preview-expander-content-foreground': '#fff',
   '--preview-expander-divider': '#3F3F3F',
@@ -231,7 +231,7 @@ const assistantDarkPreviewLayoutVariables = {
 
   // Rule height controls how thick the line is. Height 0 hides it. Radius accepts CSS lengths.
   '--preview-rule-border-radius': '0',
-  '--preview-rule-height': '1px',
+  '--preview-rule-height': '2px',
 
   // Images
   // Border width 0 removes the border. Radius and border width accept CSS lengths.
@@ -375,7 +375,7 @@ const assistantDarkPreviewTypographyVariables = {
   '--preview-tag-font-size': '0.78em',
   // Font style: normal | italic | oblique. Font weight: normal | bold | 100..900.
   '--preview-tag-font-style': 'normal',
-  '--preview-tag-font-weight': '700',
+  '--preview-tag-font-weight': '600',
   '--preview-tag-letter-spacing': 'normal',
   // Line height accepts a unitless number or CSS length. Word spacing: normal | CSS length.
   '--preview-tag-line-height': '1.2',
