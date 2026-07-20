@@ -309,7 +309,7 @@ const assistantDarkPreviewLayoutVariables = {
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.
   '--preview-blockquote-border-inset': '0',
   '--preview-blockquote-border-line-radius': '2px',
-  '--preview-blockquote-border-radius': '0',
+  '--preview-blockquote-border-radius': '0 8px 8px 0',
   '--preview-blockquote-border-width': '4px',
   // Icon position: top | topright | right | bottomright | bottom | bottomleft | left | topleft.
   '--preview-blockquote-icon-position': 'left',
