@@ -70,8 +70,6 @@
             <Border
                 x:Name="DragPreviewCard"
                 Background="{StaticResource Brush.Background.Surface}"
-                BorderBrush="{StaticResource Brush.Border.Input}"
-                BorderThickness="1"
                 CornerRadius="6"
                 Opacity="0.76"
                 SnapsToDevicePixels="True"
