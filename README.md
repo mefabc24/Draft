@@ -48,15 +48,19 @@ development builds may show that updates are not available.
 
 #### Floating Markdown Toolbar
 
-Quickly format Markdown in both the editor and the rendered preview.
+#### Floating Markdown Toolbar
 
-![Floating Markdown Toolbar](Documentation/Assets/floating-markdown-toolbar.png)
+Quickly format Markdown in both the editor and the rendered preview. The toolbar stays compact by default and can be expanded to show additional formatting options.
+
+![Floating Markdown Toolbar Collapsed](Documentation/Assets/fmt-collapsed.png)
+
+![Floating Markdown Toolbar Expanded](Documentation/Assets/fmt-expanded.png)
 
 #### Quick Insert Menu
 
 Insert common Markdown blocks without remembering the exact syntax.
 
-![Quick Insert Menu](Documentation/Assets/quick-insert-menu.png)
+![Quick Insert Menu](Documentation/Assets/qim.png)
 
 #### Save Snapshots
 
