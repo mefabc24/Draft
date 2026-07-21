@@ -39,6 +39,7 @@ import {
   completeMarkdownHtmlCommentOnExclamation,
   completeMarkdownHtmlOpeningBracket,
   completeMarkdownHtmlSelfClosingSlash,
+  deletePendingMarkdownHtmlCommentOnBackspace,
   deletePendingMarkdownHtmlOpeningBracketOnBackspace,
   mirrorMarkdownHtmlTagNameOnContentChange,
   updatePendingMarkdownHtmlAngleCompletionOnContentChanged,
@@ -305,10 +306,14 @@ export function useMonacoMarkdownEditor({
         settings.autoPairBrackets &&
         isPlainTextInput &&
         browserEvent.key === 'Backspace' &&
-        deletePendingMarkdownHtmlOpeningBracketOnBackspace(
+        (deletePendingMarkdownHtmlCommentOnBackspace(
           editor,
           consumeKeyboardEvent,
-        )
+        ) ||
+          deletePendingMarkdownHtmlOpeningBracketOnBackspace(
+            editor,
+            consumeKeyboardEvent,
+          ))
       ) {
         return
       }
