@@ -8,9 +8,9 @@ Bug fixes and maintenance tasks are tracked separately in [GitHub Issues](https:
 ## v3.1.0
 
 - [ ] [Add shortcut to jump to the beginning of the next line](https://github.com/mefabc24/Draft/issues/49)
-- [ ] [Add uppercase and lowercase actions to the FMT](https://github.com/mefabc24/Draft/issues/65)
-- [ ] [Add expandable overflow section to Quick Insert menu](https://github.com/mefabc24/Draft/issues/68)
-- [ ] [Add customizable FMT and Quick Insert menu layouts](https://github.com/mefabc24/Draft/issues/69)
+- [x] [Add uppercase and lowercase actions to the FMT](https://github.com/mefabc24/Draft/issues/65)
+- [x] [Add expandable overflow section to Quick Insert menu](https://github.com/mefabc24/Draft/issues/68)
+- [x] [Add customizable FMT and Quick Insert menu layouts](https://github.com/mefabc24/Draft/issues/69)
 - [ ] [Add in-editor search with Ctrl+F](https://github.com/mefabc24/Draft/issues/72)
 
 ## v3.2.0
