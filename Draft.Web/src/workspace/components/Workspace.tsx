@@ -8,6 +8,7 @@ import {
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import FloatingMarkdownToolbar from '../../toolbar/components/FloatingMarkdownToolbar'
+import WorkspaceFindReplaceMenu from '../../findReplace/components/WorkspaceFindReplaceMenu'
 import MarkdownEditorPane from '../../editor/components/MarkdownEditorPane'
 import PaneHeader from './PaneHeader'
 import PreviewPane from '../../preview/components/PreviewPane'
@@ -120,6 +121,7 @@ function Workspace() {
   const [appLanguage, setAppLanguage] = useState(
     DEFAULT_EDITOR_SETTINGS.appLanguage,
   )
+  const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false)
   const initialMarkdownRef = useRef(markdown)
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
@@ -419,6 +421,9 @@ function Workspace() {
   useEffect(() => {
     const handleDraftShortcutCommand = (command: BrowserShortcutDraftCommand) => {
       switch (command) {
+        case 'toggleFindReplace':
+          setIsFindReplaceOpen((currentValue) => !currentValue)
+          return
         case 'open':
           postOpenRequested()
           return
@@ -543,6 +548,10 @@ function Workspace() {
             toolbarMode={floatingMarkdownToolbarMode}
             viewMode={viewMode}
             workspaceRef={workspaceRef}
+          />
+          <WorkspaceFindReplaceMenu
+            isOpen={isFindReplaceOpen}
+            onClose={() => setIsFindReplaceOpen(false)}
           />
         </section>
         <WorkspaceDevMenu

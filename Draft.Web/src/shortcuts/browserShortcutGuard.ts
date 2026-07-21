@@ -17,7 +17,7 @@ export type BrowserShortcutPolicyKind =
   | 'handleDraftCommand'
   | 'passToDraftCommand'
 
-export type BrowserShortcutDraftCommand = 'open' | 'save'
+export type BrowserShortcutDraftCommand = 'open' | 'save' | 'toggleFindReplace'
 
 type BrowserShortcut = {
   altKey: boolean
@@ -33,11 +33,17 @@ type BrowserShortcutRule = {
   match: (shortcut: BrowserShortcut) => boolean
 }
 
-type BrowserShortcutCommandAction = {
-  actionId: ShortcutActionId
-  command: BrowserShortcutDraftCommand
-  id: string
-}
+type BrowserShortcutCommandAction =
+  | {
+      actionId: ShortcutActionId
+      command: BrowserShortcutDraftCommand
+      id: string
+    }
+  | {
+      command: BrowserShortcutDraftCommand
+      id: string
+      match: (shortcut: BrowserShortcut) => boolean
+    }
 
 type BrowserShortcutDevelopmentRule = BrowserShortcutRule & {
   allowInDevelopment?: boolean
@@ -181,6 +187,11 @@ export const allowedBrowserShortcuts: readonly BrowserShortcutRule[] = [
 ]
 
 export const draftHandledBrowserShortcuts: readonly BrowserShortcutCommandAction[] = [
+  {
+    command: 'toggleFindReplace',
+    id: 'draft.findReplace',
+    match: primaryKey('f'),
+  },
   {
     actionId: shortcutActionIds.appSave,
     command: 'save',
@@ -335,7 +346,9 @@ export function getBrowserShortcutPolicy(
   }
 
   const draftHandledShortcut = draftHandledBrowserShortcuts.find((rule) =>
-    eventMatchesShortcutAction(event, shortcutBindings, rule.actionId),
+    'match' in rule
+      ? rule.match(shortcut)
+      : eventMatchesShortcutAction(event, shortcutBindings, rule.actionId),
   )
 
   if (draftHandledShortcut) {
