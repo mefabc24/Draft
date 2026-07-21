@@ -2,7 +2,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 
 const TEXT_CASING_EDIT_SOURCE = 'draft.textCasing'
 
-type TextCase = 'lowercase' | 'uppercase'
+export type TextCase = 'lowercase' | 'uppercase'
 
 type OffsetTextEdit = {
   endOffset: number

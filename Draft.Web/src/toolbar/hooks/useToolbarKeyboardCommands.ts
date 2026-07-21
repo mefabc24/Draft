@@ -17,6 +17,7 @@ import {
   toggleWrappedSelection,
   type MarkdownEditorCommand,
 } from '../../editor/monaco/markdownCommandAdapter'
+import { transformSelectedTextCase } from '../../editor/monaco/textCasing'
 import { getInlineFormatMarkers, type HeadingValue } from '../../markdown'
 import type { ToolbarSelectionSource } from '../toolbarTypes'
 
@@ -387,6 +388,18 @@ export function useToolbarKeyboardCommands({
         actionId: shortcutActionIds.toolbarNormalText,
         command: (activeEditor, commandOptions) => {
           applyHeadingStyle(activeEditor, 'normal', commandOptions)
+        },
+      },
+      {
+        actionId: shortcutActionIds.editorUppercaseSelection,
+        command: (activeEditor) => {
+          transformSelectedTextCase(activeEditor, 'uppercase')
+        },
+      },
+      {
+        actionId: shortcutActionIds.editorLowercaseSelection,
+        command: (activeEditor) => {
+          transformSelectedTextCase(activeEditor, 'lowercase')
         },
       },
       ...(

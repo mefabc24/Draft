@@ -14,6 +14,7 @@ import {
   toggleLinkSelection,
   toggleWrappedSelection,
 } from '../../editor/monaco/markdownCommandAdapter'
+import { transformSelectedTextCase } from '../../editor/monaco/textCasing'
 import type { HeadingValue, ListValue } from '../../markdown'
 import type { CalloutType } from '../../markdown/callouts'
 import { useTranslation } from '../../localization/useTranslation'
@@ -34,8 +35,13 @@ import {
   listIcons,
   listItems,
   listLabelKeys,
+  textCaseToolbarActions,
+  textCaseTooltipLabelKeys,
 } from '../toolbarConfig'
-import type { InlineToolbarAction } from '../toolbarConfig'
+import type {
+  InlineToolbarAction,
+  TextCaseToolbarAction,
+} from '../toolbarConfig'
 import type {
   FloatingMarkdownToolbarProps,
   ToolbarPosition,
@@ -64,12 +70,15 @@ const TOOLBAR_EXTRA_TOOLS_TRANSITION_MS = 190
 const primaryInlineToolbarActions = inlineToolbarActions.filter(
   (action) => action.visibility === 'primary',
 )
-const extraInlineToolbarActions = inlineToolbarActions.filter(
-  (action) => action.visibility === 'extra',
-)
+type ToolbarAction = InlineToolbarAction | TextCaseToolbarAction
 
-const inlineShortcutActionIds: Partial<
-  Record<InlineToolbarAction['id'], ShortcutActionId>
+const extraToolbarActions: ToolbarAction[] = [
+  ...inlineToolbarActions.filter((action) => action.visibility === 'extra'),
+  ...textCaseToolbarActions,
+]
+
+const toolbarShortcutActionIds: Partial<
+  Record<ToolbarAction['id'], ShortcutActionId>
 > = {
   bold: shortcutActionIds.toolbarBold,
   code: shortcutActionIds.toolbarInlineCode,
@@ -78,9 +87,11 @@ const inlineShortcutActionIds: Partial<
   image: shortcutActionIds.toolbarImage,
   italic: shortcutActionIds.toolbarItalic,
   link: shortcutActionIds.toolbarLink,
+  lowercase: shortcutActionIds.editorLowercaseSelection,
   spoiler: shortcutActionIds.toolbarSpoiler,
   strikethrough: shortcutActionIds.toolbarStrikethrough,
   underline: shortcutActionIds.toolbarUnderline,
+  uppercase: shortcutActionIds.editorUppercaseSelection,
 }
 
 const headingShortcutActionIds: Partial<Record<HeadingValue, ShortcutActionId>> =
@@ -366,10 +377,11 @@ function FloatingMarkdownToolbar({
     [getListLabel, listValue],
   )
   const extraToolCount =
-    extraInlineToolbarActions.length + (previewEdit.available ? 1 : 0)
-  const promotedExtraInlineToolbarActions = !extraToolsExpanded
-    ? extraInlineToolbarActions.filter(
-        (action) => activeFormats[action.activeFormat],
+    extraToolbarActions.length + (previewEdit.available ? 1 : 0)
+  const promotedExtraToolbarActions = !extraToolsExpanded
+    ? extraToolbarActions.filter(
+        (action) =>
+          'activeFormat' in action && activeFormats[action.activeFormat],
       )
     : []
   const promotedPreviewEdit = !extraToolsExpanded && previewEdit.open
@@ -447,7 +459,7 @@ function FloatingMarkdownToolbar({
     extraToolsExpanded,
     position?.preferredLeft,
     position?.top,
-    promotedExtraInlineToolbarActions.length,
+    promotedExtraToolbarActions.length,
     promotedPreviewEdit,
     scheduleToolbarBoundsUpdate,
     toolbarVisible,
@@ -543,11 +555,12 @@ function FloatingMarkdownToolbar({
     if (toolbar && workspace) {
       const currentWidth = toolbar.offsetWidth
       const expandedExtraWidth = getExpandedExtraToolsOuterWidth(extraToolCount)
-      const activeExtraToolCount = extraInlineToolbarActions.filter(
-        (action) => activeFormats[action.activeFormat],
+      const activeExtraToolCount = extraToolbarActions.filter(
+        (action) =>
+          'activeFormat' in action && activeFormats[action.activeFormat],
       ).length
       const currentPromotedCount =
-        promotedExtraInlineToolbarActions.length + (promotedPreviewEdit ? 1 : 0)
+        promotedExtraToolbarActions.length + (promotedPreviewEdit ? 1 : 0)
       const nextPromotedCount = expanding ? 0 : activeExtraToolCount
       const currentPromotedWidth = getPromotedToolsWidth(
         primaryInlineToolbarActions.length,
@@ -636,19 +649,23 @@ function FloatingMarkdownToolbar({
     closePreviewEditMenu,
     extraToolCount,
     extraToolsExpanded,
-    promotedExtraInlineToolbarActions.length,
+    promotedExtraToolbarActions.length,
     promotedPreviewEdit,
     scheduleToolbarBoundsUpdate,
     setOpenDropdown,
     toolbarPinnedRight,
     workspaceRef,
   ])
-  const renderInlineToolbarAction = (action: InlineToolbarAction) => {
-    const active = activeFormats[action.activeFormat]
+  const renderToolbarAction = (action: ToolbarAction) => {
+    const active =
+      'activeFormat' in action ? activeFormats[action.activeFormat] : false
     const command = action.command
-    const actionId = inlineShortcutActionIds[action.id]
+    const actionId = toolbarShortcutActionIds[action.id]
     const shortcut = actionId ? getShortcutLabel(actionId) : undefined
-    const tooltipLabel = t(inlineTooltipLabelKeys[action.id])
+    const tooltipLabel =
+      'activeFormat' in action
+        ? t(inlineTooltipLabelKeys[action.id])
+        : t(textCaseTooltipLabelKeys[action.id])
     const localizedTooltip = {
       ...action.tooltip,
       label: tooltipLabel,
@@ -659,6 +676,26 @@ function FloatingMarkdownToolbar({
           shortcut,
         }
       : localizedTooltip
+
+    if (command.type === 'textCase') {
+      return (
+        <ToolbarButton
+          key={action.id}
+          ariaLabel={tooltipLabel}
+          active={false}
+          onTooltipHide={hideToolbarTooltip}
+          onTooltipShow={showToolbarTooltip}
+          onClick={() =>
+            runEditorCommand((activeEditor) => {
+              transformSelectedTextCase(activeEditor, command.textCase)
+            })
+          }
+          tooltip={tooltip}
+        >
+          <ToolbarIcon name={action.icon} />
+        </ToolbarButton>
+      )
+    }
 
     if (command.type === 'link') {
       return linkEdit.available ? (
@@ -820,8 +857,8 @@ function FloatingMarkdownToolbar({
 
       <div className="markdown-toolbar-format-tools">
         <div className="markdown-toolbar-primary-tools">
-          {primaryInlineToolbarActions.map(renderInlineToolbarAction)}
-          {promotedExtraInlineToolbarActions.map(renderInlineToolbarAction)}
+          {primaryInlineToolbarActions.map(renderToolbarAction)}
+          {promotedExtraToolbarActions.map(renderToolbarAction)}
           {promotedPreviewEdit ? renderPreviewEditMenu() : null}
         </div>
         <div
@@ -832,7 +869,7 @@ function FloatingMarkdownToolbar({
           style={extraToolsStyle}
         >
           <div className="markdown-toolbar-extra-tools-inner">
-            {extraInlineToolbarActions.map(renderInlineToolbarAction)}
+            {extraToolbarActions.map(renderToolbarAction)}
             {promotedPreviewEdit ? null : renderPreviewEditMenu()}
           </div>
         </div>
