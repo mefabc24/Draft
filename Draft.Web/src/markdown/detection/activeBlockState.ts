@@ -27,7 +27,7 @@ export function detectActiveHeadingValue(
 }
 
 export function detectActiveListValue(line: string): ListValue {
-  if (/^\s*[-+*]\s+\[[ xX]\]\s+/u.test(line)) {
+  if (/^\s*[-+*]\s+\[[ xX]\](?:\s+|$)/u.test(line)) {
     return 'checklist'
   }
 
