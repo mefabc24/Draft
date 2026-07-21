@@ -2,7 +2,7 @@
 
 Draft is a focused Windows Markdown editor with live preview, save snapshots, a floating formatting toolbar, and a calm desktop workspace.
 
-Current version: `3.0.0` [Download](https://github.com/mefabc24/Draft/releases/latest) · [Themes](Documentation/User/THEMES.md) · [Report issue](https://github.com/mefabc24/Draft/issues) · [Roadmap](Documentation/User/ROADMAP.md)
+Current version: `3.0.0` · [Download](https://github.com/mefabc24/Draft/releases/latest) · [Themes](Documentation/User/THEMES.md) · [Report issue](https://github.com/mefabc24/Draft/issues) · [Roadmap](Documentation/User/ROADMAP.md)
 
 ![Draft main workspace](Documentation/Assets/app-preview.png)
 
@@ -36,17 +36,20 @@ development builds may show that updates are not available.
 ### Highlights
 
 - Three workspace modes: **Editor**, **Split**, and **Preview** for writing, editing, and reading Markdown.
-- Live Markdown preview with support for GitHub-flavored Markdown, tables, task lists, raw HTML, and highlighted code blocks.
-- Multiple preview themes, including Draft Dark, Assistant Dark, and Repository Dark.
+- Live Markdown preview with support for GitHub-flavored Markdown, tables, task lists, raw HTML, highlighted code blocks, and in-document heading links.
+- Draft-flavored Markdown extensions for callouts, badges, tags, spoilers, highlights, underlines, keyboard keys, comments, and collapsible details.
+- Theme-aware document export to HTML, PDF, and PNG.
+- Five preview themes: Draft Dark, Assistant Dark, Assistant Light, Repository Dark, and The Hub.
 - Floating Markdown Toolbar for quickly formatting content in both the editor and the rendered preview.
 - Preview editing support for editing the Markdown source behind selected rendered content.
-- Quick Insert Menu for adding common Markdown elements like headings, lists, images, links, tables, code blocks, quotes, and dividers.
+- Quick Insert Menu for adding common Markdown elements and Draft extensions without remembering their syntax.
 - Flexible scroll sync options, including two-way sync, editor-to-preview sync, preview-to-editor sync, and follow-edited-section behavior.
+- Configurable keyboard shortcuts and Status Bar items.
+- Save As support and recovery options when a document's original location no longer exists.
 - Save Snapshot System with separate restore points for the last manual save and the latest autosave.
 
 ### Feature Preview
 
-#### Floating Markdown Toolbar
 #### Floating Markdown Toolbar
 
 Quickly format Markdown in both the editor and the rendered preview. The toolbar stays compact by default and can be expanded to show additional formatting options.
@@ -92,44 +95,60 @@ Draft includes settings for:
 - Editor typography, layout, Markdown syntax highlighting, whitespace display,
   indentation, cursor style, and pairing behavior.
 - Preview theme and external-link confirmation.
-- App theme, status bar visibility, and toolbar/control bar position.
+- Floating Markdown Toolbar availability and customizable Status Bar items.
 - Default save location and optional `.txt` file association.
-- A shortcuts page that lists the main keyboard shortcuts.
+- Interface language selection. English is currently the available language.
+- A shortcuts page for recording, resetting, and checking custom keyboard shortcuts for conflicts.
 - Version and update controls.
 
 ### Useful Shortcuts
 
 #### General
+
 ```text
+Ctrl + O              Open file
 Ctrl + S              Save file
 Ctrl + Z              Undo
 Ctrl + Shift + Z      Redo
 Ctrl + D              Duplicate current line
+Ctrl + Alt + U        Toggle current-line capitalization
+Ctrl + Shift + U      Convert selection to uppercase
+Ctrl + Shift + L      Convert selection to lowercase
+Ctrl + Left/Right     Move by word
+Ctrl + Shift + Left/Right
+                      Extend selection by word
 Ctrl + Shift + Up     Move current line or selected lines up
 Ctrl + Shift + Down   Move current line or selected lines down
 Enter                 Continue the current Markdown list or quote
+Tab                   Indent an empty Markdown list item
 ```
 
 #### Floating Markdown Toolbar (FMT)
+
 ```text
 Ctrl + B              Bold
 Ctrl + I              Italic
+Ctrl + U              Underline
 Ctrl + Shift + X      Strikethrough
 Ctrl + E              Inline code
 Ctrl + Shift + S      Spoiler
 Ctrl + Shift + H      Highlight
-Ctrl + /              Comment
+Ctrl + /              HTML comment
 Ctrl + K              Link
 Ctrl + Alt + I        Image
+Ctrl + N              Normal text
 Ctrl + 1..6           Heading 1 through Heading 6
 Ctrl + Shift + E      Edit the Markdown behind selected preview content
 ```
 
 #### Quick Insert Menu (QIM)
+
 ```text
-Ctrl + Space         Open Quick Insert Menu at the cursor position
+Ctrl + Space          Open Quick Insert Menu at the cursor position
 Shift + Left Click    Insert from Quick Insert and keep the menu open
 ```
+
+Keyboard shortcuts can be customized in Settings.
 
 ## For Developers
 
@@ -161,7 +180,7 @@ embedded through WebView2.
 ```text
 Draft.Web/        React, TypeScript, Vite, Monaco, preview, toolbar, themes
 Draft.Wpf/        WPF desktop host, WebView2 shell, settings, saves, packaging
-Documentation/    Release and versioning documentation
+Documentation/    User and developer documentation
 Scripts/          Automation scripts for versioning and release packaging
 Licenses/         Third-party license files
 Releases/         Generated Velopack release artifacts
@@ -229,8 +248,8 @@ npm run build
 cd ..
 dotnet build Draft.Wpf/Draft.slnx
 
-# Update version fields
-.\Scripts\update-version.ps1 -Version 2.0.0
+# Update version fields (example)
+.\Scripts\update-version.ps1 -Version 3.0.0
 
 # Create a Windows release
 .\Scripts\create-release.ps1
@@ -241,8 +260,8 @@ dotnet build Draft.Wpf/Draft.slnx
 Version fields and release steps are documented in:
 
 ```text
-Documentation/VERSIONING.md
-Documentation/RELEASING.md
+Documentation/Developer/VERSIONING.md
+Documentation/Developer/RELEASING.md
 ```
 
 The release script builds the web app, publishes the WPF host, creates Velopack
@@ -258,8 +277,8 @@ need the feed and package files.
 
 ### Documentation
 
-- `Documentation/VERSIONING.md` lists every manually maintained version field.
-- `Documentation/RELEASING.md` describes how to create and publish a release.
+- [`Documentation/Developer/VERSIONING.md`](Documentation/Developer/VERSIONING.md) lists every manually maintained version field.
+- [`Documentation/Developer/RELEASING.md`](Documentation/Developer/RELEASING.md) describes how to create and publish a release.
 - `Draft.Web/README.md` describes the web workspace.
 - `Draft.Wpf/README.md` describes the Windows desktop host.
 
