@@ -19,6 +19,7 @@ public sealed class PngExportService
     private const double MinimumViewportWidthCssPixels = 320;
     private const double MaximumViewportWidthCssPixels = 4096;
     private const double CaptureTileHeightCssPixels = 4096;
+    private const double OffscreenCaptureOffset = -(MaximumViewportWidthCssPixels + 1);
     private const int RenderTimeoutMilliseconds = 15000;
     private const int FrameTimeoutMilliseconds = 1000;
     private const int PollDelayMilliseconds = 50;
@@ -91,6 +92,13 @@ public sealed class PngExportService
 
     private static void PrepareCaptureSurface(WebView2 webView)
     {
+        // WebView2 must remain visible for CapturePreviewAsync, but its native
+        // child window can otherwise appear above the WPF workspace briefly.
+        webView.Margin = new Thickness(
+            OffscreenCaptureOffset,
+            OffscreenCaptureOffset,
+            0,
+            0);
         webView.Visibility = Visibility.Visible;
         webView.ZoomFactor = 1.0;
     }
@@ -482,6 +490,7 @@ public sealed class PngExportService
     private sealed record WebViewVisualState(
         double Width,
         double Height,
+        Thickness Margin,
         double ZoomFactor,
         Visibility Visibility)
     {
@@ -490,16 +499,18 @@ public sealed class PngExportService
             return new WebViewVisualState(
                 webView.Width,
                 webView.Height,
+                webView.Margin,
                 webView.ZoomFactor,
                 webView.Visibility);
         }
 
         public void Restore(WebView2 webView)
         {
+            webView.Visibility = Visibility;
+            webView.Margin = Margin;
             webView.Width = Width;
             webView.Height = Height;
             webView.ZoomFactor = ZoomFactor;
-            webView.Visibility = Visibility;
             webView.UpdateLayout();
         }
     }

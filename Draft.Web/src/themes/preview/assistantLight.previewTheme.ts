@@ -10,6 +10,14 @@ const assistantLightPreviewColorVariables = {
   '--preview-background': '#FFFFFF',
   '--preview-foreground': '#000000',
 
+  // Basic text formatting
+  '--preview-bold-foreground': 'currentColor',
+  '--preview-italic-foreground': 'currentColor',
+  '--preview-strikethrough-foreground': 'currentColor',
+  '--preview-strikethrough-text-decoration-color': 'currentColor',
+  '--preview-underline-foreground': 'currentColor',
+  '--preview-underline-text-decoration-color': 'currentColor',
+
   // Headings: text color
   '--preview-heading-foreground': '#000000',
   '--preview-h1-foreground': '#000000',
@@ -54,10 +62,12 @@ const assistantLightPreviewColorVariables = {
   '--preview-inline-code-background': '#F3F4F6',
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#000000',
-  '--preview-kbd-background': '#F3F4F6',
-  '--preview-kbd-foreground': '#000000',
-  '--preview-kbd-border': '#B3B3B3',
-  '--preview-kbd-border-bottom': '#767676',
+
+  // Keyboard keys
+  '--preview-keyboard-key-background': '#F3F4F6',
+  '--preview-keyboard-key-foreground': '#000000',
+  '--preview-keyboard-key-border': '#B3B3B3',
+  '--preview-keyboard-key-border-bottom': '#767676',
 
   // Draft inline extensions
   '--preview-highlight-background': 'rgba(0, 103, 192, 0.16)',
@@ -66,7 +76,8 @@ const assistantLightPreviewColorVariables = {
   '--preview-spoiler-revealed-background': 'rgba(0, 0, 0, 0.06)',
   '--preview-spoiler-foreground': '#000000',
   '--preview-tag-default-color': '#0067C0',
-  '--preview-tag-foreground': '#000000',
+  // Tag text automatically uses the default or per-tag badge color.
+  '--preview-tag-text-decoration-color': 'currentColor',
   '--preview-tag-background-opacity': '12%',
 
   // Task list checkboxes
@@ -79,9 +90,12 @@ const assistantLightPreviewColorVariables = {
 
   // Code blocks
   '--preview-code-block-background': '#F3F4F6',
+  '--preview-code-block-copy-button-background': '#F3F4F6',
   '--preview-code-block-border': 'transparent',
   '--preview-code-block-copy-icon-foreground': '#000000',
   '--preview-code-block-foreground': '#000000',
+  '--preview-code-block-scrollbar-thumb': '#C1C1C1',
+  '--preview-code-block-scrollbar-track': 'transparent',
 
   // Blockquote colors
   '--preview-blockquote-default-color': '#6B7280',
@@ -99,6 +113,19 @@ const assistantLightPreviewColorVariables = {
   '--preview-blockquote-con-color': '#C42B1C',
   '--preview-blockquote-question-color': '#00758F',
   '--preview-blockquote-todo-color': '#5F5F5F',
+
+  // Expanders
+  '--preview-expander-background': '#FFFFFF',
+  '--preview-expander-border': 'transparent',
+  '--preview-expander-summary-background': '#ececec',
+  '--preview-expander-summary-foreground': '#000000',
+  '--preview-expander-summary-hover-background': '#E5E7EB',
+  '--preview-expander-summary-hover-foreground': '#000000',
+  '--preview-expander-marker-foreground': '#000',
+  '--preview-expander-content-background': '#f4f4f4',
+  '--preview-expander-content-foreground': '#000000',
+  '--preview-expander-divider': '#D1D5DB',
+  '--preview-expander-focus-ring': '#0067C0',
 
   // Tables
   '--preview-table-border': 'transparent',

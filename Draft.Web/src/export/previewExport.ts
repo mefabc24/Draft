@@ -1,10 +1,16 @@
 import { getPreviewTheme, getPreviewThemeStyle } from '../themes'
 import { getCurrentAppLanguage, translate } from '../localization/localization'
+import previewMarkdownCss from '../preview/styles/previewMarkdown.css?inline'
+import previewPaneCss from '../preview/styles/previewPane.css?inline'
+import fontsCss from '../shared/styles/fonts.css?inline'
+import resetCss from '../shared/styles/reset.css?inline'
+import { renderPreviewExportContent } from './previewExportRenderer'
 
 type PreviewExportOptions = {
   fileName: string
   layout?: 'html' | 'pdf' | 'png'
-  previewThemeId?: string | null
+  markdown: string
+  previewThemeId: string
 }
 
 const pdfPageWidthInches = 8.5
@@ -15,6 +21,14 @@ const pdfPageHeightCssPixels = pdfPageHeightInches * cssPixelsPerInch
 const pdfPagePaddingCssPixels = 32
 const cssUrlPattern = /url\((['"]?)(?!data:|blob:|https?:|file:|#)([^'")]+)\1\)/gu
 const embeddedSvgAssetUrls = new Map<string, string | null>()
+// Keep the original declarations: Chromium's CSSOM serialization can lose
+// shorthands whose values contain custom properties, such as the kbd border.
+const previewExportStyleSheets = [
+  fontsCss,
+  resetCss,
+  previewPaneCss,
+  previewMarkdownCss,
+]
 
 function escapeHtml(value: string) {
   return value
@@ -37,18 +51,6 @@ function getDocumentTitle(fileName: string) {
   return extensionIndex > 0
     ? trimmedFileName.slice(0, extensionIndex)
     : trimmedFileName
-}
-
-function shouldIncludeCssRule(cssText: string) {
-  const normalizedCssText = cssText.trim()
-
-  return normalizedCssText.startsWith('*')
-    || normalizedCssText.startsWith(':root')
-    || normalizedCssText.startsWith('html')
-    || normalizedCssText.startsWith('body')
-    || normalizedCssText.startsWith('@font-face')
-    || normalizedCssText.includes('.preview-')
-    || normalizedCssText.includes('[data-rehype-pretty-code')
 }
 
 function resolveCssUrls(cssText: string) {
@@ -86,7 +88,7 @@ function tryReadSvgAssetAsDataUrl(assetUrl: string) {
 
 function resolveInlineStyleUrls(styleText: string) {
   return styleText.replace(cssUrlPattern, (_match, _quote, path: string) => {
-    let assetUrl = path
+    let assetUrl: string
 
     try {
       assetUrl = new URL(path, document.baseURI).href
@@ -952,47 +954,16 @@ body {
 
 .draft-png-export .preview-content pre {
   overflow: visible;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
-.draft-png-export .preview-content pre code {
-  display: block !important;
-  max-width: 100%;
-  white-space: inherit;
-  overflow-wrap: inherit;
-  word-break: inherit;
-}
-
-.draft-png-export .preview-content pre code [data-line],
-.draft-png-export .preview-content pre code > span,
-.draft-png-export .preview-content pre code * {
-  min-width: 0;
-  max-width: 100%;
-  white-space: inherit;
-  overflow-wrap: inherit;
-  word-break: inherit;
+.draft-png-export .preview-content .preview-code-block pre {
+  padding-right: var(--preview-code-block-padding, 14px);
 }
 `
 }
 
 function getExportCss(layout: PreviewExportOptions['layout']) {
-  const cssRules: string[] = []
-
-  for (const styleSheet of Array.from(document.styleSheets)) {
-    try {
-      for (const rule of Array.from(styleSheet.cssRules)) {
-        const cssText = rule.cssText
-
-        if (shouldIncludeCssRule(cssText)) {
-          cssRules.push(resolveCssUrls(cssText))
-        }
-      }
-    } catch {
-      // Cross-origin stylesheets are ignored. Draft's own preview CSS is same-origin.
-    }
-  }
+  const cssRules = previewExportStyleSheets.map(resolveCssUrls)
 
   cssRules.push(`
 html,
@@ -1027,6 +998,7 @@ body {
 }
 
 .draft-export-preview .preview-code-block-copy-button,
+.draft-export-preview .preview-code-block-scrollbar,
 .draft-export-preview .preview-scrollbar {
   display: none !important;
 }
@@ -1077,6 +1049,7 @@ body {
 function removeExportOnlyUi(previewContent: HTMLElement) {
   const exportOnlyUiSelector = [
     '.preview-code-block-copy-button',
+    '.preview-code-block-scrollbar',
     '.preview-scrollbar',
     '[data-preview-edit-menu]',
   ].join(', ')
@@ -1106,13 +1079,7 @@ function resolveElementStyleUrls(previewContent: HTMLElement) {
   }
 }
 
-function clonePreviewContent() {
-  const previewContent = document.querySelector<HTMLElement>('.preview-content')
-
-  if (!previewContent) {
-    throw new Error(translate('export.previewContentNotReady'))
-  }
-
+function clonePreviewContent(previewContent: HTMLElement) {
   const clonedPreviewContent = previewContent.cloneNode(true) as HTMLElement
 
   removeExportOnlyUi(clonedPreviewContent)
@@ -1122,31 +1089,27 @@ function clonePreviewContent() {
   return clonedPreviewContent.innerHTML
 }
 
-function getPreviewThemeStyleAttribute() {
-  const previewPane = document.querySelector<HTMLElement>('.preview-pane')
-
-  return previewPane?.getAttribute('style') ?? ''
-}
-
-function getPreviewThemeStyleAttributeForTheme(themeId: string | null | undefined) {
-  if (!themeId) {
-    return getPreviewThemeStyleAttribute()
-  }
-
+function getPreviewThemeStyleAttribute(themeId: string) {
   return Object.entries(getPreviewThemeStyle(getPreviewTheme(themeId)))
     .map(([name, value]) => `${name}: ${String(value)}`)
     .join('; ')
 }
 
-export function createPreviewExportHtml({
+export async function createPreviewExportHtml({
   fileName,
   layout = 'html',
+  markdown,
   previewThemeId,
 }: PreviewExportOptions) {
+  const previewTheme = getPreviewTheme(previewThemeId)
+  const renderedPreviewContent = await renderPreviewExportContent(
+    markdown,
+    previewTheme,
+  )
   const title = getDocumentTitle(fileName)
-  const themeStyle = getPreviewThemeStyleAttributeForTheme(previewThemeId)
+  const themeStyle = getPreviewThemeStyleAttribute(previewTheme.id)
   const escapedThemeStyle = escapeHtml(themeStyle)
-  const previewHtml = clonePreviewContent()
+  const previewHtml = clonePreviewContent(renderedPreviewContent)
   const css = getExportCss(layout)
   const script = layout === 'pdf' ? getPdfExportScript() : ''
   const usesFullWidthExportLayout = layout === 'pdf' || layout === 'png'

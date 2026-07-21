@@ -10,6 +10,14 @@ const theHubPreviewColorVariables = {
   '--preview-background': draftDarkTokens.chromeBackground,
   '--preview-foreground': '#fff',
 
+  // Basic text formatting
+  '--preview-bold-foreground': 'currentColor',
+  '--preview-italic-foreground': 'currentColor',
+  '--preview-strikethrough-foreground': 'currentColor',
+  '--preview-strikethrough-text-decoration-color': 'currentColor',
+  '--preview-underline-foreground': 'currentColor',
+  '--preview-underline-text-decoration-color': 'currentColor',
+
   // Headings: text color
   '--preview-heading-foreground': '#fff',
   '--preview-h1-foreground': '#000',
@@ -55,10 +63,12 @@ const theHubPreviewColorVariables = {
   '--preview-inline-code-background': draftDarkTokens.theHubAccent,
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#000',
-  '--preview-kbd-background': '#000',
-  '--preview-kbd-foreground': draftDarkTokens.theHubAccent,
-  '--preview-kbd-border': '#5A3708',
-  '--preview-kbd-border-bottom': draftDarkTokens.theHubAccent,
+
+  // Keyboard keys
+  '--preview-keyboard-key-background': '#000',
+  '--preview-keyboard-key-foreground': draftDarkTokens.theHubAccent,
+  '--preview-keyboard-key-border': '#5A3708',
+  '--preview-keyboard-key-border-bottom': draftDarkTokens.theHubAccent,
 
   // Draft inline extensions
   '--preview-highlight-background': 'rgba(247, 152, 23, 0.32)',
@@ -67,7 +77,8 @@ const theHubPreviewColorVariables = {
   '--preview-spoiler-revealed-background': 'rgba(247, 152, 23, 0.18)',
   '--preview-spoiler-foreground': '#fff',
   '--preview-tag-default-color': draftDarkTokens.theHubAccent,
-  '--preview-tag-foreground': '#fff',
+  // Tag text automatically uses the default or per-tag badge color.
+  '--preview-tag-text-decoration-color': 'currentColor',
   '--preview-tag-background-opacity': '20%',
 
   // Task list checkboxes
@@ -81,9 +92,12 @@ const theHubPreviewColorVariables = {
   // Code blocks
   // copy-icon-foreground controls only the copy symbol fill color.
   '--preview-code-block-background': draftDarkTokens.theHubAccent,
+  '--preview-code-block-copy-button-background': draftDarkTokens.theHubAccent,
   '--preview-code-block-border': 'transparent',
   '--preview-code-block-copy-icon-foreground': '#000',
   '--preview-code-block-foreground': '#000',
+  '--preview-code-block-scrollbar-thumb': draftDarkTokens.scrollbarThumb,
+  '--preview-code-block-scrollbar-track': 'transparent',
 
   // Blockquote colors
   '--preview-blockquote-default-color': draftDarkTokens.theHubAccent,
@@ -101,10 +115,23 @@ const theHubPreviewColorVariables = {
   '--preview-blockquote-con-color': '#E25E5E',
   '--preview-blockquote-question-color': '#8AE9F8',
   '--preview-blockquote-todo-color': '#ACABAA',
-  // background-opacity is a decimal alpha used to tint the blockquote color.
-  '--preview-blockquote-background-opacity': '0.1',
+  // Decimal alpha used to tint the blockquote color. 0 disables the background.
+  '--preview-blockquote-background-opacity': '0.2',
   // true colors bold callout text with the callout color. false keeps normal text color.
   '--preview-blockquote-bold-uses-callout-color': 'true',
+
+  // Expanders
+  '--preview-expander-background': '#000',
+  '--preview-expander-border': draftDarkTokens.theHubAccent,
+  '--preview-expander-summary-background': draftDarkTokens.theHubAccent,
+  '--preview-expander-summary-foreground': '#000',
+  '--preview-expander-summary-hover-background': '#FFAA3D',
+  '--preview-expander-summary-hover-foreground': '#000',
+  '--preview-expander-marker-foreground': '#000',
+  '--preview-expander-content-background': '#000',
+  '--preview-expander-content-foreground': '#fff',
+  '--preview-expander-divider': draftDarkTokens.theHubAccent,
+  '--preview-expander-focus-ring': '#fff',
 
   // Tables
   '--preview-table-border': 'blue',
@@ -123,6 +150,28 @@ const theHubPreviewColorVariables = {
 
 // Layout tokens: radii, border widths, spacing, and table grid behavior.
 const theHubPreviewLayoutVariables = {
+  // Basic text formatting
+  // Font size and letter spacing accept CSS lengths. Line height accepts a unitless number or CSS length.
+  '--preview-font-size': '1rem',
+  '--preview-font-weight': '400',
+  '--preview-line-height': '1.7',
+  '--preview-letter-spacing': 'normal',
+  // Bold font weight: normal | bold | 100..900. Italic style: normal | italic | oblique.
+  '--preview-bold-font-weight': '700',
+  '--preview-italic-font-style': 'italic',
+  // Strikethrough line: none | line-through. Style: solid | double | dotted | dashed | wavy.
+  // Thickness: auto | from-font | CSS length such as 1px or 0.12em.
+  '--preview-strikethrough-text-decoration-line': 'line-through',
+  '--preview-strikethrough-text-decoration-style': 'solid',
+  '--preview-strikethrough-text-decoration-thickness': '1px',
+  // Underline line: none | underline. Style: solid | double | dotted | dashed | wavy.
+  // Thickness and offset accept auto or a CSS length. Skip ink: auto | none.
+  '--preview-underline-text-decoration-line': 'underline',
+  '--preview-underline-text-decoration-style': 'solid',
+  '--preview-underline-text-decoration-thickness': '1px',
+  '--preview-underline-text-underline-offset': '2px',
+  '--preview-underline-text-decoration-skip-ink': 'auto',
+
   // Headings: text weight
   // font-weight: normal | bold | 100..900.
   '--preview-h1-font-weight': '600',
@@ -194,14 +243,17 @@ const theHubPreviewLayoutVariables = {
   '--preview-inline-code-border-radius': '6px',
   '--preview-inline-code-border-width': '0',
   '--preview-inline-code-padding': '2px 6px',
-  '--preview-kbd-border-radius': '5px',
-  '--preview-kbd-border-width': '1px',
-  '--preview-kbd-border-bottom-width': '2px',
-  '--preview-kbd-min-width': '1.65em',
-  '--preview-kbd-padding': '1px 6px 2px',
-  '--preview-kbd-margin': '0 0.08em',
-  '--preview-kbd-line-height': '1.25',
-  '--preview-kbd-vertical-align': '0.08em',
+
+  // Keyboard keys
+  // Border width 0 removes the border. Radius, spacing, and dimensions accept CSS lengths.
+  '--preview-keyboard-key-border-radius': '5px',
+  '--preview-keyboard-key-border-width': '1px',
+  '--preview-keyboard-key-border-bottom-width': '2px',
+  '--preview-keyboard-key-min-width': '1.65em',
+  '--preview-keyboard-key-padding': '1px 6px 2px',
+  '--preview-keyboard-key-margin': '0 0.08em',
+  '--preview-keyboard-key-line-height': '1.25',
+  '--preview-keyboard-key-vertical-align': '0.08em',
 
   // Draft inline extensions
   // Padding inline/block controls how far the highlight or pill extends beyond text.
@@ -248,6 +300,10 @@ const theHubPreviewLayoutVariables = {
   '--preview-code-block-border-width': '0',
   '--preview-code-block-copy-button-border-radius': '6px',
   '--preview-code-block-padding': '14px',
+  '--preview-code-block-scrollbar-border-radius': '999px',
+  '--preview-code-block-scrollbar-bottom': '4px',
+  '--preview-code-block-scrollbar-height': '6px',
+  '--preview-code-block-scrollbar-inset': '8px',
 
   // Blockquote layout
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.
@@ -255,9 +311,36 @@ const theHubPreviewLayoutVariables = {
   '--preview-blockquote-border-line-radius': '2px',
   '--preview-blockquote-border-radius': '0 8px 8px 0',
   '--preview-blockquote-border-width': '4px',
+  // Icon position: top | topright | right | bottomright | bottom | bottomleft | left | topleft.
   '--preview-blockquote-icon-position': 'left',
   '--preview-blockquote-icon-size': '44px',
+  // Space between icon and label. Accepts CSS lengths such as 0, 6px, or 0.5em.
+  '--preview-blockquote-icon-label-gap': '6px',
+  // Icon visibility: Visible | Hidden. Hidden does not reserve icon space.
+  '--preview-blockquote-icon-visibility': 'Visible',
+  // Label font size accepts CSS sizes such as 12px, 0.875em, or 1rem.
+  '--preview-blockquote-label-font-size': '1em',
+  // Label font weight: normal | bold | 100..900.
+  '--preview-blockquote-label-font-weight': '600',
+  // Label text: Hidden | Uppercase | Lowercase | Capitalized.
+  '--preview-blockquote-label-text-transform': 'Hidden',
+  // Label position relative to the icon: Left | Right | Top | Bottom.
+  '--preview-blockquote-label-position': 'Right',
   '--preview-blockquote-padding': '8px 16px',
+
+  // Expander layout
+  // Border, marker, and divider values accept CSS lengths; margin and padding use CSS shorthand.
+  '--preview-expander-border-radius': '8px',
+  '--preview-expander-border-width': '2px',
+  '--preview-expander-margin': '16px 0',
+  '--preview-expander-summary-padding': '10px 12px',
+  '--preview-expander-summary-gap': '10px',
+  '--preview-expander-summary-font-weight': '700',
+  '--preview-expander-marker-size': '10px',
+  '--preview-expander-content-padding': '12px',
+  '--preview-expander-divider-width': '2px',
+  '--preview-expander-focus-ring-width': '2px',
+  '--preview-expander-focus-ring-offset': '-2px',
 
   // Tables
   // Border width 0 removes that line. Use row, column, header, and outer widths to shape the grid.
@@ -273,22 +356,44 @@ const theHubPreviewLayoutVariables = {
 // Typography tokens: font stacks used inside rendered markdown.
 const theHubPreviewTypographyVariables = {
   // Code
-  // CSS font-family stack used by inline code, keyboard input, and code blocks.
+  // CSS font-family stack used by inline code and code blocks.
   '--font-mono':
     "'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace",
-  '--preview-kbd-font-family': 'var(--font-mono)',
-  '--preview-kbd-font-size': '0.78em',
-  '--preview-kbd-font-weight': '700',
+
+  // Keyboard keys
+  '--preview-keyboard-key-font-family': 'var(--font-mono)',
+  '--preview-keyboard-key-font-size': '0.78em',
+  '--preview-keyboard-key-font-weight': '700',
 
   // Markdown body
   // CSS font-family stack used by normal markdown text.
   '--font-preview': "'Segoe UI', Arial, sans-serif",
 
-  // Tags
-  // CSS font values used by Draft tag pills.
+  // Tags: text
+  // Font family accepts a CSS font stack. Size, letter spacing, and word spacing accept CSS lengths.
   '--preview-tag-font-family': 'var(--font-preview)',
-  '--preview-tag-font-weight': '700',
   '--preview-tag-font-size': '0.78em',
+  // Font style: normal | italic | oblique. Font weight: normal | bold | 100..900.
+  '--preview-tag-font-style': 'normal',
+  '--preview-tag-font-weight': '600',
+  '--preview-tag-letter-spacing': 'normal',
+  // Line height accepts a unitless number or CSS length. Word spacing: normal | CSS length.
+  '--preview-tag-line-height': '1.2',
+  '--preview-tag-word-spacing': 'normal',
+  // Text transform: none | uppercase | lowercase | capitalize.
+  '--preview-tag-text-transform': 'none',
+  // Decoration line: none | underline | overline | line-through.
+  // Style: solid | double | dotted | dashed | wavy. Thickness: auto | from-font | CSS length.
+  '--preview-tag-text-decoration-line': 'none',
+  '--preview-tag-text-decoration-style': 'solid',
+  '--preview-tag-text-decoration-thickness': 'auto',
+  // Underline offset: auto | CSS length. Skip ink: auto | none.
+  '--preview-tag-text-underline-offset': 'auto',
+  '--preview-tag-text-decoration-skip-ink': 'auto',
+  // Vertical align: baseline | middle | text-top | text-bottom | CSS length.
+  // White space: normal | nowrap | pre | pre-wrap | break-spaces.
+  '--preview-tag-vertical-align': '0.08em',
+  '--preview-tag-white-space': 'nowrap',
 } satisfies PreviewThemeVariables
 
 export const theHubPreviewTheme: DraftPreviewTheme = {

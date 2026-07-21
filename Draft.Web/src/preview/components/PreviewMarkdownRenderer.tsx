@@ -1,4 +1,5 @@
 import {
+  Children,
   createContext,
   isValidElement,
   useContext,
@@ -39,8 +40,11 @@ import {
   scrollToPreviewAnchor,
 } from '../anchors/scrollToPreviewAnchor'
 import { useTranslation } from '../../localization/useTranslation'
+import { usePreviewCodeBlockScrollbar } from '../hooks/usePreviewCodeBlockScrollbar'
+import PreviewCodeBlockScrollbar from './PreviewCodeBlockScrollbar'
 
 type PreviewMarkdownRendererProps = {
+  fallback?: ReactNode
   markdown: string
   previewTheme: DraftPreviewTheme
 }
@@ -49,6 +53,9 @@ type PreviewCodeBlockProps = ComponentPropsWithoutRef<'pre'> & {
   sourceLine?: number
 }
 type PreviewBlockquoteProps = ComponentPropsWithoutRef<'blockquote'> & {
+  sourceLine?: number
+}
+type PreviewDetailsProps = ComponentPropsWithoutRef<'details'> & {
   sourceLine?: number
 }
 
@@ -93,16 +100,31 @@ const previewCalloutIconPaths = {
   todo: 'icons/callouts/Todo.svg',
 } satisfies Record<CalloutType, string>
 const blockquoteIconPositions = [
-  'top-left',
-  'left',
-  'bottom-left',
-  'bottom',
-  'bottom-right',
-  'right',
-  'top-right',
   'top',
+  'topright',
+  'right',
+  'bottomright',
+  'bottom',
+  'bottomleft',
+  'left',
+  'topleft',
 ] as const
 const blockquoteIconPositionSet = new Set<string>(blockquoteIconPositions)
+const blockquoteIconVisibilities = ['visible', 'hidden'] as const
+const blockquoteIconVisibilitySet = new Set<string>(
+  blockquoteIconVisibilities,
+)
+const blockquoteLabelPositions = ['left', 'right', 'top', 'bottom'] as const
+const blockquoteLabelPositionSet = new Set<string>(blockquoteLabelPositions)
+const blockquoteLabelTextTransforms = [
+  'hidden',
+  'uppercase',
+  'lowercase',
+  'capitalized',
+] as const
+const blockquoteLabelTextTransformSet = new Set<string>(
+  blockquoteLabelTextTransforms,
+)
 
 function getSourceLine(node: SourceMappedNode | undefined) {
   const line = node?.position?.start?.line
@@ -158,12 +180,54 @@ function getCalloutTypeAttribute(props: Record<string, unknown>) {
 }
 
 function getBlockquoteIconPosition(previewTheme: DraftPreviewTheme | null) {
-  const position =
-    previewTheme?.cssVariables['--preview-blockquote-icon-position']
+  const position = previewTheme?.cssVariables[
+    '--preview-blockquote-icon-position'
+  ]
+    ?.trim()
+    .toLowerCase()
+    .replaceAll('-', '')
 
   return position && blockquoteIconPositionSet.has(position)
     ? position
     : 'left'
+}
+
+function getBlockquoteIconVisibility(previewTheme: DraftPreviewTheme | null) {
+  const visibility = previewTheme?.cssVariables[
+    '--preview-blockquote-icon-visibility'
+  ]
+    ?.trim()
+    .toLowerCase()
+
+  return visibility && blockquoteIconVisibilitySet.has(visibility)
+    ? visibility
+    : 'visible'
+}
+
+function getBlockquoteLabelPosition(previewTheme: DraftPreviewTheme | null) {
+  const position = previewTheme?.cssVariables[
+    '--preview-blockquote-label-position'
+  ]
+    ?.trim()
+    .toLowerCase()
+
+  return position && blockquoteLabelPositionSet.has(position)
+    ? position
+    : 'right'
+}
+
+function getBlockquoteLabelTextTransform(
+  previewTheme: DraftPreviewTheme | null,
+) {
+  const textTransform = previewTheme?.cssVariables[
+    '--preview-blockquote-label-text-transform'
+  ]
+    ?.trim()
+    .toLowerCase()
+
+  return textTransform && blockquoteLabelTextTransformSet.has(textTransform)
+    ? textTransform
+    : 'hidden'
 }
 
 function getBlockquoteBoldUsesCalloutColor(
@@ -385,6 +449,16 @@ function PreviewCodeBlock({
   const [copied, setCopied] = useState(false)
   const resetCopiedTimeoutRef = useRef(0)
   const codeText = getTextFromReactNode(children)
+  const codeBlockScrollRef = useRef<HTMLPreElement | null>(null)
+  const {
+    scrollbarRef,
+    thumbRef,
+    handleTrackPointerDown,
+    handleThumbPointerDown,
+    handleThumbPointerMove,
+    handleThumbPointerUp,
+    handleThumbPointerCancel,
+  } = usePreviewCodeBlockScrollbar(codeBlockScrollRef, codeText)
 
   useEffect(() => {
     return () => {
@@ -419,7 +493,9 @@ function PreviewCodeBlock({
 
   return (
     <div className="preview-code-block" data-source-line={sourceLine}>
-      <pre {...props}>{children}</pre>
+      <pre {...props} ref={codeBlockScrollRef}>
+        {children}
+      </pre>
       <button
         type="button"
         className={`preview-code-block-copy-button${copied ? ' is-copied' : ''}`}
@@ -455,6 +531,15 @@ function PreviewCodeBlock({
           <path d="M3.6 8.4 6.7 11.4 12.6 4.8" />
         </svg>
       </button>
+      <PreviewCodeBlockScrollbar
+        scrollbarRef={scrollbarRef}
+        thumbRef={thumbRef}
+        onTrackPointerDown={handleTrackPointerDown}
+        onThumbPointerDown={handleThumbPointerDown}
+        onThumbPointerMove={handleThumbPointerMove}
+        onThumbPointerUp={handleThumbPointerUp}
+        onThumbPointerCancel={handleThumbPointerCancel}
+      />
     </div>
   )
 }
@@ -481,6 +566,7 @@ function PreviewBlockquote({
   }
 
   const iconUrl = getPreviewAssetUrl(previewCalloutIconPaths[calloutType])
+  const calloutLabel = getStringAttribute(props, 'data-callout-label') ?? ''
 
   return (
     <blockquote
@@ -488,16 +574,24 @@ function PreviewBlockquote({
       className={className}
       data-callout-bold-color={getBlockquoteBoldUsesCalloutColor(previewTheme)}
       data-callout-icon-position={getBlockquoteIconPosition(previewTheme)}
+      data-callout-icon-visibility={getBlockquoteIconVisibility(previewTheme)}
+      data-callout-label-position={getBlockquoteLabelPosition(previewTheme)}
+      data-callout-label-text-transform={getBlockquoteLabelTextTransform(
+        previewTheme,
+      )}
       data-source-line={sourceLine}
     >
-      <span
-        className="preview-callout-icon"
-        aria-hidden="true"
-        style={{
-          WebkitMaskImage: `url("${iconUrl}")`,
-          maskImage: `url("${iconUrl}")`,
-        }}
-      />
+      <div className="preview-callout-visual">
+        <span
+          className="preview-callout-icon"
+          aria-hidden="true"
+          style={{
+            WebkitMaskImage: `url("${iconUrl}")`,
+            maskImage: `url("${iconUrl}")`,
+          }}
+        />
+        <span className="preview-callout-label">{calloutLabel}</span>
+      </div>
       <div className="preview-callout-body">{children}</div>
     </blockquote>
   )
@@ -596,7 +690,31 @@ function PreviewUnorderedList({
   )
 }
 
+function PreviewDetails({
+  children,
+  sourceLine,
+  ...props
+}: PreviewDetailsProps) {
+  const childNodes = Children.toArray(children)
+  const summaryIndex = childNodes.findIndex(
+    (child) => isValidElement(child) && child.type === 'summary',
+  )
+  const contentStartIndex = summaryIndex >= 0 ? summaryIndex + 1 : 0
+
+  return (
+    <details {...props} data-source-line={sourceLine}>
+      {childNodes.slice(0, contentStartIndex)}
+      <div className="preview-expander-content">
+        {childNodes.slice(contentStartIndex)}
+      </div>
+    </details>
+  )
+}
+
 const previewComponents: Components = {
+  details({ node, ...props }) {
+    return <PreviewDetails {...props} sourceLine={getSourceLine(node)} />
+  },
   h1({ node, ...props }) {
     return <h1 {...props} data-source-line={getSourceLine(node)} />
   },
@@ -742,6 +860,7 @@ const previewComponents: Components = {
 }
 
 function PreviewMarkdownRenderer({
+  fallback,
   markdown,
   previewTheme,
 }: PreviewMarkdownRendererProps) {
@@ -754,6 +873,7 @@ function PreviewMarkdownRenderer({
     <PreviewThemeContext.Provider value={previewTheme}>
       <MarkdownHooks
         components={previewComponents}
+        fallback={fallback}
         rehypePlugins={rehypePlugins}
         remarkPlugins={remarkPlugins}
       >

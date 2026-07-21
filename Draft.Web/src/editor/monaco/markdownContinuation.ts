@@ -9,7 +9,7 @@ import {
 const MARKDOWN_CONTINUATION_EDIT_SOURCE = 'draft.markdownContinuation'
 const LIST_PREFIX_PATTERN = /^(\s*)([-*+]|\d+[.)])\s+/u
 const NUMBERED_LIST_MARKER_PATTERN = /^(\d+)([.)])$/u
-const CHECKBOX_PREFIX_PATTERN = /^(\[[ xX]\]\s+)/u
+const CHECKBOX_PREFIX_PATTERN = /^(\[[ xX]\](?:\s+|$))/u
 
 type MarkdownContinuation = {
   currentPrefixLength: number
@@ -74,7 +74,8 @@ function getMarkdownContinuation(lineBeforeCursor: string): MarkdownContinuation
 
     return {
       currentPrefixLength,
-      isEmptyBlock: contentAfterPrefix.trim().length === 0,
+      isEmptyBlock:
+        checkboxMatch === null && contentAfterPrefix.trim().length === 0,
       nextPrefix,
     }
   }

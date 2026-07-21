@@ -7,7 +7,7 @@ public sealed class DraftSettings
 {
     public string AppLanguage { get; set; } = SettingsDefaults.DefaultAppLanguage;
 
-    public bool ReopenLastWorkspaceOnStartup { get; set; } = false;
+    public bool ReopenLastWorkspaceOnStartup { get; set; } = true;
 
     public bool CheckForUpdatesOnStartup { get; set; } = true;
 

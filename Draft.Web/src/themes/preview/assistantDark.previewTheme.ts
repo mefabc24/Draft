@@ -10,6 +10,14 @@ const assistantDarkPreviewColorVariables = {
   '--preview-background': draftDarkTokens.chromeBackground,
   '--preview-foreground': '#fff',
 
+  // Basic text formatting
+  '--preview-bold-foreground': 'currentColor',
+  '--preview-italic-foreground': 'currentColor',
+  '--preview-strikethrough-foreground': 'currentColor',
+  '--preview-strikethrough-text-decoration-color': 'currentColor',
+  '--preview-underline-foreground': 'currentColor',
+  '--preview-underline-text-decoration-color': 'currentColor',
+
   // Headings: text color
   '--preview-heading-foreground': '#fff',
   '--preview-h1-foreground': '#fff',
@@ -38,7 +46,7 @@ const assistantDarkPreviewColorVariables = {
   '--preview-h6-line-color': 'transparent',
 
   // Horizontal rule
-  '--preview-rule-border': '#374151',
+  '--preview-rule-border': '#3A3A3A',
 
   // Images
   '--preview-image-border': 'transparent',
@@ -52,22 +60,25 @@ const assistantDarkPreviewColorVariables = {
   '--preview-link-hover-text-decoration-color': '#339CFF',
 
   // Inline code
-  '--preview-inline-code-background': '#242424',
+  '--preview-inline-code-background': '#2f2f2f',
   '--preview-inline-code-border': 'transparent',
   '--preview-inline-code-foreground': '#f9fafb',
-  '--preview-kbd-background': '#1a1a1a',
-  '--preview-kbd-foreground': '#fff',
-  '--preview-kbd-border': '#3f3f3f',
-  '--preview-kbd-border-bottom': '#6b6b6b',
+
+  // Keyboard keys
+  '--preview-keyboard-key-background': '#2f3030',
+  '--preview-keyboard-key-foreground': '#ececec',
+  '--preview-keyboard-key-border': '#4a4b4b',
+  '--preview-keyboard-key-border-bottom': '#868787',
 
   // Draft inline extensions
-  '--preview-highlight-background': 'rgba(51, 156, 255, 0.26)',
-  '--preview-highlight-foreground': '#fff',
+  '--preview-highlight-background': 'rgba(250, 204, 21, 0.25)',
+  '--preview-highlight-foreground': '#f8f0c8',
   '--preview-spoiler-background': '#050505',
   '--preview-spoiler-revealed-background': 'rgba(255, 255, 255, 0.08)',
   '--preview-spoiler-foreground': '#fff',
   '--preview-tag-default-color': '#339CFF',
-  '--preview-tag-foreground': '#fff',
+  // Tag text automatically uses the default or per-tag badge color.
+  '--preview-tag-text-decoration-color': 'currentColor',
   '--preview-tag-background-opacity': '18%',
 
   // Task list checkboxes
@@ -81,9 +92,12 @@ const assistantDarkPreviewColorVariables = {
   // Code blocks
   // copy-icon-foreground controls only the copy symbol fill color.
   '--preview-code-block-background': '#242424',
+  '--preview-code-block-copy-button-background': '#242424',
   '--preview-code-block-border': 'transparent',
   '--preview-code-block-copy-icon-foreground': '#fff',
   '--preview-code-block-foreground': '#fff',
+  '--preview-code-block-scrollbar-thumb': draftDarkTokens.scrollbarThumb,
+  '--preview-code-block-scrollbar-track': 'transparent',
 
   // Blockquote colors
   '--preview-blockquote-default-color': '#3A3A3A',
@@ -101,10 +115,23 @@ const assistantDarkPreviewColorVariables = {
   '--preview-blockquote-con-color': '#E25E5E',
   '--preview-blockquote-question-color': '#8AE9F8',
   '--preview-blockquote-todo-color': '#ACABAA',
-  // background-opacity is a decimal alpha used to tint the blockquote color.
+  // Decimal alpha used to tint the blockquote color. 0 disables the background.
   '--preview-blockquote-background-opacity': '0.1',
   // true colors bold callout text with the callout color. false keeps normal text color.
   '--preview-blockquote-bold-uses-callout-color': 'true',
+
+  // Expanders
+  '--preview-expander-background': '#1F1F1F',
+  '--preview-expander-border': 'transparent',
+  '--preview-expander-summary-background': '#242424',
+  '--preview-expander-summary-foreground': '#fff',
+  '--preview-expander-summary-hover-background': '#303030',
+  '--preview-expander-summary-hover-foreground': '#fff',
+  '--preview-expander-marker-foreground': '#fff',
+  '--preview-expander-content-background': '#1F1F1F',
+  '--preview-expander-content-foreground': '#fff',
+  '--preview-expander-divider': '#3F3F3F',
+  '--preview-expander-focus-ring': '#339CFF',
 
   // Tables
   '--preview-table-border': 'transparent',
@@ -123,6 +150,28 @@ const assistantDarkPreviewColorVariables = {
 
 // Layout tokens: radii, border widths, spacing, and table grid behavior.
 const assistantDarkPreviewLayoutVariables = {
+  // Basic text formatting
+  // Font size and letter spacing accept CSS lengths. Line height accepts a unitless number or CSS length.
+  '--preview-font-size': '1rem',
+  '--preview-font-weight': '400',
+  '--preview-line-height': '1.7',
+  '--preview-letter-spacing': 'normal',
+  // Bold font weight: normal | bold | 100..900. Italic style: normal | italic | oblique.
+  '--preview-bold-font-weight': '700',
+  '--preview-italic-font-style': 'italic',
+  // Strikethrough line: none | line-through. Style: solid | double | dotted | dashed | wavy.
+  // Thickness: auto | from-font | CSS length such as 1px or 0.12em.
+  '--preview-strikethrough-text-decoration-line': 'line-through',
+  '--preview-strikethrough-text-decoration-style': 'solid',
+  '--preview-strikethrough-text-decoration-thickness': '1px',
+  // Underline line: none | underline. Style: solid | double | dotted | dashed | wavy.
+  // Thickness and offset accept auto or a CSS length. Skip ink: auto | none.
+  '--preview-underline-text-decoration-line': 'underline',
+  '--preview-underline-text-decoration-style': 'solid',
+  '--preview-underline-text-decoration-thickness': '1px',
+  '--preview-underline-text-underline-offset': '2px',
+  '--preview-underline-text-decoration-skip-ink': 'auto',
+
   // Headings: text weight
   // font-weight: normal | bold | 100..900.
   '--preview-h1-font-weight': '600',
@@ -182,7 +231,7 @@ const assistantDarkPreviewLayoutVariables = {
 
   // Rule height controls how thick the line is. Height 0 hides it. Radius accepts CSS lengths.
   '--preview-rule-border-radius': '0',
-  '--preview-rule-height': '1px',
+  '--preview-rule-height': '2px',
 
   // Images
   // Border width 0 removes the border. Radius and border width accept CSS lengths.
@@ -194,14 +243,17 @@ const assistantDarkPreviewLayoutVariables = {
   '--preview-inline-code-border-radius': '6px',
   '--preview-inline-code-border-width': '0',
   '--preview-inline-code-padding': '2px 6px',
-  '--preview-kbd-border-radius': '5px',
-  '--preview-kbd-border-width': '1px',
-  '--preview-kbd-border-bottom-width': '2px',
-  '--preview-kbd-min-width': '1.65em',
-  '--preview-kbd-padding': '1px 6px 2px',
-  '--preview-kbd-margin': '0 0.08em',
-  '--preview-kbd-line-height': '1.25',
-  '--preview-kbd-vertical-align': '0.08em',
+
+  // Keyboard keys
+  // Border width 0 removes the border. Radius, spacing, and dimensions accept CSS lengths.
+  '--preview-keyboard-key-border-radius': '5px',
+  '--preview-keyboard-key-border-width': '1px',
+  '--preview-keyboard-key-border-bottom-width': '2px',
+  '--preview-keyboard-key-min-width': '1.65em',
+  '--preview-keyboard-key-padding': '1px 6px 2px',
+  '--preview-keyboard-key-margin': '0 0.08em',
+  '--preview-keyboard-key-line-height': '1.25',
+  '--preview-keyboard-key-vertical-align': '0.08em',
 
   // Draft inline extensions
   // Padding inline/block controls how far the highlight or pill extends beyond text.
@@ -248,16 +300,47 @@ const assistantDarkPreviewLayoutVariables = {
   '--preview-code-block-border-width': '0',
   '--preview-code-block-copy-button-border-radius': '6px',
   '--preview-code-block-padding': '14px',
+  '--preview-code-block-scrollbar-border-radius': '999px',
+  '--preview-code-block-scrollbar-bottom': '4px',
+  '--preview-code-block-scrollbar-height': '6px',
+  '--preview-code-block-scrollbar-inset': '8px',
 
   // Blockquote layout
   // Border inset moves the marker inward; border width 0 hides it. All values accept CSS lengths.
   '--preview-blockquote-border-inset': '0',
   '--preview-blockquote-border-line-radius': '2px',
-  '--preview-blockquote-border-radius': '0',
+  '--preview-blockquote-border-radius': '0 8px 8px 0',
   '--preview-blockquote-border-width': '4px',
+  // Icon position: top | topright | right | bottomright | bottom | bottomleft | left | topleft.
   '--preview-blockquote-icon-position': 'left',
   '--preview-blockquote-icon-size': '44px',
+  // Space between icon and label. Accepts CSS lengths such as 0, 6px, or 0.5em.
+  '--preview-blockquote-icon-label-gap': '6px',
+  // Icon visibility: Visible | Hidden. Hidden does not reserve icon space.
+  '--preview-blockquote-icon-visibility': 'Visible',
+  // Label font size accepts CSS sizes such as 12px, 0.875em, or 1rem.
+  '--preview-blockquote-label-font-size': '1em',
+  // Label font weight: normal | bold | 100..900.
+  '--preview-blockquote-label-font-weight': '600',
+  // Label text: Hidden | Uppercase | Lowercase | Capitalized.
+  '--preview-blockquote-label-text-transform': 'Hidden',
+  // Label position relative to the icon: Left | Right | Top | Bottom.
+  '--preview-blockquote-label-position': 'Right',
   '--preview-blockquote-padding': '8px 16px',
+
+  // Expander layout
+  // Border, marker, and divider values accept CSS lengths; margin and padding use CSS shorthand.
+  '--preview-expander-border-radius': '12px',
+  '--preview-expander-border-width': '1px',
+  '--preview-expander-margin': '16px 0',
+  '--preview-expander-summary-padding': '10px 14px',
+  '--preview-expander-summary-gap': '10px',
+  '--preview-expander-summary-font-weight': '600',
+  '--preview-expander-marker-size': '10px',
+  '--preview-expander-content-padding': '12px 14px',
+  '--preview-expander-divider-width': '1px',
+  '--preview-expander-focus-ring-width': '2px',
+  '--preview-expander-focus-ring-offset': '-2px',
 
   // Tables
   // Border width 0 removes that line. Use row, column, header, and outer widths to shape the grid.
@@ -273,22 +356,44 @@ const assistantDarkPreviewLayoutVariables = {
 // Typography tokens: font stacks used inside rendered markdown.
 const assistantDarkPreviewTypographyVariables = {
   // Code
-  // CSS font-family stack used by inline code, keyboard input, and code blocks.
+  // CSS font-family stack used by inline code and code blocks.
   '--font-mono':
     "'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace",
-  '--preview-kbd-font-family': 'var(--font-mono)',
-  '--preview-kbd-font-size': '0.78em',
-  '--preview-kbd-font-weight': '600',
+
+  // Keyboard keys
+  '--preview-keyboard-key-font-family': 'var(--font-mono)',
+  '--preview-keyboard-key-font-size': '0.78em',
+  '--preview-keyboard-key-font-weight': '600',
 
   // Markdown body
   // CSS font-family stack used by normal markdown text.
   '--font-preview': "'Segoe UI', Arial, sans-serif",
 
-  // Tags
-  // CSS font values used by Draft tag pills.
+  // Tags: text
+  // Font family accepts a CSS font stack. Size, letter spacing, and word spacing accept CSS lengths.
   '--preview-tag-font-family': 'var(--font-preview)',
-  '--preview-tag-font-weight': '700',
   '--preview-tag-font-size': '0.78em',
+  // Font style: normal | italic | oblique. Font weight: normal | bold | 100..900.
+  '--preview-tag-font-style': 'normal',
+  '--preview-tag-font-weight': '600',
+  '--preview-tag-letter-spacing': 'normal',
+  // Line height accepts a unitless number or CSS length. Word spacing: normal | CSS length.
+  '--preview-tag-line-height': '1.2',
+  '--preview-tag-word-spacing': 'normal',
+  // Text transform: none | uppercase | lowercase | capitalize.
+  '--preview-tag-text-transform': 'none',
+  // Decoration line: none | underline | overline | line-through.
+  // Style: solid | double | dotted | dashed | wavy. Thickness: auto | from-font | CSS length.
+  '--preview-tag-text-decoration-line': 'none',
+  '--preview-tag-text-decoration-style': 'solid',
+  '--preview-tag-text-decoration-thickness': 'auto',
+  // Underline offset: auto | CSS length. Skip ink: auto | none.
+  '--preview-tag-text-underline-offset': 'auto',
+  '--preview-tag-text-decoration-skip-ink': 'auto',
+  // Vertical align: baseline | middle | text-top | text-bottom | CSS length.
+  // White space: normal | nowrap | pre | pre-wrap | break-spaces.
+  '--preview-tag-vertical-align': '0.08em',
+  '--preview-tag-white-space': 'nowrap',
 } satisfies PreviewThemeVariables
 
 export const assistantDarkPreviewTheme: DraftPreviewTheme = {

@@ -8,6 +8,8 @@ namespace Draft.WebWorkspace.Services;
 
 public sealed class DraftWebViewMessageBridge
 {
+    private const int PreviewExportRenderTimeoutMilliseconds = 15000;
+    private const int PreviewExportRenderPollDelayMilliseconds = 50;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public void PostSettings(CoreWebView2? webView, DraftSettings settings)
@@ -131,16 +133,106 @@ public sealed class DraftWebViewMessageBridge
         string normalizedLayout = NormalizePreviewExportLayout(layout);
         string layoutJson = JsonSerializer.Serialize(normalizedLayout, JsonOptions);
         string previewThemeIdJson = JsonSerializer.Serialize(previewThemeId, JsonOptions);
-        string scriptResult = await webView.ExecuteScriptAsync(
-            $"window.draftExport?.createPreviewHtml?.({{ layout: {layoutJson}, previewThemeId: {previewThemeIdJson} }}) ?? null");
-        string? htmlDocument = JsonSerializer.Deserialize<string?>(scriptResult, JsonOptions);
+        await webView.ExecuteScriptAsync($$"""
+            (() => {
+              const exportState = {
+                ready: false,
+                html: null,
+                error: null
+              };
 
-        if (string.IsNullOrWhiteSpace(htmlDocument))
-            throw new InvalidOperationException(LocalizationService.Translate(
-                "export.previewHtmlCouldNotBeCreated",
-                "The preview export HTML could not be created."));
+              window.draftPreviewExport = exportState;
 
-        return htmlDocument;
+              try {
+                const exportOperation = window.draftExport?.createPreviewHtml?.({
+                  layout: {{layoutJson}},
+                  previewThemeId: {{previewThemeIdJson}}
+                });
+
+                Promise.resolve(exportOperation ?? null)
+                  .then((html) => {
+                    exportState.html = typeof html === 'string' ? html : null;
+                  })
+                  .catch((error) => {
+                    exportState.error = error instanceof Error
+                      ? error.message
+                      : String(error);
+                  })
+                  .finally(() => {
+                    exportState.ready = true;
+                  });
+              } catch (error) {
+                exportState.error = error instanceof Error
+                  ? error.message
+                  : String(error);
+                exportState.ready = true;
+              }
+            })();
+            """);
+
+        try
+        {
+            await WaitForPreviewExportHtmlAsync(webView);
+
+            string renderErrorResult = await webView.ExecuteScriptAsync(
+                "window.draftPreviewExport?.error ?? null");
+            string? renderError = JsonSerializer.Deserialize<string?>(renderErrorResult, JsonOptions);
+
+            if (!string.IsNullOrWhiteSpace(renderError))
+                throw CreatePreviewExportHtmlException();
+
+            string scriptResult = await webView.ExecuteScriptAsync(
+                "window.draftPreviewExport?.html ?? null");
+            string? htmlDocument = JsonSerializer.Deserialize<string?>(scriptResult, JsonOptions);
+
+            if (string.IsNullOrWhiteSpace(htmlDocument))
+                throw CreatePreviewExportHtmlException();
+
+            return htmlDocument;
+        }
+        finally
+        {
+            try
+            {
+                await webView.ExecuteScriptAsync("window.draftPreviewExport = undefined");
+            }
+            catch
+            {
+                // The WebView may have navigated or closed while export cleanup was running.
+            }
+        }
+    }
+
+    private static async Task WaitForPreviewExportHtmlAsync(CoreWebView2 webView)
+    {
+        using CancellationTokenSource timeout = new(PreviewExportRenderTimeoutMilliseconds);
+
+        while (!timeout.IsCancellationRequested)
+        {
+            string isReady = await webView.ExecuteScriptAsync(
+                "Boolean(window.draftPreviewExport?.ready)");
+
+            if (string.Equals(isReady, "true", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            try
+            {
+                await Task.Delay(PreviewExportRenderPollDelayMilliseconds, timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+        }
+
+        throw CreatePreviewExportHtmlException();
+    }
+
+    private static InvalidOperationException CreatePreviewExportHtmlException()
+    {
+        return new InvalidOperationException(LocalizationService.Translate(
+            "export.previewHtmlCouldNotBeCreated",
+            "The preview export HTML could not be created."));
     }
 
     private static string NormalizePreviewExportLayout(string? layout)

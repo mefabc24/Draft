@@ -165,7 +165,7 @@ public static class ShortcutSettingsCatalog
                     new ShortcutActionDefinition(
                         ShortcutActionIds.ToolbarComment,
                         "Comment",
-                        "Toggle hidden comment Markdown around the current selection.",
+                        "Toggle an HTML comment around the current selection.",
                         "Ctrl + /"),
                     new ShortcutActionDefinition(
                         ShortcutActionIds.ToolbarStrikethrough,

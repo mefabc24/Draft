@@ -119,6 +119,8 @@ function Workspace() {
   const hasReceivedDocumentFromHostRef = useRef(false)
   const isApplyingDocumentFromHostRef = useRef(false)
   const fileNameRef = useRef(fileName)
+  const markdownRef = useRef(markdown)
+  const activePreviewThemeIdRef = useRef(activePreviewThemeId)
   const workspaceRef = useRef<HTMLElement | null>(null)
   const editorBodyRef = useRef<HTMLDivElement | null>(null)
   const editorHostRef = useRef<HTMLDivElement | null>(null)
@@ -294,10 +296,21 @@ function Workspace() {
   }, [fileName])
 
   useEffect(() => {
+    markdownRef.current = markdown
+  }, [markdown])
+
+  useEffect(() => {
+    activePreviewThemeIdRef.current = activePreviewThemeId
+  }, [activePreviewThemeId])
+
+  useEffect(() => {
     return setPreviewExportHtmlHandler((options) =>
       createPreviewExportHtml({
         fileName: fileNameRef.current,
         layout: options?.layout,
+        markdown: editorInstanceRef.current?.getValue() ?? markdownRef.current,
+        previewThemeId:
+          options?.previewThemeId ?? activePreviewThemeIdRef.current,
       }),
     )
   }, [])

@@ -2,7 +2,7 @@
 
 Draft is a focused Windows Markdown editor with live preview, save snapshots, a floating formatting toolbar, and a calm desktop workspace.
 
-Current version: `2.0.0` [Download](https://github.com/mefabc24/Draft/releases/latest) · [Themes](Documentation/User/THEMES.md) · [Report issue](https://github.com/mefabc24/Draft/issues)
+Current version: `2.0.0` [Download](https://github.com/mefabc24/Draft/releases/latest) · [Themes](Documentation/User/THEMES.md) · [Report issue](https://github.com/mefabc24/Draft/issues) · [Roadmap](Documentation/User/ROADMAP.md)
 
 ![Draft main workspace](Documentation/Assets/app-preview.png)
 
@@ -47,16 +47,23 @@ development builds may show that updates are not available.
 ### Feature Preview
 
 #### Floating Markdown Toolbar
+#### Floating Markdown Toolbar
 
-Quickly format Markdown in both the editor and the rendered preview.
+Quickly format Markdown in both the editor and the rendered preview. The toolbar stays compact by default and can be expanded to show additional formatting options.
 
-![Floating Markdown Toolbar](Documentation/Assets/floating-markdown-toolbar.png)
+**Collapsed**
+
+![Floating Markdown Toolbar Collapsed](Documentation/Assets/fmt-collapsed.png)
+
+**Expanded**
+
+![Floating Markdown Toolbar Expanded](Documentation/Assets/fmt-expanded.png)
 
 #### Quick Insert Menu
 
 Insert common Markdown blocks without remembering the exact syntax.
 
-![Quick Insert Menu](Documentation/Assets/quick-insert-menu.png)
+![Quick Insert Menu](Documentation/Assets/qim.png)
 
 #### Save Snapshots
 

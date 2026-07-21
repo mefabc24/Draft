@@ -231,6 +231,46 @@ export const draftCommandShortcutActions: readonly ShortcutActionId[] = [
   shortcutActionIds.quickInsertOpenMenu,
 ]
 
+const editorWordNavigationShortcutActions: readonly ShortcutActionId[] = [
+  shortcutActionIds.editorMoveCursorWordLeft,
+  shortcutActionIds.editorMoveCursorWordRight,
+  shortcutActionIds.editorExtendSelectionWordLeft,
+  shortcutActionIds.editorExtendSelectionWordRight,
+]
+
+function isEditableQuickInsertTarget(target: EventTarget | null) {
+  if (!(target instanceof Element)) {
+    return false
+  }
+
+  const editableTarget = target.closest('input, textarea, [contenteditable]')
+
+  if (!(editableTarget instanceof HTMLElement)) {
+    return false
+  }
+
+  const contentEditableValue = editableTarget.getAttribute('contenteditable')
+  const isEditable =
+    editableTarget.matches('input, textarea') ||
+    (contentEditableValue !== null &&
+      contentEditableValue.toLowerCase() !== 'false')
+
+  return (
+    isEditable &&
+    editableTarget.closest('[data-editor-quick-insert-menu="true"]') !== null
+  )
+}
+
+function shouldUseNativeQuickInsertWordNavigation(
+  event: KeyboardEvent,
+  actionId: ShortcutActionId,
+) {
+  return (
+    editorWordNavigationShortcutActions.includes(actionId) &&
+    isEditableQuickInsertTarget(event.target)
+  )
+}
+
 const unguardedDefaultDraftActions: readonly ShortcutActionId[] = [
   shortcutActionIds.editorContinueMarkdownBlock,
   shortcutActionIds.editorIndentListItem,
@@ -307,6 +347,10 @@ export function getBrowserShortcutPolicy(
   }
 
   const draftCommandShortcut = draftCommandShortcutActions.find((actionId) => {
+    if (shouldUseNativeQuickInsertWordNavigation(event, actionId)) {
+      return false
+    }
+
     if (!eventMatchesShortcutAction(event, shortcutBindings, actionId)) {
       return false
     }
@@ -327,6 +371,7 @@ export function getBrowserShortcutPolicy(
   const changedDefaultShortcut = globallyBlockedChangedDefaultActions.find((
     actionId,
   ) =>
+    !shouldUseNativeQuickInsertWordNavigation(event, actionId) &&
     eventMatchesDefaultShortcutAction(event, actionId) &&
     !eventMatchesShortcutAction(event, shortcutBindings, actionId),
   )
