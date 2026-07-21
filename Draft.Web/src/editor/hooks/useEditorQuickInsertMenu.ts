@@ -15,6 +15,7 @@ import {
   type ShortcutBindings,
 } from '../../shortcuts/shortcutSettings'
 import { useTranslation } from '../../localization/useTranslation'
+import type { QuickInsertItemCustomization } from '../../settings/menuCustomization'
 import { clamp } from '../../shared/utils/clamp'
 import {
   getEditorQuickInsertTargetFromPosition,
@@ -25,6 +26,7 @@ import {
   EDITOR_EMPTY_LINE_INSERT_BUTTON_LEFT,
   EDITOR_QUICK_INSERT_CURSOR_BUTTON_GAP,
 } from '../monaco/editorOptions'
+import { hasAvailableEditorQuickInsertEntries } from '../components/EditorQuickInsertMenuConfig'
 
 const BUTTON_SIZE = 24
 const MENU_EDGE_PADDING = 8
@@ -134,6 +136,7 @@ function clampQuickInsertMenuPosition(
 export function useEditorQuickInsertMenu(
   editor: monaco.editor.IStandaloneCodeEditor | null,
   editorBodyRef: RefObject<HTMLDivElement | null>,
+  quickInsertItems: QuickInsertItemCustomization[],
   shortcutBindings: ShortcutBindings,
 ) {
   const { t } = useTranslation()
@@ -252,7 +255,15 @@ export function useEditorQuickInsertMenu(
     (anchor: EditorQuickInsertMenuAnchor) => {
       const editorBody = editorBodyRef.current
 
-      if (!editor || !editorBody) {
+      if (
+        !editor ||
+        !editorBody ||
+        !hasAvailableEditorQuickInsertEntries(
+          quickInsertItems,
+          anchor.mode,
+        )
+      ) {
+        closeMenu()
         return
       }
 
@@ -280,8 +291,32 @@ export function useEditorQuickInsertMenu(
       setMenuPosition(nextPosition)
       scheduleMenuPositionUpdate()
     },
-    [closeMenu, editor, editorBodyRef, scheduleMenuPositionUpdate],
+    [
+      closeMenu,
+      editor,
+      editorBodyRef,
+      quickInsertItems,
+      scheduleMenuPositionUpdate,
+    ],
   )
+
+  useEffect(() => {
+    if (
+      !menuTarget ||
+      hasAvailableEditorQuickInsertEntries(
+        quickInsertItems,
+        menuTarget.mode,
+      )
+    ) {
+      return undefined
+    }
+
+    const frameId = window.requestAnimationFrame(closeMenu)
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [closeMenu, menuTarget, quickInsertItems])
 
   const openMenuAtCursor = useCallback(() => {
     if (!editor) {

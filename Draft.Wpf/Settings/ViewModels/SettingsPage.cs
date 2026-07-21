@@ -5,6 +5,8 @@ public enum SettingsPage
     General,
     Editor,
     Preview,
+    FloatingMarkdownToolbar,
+    QuickInsert,
     Appearance,
     StatusBar,
     Shortcuts,

@@ -37,10 +37,7 @@ type ToolbarDropdownProps = {
   onOpenChange: (open: boolean) => void
   onSelect: (value: string) => void
   open: boolean
-  renderSubmenu?: (
-    submenuId: string,
-    props: ToolbarDropdownSubmenuRenderProps,
-  ) => ReactNode
+  renderSubmenu?: (props: ToolbarDropdownSubmenuRenderProps) => ReactNode
   selectedValue: string
   triggerIcon?: ReactNode
   triggerLabel: string
@@ -55,11 +52,14 @@ export type ToolbarDropdownSubmenuRenderProps = {
   anchorRef: RefObject<HTMLButtonElement | null>
   closeMenu: () => void
   closeSubmenu: () => void
+  submenuId: string
 }
 type ToolbarMenuPlacement = 'top' | 'bottom'
 type ToolbarMenuGeometry = {
+  left: number
   maxHeight?: number
   placement: ToolbarMenuPlacement
+  top: number
 }
 
 const MENU_EDGE_PADDING = 8
@@ -173,7 +173,9 @@ function ToolbarDropdown({
     handleThumbPointerUp,
   } = useToolbarMenuScrollbar(open)
   const [menuGeometry, setMenuGeometry] = useState<ToolbarMenuGeometry>({
+    left: 0,
     placement: 'bottom',
+    top: 0,
   })
   const [menuVisible, setMenuVisible] = useState(open)
   const [shouldRenderMenu, setShouldRenderMenu] = useState(open)
@@ -190,6 +192,7 @@ function ToolbarDropdown({
 
     const boundaryRect = getDropdownBoundaryRect(trigger)
     const triggerRect = trigger.getBoundingClientRect()
+    const menuWidth = menu.offsetWidth
     const naturalMenuHeight = Math.max(menuScroll.scrollHeight, menu.offsetHeight)
     const availableBelow =
       boundaryRect.bottom - triggerRect.bottom - MENU_GAP - MENU_EDGE_PADDING
@@ -200,52 +203,79 @@ function ToolbarDropdown({
         ? 'top'
         : 'bottom'
     const availableHeight = placement === 'top' ? availableAbove : availableBelow
+    const usableAvailableHeight = Math.max(0, availableHeight)
     const maxHeight =
       naturalMenuHeight > availableHeight
-        ? Math.max(0, availableHeight)
+        ? usableAvailableHeight
         : undefined
+    const renderedMenuHeight = Math.min(
+      naturalMenuHeight,
+      usableAvailableHeight,
+    )
+    const minLeft = boundaryRect.left + MENU_EDGE_PADDING
+    const maxLeft = boundaryRect.right - menuWidth - MENU_EDGE_PADDING
+    const preferredLeft =
+      align === 'right'
+        ? triggerRect.right - menuWidth
+        : triggerRect.left
+    const left = Math.min(
+      Math.max(preferredLeft, minLeft),
+      Math.max(minLeft, maxLeft),
+    )
+    const top =
+      placement === 'top'
+        ? triggerRect.top - renderedMenuHeight - MENU_GAP
+        : triggerRect.bottom + MENU_GAP
 
     setMenuGeometry((currentGeometry) => {
       if (
+        currentGeometry.left === left &&
         currentGeometry.placement === placement &&
-        currentGeometry.maxHeight === maxHeight
+        currentGeometry.maxHeight === maxHeight &&
+        currentGeometry.top === top
       ) {
         return currentGeometry
       }
 
-      return { maxHeight, placement }
+      return { left, maxHeight, placement, top }
     })
-  }, [menuScrollRef])
+  }, [align, menuScrollRef])
 
   useEffect(() => {
-    if (open) {
-      setShouldRenderMenu(true)
-
-      const frameId = window.requestAnimationFrame(() => {
-        setMenuVisible(true)
-      })
-
-      return () => {
-        window.cancelAnimationFrame(frameId)
+    let visibilityFrameId: number | null = null
+    let closeTimeoutId: number | null = null
+    const renderFrameId = window.requestAnimationFrame(() => {
+      if (open) {
+        setShouldRenderMenu(true)
+        visibilityFrameId = window.requestAnimationFrame(() => {
+          setMenuVisible(true)
+        })
+        return
       }
-    }
 
-    setMenuVisible(false)
-    setOpenSubmenuValue(null)
-
-    const timeoutId = window.setTimeout(() => {
-      setShouldRenderMenu(false)
-    }, MENU_ANIMATION_DURATION_MS)
+      setMenuVisible(false)
+      setOpenSubmenuValue(null)
+      closeTimeoutId = window.setTimeout(() => {
+        setShouldRenderMenu(false)
+      }, MENU_ANIMATION_DURATION_MS)
+    })
 
     return () => {
-      window.clearTimeout(timeoutId)
+      window.cancelAnimationFrame(renderFrameId)
+
+      if (visibilityFrameId !== null) {
+        window.cancelAnimationFrame(visibilityFrameId)
+      }
+
+      if (closeTimeoutId !== null) {
+        window.clearTimeout(closeTimeoutId)
+      }
     }
   }, [open])
 
   useEffect(() => {
     if (!shouldRenderMenu) {
-      setOpenSubmenuValue(null)
-      return
+      return undefined
     }
 
     const frameId = window.requestAnimationFrame(updateMenuGeometry)
@@ -295,19 +325,32 @@ function ToolbarDropdown({
       return
     }
 
+    const toolbar = triggerRef.current?.closest<HTMLElement>(
+      '.floating-markdown-toolbar',
+    )
+    const handleToolbarTransitionEnd = (event: TransitionEvent) => {
+      if (event.target === toolbar && event.propertyName === 'left') {
+        updateMenuGeometry()
+      }
+    }
+
     window.addEventListener('resize', updateMenuGeometry)
     window.addEventListener('scroll', updateMenuGeometry, true)
+    toolbar?.addEventListener('transitionend', handleToolbarTransitionEnd)
 
     return () => {
       window.removeEventListener('resize', updateMenuGeometry)
       window.removeEventListener('scroll', updateMenuGeometry, true)
+      toolbar?.removeEventListener('transitionend', handleToolbarTransitionEnd)
     }
   }, [open, updateMenuGeometry])
 
   const menuStyle = {
+    left: `${menuGeometry.left}px`,
     maxHeight: menuGeometry.maxHeight
       ? `${menuGeometry.maxHeight}px`
       : undefined,
+    top: `${menuGeometry.top}px`,
   } satisfies CSSProperties
   const closeSubmenu = useCallback(() => {
     setOpenSubmenuValue(null)
@@ -322,6 +365,7 @@ function ToolbarDropdown({
       !!entry.submenuId &&
       entry.value === openSubmenuValue,
   )
+  const SubmenuRenderer = renderSubmenu
 
   return (
     <div
@@ -458,12 +502,14 @@ function ToolbarDropdown({
           </div>
         </div>
       ) : null}
-      {shouldRenderMenu && openSubmenuEntry && renderSubmenu
-        ? renderSubmenu(openSubmenuEntry.submenuId, {
-            anchorRef: submenuAnchorRef,
-            closeMenu,
-            closeSubmenu,
-          })
+      {shouldRenderMenu && openSubmenuEntry && SubmenuRenderer ? (
+        <SubmenuRenderer
+          anchorRef={submenuAnchorRef}
+          closeMenu={closeMenu}
+          closeSubmenu={closeSubmenu}
+          submenuId={openSubmenuEntry.submenuId}
+        />
+      )
         : null}
     </div>
   )

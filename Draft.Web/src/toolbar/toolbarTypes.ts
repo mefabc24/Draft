@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { FloatingMarkdownToolbarMode } from '../settings/settingsTypes'
+import type { FloatingMarkdownToolbarItemCustomization } from '../settings/menuCustomization'
 import type { ShortcutBindings } from '../shortcuts/shortcutSettings'
 import type { ViewMode } from '../workspace/workspaceTypes'
 import type { ToolbarTooltipContent } from './components/ToolbarTooltip'
@@ -25,6 +26,7 @@ export type VisibleSelectionPosition = {
 export type FloatingMarkdownToolbarProps = {
   editor: monaco.editor.IStandaloneCodeEditor | null
   editorBodyRef: RefObject<HTMLDivElement | null>
+  floatingMarkdownToolbarItems: FloatingMarkdownToolbarItemCustomization[]
   onRequestEditorMode: () => void
   previewContentRef: RefObject<HTMLDivElement | null>
   previewScrollElementRef: RefObject<HTMLDivElement | null>

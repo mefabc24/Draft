@@ -2,6 +2,7 @@ import type { HTMLAttributes, ReactNode, RefObject } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { useTranslation } from '../../localization/useTranslation'
 import type { ShortcutBindings } from '../../shortcuts/shortcutSettings'
+import type { QuickInsertItemCustomization } from '../../settings/menuCustomization'
 import EmptyLineInsertButton from './EmptyLineInsertButton'
 import EditorScrollbar from './EditorScrollbar'
 
@@ -11,6 +12,7 @@ type MarkdownEditorPaneProps = {
   editorBodyRef: RefObject<HTMLDivElement | null>
   editorHostRef: RefObject<HTMLDivElement | null>
   header: ReactNode
+  quickInsertItems: QuickInsertItemCustomization[]
   scrollbarProps: HTMLAttributes<HTMLDivElement>
   scrollbarRef: RefObject<HTMLDivElement | null>
   shortcutBindings: ShortcutBindings
@@ -24,6 +26,7 @@ function MarkdownEditorPane({
   editorBodyRef,
   editorHostRef,
   header,
+  quickInsertItems,
   scrollbarProps,
   scrollbarRef,
   shortcutBindings,
@@ -45,6 +48,7 @@ function MarkdownEditorPane({
           <EmptyLineInsertButton
             editor={editor}
             editorBodyRef={editorBodyRef}
+            quickInsertItems={quickInsertItems}
             shortcutBindings={shortcutBindings}
           />
         )}

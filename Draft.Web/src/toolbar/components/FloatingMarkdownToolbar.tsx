@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -18,6 +19,10 @@ import { transformSelectedTextCase } from '../../editor/monaco/textCasing'
 import type { HeadingValue, ListValue } from '../../markdown'
 import type { CalloutType } from '../../markdown/callouts'
 import { useTranslation } from '../../localization/useTranslation'
+import type {
+  FloatingMarkdownToolbarItemCustomization,
+  MenuItemPlacement,
+} from '../../settings/menuCustomization'
 import {
   formatShortcutForDisplay,
   getShortcutBinding,
@@ -65,17 +70,24 @@ const TOOLBAR_EDGE_PADDING = 8
 const TOOLBAR_EDGE_JUMP_TOLERANCE = 4
 const TOOLBAR_BUTTON_WIDTH = 36
 const TOOLBAR_BUTTON_GAP = 8
+const TOOLBAR_DIVIDER_WIDTH = 1
+const TOOLBAR_HEADING_WIDTH = 132
+const TOOLBAR_LIST_WIDTH = 76
 const TOOLBAR_EXTRA_TOOLS_TRANSITION_MS = 190
+const TOOLBAR_OUTER_CHROME_WIDTH = 18
+const TOOLBAR_EXPANDER_OUTER_WIDTH = 26
 
-const primaryInlineToolbarActions = inlineToolbarActions.filter(
-  (action) => action.visibility === 'primary',
-)
 type ToolbarAction = InlineToolbarAction | TextCaseToolbarAction
+type ToolbarItem = ToolbarAction | 'heading' | 'list'
+type ToolbarLayoutItem = ToolbarItem | 'previewEdit'
 
-const extraToolbarActions: ToolbarAction[] = [
-  ...inlineToolbarActions.filter((action) => action.visibility === 'extra'),
+const toolbarActions: ToolbarAction[] = [
+  ...inlineToolbarActions,
   ...textCaseToolbarActions,
 ]
+const toolbarActionsById = new Map<ToolbarAction['id'], ToolbarAction>(
+  toolbarActions.map((action) => [action.id, action]),
+)
 
 const toolbarShortcutActionIds: Partial<
   Record<ToolbarAction['id'], ShortcutActionId>
@@ -116,43 +128,124 @@ function isToolbarPopupTarget(target: EventTarget | null) {
   return !!element?.closest('[data-toolbar-popup]')
 }
 
-function getExtraToolsWidth(actionCount: number) {
-  if (actionCount <= 0) {
-    return 0
+function getToolbarItemsForPlacement(
+  items: FloatingMarkdownToolbarItemCustomization[],
+  placement: MenuItemPlacement,
+) {
+  const configuredItems: ToolbarItem[] = []
+
+  for (const item of items) {
+    if (item.placement !== placement) {
+      continue
+    }
+
+    if (item.id === 'heading' || item.id === 'list') {
+      configuredItems.push(item.id)
+      continue
+    }
+
+    const action = toolbarActionsById.get(item.id)
+
+    if (action) {
+      configuredItems.push(action)
+    }
   }
 
-  return (
-    actionCount * TOOLBAR_BUTTON_WIDTH +
-    (actionCount - 1) * TOOLBAR_BUTTON_GAP
-  )
+  return configuredItems
 }
 
-function getToolbarActionGroupWidth(actionCount: number) {
-  if (actionCount <= 0) {
-    return 0
+function isDropdownToolbarItem(item: ToolbarLayoutItem) {
+  return item === 'heading' || item === 'list'
+}
+
+function shouldSeparateToolbarItems(
+  previousItem: ToolbarLayoutItem,
+  item: ToolbarLayoutItem,
+) {
+  return isDropdownToolbarItem(previousItem) || isDropdownToolbarItem(item)
+}
+
+function getToolbarItemWidth(item: ToolbarLayoutItem) {
+  if (item === 'heading') {
+    return TOOLBAR_HEADING_WIDTH
   }
 
-  return (
-    actionCount * TOOLBAR_BUTTON_WIDTH +
-    (actionCount - 1) * TOOLBAR_BUTTON_GAP
-  )
-}
-
-function getPromotedToolsWidth(primaryCount: number, promotedCount: number) {
-  if (promotedCount <= 0) {
-    return 0
+  if (item === 'list') {
+    return TOOLBAR_LIST_WIDTH
   }
 
-  return (
-    getToolbarActionGroupWidth(primaryCount + promotedCount) -
-    getToolbarActionGroupWidth(primaryCount)
-  )
+  return TOOLBAR_BUTTON_WIDTH
 }
 
-function getExpandedExtraToolsOuterWidth(actionCount: number) {
-  const toolsWidth = getExtraToolsWidth(actionCount)
+function getToolbarItemsWidth(items: ToolbarLayoutItem[]) {
+  return items.reduce((width, item, index) => {
+    if (index === 0) {
+      return getToolbarItemWidth(item)
+    }
 
+    const previousItem = items[index - 1]
+    const separatorWidth = shouldSeparateToolbarItems(previousItem, item)
+      ? TOOLBAR_DIVIDER_WIDTH + TOOLBAR_BUTTON_GAP
+      : 0
+
+    return (
+      width +
+      TOOLBAR_BUTTON_GAP +
+      separatorWidth +
+      getToolbarItemWidth(item)
+    )
+  }, 0)
+}
+
+function getExpandedExtraToolsOuterWidth(toolsWidth: number) {
   return toolsWidth > 0 ? toolsWidth + TOOLBAR_BUTTON_GAP : 0
+}
+
+function getResponsiveToolbarItems(
+  visibleItems: ToolbarItem[],
+  overflowItems: ToolbarItem[],
+  workspaceWidth: number,
+  hasInternalOverflowItem: boolean,
+) {
+  const availableToolbarContentWidth = Math.max(
+    0,
+    workspaceWidth -
+      TOOLBAR_EDGE_PADDING * 2 -
+      TOOLBAR_OUTER_CHROME_WIDTH,
+  )
+  const hasConfiguredOverflow =
+    overflowItems.length > 0 || hasInternalOverflowItem
+  const availableVisibleWidth = Math.max(
+    0,
+    availableToolbarContentWidth -
+      (hasConfiguredOverflow ? TOOLBAR_EXPANDER_OUTER_WIDTH : 0),
+  )
+
+  if (getToolbarItemsWidth(visibleItems) <= availableVisibleWidth) {
+    return { overflowItems, visibleItems }
+  }
+
+  const responsiveVisibleWidth = Math.max(
+    0,
+    availableToolbarContentWidth - TOOLBAR_EXPANDER_OUTER_WIDTH,
+  )
+  let visibleItemCount = visibleItems.length
+
+  while (
+    visibleItemCount > 0 &&
+    getToolbarItemsWidth(visibleItems.slice(0, visibleItemCount)) >
+      responsiveVisibleWidth
+  ) {
+    visibleItemCount--
+  }
+
+  return {
+    overflowItems: [
+      ...visibleItems.slice(visibleItemCount),
+      ...overflowItems,
+    ],
+    visibleItems: visibleItems.slice(0, visibleItemCount),
+  }
 }
 
 function getClampedToolbarLeft(
@@ -193,6 +286,7 @@ function MoreToolsChevron({ expanded }: { expanded: boolean }) {
 function FloatingMarkdownToolbar({
   editor,
   editorBodyRef,
+  floatingMarkdownToolbarItems,
   onRequestEditorMode,
   previewContentRef,
   previewScrollElementRef,
@@ -203,12 +297,18 @@ function FloatingMarkdownToolbar({
 }: FloatingMarkdownToolbarProps) {
   const { t } = useTranslation()
   const toolbarRef = useRef<HTMLDivElement | null>(null)
+  const toolbarToolsScrollRef = useRef<HTMLDivElement | null>(null)
   const toolbarBoundsFrameRef = useRef<number | null>(null)
   const toolbarPinReleaseTimeoutRef = useRef<number | null>(null)
   const toolbarProjectedWidthRef = useRef<number | null>(null)
   const toolbarProjectionTimeoutRef = useRef<number | null>(null)
   const [position, setPosition] = useState<ToolbarPosition | null>(null)
   const [extraToolsExpanded, setExtraToolsExpanded] = useState(false)
+  const [extraToolsOverflowVisible, setExtraToolsOverflowVisible] =
+    useState(false)
+  const [workspaceWidth, setWorkspaceWidth] = useState(
+    Number.POSITIVE_INFINITY,
+  )
   const [toolbarPinnedRight, setToolbarPinnedRight] = useState<number | null>(
     null,
   )
@@ -376,24 +476,132 @@ function FloatingMarkdownToolbar({
     }),
     [getListLabel, listValue],
   )
-  const extraToolCount =
-    extraToolbarActions.length + (previewEdit.available ? 1 : 0)
-  const promotedExtraToolbarActions = !extraToolsExpanded
-    ? extraToolbarActions.filter(
-        (action) =>
-          'activeFormat' in action && activeFormats[action.activeFormat],
-      )
-    : []
+  const configuredVisibleToolbarItems = useMemo(
+    () =>
+      getToolbarItemsForPlacement(floatingMarkdownToolbarItems, 'Visible'),
+    [floatingMarkdownToolbarItems],
+  )
+  const configuredOverflowToolbarItems = useMemo(
+    () =>
+      getToolbarItemsForPlacement(floatingMarkdownToolbarItems, 'Overflow'),
+    [floatingMarkdownToolbarItems],
+  )
+  const responsiveToolbarItems = useMemo(
+    () =>
+      getResponsiveToolbarItems(
+        configuredVisibleToolbarItems,
+        configuredOverflowToolbarItems,
+        workspaceWidth,
+        previewEdit.available,
+      ),
+    [
+      configuredOverflowToolbarItems,
+      configuredVisibleToolbarItems,
+      previewEdit.available,
+      workspaceWidth,
+    ],
+  )
+  const visibleToolbarItems = responsiveToolbarItems.visibleItems
+  const overflowToolbarItems = responsiveToolbarItems.overflowItems
+  const toolbarLayoutSignature = useMemo(
+    () =>
+      `${visibleToolbarItems
+        .map((item) => (typeof item === 'string' ? item : item.id))
+        .join(',')}|${overflowToolbarItems
+        .map((item) => (typeof item === 'string' ? item : item.id))
+        .join(',')}`,
+    [overflowToolbarItems, visibleToolbarItems],
+  )
+  const overflowLayoutItems = useMemo<ToolbarLayoutItem[]>(
+    () =>
+      previewEdit.available
+        ? [...overflowToolbarItems, 'previewEdit']
+        : overflowToolbarItems,
+    [overflowToolbarItems, previewEdit.available],
+  )
+  const overflowToolsWidth = getToolbarItemsWidth(overflowLayoutItems)
+  const hasOverflowTools = overflowLayoutItems.length > 0
   const promotedPreviewEdit = !extraToolsExpanded && previewEdit.open
   const extraToolsStyle = useMemo(
     () =>
       ({
-        '--markdown-toolbar-extra-tools-width': `${getExtraToolsWidth(
-          extraToolCount,
-        )}px`,
+        '--markdown-toolbar-extra-tools-width': `${overflowToolsWidth}px`,
       }) as ExtraToolsStyle,
-    [extraToolCount],
+    [overflowToolsWidth],
   )
+  useEffect(() => {
+    if (hasOverflowTools || !extraToolsExpanded) {
+      return undefined
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      setExtraToolsExpanded(false)
+      setExtraToolsOverflowVisible(false)
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [extraToolsExpanded, hasOverflowTools])
+  useEffect(() => {
+    if (!extraToolsExpanded) {
+      return undefined
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setExtraToolsOverflowVisible(true)
+    }, TOOLBAR_EXTRA_TOOLS_TRANSITION_MS)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [extraToolsExpanded])
+  useEffect(() => {
+    const scrollElement = toolbarToolsScrollRef.current
+
+    if (!scrollElement) {
+      return undefined
+    }
+
+    if (!extraToolsExpanded) {
+      scrollElement.scrollTo({ left: 0 })
+      return undefined
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      scrollElement.scrollTo({
+        behavior: 'smooth',
+        left: scrollElement.scrollWidth,
+      })
+    }, TOOLBAR_EXTRA_TOOLS_TRANSITION_MS)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [extraToolsExpanded, overflowToolsWidth])
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setExtraToolsExpanded(false)
+      setExtraToolsOverflowVisible(false)
+      setToolbarPinnedRight(null)
+      setOpenDropdown(null)
+      clearToolbarTooltip()
+      closePreviewEditMenu()
+      closeLinkEditMenu()
+      closeImageEditMenu()
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [
+    clearToolbarTooltip,
+    closeImageEditMenu,
+    closeLinkEditMenu,
+    closePreviewEditMenu,
+    setOpenDropdown,
+    toolbarLayoutSignature,
+  ])
   useEffect(() => {
     if (toolbarVisible) {
       return undefined
@@ -401,6 +609,7 @@ function FloatingMarkdownToolbar({
 
     const frameId = window.requestAnimationFrame(() => {
       setExtraToolsExpanded(false)
+      setExtraToolsOverflowVisible(false)
       setToolbarPinnedRight(null)
     })
 
@@ -457,12 +666,13 @@ function FloatingMarkdownToolbar({
     scheduleToolbarBoundsUpdate()
   }, [
     extraToolsExpanded,
+    overflowToolsWidth,
     position?.preferredLeft,
     position?.top,
-    promotedExtraToolbarActions.length,
     promotedPreviewEdit,
     scheduleToolbarBoundsUpdate,
     toolbarVisible,
+    visibleToolbarItems.length,
   ])
   useEffect(() => {
     const toolbar = toolbarRef.current
@@ -472,10 +682,18 @@ function FloatingMarkdownToolbar({
       return
     }
 
-    const resizeObserver = new ResizeObserver(scheduleToolbarBoundsUpdate)
+    const handleResize = () => {
+      setWorkspaceWidth((currentWidth) =>
+        currentWidth === workspace.clientWidth
+          ? currentWidth
+          : workspace.clientWidth,
+      )
+      scheduleToolbarBoundsUpdate()
+    }
+    const resizeObserver = new ResizeObserver(handleResize)
     resizeObserver.observe(toolbar)
     resizeObserver.observe(workspace)
-    scheduleToolbarBoundsUpdate()
+    handleResize()
 
     return () => {
       resizeObserver.disconnect()
@@ -521,10 +739,11 @@ function FloatingMarkdownToolbar({
     [runEditorCommand],
   )
   const renderHeadingSubmenu = useCallback(
-    (
-      submenuId: string,
-      { anchorRef, closeMenu }: ToolbarDropdownSubmenuRenderProps,
-    ) => {
+    ({
+      anchorRef,
+      closeMenu,
+      submenuId,
+    }: ToolbarDropdownSubmenuRenderProps) => {
       if (submenuId !== 'callouts') {
         return null
       }
@@ -547,6 +766,10 @@ function FloatingMarkdownToolbar({
     const workspace = workspaceRef.current
     const expanding = !extraToolsExpanded
 
+    if (!expanding) {
+      setExtraToolsOverflowVisible(false)
+    }
+
     closePreviewEditMenu()
     closeLinkEditMenu()
     closeImageEditMenu()
@@ -554,25 +777,23 @@ function FloatingMarkdownToolbar({
 
     if (toolbar && workspace) {
       const currentWidth = toolbar.offsetWidth
-      const expandedExtraWidth = getExpandedExtraToolsOuterWidth(extraToolCount)
-      const activeExtraToolCount = extraToolbarActions.filter(
-        (action) =>
-          'activeFormat' in action && activeFormats[action.activeFormat],
-      ).length
-      const currentPromotedCount =
-        promotedExtraToolbarActions.length + (promotedPreviewEdit ? 1 : 0)
-      const nextPromotedCount = expanding ? 0 : activeExtraToolCount
-      const currentPromotedWidth = getPromotedToolsWidth(
-        primaryInlineToolbarActions.length,
-        currentPromotedCount,
+      const maxToolbarWidth = Math.max(
+        0,
+        workspace.clientWidth - TOOLBAR_EDGE_PADDING * 2,
       )
-      const nextPromotedWidth = getPromotedToolsWidth(
-        primaryInlineToolbarActions.length,
-        nextPromotedCount,
+      const collapsedToolbarWidth =
+        getToolbarItemsWidth(visibleToolbarItems) +
+        TOOLBAR_EXPANDER_OUTER_WIDTH +
+        TOOLBAR_OUTER_CHROME_WIDTH
+      const expandedToolbarWidth =
+        getToolbarItemsWidth(visibleToolbarItems) +
+        getExpandedExtraToolsOuterWidth(overflowToolsWidth) +
+        TOOLBAR_EXPANDER_OUTER_WIDTH +
+        TOOLBAR_OUTER_CHROME_WIDTH
+      const projectedWidth = Math.min(
+        maxToolbarWidth,
+        expanding ? expandedToolbarWidth : collapsedToolbarWidth,
       )
-      const projectedWidth = expanding
-        ? currentWidth + expandedExtraWidth - currentPromotedWidth
-        : currentWidth - expandedExtraWidth + nextPromotedWidth
       const workspaceRect = workspace.getBoundingClientRect()
       const toolbarRect = toolbar.getBoundingClientRect()
       const currentRightGap = workspaceRect.right - toolbarRect.right
@@ -643,17 +864,15 @@ function FloatingMarkdownToolbar({
 
     setExtraToolsExpanded((expanded) => !expanded)
   }, [
-    activeFormats,
     closeImageEditMenu,
     closeLinkEditMenu,
     closePreviewEditMenu,
-    extraToolCount,
     extraToolsExpanded,
-    promotedExtraToolbarActions.length,
-    promotedPreviewEdit,
+    overflowToolsWidth,
     scheduleToolbarBoundsUpdate,
     setOpenDropdown,
     toolbarPinnedRight,
+    visibleToolbarItems,
     workspaceRef,
   ])
   const renderToolbarAction = (action: ToolbarAction) => {
@@ -811,7 +1030,77 @@ function FloatingMarkdownToolbar({
       />
     ) : null
 
-  if (!editor || !position) {
+  const renderHeadingDropdown = () => (
+    <ToolbarDropdown
+      className="heading-dropdown"
+      ariaLabel={t('toolbar.selectTextStyle')}
+      menuLabel={t('toolbar.textStyles')}
+      items={headingMenuItems}
+      open={openDropdown === 'heading'}
+      onOpenChange={handleHeadingOpenChange}
+      onTooltipHide={hideToolbarTooltip}
+      onTooltipShow={showToolbarTooltip}
+      selectedValue={headingValue}
+      triggerTooltip={headingTooltip}
+      triggerLabel={getHeadingLabel(headingValue)}
+      onSelect={handleHeadingSelect}
+      renderSubmenu={renderHeadingSubmenu}
+    />
+  )
+
+  const renderListDropdown = () => (
+    <ToolbarDropdown
+      align="right"
+      className="list-dropdown"
+      ariaLabel={t('toolbar.listStyle', { label: getListLabel(listValue) })}
+      menuLabel={t('toolbar.listStyles')}
+      items={listMenuItems}
+      open={openDropdown === 'list'}
+      onOpenChange={handleListOpenChange}
+      onTooltipHide={hideToolbarTooltip}
+      onTooltipShow={showToolbarTooltip}
+      selectedValue={listValue}
+      triggerIcon={<ToolbarIcon name={listIcons[listValue]} />}
+      triggerLabel=""
+      triggerTooltip={listTooltip}
+      onSelect={handleListSelect}
+    />
+  )
+
+  const renderToolbarLayoutItems = (items: ToolbarLayoutItem[]) =>
+    items.map((item, index) => {
+      const previousItem = index > 0 ? items[index - 1] : null
+      const itemKey =
+        typeof item === 'string' ? item : `action:${item.id}`
+
+      return (
+        <Fragment key={itemKey}>
+          {previousItem && shouldSeparateToolbarItems(previousItem, item) ? (
+            <div className="markdown-toolbar-divider" aria-hidden="true" />
+          ) : null}
+          {item === 'heading'
+            ? renderHeadingDropdown()
+            : item === 'list'
+              ? renderListDropdown()
+              : item === 'previewEdit'
+                ? renderPreviewEditMenu()
+                : renderToolbarAction(item)}
+        </Fragment>
+      )
+    })
+
+  const visibleLayoutItems: ToolbarLayoutItem[] = promotedPreviewEdit
+    ? [...visibleToolbarItems, 'previewEdit']
+    : visibleToolbarItems
+  const renderedOverflowLayoutItems = promotedPreviewEdit
+    ? overflowToolbarItems
+    : overflowLayoutItems
+
+  if (
+    !editor ||
+    !position ||
+    (visibleLayoutItems.length === 0 && !hasOverflowTools)
+  ) {
     return null
   }
 
@@ -837,82 +1126,51 @@ function FloatingMarkdownToolbar({
         }
       }}
     >
-      <ToolbarDropdown
-        className="heading-dropdown"
-        ariaLabel={t('toolbar.selectTextStyle')}
-        menuLabel={t('toolbar.textStyles')}
-        items={headingMenuItems}
-        open={openDropdown === 'heading'}
-        onOpenChange={handleHeadingOpenChange}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        selectedValue={headingValue}
-        triggerTooltip={headingTooltip}
-        triggerLabel={getHeadingLabel(headingValue)}
-        onSelect={handleHeadingSelect}
-        renderSubmenu={renderHeadingSubmenu}
-      />
-
-      <div className="markdown-toolbar-divider" aria-hidden="true" />
-
       <div className="markdown-toolbar-format-tools">
-        <div className="markdown-toolbar-primary-tools">
-          {primaryInlineToolbarActions.map(renderToolbarAction)}
-          {promotedExtraToolbarActions.map(renderToolbarAction)}
-          {promotedPreviewEdit ? renderPreviewEditMenu() : null}
-        </div>
         <div
-          className={`markdown-toolbar-extra-tools${
-            extraToolsExpanded ? ' is-expanded' : ''
-          }`}
-          aria-hidden={!extraToolsExpanded}
-          style={extraToolsStyle}
+          ref={toolbarToolsScrollRef}
+          className="markdown-toolbar-tools-scroll"
         >
-          <div className="markdown-toolbar-extra-tools-inner">
-            {extraToolbarActions.map(renderToolbarAction)}
-            {promotedPreviewEdit ? null : renderPreviewEditMenu()}
+          <div className="markdown-toolbar-primary-tools">
+            {renderToolbarLayoutItems(visibleLayoutItems)}
+          </div>
+          <div
+            className={`markdown-toolbar-extra-tools${
+              extraToolsExpanded ? ' is-expanded' : ''
+            }${
+              extraToolsOverflowVisible ? ' allows-overflow' : ''
+            }`}
+            aria-hidden={!extraToolsExpanded}
+            style={extraToolsStyle}
+          >
+            <div className="markdown-toolbar-extra-tools-inner">
+              {renderToolbarLayoutItems(renderedOverflowLayoutItems)}
+            </div>
           </div>
         </div>
-        <ToolbarButton
-          active={false}
-          ariaExpanded={extraToolsExpanded}
-          ariaLabel={
-            extraToolsExpanded
-              ? t('toolbar.hideExtraTools')
-              : t('toolbar.moreTools')
-          }
-          className="markdown-toolbar-expand-button"
-          onTooltipHide={hideToolbarTooltip}
-          onTooltipShow={showToolbarTooltip}
-          onClick={handleExtraToolsToggle}
-          tooltip={{
-            label: extraToolsExpanded
-              ? t('toolbar.hideExtraTools')
-              : t('toolbar.moreTools'),
-          }}
-        >
-          <MoreToolsChevron expanded={extraToolsExpanded} />
-        </ToolbarButton>
+        {hasOverflowTools ? (
+          <ToolbarButton
+            active={false}
+            ariaExpanded={extraToolsExpanded}
+            ariaLabel={
+              extraToolsExpanded
+                ? t('toolbar.hideExtraTools')
+                : t('toolbar.moreTools')
+            }
+            className="markdown-toolbar-expand-button"
+            onTooltipHide={hideToolbarTooltip}
+            onTooltipShow={showToolbarTooltip}
+            onClick={handleExtraToolsToggle}
+            tooltip={{
+              label: extraToolsExpanded
+                ? t('toolbar.hideExtraTools')
+                : t('toolbar.moreTools'),
+            }}
+          >
+            <MoreToolsChevron expanded={extraToolsExpanded} />
+          </ToolbarButton>
+        ) : null}
       </div>
-
-      <div className="markdown-toolbar-divider" aria-hidden="true" />
-
-      <ToolbarDropdown
-        align="right"
-        className="list-dropdown"
-        ariaLabel={t('toolbar.listStyle', { label: getListLabel(listValue) })}
-        menuLabel={t('toolbar.listStyles')}
-        items={listMenuItems}
-        open={openDropdown === 'list'}
-        onOpenChange={handleListOpenChange}
-        onTooltipHide={hideToolbarTooltip}
-        onTooltipShow={showToolbarTooltip}
-        selectedValue={listValue}
-        triggerIcon={<ToolbarIcon name={listIcons[listValue]} />}
-        triggerLabel=""
-        triggerTooltip={listTooltip}
-        onSelect={handleListSelect}
-      />
       {activeTooltip ? (
         <ToolbarTooltip
           ref={tooltipRef}

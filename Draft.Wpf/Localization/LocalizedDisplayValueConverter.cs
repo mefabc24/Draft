@@ -23,6 +23,7 @@ public sealed class LocalizedDisplayValueConverter : IMultiValueConverter
             ["Line"] = "settings.options.cursor.line",
             ["Never"] = "settings.options.common.never",
             ["Off"] = "settings.options.common.off",
+            ["Overflow"] = "settings.options.menuItem.overflow",
             ["Preview"] = "settings.options.workspace.preview",
             ["Preview controls editor"] = "settings.options.scrollSync.previewControlsEditor",
             ["Split"] = "settings.options.workspace.split",
@@ -31,6 +32,7 @@ public sealed class LocalizedDisplayValueConverter : IMultiValueConverter
             ["Underline"] = "settings.options.cursor.underline",
             ["Unfocused only"] = "settings.options.windowBorder.unfocusedOnly",
             ["Focused only"] = "settings.options.windowBorder.focusedOnly",
+            ["Visible"] = "settings.options.menuItem.visible",
         };
 
     public object Convert(

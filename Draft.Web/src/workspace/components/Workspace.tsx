@@ -105,6 +105,11 @@ function Workspace() {
     useState<FloatingMarkdownToolbarMode>(
       DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarMode,
     )
+  const [floatingMarkdownToolbarItems, setFloatingMarkdownToolbarItems] =
+    useState(DEFAULT_EDITOR_SETTINGS.floatingMarkdownToolbarItems)
+  const [quickInsertItems, setQuickInsertItems] = useState(
+    DEFAULT_EDITOR_SETTINGS.quickInsertItems,
+  )
   const [activeEditorThemeId, setActiveEditorThemeId] = useState(
     DEFAULT_EDITOR_SETTINGS.activeEditorThemeId,
   )
@@ -205,7 +210,9 @@ function Workspace() {
   const applyDraftEditorSettings = (settings: DraftEditorSettings) => {
     draftEditorSettingsRef.current = settings
     setAppLanguage(settings.appLanguage)
+    setFloatingMarkdownToolbarItems(settings.floatingMarkdownToolbarItems)
     setFloatingMarkdownToolbarMode(settings.floatingMarkdownToolbarMode)
+    setQuickInsertItems(settings.quickInsertItems)
     setActiveEditorThemeId(settings.activeEditorThemeId)
     setActivePreviewThemeId(settings.activePreviewThemeId)
     setShortcutBindings(settings.shortcuts)
@@ -485,6 +492,7 @@ function Workspace() {
             ariaHidden={viewMode === 'preview'}
             editor={editorInstance}
             editorBodyRef={editorBodyRef}
+            quickInsertItems={quickInsertItems}
             shortcutBindings={shortcutBindings}
             editorHostRef={editorHostRef}
             header={(
@@ -523,6 +531,7 @@ function Workspace() {
           <FloatingMarkdownToolbar
             editor={editorInstance}
             editorBodyRef={editorBodyRef}
+            floatingMarkdownToolbarItems={floatingMarkdownToolbarItems}
             onRequestEditorMode={() => {
               setViewMode((currentViewMode) =>
                 currentViewMode === 'preview' ? 'editor' : currentViewMode,

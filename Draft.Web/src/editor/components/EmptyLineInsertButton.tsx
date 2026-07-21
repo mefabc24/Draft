@@ -5,20 +5,24 @@ import {
 } from 'react'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { useTranslation } from '../../localization/useTranslation'
+import type { QuickInsertItemCustomization } from '../../settings/menuCustomization'
 import type { ShortcutBindings } from '../../shortcuts/shortcutSettings'
 import { useEditorQuickInsertMenu } from '../hooks/useEditorQuickInsertMenu'
 import { useHoveredEditorLine } from '../hooks/useHoveredEditorLine'
 import EditorQuickInsertMenu from './EditorQuickInsertMenu'
+import { hasAvailableEditorQuickInsertEntries } from './EditorQuickInsertMenuConfig'
 
 type EmptyLineInsertButtonProps = {
   editor: monaco.editor.IStandaloneCodeEditor | null
   editorBodyRef: RefObject<HTMLDivElement | null>
+  quickInsertItems: QuickInsertItemCustomization[]
   shortcutBindings: ShortcutBindings
 }
 
 function EmptyLineInsertButton({
   editor,
   editorBodyRef,
+  quickInsertItems,
   shortcutBindings,
 }: EmptyLineInsertButtonProps) {
   const { t } = useTranslation()
@@ -37,7 +41,12 @@ function EmptyLineInsertButton({
     runMenuActionKeepingOpen,
     target,
     updateMenuBounds,
-  } = useEditorQuickInsertMenu(editor, editorBodyRef, shortcutBindings)
+  } = useEditorQuickInsertMenu(
+    editor,
+    editorBodyRef,
+    quickInsertItems,
+    shortcutBindings,
+  )
   const buttonStyle = useMemo(
     () =>
       hoveredLine
@@ -48,6 +57,12 @@ function EmptyLineInsertButton({
         : undefined,
     [hoveredLine],
   )
+  const canShowButton = hoveredLine
+    ? hasAvailableEditorQuickInsertEntries(
+        quickInsertItems,
+        hoveredLine.mode,
+      )
+    : false
 
   if (!editor) {
     return null
@@ -55,7 +70,7 @@ function EmptyLineInsertButton({
 
   return (
     <>
-      {hoveredLine ? (
+      {hoveredLine && canShowButton ? (
         <button
           aria-label={t(
             'quickInsert.openEditorQuickInsertMenu',
@@ -112,6 +127,7 @@ function EmptyLineInsertButton({
         onContentLayoutChange={updateMenuBounds}
         onKeepOpenAction={runMenuActionKeepingOpen}
         position={menuPosition}
+        quickInsertItems={quickInsertItems}
         shortcutBindings={shortcutBindings}
         target={target}
       />

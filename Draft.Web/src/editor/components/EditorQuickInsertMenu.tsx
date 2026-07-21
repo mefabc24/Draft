@@ -12,6 +12,7 @@ import {
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { CalloutType } from '../../markdown/callouts'
 import { useTranslation } from '../../localization/useTranslation'
+import type { QuickInsertItemCustomization } from '../../settings/menuCustomization'
 import {
   eventMatchesShortcutAction,
   eventMatchesShortcutActionKeyboardState,
@@ -49,7 +50,9 @@ import type {
   EditorQuickInsertMenuPosition,
 } from '../hooks/useEditorQuickInsertMenu'
 import {
+  canShowEditorQuickInsertEntry,
   editorQuickInsertMenuEntries,
+  getConfiguredEditorQuickInsertEntries,
   type EditorQuickInsertIconName,
   type EditorQuickInsertMenuEntry,
 } from './EditorQuickInsertMenuConfig'
@@ -71,6 +74,7 @@ type EditorQuickInsertMenuProps = {
   onContentLayoutChange: () => void
   onKeepOpenAction: (action: () => number | false | null) => void
   position: EditorQuickInsertMenuPosition | null
+  quickInsertItems: QuickInsertItemCustomization[]
   shortcutBindings: ShortcutBindings
   target: EditorQuickInsertMenuAnchor | null
 }
@@ -219,13 +223,6 @@ function shouldAdvanceToNextEmptyLine(
   return keepOpen && target?.mode === 'replace-line'
 }
 
-function canShowQuickInsertEntry(
-  entry: EditorQuickInsertMenuEntry,
-  target: EditorQuickInsertMenuAnchor | null,
-) {
-  return target?.mode !== 'insert-at-cursor' || entry.canInsertIntoNonEmptyLine
-}
-
 function EditorQuickInsertMenu({
   editor,
   menuRef,
@@ -233,6 +230,7 @@ function EditorQuickInsertMenu({
   onContentLayoutChange,
   onKeepOpenAction,
   position,
+  quickInsertItems,
   shortcutBindings,
   target,
 }: EditorQuickInsertMenuProps) {
@@ -656,7 +654,7 @@ function EditorQuickInsertMenu({
   const renderCalloutSectionChildren = useCallback(
     (entry: EditorQuickInsertSectionEntry) => {
       const visibleChildren = entry.children.filter((childEntry) =>
-        canShowQuickInsertEntry(childEntry, target),
+        canShowEditorQuickInsertEntry(childEntry, target?.mode ?? null),
       )
       const primaryChildren = visibleChildren.slice(
         0,
@@ -717,7 +715,7 @@ function EditorQuickInsertMenu({
 
   const renderMenuEntry = useCallback(
     (entry: EditorQuickInsertMenuEntry) => {
-      if (!canShowQuickInsertEntry(entry, target)) {
+      if (!canShowEditorQuickInsertEntry(entry, target?.mode ?? null)) {
         return null
       }
 
@@ -782,7 +780,10 @@ function EditorQuickInsertMenu({
           ) : (
             entry.children
               .filter((childEntry) =>
-                canShowQuickInsertEntry(childEntry, target),
+                canShowEditorQuickInsertEntry(
+                  childEntry,
+                  target?.mode ?? null,
+                ),
               )
               .map((childEntry) => renderCommandItem(childEntry, true))
           )}
@@ -810,12 +811,20 @@ function EditorQuickInsertMenu({
     return null
   }
 
-  const primaryEntries = editorQuickInsertMenuEntries.filter(
-    (entry) => !entry.overflow,
+  const primaryEntries = getConfiguredEditorQuickInsertEntries(
+    quickInsertItems,
+    'Visible',
+    target.mode,
   )
-  const overflowEntries = editorQuickInsertMenuEntries.filter(
-    (entry) => entry.overflow && canShowQuickInsertEntry(entry, target),
+  const overflowEntries = getConfiguredEditorQuickInsertEntries(
+    quickInsertItems,
+    'Overflow',
+    target.mode,
   )
+
+  if (primaryEntries.length === 0 && overflowEntries.length === 0) {
+    return null
+  }
 
   return (
     <div

@@ -1,7 +1,9 @@
 .floating-markdown-toolbar {
   position: absolute;
   z-index: 20;
+  box-sizing: border-box;
   display: flex;
+  width: max-content;
   align-items: center;
   gap: 8px;
   max-width: calc(100% - 16px);
@@ -52,6 +54,7 @@
 }
 
 .markdown-toolbar-format-tools,
+.markdown-toolbar-tools-scroll,
 .markdown-toolbar-primary-tools,
 .markdown-toolbar-extra-tools-inner {
   display: inline-flex;
@@ -59,8 +62,22 @@
 }
 
 .markdown-toolbar-format-tools {
+  max-width: 100%;
   min-width: 0;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+}
+
+.markdown-toolbar-tools-scroll {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.markdown-toolbar-tools-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .markdown-toolbar-primary-tools,
@@ -96,6 +113,10 @@
   visibility: visible;
 }
 
+.markdown-toolbar-extra-tools.allows-overflow {
+  overflow: visible;
+}
+
 .markdown-toolbar-extra-tools-inner {
   width: max-content;
 }
@@ -103,6 +124,7 @@
 .markdown-toolbar-expand-button {
   width: 18px;
   flex-basis: 18px;
+  flex-shrink: 0;
   margin-left: 8px;
 }
 
@@ -205,7 +227,7 @@
 }
 
 .markdown-toolbar-menu {
-  position: absolute;
+  position: fixed;
   z-index: 21;
   box-sizing: border-box;
   min-width: 286px;
@@ -297,23 +319,14 @@
 }
 
 .markdown-toolbar-menu.place-bottom {
-  top: calc(100% + 8px);
+  transform-origin: top center;
 }
 
 .markdown-toolbar-menu.place-top {
-  bottom: calc(100% + 8px);
   --markdown-toolbar-menu-closed-clip: inset(100% 0 0 0);
   --markdown-toolbar-menu-closed-y: 6px;
   --markdown-toolbar-menu-content-closed-y: 10px;
   transform-origin: bottom center;
-}
-
-.markdown-toolbar-menu.align-left {
-  left: 0;
-}
-
-.markdown-toolbar-menu.align-right {
-  right: 0;
 }
 
 .list-dropdown .markdown-toolbar-menu {

@@ -1,5 +1,12 @@
-import type { EditorQuickInsertCommand } from '../commands/editorQuickInsertCommands'
+import type {
+  EditorQuickInsertCommand,
+  EditorQuickInsertTargetMode,
+} from '../commands/editorQuickInsertCommands'
 import { calloutLabels, type CalloutType } from '../../markdown/callouts'
+import type {
+  MenuItemPlacement,
+  QuickInsertItemCustomization,
+} from '../../settings/menuCustomization'
 
 export type EditorQuickInsertIconName =
   | 'blockquote'
@@ -345,3 +352,47 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     type: 'section',
   },
 ]
+
+const editorQuickInsertMenuEntriesById = new Map(
+  editorQuickInsertMenuEntries.map((entry) => [entry.id, entry]),
+)
+
+export function canShowEditorQuickInsertEntry(
+  entry: EditorQuickInsertMenuEntry,
+  targetMode: EditorQuickInsertTargetMode | null,
+) {
+  return targetMode !== 'insert-at-cursor' || entry.canInsertIntoNonEmptyLine
+}
+
+export function getConfiguredEditorQuickInsertEntries(
+  items: QuickInsertItemCustomization[],
+  placement: MenuItemPlacement,
+  targetMode: EditorQuickInsertTargetMode | null,
+) {
+  return items.flatMap((item) => {
+    if (item.placement !== placement) {
+      return []
+    }
+
+    const entry = editorQuickInsertMenuEntriesById.get(item.id)
+    return entry && canShowEditorQuickInsertEntry(entry, targetMode)
+      ? [entry]
+      : []
+  })
+}
+
+export function hasAvailableEditorQuickInsertEntries(
+  items: QuickInsertItemCustomization[],
+  targetMode: EditorQuickInsertTargetMode,
+) {
+  return items.some((item) => {
+    if (item.placement === 'Disabled') {
+      return false
+    }
+
+    const entry = editorQuickInsertMenuEntriesById.get(item.id)
+    return entry
+      ? canShowEditorQuickInsertEntry(entry, targetMode)
+      : false
+  })
+}
