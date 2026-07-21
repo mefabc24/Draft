@@ -253,7 +253,7 @@
                          "settings.language.description":  "Choose the language used by Draft.",
                          "settings.language.english":  "English",
                          "settings.localizationSection":  "LOCALIZATION",
-                         "settings.menuCustomization.dragHandle":  "Drag to reorder (Alt+Up/Down)",
+                         "settings.menuCustomization.dragHandle":  "Drag to reorder",
                          "settings.menuCustomization.sections.disabled":  "DISABLED",
                          "settings.menuCustomization.sections.overflow":  "EXPANDABLE OVERFLOW",
                          "settings.menuCustomization.sections.visible":  "VISIBLE",

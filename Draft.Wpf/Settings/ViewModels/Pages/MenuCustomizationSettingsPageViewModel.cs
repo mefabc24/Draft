@@ -111,28 +111,6 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
             ? GetCollection(item.Placement).IndexOf(item)
             : -1;
 
-    internal bool MoveItemByOffset(
-        MenuCustomizationItemViewModel item,
-        int offset)
-    {
-        if (!ReferenceEquals(item.Owner, this) || offset == 0)
-            return false;
-
-        ObservableCollection<MenuCustomizationItemViewModel> collection =
-            GetCollection(item.Placement);
-        int sourceIndex = collection.IndexOf(item);
-        int destinationIndex = sourceIndex + offset;
-
-        if (sourceIndex < 0
-            || destinationIndex < 0
-            || destinationIndex >= collection.Count)
-        {
-            return false;
-        }
-
-        return MoveItemToIndex(item, item.Placement, destinationIndex);
-    }
-
     internal void ChangePlacement(
         MenuCustomizationItemViewModel item,
         string requestedPlacement)

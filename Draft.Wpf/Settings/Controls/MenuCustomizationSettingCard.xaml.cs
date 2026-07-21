@@ -38,29 +38,6 @@ public partial class MenuCustomizationSettingCard : UserControl
         _isDragPending = true;
     }
 
-    private void DragHandle_PreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        if (DataContext is not MenuCustomizationItemViewModel item
-            || (Keyboard.Modifiers & ModifierKeys.Alt) == 0)
-        {
-            return;
-        }
-
-        Key pressedKey = e.Key == Key.System ? e.SystemKey : e.Key;
-        int offset = pressedKey switch
-        {
-            Key.Up => -1,
-            Key.Down => 1,
-            _ => 0,
-        };
-
-        if (offset == 0 || !item.Owner.MoveItemByOffset(item, offset))
-            return;
-
-        e.Handled = true;
-        DragHandle.Focus();
-    }
-
     private void DragHandle_PreviewMouseLeftButtonUp(
         object sender,
         MouseButtonEventArgs e)

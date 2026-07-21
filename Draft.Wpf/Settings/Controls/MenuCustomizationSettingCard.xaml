@@ -30,13 +30,12 @@
                     x:Name="DragHandle"
                     Grid.Column="0"
                     Margin="0,0,12,0"
-                    AutomationProperties.Name="{i18n:Loc settings.menuCustomization.dragHandle, Fallback='Drag to reorder (Alt+Up/Down)'}"
-                    PreviewKeyDown="DragHandle_PreviewKeyDown"
+                    AutomationProperties.Name="{i18n:Loc settings.menuCustomization.dragHandle, Fallback='Drag to reorder'}"
                     PreviewMouseLeftButtonDown="DragHandle_PreviewMouseLeftButtonDown"
                     PreviewMouseLeftButtonUp="DragHandle_PreviewMouseLeftButtonUp"
                     PreviewMouseMove="DragHandle_PreviewMouseMove"
                     Style="{StaticResource SettingsDragHandleButton}"
-                    ToolTip="{i18n:Loc settings.menuCustomization.dragHandle, Fallback='Drag to reorder (Alt+Up/Down)'}">
+                    ToolTip="{i18n:Loc settings.menuCustomization.dragHandle, Fallback='Drag to reorder'}">
                     <Path
                         Width="18"
                         Height="18"
