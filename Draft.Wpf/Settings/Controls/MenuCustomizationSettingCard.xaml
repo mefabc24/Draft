@@ -26,23 +26,39 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Button
+                <Border
                     x:Name="DragHandle"
                     Grid.Column="0"
+                    Width="36"
+                    Height="36"
                     Margin="0,0,12,0"
                     AutomationProperties.Name="{i18n:Loc settings.menuCustomization.dragHandle, Fallback='Drag to reorder'}"
+                    Background="Transparent"
+                    Cursor="SizeAll"
+                    Focusable="False"
                     PreviewMouseLeftButtonDown="DragHandle_PreviewMouseLeftButtonDown"
                     PreviewMouseLeftButtonUp="DragHandle_PreviewMouseLeftButtonUp"
                     PreviewMouseMove="DragHandle_PreviewMouseMove"
-                    Style="{StaticResource SettingsDragHandleButton}"
                     ToolTip="{i18n:Loc settings.menuCustomization.dragHandle, Fallback='Drag to reorder'}">
                     <Path
                         Width="18"
                         Height="18"
                         Data="{StaticResource Icon.Drag}"
-                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                        Stretch="Uniform" />
-                </Button>
+                        Stretch="Uniform">
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Setter Property="Fill" Value="{StaticResource Brush.Icon.Default}" />
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}"
+                                        Value="True">
+                                        <Setter Property="Fill" Value="{StaticResource Brush.Icon.SubtleHover}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                </Border>
 
                 <TextBlock
                     Grid.Column="1"
