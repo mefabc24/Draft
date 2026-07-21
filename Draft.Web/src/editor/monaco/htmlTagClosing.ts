@@ -4,6 +4,8 @@ import { reuseExistingClosingHtmlAnglePair } from './autoClosingWrapperReuse'
 
 const HTML_TAG_COMPLETION_EDIT_SOURCE = 'draft.htmlTagCompletion'
 const HTML_TAG_MIRROR_EDIT_SOURCE = 'draft.htmlTagMirroring'
+const HTML_COMMENT_COMPLETION_TEXT = '<!--  -->'
+const HTML_COMMENT_CURSOR_OFFSET = '<!-- '.length
 
 const mirroringEditors = new WeakSet<monaco.editor.IStandaloneCodeEditor>()
 const pendingHtmlAngleCompletions =
@@ -640,6 +642,49 @@ export function completeMarkdownHtmlOpeningBracket(
   ])
   setCursor(editor, context.position.lineNumber, context.position.column + 1)
   rememberPendingHtmlAngleCompletion(editor, context)
+  editor.pushUndoStop()
+
+  return true
+}
+
+export function completeMarkdownHtmlCommentOnExclamation(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  beforeEdit?: () => void,
+) {
+  const pendingCompletion = pendingHtmlAngleCompletions.get(editor)
+  const context = getSingleCursorContext(editor)
+
+  if (
+    !pendingCompletion ||
+    !context ||
+    !hasCurrentPendingHtmlAngleCompletion(context, pendingCompletion) ||
+    context.position.column !== pendingCompletion.openingColumn + 1 ||
+    pendingCompletion.closingColumn !== pendingCompletion.openingColumn + 1
+  ) {
+    return false
+  }
+
+  beforeEdit?.()
+  pendingHtmlAngleCompletions.delete(editor)
+
+  editor.pushUndoStop()
+  editor.executeEdits(HTML_TAG_COMPLETION_EDIT_SOURCE, [
+    {
+      range: new monaco.Range(
+        pendingCompletion.lineNumber,
+        pendingCompletion.openingColumn,
+        pendingCompletion.lineNumber,
+        pendingCompletion.closingColumn + 1,
+      ),
+      text: HTML_COMMENT_COMPLETION_TEXT,
+      forceMoveMarkers: true,
+    },
+  ])
+  setCursor(
+    editor,
+    pendingCompletion.lineNumber,
+    pendingCompletion.openingColumn + HTML_COMMENT_CURSOR_OFFSET,
+  )
   editor.pushUndoStop()
 
   return true

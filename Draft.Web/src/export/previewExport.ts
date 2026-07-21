@@ -1,5 +1,9 @@
 import { getPreviewTheme, getPreviewThemeStyle } from '../themes'
 import { getCurrentAppLanguage, translate } from '../localization/localization'
+import previewMarkdownCss from '../preview/styles/previewMarkdown.css?inline'
+import previewPaneCss from '../preview/styles/previewPane.css?inline'
+import fontsCss from '../shared/styles/fonts.css?inline'
+import resetCss from '../shared/styles/reset.css?inline'
 import { renderPreviewExportContent } from './previewExportRenderer'
 
 type PreviewExportOptions = {
@@ -17,6 +21,14 @@ const pdfPageHeightCssPixels = pdfPageHeightInches * cssPixelsPerInch
 const pdfPagePaddingCssPixels = 32
 const cssUrlPattern = /url\((['"]?)(?!data:|blob:|https?:|file:|#)([^'")]+)\1\)/gu
 const embeddedSvgAssetUrls = new Map<string, string | null>()
+// Keep the original declarations: Chromium's CSSOM serialization can lose
+// shorthands whose values contain custom properties, such as the kbd border.
+const previewExportStyleSheets = [
+  fontsCss,
+  resetCss,
+  previewPaneCss,
+  previewMarkdownCss,
+]
 
 function escapeHtml(value: string) {
   return value
@@ -39,18 +51,6 @@ function getDocumentTitle(fileName: string) {
   return extensionIndex > 0
     ? trimmedFileName.slice(0, extensionIndex)
     : trimmedFileName
-}
-
-function shouldIncludeCssRule(cssText: string) {
-  const normalizedCssText = cssText.trim()
-
-  return normalizedCssText.startsWith('*')
-    || normalizedCssText.startsWith(':root')
-    || normalizedCssText.startsWith('html')
-    || normalizedCssText.startsWith('body')
-    || normalizedCssText.startsWith('@font-face')
-    || normalizedCssText.includes('.preview-')
-    || normalizedCssText.includes('[data-rehype-pretty-code')
 }
 
 function resolveCssUrls(cssText: string) {
@@ -963,21 +963,7 @@ body {
 }
 
 function getExportCss(layout: PreviewExportOptions['layout']) {
-  const cssRules: string[] = []
-
-  for (const styleSheet of Array.from(document.styleSheets)) {
-    try {
-      for (const rule of Array.from(styleSheet.cssRules)) {
-        const cssText = rule.cssText
-
-        if (shouldIncludeCssRule(cssText)) {
-          cssRules.push(resolveCssUrls(cssText))
-        }
-      }
-    } catch {
-      // Cross-origin stylesheets are ignored. Draft's own preview CSS is same-origin.
-    }
-  }
+  const cssRules = previewExportStyleSheets.map(resolveCssUrls)
 
   cssRules.push(`
 html,

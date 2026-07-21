@@ -36,6 +36,7 @@ import {
 import {
   clearPendingMarkdownHtmlAngleCompletionIfCursorChanged,
   closeMarkdownHtmlTagOnGreaterThan,
+  completeMarkdownHtmlCommentOnExclamation,
   completeMarkdownHtmlOpeningBracket,
   completeMarkdownHtmlSelfClosingSlash,
   deletePendingMarkdownHtmlOpeningBracketOnBackspace,
@@ -351,6 +352,16 @@ export function useMonacoMarkdownEditor({
         if (
           browserEvent.key === '<' &&
           completeMarkdownHtmlOpeningBracket(editor, consumeKeyboardEvent)
+        ) {
+          return
+        }
+
+        if (
+          browserEvent.key === '!' &&
+          completeMarkdownHtmlCommentOnExclamation(
+            editor,
+            consumeKeyboardEvent,
+          )
         ) {
           return
         }
