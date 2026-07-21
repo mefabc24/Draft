@@ -122,7 +122,7 @@ const draftDarkPreviewColorVariables = {
 
   // Expanders
   '--preview-expander-background': '#111827',
-  '--preview-expander-border': 'transparent',
+  '--preview-expander-border': '#2f3545',
   '--preview-expander-summary-background': '#1f2937',
   '--preview-expander-summary-foreground': '#f9fafb',
   '--preview-expander-summary-hover-background': '#2b3646',
