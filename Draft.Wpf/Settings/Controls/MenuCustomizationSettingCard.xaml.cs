@@ -1,7 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using Draft.Settings.ViewModels.Pages;
 
 namespace Draft.Settings.Controls;
@@ -10,6 +14,7 @@ public partial class MenuCustomizationSettingCard : UserControl
 {
     private Point _dragStartPoint;
     private bool _isDragPending;
+    private MenuCustomizationDragAdorner? _dragAdorner;
 
     public MenuCustomizationSettingCard()
     {
@@ -73,59 +78,155 @@ public partial class MenuCustomizationSettingCard : UserControl
             return;
 
         _isDragPending = false;
-        DataObject data = new(typeof(MenuCustomizationItemViewModel), item);
-        DragDrop.DoDragDrop(DragHandle, data, DragDropEffects.Move);
+        int originalIndex = item.Owner.GetItemIndex(item);
+        ImageSource? preview = CreateDragPreview();
+        AdornerLayer? adornerLayer = AdornerLayer.GetAdornerLayer(this);
+
+        if (originalIndex < 0 || preview is null || adornerLayer is null)
+            return;
+
+        MenuCustomizationDragData dragData = new(item, this);
+        DataObject data = new();
+        data.SetData(typeof(MenuCustomizationDragData), dragData);
+        data.SetData(typeof(MenuCustomizationItemViewModel), item);
+
+        try
+        {
+            _dragAdorner = new MenuCustomizationDragAdorner(
+                this,
+                preview,
+                RenderSize,
+                _dragStartPoint);
+            adornerLayer.Add(_dragAdorner);
+            SetDragPlaceholder(true);
+            UpdateDragPreviewPosition();
+
+            DragDropEffects result = DragDrop.DoDragDrop(
+                DragHandle,
+                data,
+                DragDropEffects.Move);
+
+            if (result != DragDropEffects.Move)
+            {
+                item.Owner.MoveItemToIndex(
+                    item,
+                    item.Placement,
+                    originalIndex);
+            }
+        }
+        finally
+        {
+            SetDragPlaceholder(false);
+
+            if (_dragAdorner is not null)
+            {
+                adornerLayer.Remove(_dragAdorner);
+                _dragAdorner = null;
+            }
+        }
     }
 
-    private void Card_DragOver(object sender, DragEventArgs e)
+    private void DragHandle_GiveFeedback(object sender, GiveFeedbackEventArgs e)
     {
-        if (!TryGetDraggedItem(e.Data, out MenuCustomizationItemViewModel? source)
-            || DataContext is not MenuCustomizationItemViewModel target
-            || !source.Owner.CanMoveItemRelativeTo(source, target))
-        {
-            e.Effects = DragDropEffects.None;
-            e.Handled = true;
-            return;
-        }
-
-        e.Effects = DragDropEffects.Move;
-        CardBorder.Opacity = 0.72;
+        UpdateDragPreviewPosition();
+        e.UseDefaultCursors = false;
+        Mouse.SetCursor(Cursors.SizeAll);
         e.Handled = true;
     }
 
-    private void Card_DragLeave(object sender, DragEventArgs e)
+    internal void UpdateDragPreviewPosition()
     {
-        CardBorder.Opacity = 1;
+        _dragAdorner?.UpdatePosition(Mouse.GetPosition(this));
     }
 
-    private void Card_Drop(object sender, DragEventArgs e)
+    internal void StopReorderAnimation()
     {
-        CardBorder.Opacity = 1;
+        ReorderTransform.BeginAnimation(
+            TranslateTransform.YProperty,
+            null);
+        ReorderTransform.Y = 0;
+    }
 
-        if (!TryGetDraggedItem(e.Data, out MenuCustomizationItemViewModel? source)
-            || DataContext is not MenuCustomizationItemViewModel target
-            || !source.Owner.CanMoveItemRelativeTo(source, target))
-        {
-            e.Effects = DragDropEffects.None;
-            e.Handled = true;
+    internal void AnimateReorderFrom(double verticalOffset)
+    {
+        if (Math.Abs(verticalOffset) < 0.5)
             return;
-        }
 
-        bool insertAfter = e.GetPosition(this).Y >= ActualHeight / 2;
-        source.Owner.MoveItemRelativeTo(source, target, insertAfter);
-        e.Effects = DragDropEffects.Move;
-        e.Handled = true;
+        DoubleAnimation animation = new(verticalOffset, 0, TimeSpan.FromMilliseconds(155))
+        {
+            EasingFunction = new CubicEase
+            {
+                EasingMode = EasingMode.EaseOut,
+            },
+        };
+
+        ReorderTransform.BeginAnimation(
+            TranslateTransform.YProperty,
+            animation,
+            HandoffBehavior.SnapshotAndReplace);
     }
 
-    internal static bool TryGetDraggedItem(
+    internal static bool TryGetDragData(
         IDataObject data,
-        [NotNullWhen(true)] out MenuCustomizationItemViewModel? item)
+        [NotNullWhen(true)] out MenuCustomizationDragData? dragData)
     {
-        item = data.GetDataPresent(typeof(MenuCustomizationItemViewModel))
-            ? data.GetData(typeof(MenuCustomizationItemViewModel))
-                as MenuCustomizationItemViewModel
+        dragData = data.GetDataPresent(typeof(MenuCustomizationDragData))
+            ? data.GetData(typeof(MenuCustomizationDragData))
+                as MenuCustomizationDragData
             : null;
 
-        return item is not null;
+        return dragData is not null;
     }
+
+    private ImageSource? CreateDragPreview()
+    {
+        if (ActualWidth <= 0 || ActualHeight <= 0)
+            return null;
+
+        DpiScale dpi = VisualTreeHelper.GetDpi(this);
+        RenderTargetBitmap bitmap = new(
+            Math.Max(1, (int)Math.Ceiling(ActualWidth * dpi.DpiScaleX)),
+            Math.Max(1, (int)Math.Ceiling(ActualHeight * dpi.DpiScaleY)),
+            dpi.PixelsPerInchX,
+            dpi.PixelsPerInchY,
+            PixelFormats.Pbgra32);
+        bitmap.Render(this);
+        bitmap.Freeze();
+        return bitmap;
+    }
+
+    private void SetDragPlaceholder(bool isVisible)
+    {
+        CardBorder.Visibility = isVisible
+            ? Visibility.Hidden
+            : Visibility.Visible;
+        DropPlaceholder.Visibility = isVisible
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        DropPlaceholder.BeginAnimation(UIElement.OpacityProperty, null);
+        DropPlaceholder.Opacity = isVisible ? 0 : 1;
+
+        if (!isVisible)
+            return;
+
+        DropPlaceholder.BeginAnimation(
+            UIElement.OpacityProperty,
+            new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(110))
+            {
+                EasingFunction = new CubicEase
+                {
+                    EasingMode = EasingMode.EaseOut,
+                },
+            });
+    }
+}
+
+internal sealed class MenuCustomizationDragData(
+    MenuCustomizationItemViewModel item,
+    MenuCustomizationSettingCard sourceCard)
+{
+    public MenuCustomizationItemViewModel Item { get; } = item;
+
+    public MenuCustomizationSettingCard SourceCard { get; } = sourceCard;
 }

@@ -73,45 +73,43 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
         return _normalizeItems(capturedItems);
     }
 
-    public bool CanMoveItemRelativeTo(
-        MenuCustomizationItemViewModel source,
-        MenuCustomizationItemViewModel target)
-        => ReferenceEquals(source.Owner, this)
-            && ReferenceEquals(target.Owner, this)
-            && !ReferenceEquals(source, target)
+    public bool CanReorderItem(
+        MenuCustomizationItemViewModel item,
+        string placement)
+        => ReferenceEquals(item.Owner, this)
             && string.Equals(
-                source.Placement,
-                target.Placement,
+                item.Placement,
+                MenuCustomizationPlacement.Normalize(placement),
                 StringComparison.Ordinal);
 
-    public void MoveItemRelativeTo(
-        MenuCustomizationItemViewModel source,
-        MenuCustomizationItemViewModel target,
-        bool insertAfter)
+    public bool MoveItemToIndex(
+        MenuCustomizationItemViewModel item,
+        string placement,
+        int destinationIndex)
     {
-        if (!CanMoveItemRelativeTo(source, target))
-            return;
+        if (!CanReorderItem(item, placement))
+            return false;
 
         ObservableCollection<MenuCustomizationItemViewModel> collection =
-            GetCollection(source.Placement);
-        int sourceIndex = collection.IndexOf(source);
-        int targetIndex = collection.IndexOf(target);
+            GetCollection(item.Placement);
+        int sourceIndex = collection.IndexOf(item);
 
-        if (sourceIndex < 0 || targetIndex < 0)
-            return;
-
-        int destinationIndex = targetIndex + (insertAfter ? 1 : 0);
-
-        if (sourceIndex < destinationIndex)
-            destinationIndex--;
+        if (sourceIndex < 0 || collection.Count == 0)
+            return false;
 
         destinationIndex = Math.Clamp(destinationIndex, 0, collection.Count - 1);
 
-        if (sourceIndex != destinationIndex)
-        {
-            collection.Move(sourceIndex, destinationIndex);
-        }
+        if (sourceIndex == destinationIndex)
+            return false;
+
+        collection.Move(sourceIndex, destinationIndex);
+        return true;
     }
+
+    internal int GetItemIndex(MenuCustomizationItemViewModel item)
+        => ReferenceEquals(item.Owner, this)
+            ? GetCollection(item.Placement).IndexOf(item)
+            : -1;
 
     internal bool MoveItemByOffset(
         MenuCustomizationItemViewModel item,
@@ -132,35 +130,7 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
             return false;
         }
 
-        collection.Move(sourceIndex, destinationIndex);
-        return true;
-    }
-
-    public bool CanMoveItemToSectionEnd(
-        MenuCustomizationItemViewModel item,
-        string placement)
-        => ReferenceEquals(item.Owner, this)
-            && string.Equals(
-                item.Placement,
-                MenuCustomizationPlacement.Normalize(placement),
-                StringComparison.Ordinal);
-
-    public void MoveItemToSectionEnd(
-        MenuCustomizationItemViewModel item,
-        string placement)
-    {
-        if (!CanMoveItemToSectionEnd(item, placement))
-            return;
-
-        ObservableCollection<MenuCustomizationItemViewModel> collection =
-            GetCollection(item.Placement);
-        int sourceIndex = collection.IndexOf(item);
-        int destinationIndex = collection.Count - 1;
-
-        if (sourceIndex >= 0 && sourceIndex != destinationIndex)
-        {
-            collection.Move(sourceIndex, destinationIndex);
-        }
+        return MoveItemToIndex(item, item.Placement, destinationIndex);
     }
 
     internal void ChangePlacement(
