@@ -22,6 +22,7 @@ type EditorQuickInsertCommandItem = {
   icon?: EditorQuickInsertIconName
   id: string
   label: string
+  overflow?: boolean
   shortcut?: string
   type: 'item'
 }
@@ -33,6 +34,7 @@ type EditorQuickInsertSection = {
   icon: EditorQuickInsertIconName
   id: string
   label: string
+  overflow?: boolean
   type: 'section'
 }
 
@@ -132,6 +134,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'image',
     id: 'image',
     label: 'Image',
+    overflow: true,
     type: 'section',
   },
   {
@@ -150,6 +153,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'keyboard',
     id: 'keyboard',
     label: 'Keyboard',
+    overflow: true,
     type: 'section',
   },
   {
@@ -159,6 +163,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'expander',
     id: 'expander',
     label: 'Expander',
+    overflow: true,
     type: 'section',
   },
   {
@@ -168,6 +173,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'tag',
     id: 'tag',
     label: 'Tag',
+    overflow: true,
     type: 'section',
   },
   {
@@ -298,6 +304,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'callout',
     id: 'callouts',
     label: 'Callouts',
+    overflow: true,
     type: 'section',
   },
   {
@@ -334,6 +341,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'misc',
     id: 'miscellaneous',
     label: 'Miscellaneous',
+    overflow: true,
     type: 'section',
   },
 ]
