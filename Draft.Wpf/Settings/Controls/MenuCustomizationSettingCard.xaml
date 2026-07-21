@@ -31,7 +31,6 @@
                     Grid.Column="0"
                     Margin="0,0,12,0"
                     AutomationProperties.Name="{i18n:Loc settings.menuCustomization.dragHandle, Fallback='Drag to reorder (Alt+Up/Down)'}"
-                    GiveFeedback="DragHandle_GiveFeedback"
                     PreviewKeyDown="DragHandle_PreviewKeyDown"
                     PreviewMouseLeftButtonDown="DragHandle_PreviewMouseLeftButtonDown"
                     PreviewMouseLeftButtonUp="DragHandle_PreviewMouseLeftButtonUp"

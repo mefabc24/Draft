@@ -5,59 +5,89 @@
     xmlns:controls="clr-namespace:Draft.Settings.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    AllowDrop="True"
     d:DesignHeight="2000"
     d:DesignWidth="540"
-    PreviewDragOver="View_PreviewDragOver"
+    LostMouseCapture="View_LostMouseCapture"
+    PreviewMouseLeftButtonUp="View_PreviewMouseLeftButtonUp"
+    PreviewMouseMove="View_PreviewMouseMove"
+    PreviewMouseWheel="View_PreviewMouseWheel"
+    Unloaded="View_Unloaded"
     mc:Ignorable="d">
     <UserControl.Resources>
         <DataTemplate x:Key="MenuCustomizationItemTemplate">
-            <controls:MenuCustomizationSettingCard Margin="0,0,0,12" />
+            <controls:MenuCustomizationSettingCard
+                Margin="0,0,0,12"
+                DragRequested="Card_DragRequested" />
         </DataTemplate>
     </UserControl.Resources>
 
-    <Border Background="Transparent">
-        <ScrollViewer
-            x:Name="SettingsScrollViewer"
-            HorizontalScrollBarVisibility="Disabled"
-            Style="{StaticResource SettingsScrollViewer}"
-            VerticalScrollBarVisibility="Auto">
-            <StackPanel VerticalAlignment="Top">
-                <controls:SectionHeader Title="{Binding VisibleSectionTitle}" />
-                <ItemsControl
-                    MinHeight="12"
-                    AllowDrop="True"
-                    Background="Transparent"
-                    DragOver="Section_DragOver"
-                    Drop="Section_Drop"
-                    ItemTemplate="{StaticResource MenuCustomizationItemTemplate}"
-                    ItemsSource="{Binding VisibleItems}"
-                    Tag="Visible" />
+    <Grid x:Name="ViewRoot" Background="Transparent">
+        <Border Background="Transparent">
+            <ScrollViewer
+                x:Name="SettingsScrollViewer"
+                HorizontalScrollBarVisibility="Disabled"
+                Style="{StaticResource SettingsScrollViewer}"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel VerticalAlignment="Top">
+                    <controls:SectionHeader Title="{Binding VisibleSectionTitle}" />
+                    <ItemsControl
+                        x:Name="VisibleItemsControl"
+                        MinHeight="12"
+                        Background="Transparent"
+                        ItemTemplate="{StaticResource MenuCustomizationItemTemplate}"
+                        ItemsSource="{Binding VisibleItems}"
+                        Tag="Visible" />
 
-                <Border Height="20" />
-                <controls:SectionHeader Title="{Binding OverflowSectionTitle}" />
-                <ItemsControl
-                    MinHeight="12"
-                    AllowDrop="True"
-                    Background="Transparent"
-                    DragOver="Section_DragOver"
-                    Drop="Section_Drop"
-                    ItemTemplate="{StaticResource MenuCustomizationItemTemplate}"
-                    ItemsSource="{Binding OverflowItems}"
-                    Tag="Overflow" />
+                    <Border Height="20" />
+                    <controls:SectionHeader Title="{Binding OverflowSectionTitle}" />
+                    <ItemsControl
+                        x:Name="OverflowItemsControl"
+                        MinHeight="12"
+                        Background="Transparent"
+                        ItemTemplate="{StaticResource MenuCustomizationItemTemplate}"
+                        ItemsSource="{Binding OverflowItems}"
+                        Tag="Overflow" />
 
-                <Border Height="20" />
-                <controls:SectionHeader Title="{Binding DisabledSectionTitle}" />
-                <ItemsControl
-                    MinHeight="12"
-                    AllowDrop="True"
-                    Background="Transparent"
-                    DragOver="Section_DragOver"
-                    Drop="Section_Drop"
-                    ItemTemplate="{StaticResource MenuCustomizationItemTemplate}"
-                    ItemsSource="{Binding DisabledItems}"
-                    Tag="Disabled" />
-            </StackPanel>
-        </ScrollViewer>
-    </Border>
+                    <Border Height="20" />
+                    <controls:SectionHeader Title="{Binding DisabledSectionTitle}" />
+                    <ItemsControl
+                        x:Name="DisabledItemsControl"
+                        MinHeight="12"
+                        Background="Transparent"
+                        ItemTemplate="{StaticResource MenuCustomizationItemTemplate}"
+                        ItemsSource="{Binding DisabledItems}"
+                        Tag="Disabled" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <Canvas
+            x:Name="DragPreviewLayer"
+            Panel.ZIndex="100"
+            Background="Transparent"
+            ClipToBounds="False"
+            IsHitTestVisible="False">
+            <Border
+                x:Name="DragPreviewCard"
+                Background="{StaticResource Brush.Background.Surface}"
+                BorderBrush="{StaticResource Brush.Border.Input}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Opacity="0.76"
+                SnapsToDevicePixels="True"
+                Visibility="Collapsed">
+                <Border.Effect>
+                    <DropShadowEffect
+                        BlurRadius="18"
+                        Direction="270"
+                        Opacity="0.34"
+                        ShadowDepth="5" />
+                </Border.Effect>
+                <Image
+                    x:Name="DragPreviewImage"
+                    IsHitTestVisible="False"
+                    Stretch="Fill" />
+            </Border>
+        </Canvas>
+    </Grid>
 </UserControl>

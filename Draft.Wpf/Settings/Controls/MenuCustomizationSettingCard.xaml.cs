@@ -1,7 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -12,13 +10,24 @@ namespace Draft.Settings.Controls;
 
 public partial class MenuCustomizationSettingCard : UserControl
 {
+    public static readonly RoutedEvent DragRequestedEvent = EventManager.RegisterRoutedEvent(
+        nameof(DragRequested),
+        RoutingStrategy.Bubble,
+        typeof(EventHandler<MenuCustomizationDragRequestedEventArgs>),
+        typeof(MenuCustomizationSettingCard));
+
     private Point _dragStartPoint;
     private bool _isDragPending;
-    private MenuCustomizationDragAdorner? _dragAdorner;
 
     public MenuCustomizationSettingCard()
     {
         InitializeComponent();
+    }
+
+    public event EventHandler<MenuCustomizationDragRequestedEventArgs> DragRequested
+    {
+        add => AddHandler(DragRequestedEvent, value);
+        remove => RemoveHandler(DragRequestedEvent, value);
     }
 
     private void DragHandle_PreviewMouseLeftButtonDown(
@@ -78,65 +87,17 @@ public partial class MenuCustomizationSettingCard : UserControl
             return;
 
         _isDragPending = false;
-        int originalIndex = item.Owner.GetItemIndex(item);
         ImageSource? preview = CreateDragPreview();
-        AdornerLayer? adornerLayer = AdornerLayer.GetAdornerLayer(this);
 
-        if (originalIndex < 0 || preview is null || adornerLayer is null)
+        if (preview is null)
             return;
 
-        MenuCustomizationDragData dragData = new(item, this);
-        DataObject data = new();
-        data.SetData(typeof(MenuCustomizationDragData), dragData);
-        data.SetData(typeof(MenuCustomizationItemViewModel), item);
-
-        try
-        {
-            _dragAdorner = new MenuCustomizationDragAdorner(
-                this,
-                preview,
-                RenderSize,
-                _dragStartPoint);
-            adornerLayer.Add(_dragAdorner);
-            SetDragPlaceholder(true);
-            UpdateDragPreviewPosition();
-
-            DragDropEffects result = DragDrop.DoDragDrop(
-                DragHandle,
-                data,
-                DragDropEffects.Move);
-
-            if (result != DragDropEffects.Move)
-            {
-                item.Owner.MoveItemToIndex(
-                    item,
-                    item.Placement,
-                    originalIndex);
-            }
-        }
-        finally
-        {
-            SetDragPlaceholder(false);
-
-            if (_dragAdorner is not null)
-            {
-                adornerLayer.Remove(_dragAdorner);
-                _dragAdorner = null;
-            }
-        }
-    }
-
-    private void DragHandle_GiveFeedback(object sender, GiveFeedbackEventArgs e)
-    {
-        UpdateDragPreviewPosition();
-        e.UseDefaultCursors = false;
-        Mouse.SetCursor(Cursors.SizeAll);
-        e.Handled = true;
-    }
-
-    internal void UpdateDragPreviewPosition()
-    {
-        _dragAdorner?.UpdatePosition(Mouse.GetPosition(this));
+        RaiseEvent(new MenuCustomizationDragRequestedEventArgs(
+            this,
+            item,
+            preview,
+            RenderSize,
+            _dragStartPoint));
     }
 
     internal void StopReorderAnimation()
@@ -166,18 +127,6 @@ public partial class MenuCustomizationSettingCard : UserControl
             HandoffBehavior.SnapshotAndReplace);
     }
 
-    internal static bool TryGetDragData(
-        IDataObject data,
-        [NotNullWhen(true)] out MenuCustomizationDragData? dragData)
-    {
-        dragData = data.GetDataPresent(typeof(MenuCustomizationDragData))
-            ? data.GetData(typeof(MenuCustomizationDragData))
-                as MenuCustomizationDragData
-            : null;
-
-        return dragData is not null;
-    }
-
     private ImageSource? CreateDragPreview()
     {
         if (ActualWidth <= 0 || ActualHeight <= 0)
@@ -195,7 +144,7 @@ public partial class MenuCustomizationSettingCard : UserControl
         return bitmap;
     }
 
-    private void SetDragPlaceholder(bool isVisible)
+    internal void SetDragPlaceholder(bool isVisible)
     {
         CardBorder.Visibility = isVisible
             ? Visibility.Hidden
@@ -222,11 +171,30 @@ public partial class MenuCustomizationSettingCard : UserControl
     }
 }
 
-internal sealed class MenuCustomizationDragData(
-    MenuCustomizationItemViewModel item,
-    MenuCustomizationSettingCard sourceCard)
+public sealed class MenuCustomizationDragRequestedEventArgs : RoutedEventArgs
 {
-    public MenuCustomizationItemViewModel Item { get; } = item;
+    internal MenuCustomizationDragRequestedEventArgs(
+        MenuCustomizationSettingCard sourceCard,
+        MenuCustomizationItemViewModel item,
+        ImageSource preview,
+        Size previewSize,
+        Point grabOffset)
+        : base(MenuCustomizationSettingCard.DragRequestedEvent, sourceCard)
+    {
+        SourceCard = sourceCard;
+        Item = item;
+        Preview = preview;
+        PreviewSize = previewSize;
+        GrabOffset = grabOffset;
+    }
 
-    public MenuCustomizationSettingCard SourceCard { get; } = sourceCard;
+    public MenuCustomizationSettingCard SourceCard { get; }
+
+    public MenuCustomizationItemViewModel Item { get; }
+
+    public ImageSource Preview { get; }
+
+    public Size PreviewSize { get; }
+
+    public Point GrabOffset { get; }
 }
