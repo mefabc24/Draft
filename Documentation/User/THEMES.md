@@ -18,6 +18,13 @@ A dark theme inspired by modern assistant-style response layouts.
 
 ---
 
+## Assistant Light 
+A light theme inspired by modern assistant-style response layouts.
+
+![Assistant Light theme preview](../Assets/Themes/assistant-light.png)
+
+---
+
 ## Repository Dark 
 A GitHub-inspired Markdown theme for a familiar repository-style reading experience.  
 
