@@ -47,12 +47,15 @@ development builds may show that updates are not available.
 ### Feature Preview
 
 #### Floating Markdown Toolbar
-
 #### Floating Markdown Toolbar
 
 Quickly format Markdown in both the editor and the rendered preview. The toolbar stays compact by default and can be expanded to show additional formatting options.
 
+**Collapsed**
+
 ![Floating Markdown Toolbar Collapsed](Documentation/Assets/fmt-collapsed.png)
+
+**Expanded**
 
 ![Floating Markdown Toolbar Expanded](Documentation/Assets/fmt-expanded.png)
 
