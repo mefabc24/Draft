@@ -15,6 +15,7 @@ export {
   isSelectedTextWrapped,
   normalizeAdjacentInlineFormattingRanges,
 } from './commands/inlineFormatting'
+export { getInlineFormatMarkers } from './inline/inlineFormatConfig'
 export {
   createMarkdownImageText,
   createMarkdownLinkText,

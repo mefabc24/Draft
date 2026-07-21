@@ -338,7 +338,7 @@
                          "shortcuts.actions.toolbar.bold.title":  "Bold",
                          "shortcuts.actions.toolbar.close.description":  "Dismiss the floating toolbar selection or cancel an open edit menu.",
                          "shortcuts.actions.toolbar.close.title":  "Close toolbar or edit menu",
-                         "shortcuts.actions.toolbar.comment.description":  "Toggle hidden comment Markdown around the current selection.",
+                         "shortcuts.actions.toolbar.comment.description":  "Toggle an HTML comment around the current selection.",
                          "shortcuts.actions.toolbar.comment.title":  "Comment",
                          "shortcuts.actions.toolbar.confirmEdit.description":  "Apply changes in the toolbar\u0027s link, image, or preview edit menu.",
                          "shortcuts.actions.toolbar.confirmEdit.title":  "Confirm toolbar edit",

@@ -40,7 +40,7 @@
     "commands.editor.undo": "Editor: Undo",
     "commands.editor.uppercaseSelection": "Editor: Uppercase Selection",
     "commands.markdownToolbar.bold": "Markdown: Toggle Bold",
-    "commands.markdownToolbar.comment": "Markdown: Toggle Comment",
+    "commands.markdownToolbar.comment": "Markdown: Toggle HTML Comment",
     "commands.markdownToolbar.heading1": "Markdown: Heading 1",
     "commands.markdownToolbar.heading2": "Markdown: Heading 2",
     "commands.markdownToolbar.heading3": "Markdown: Heading 3",

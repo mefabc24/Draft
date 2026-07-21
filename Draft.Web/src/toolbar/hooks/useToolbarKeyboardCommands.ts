@@ -17,8 +17,10 @@ import {
   toggleWrappedSelection,
   type MarkdownEditorCommand,
 } from '../../editor/monaco/markdownCommandAdapter'
-import type { HeadingValue } from '../../markdown'
+import { getInlineFormatMarkers, type HeadingValue } from '../../markdown'
 import type { ToolbarSelectionSource } from '../toolbarTypes'
+
+const HTML_COMMENT_MARKERS = getInlineFormatMarkers('comment')
 
 type RunToolbarEditorCommand = (
   command: MarkdownEditorCommand,
@@ -162,7 +164,12 @@ export function useToolbarKeyboardCommands({
         ),
         run: () => {
           runKeyboardCommand((activeEditor, commandOptions) => {
-            toggleWrappedSelection(activeEditor, '%%', '%%', commandOptions)
+            toggleWrappedSelection(
+              activeEditor,
+              HTML_COMMENT_MARKERS.openingMarker,
+              HTML_COMMENT_MARKERS.closingMarker,
+              commandOptions,
+            )
           })
         },
       }),
@@ -346,7 +353,12 @@ export function useToolbarKeyboardCommands({
       {
         actionId: shortcutActionIds.toolbarComment,
         command: (activeEditor, commandOptions) => {
-          toggleWrappedSelection(activeEditor, '%%', '%%', commandOptions)
+          toggleWrappedSelection(
+            activeEditor,
+            HTML_COMMENT_MARKERS.openingMarker,
+            HTML_COMMENT_MARKERS.closingMarker,
+            commandOptions,
+          )
         },
       },
       {

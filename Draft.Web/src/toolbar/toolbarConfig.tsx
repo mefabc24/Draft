@@ -1,4 +1,9 @@
-import type { HeadingValue, InlineFormat, ListValue } from '../markdown'
+import {
+  getInlineFormatMarkers,
+  type HeadingValue,
+  type InlineFormat,
+  type ListValue,
+} from '../markdown'
 import type { ToolbarDropdownMenuEntry } from './components/ToolbarDropdown'
 import ToolbarIcon, { type ToolbarIconName } from './components/ToolbarIcon'
 
@@ -78,6 +83,8 @@ const inlineTooltipShortcuts: Record<InlineFormat, InlineTooltipShortcut> = {
   image: { shortcut: 'CTRL + ALT + I' },
   badge: {},
 }
+
+const HTML_COMMENT_MARKERS = getInlineFormatMarkers('comment')
 
 export const inlineTooltipLabelKeys: Record<InlineFormat, string> = {
   bold: 'toolbar.bold',
@@ -182,7 +189,11 @@ export const inlineToolbarActions = [
   },
   {
     activeFormat: 'comment',
-    command: { prefix: '%%', type: 'wrap' },
+    command: {
+      prefix: HTML_COMMENT_MARKERS.openingMarker,
+      suffix: HTML_COMMENT_MARKERS.closingMarker,
+      type: 'wrap',
+    },
     icon: 'comment',
     id: 'comment',
     tooltip: inlineTooltipShortcuts.comment,

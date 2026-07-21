@@ -59,9 +59,9 @@ export const inlineFormatConfig = {
     parseInsideInlineCode: false,
   },
   comment: {
-    closingMarker: '%%',
+    closingMarker: ' -->',
     mergeAdjacent: true,
-    openingMarker: '%%',
+    openingMarker: '<!-- ',
     parseInsideInlineCode: false,
   },
 } satisfies Record<WrappableInlineFormat, InlineFormatConfig>
