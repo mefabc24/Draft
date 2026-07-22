@@ -13,6 +13,7 @@ type WorkspaceFindReplaceMenuProps = {
   isOpen: boolean
   onClose: () => void
   options?: readonly WorkspaceFindReplaceOptionDefinition[]
+  toggleShortcut: string
 }
 
 const findReplaceIconPaths = {
@@ -66,6 +67,7 @@ function WorkspaceFindReplaceMenu({
   isOpen,
   onClose,
   options = workspaceFindReplaceOptions,
+  toggleShortcut,
 }: WorkspaceFindReplaceMenuProps) {
   const { t } = useTranslation()
   const searchInputRef = useRef<HTMLInputElement | null>(null)
@@ -284,7 +286,7 @@ function WorkspaceFindReplaceMenu({
           })}
         </div>
         <span className="workspace-find-replace-toggle-hint">
-          {t('findReplace.toggleHint')}
+          {t('findReplace.toggleHint', { shortcut: toggleShortcut })}
         </span>
       </div>
     </section>

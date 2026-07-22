@@ -188,9 +188,9 @@ export const allowedBrowserShortcuts: readonly BrowserShortcutRule[] = [
 
 export const draftHandledBrowserShortcuts: readonly BrowserShortcutCommandAction[] = [
   {
+    actionId: shortcutActionIds.findReplaceToggle,
     command: 'toggleFindReplace',
     id: 'draft.findReplace',
-    match: primaryKey('f'),
   },
   {
     actionId: shortcutActionIds.appSave,

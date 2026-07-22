@@ -50,6 +50,11 @@ public static class ShortcutSettingsCatalog
                         "Open a Markdown or text file.",
                         "Ctrl + O"),
                     new ShortcutActionDefinition(
+                        ShortcutActionIds.FindReplaceToggle,
+                        "Find and replace",
+                        "Toggle the Find and Replace window in the workspace.",
+                        "Ctrl + F"),
+                    new ShortcutActionDefinition(
                         ShortcutActionIds.EditorUndo,
                         "Undo",
                         "Undo the latest editor change, even when focus is outside the editor.",

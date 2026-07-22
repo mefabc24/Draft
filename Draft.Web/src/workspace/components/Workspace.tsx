@@ -55,7 +55,11 @@ import {
   addBrowserShortcutGuard,
   type BrowserShortcutDraftCommand,
 } from '../../shortcuts/browserShortcutGuard'
-import { defaultShortcutBindings } from '../../shortcuts/shortcutSettings'
+import {
+  defaultShortcutBindings,
+  getShortcutBinding,
+  shortcutActionIds,
+} from '../../shortcuts/shortcutSettings'
 import { usePreviewScrollSync } from '../hooks/usePreviewScrollSync'
 import { useSplitSizing } from '../hooks/useSplitSizing'
 import { isViewMode, type ViewMode } from '../workspaceTypes'
@@ -203,6 +207,14 @@ function Workspace() {
   const activePreviewTheme = useMemo(
     () => getPreviewTheme(activePreviewThemeId),
     [activePreviewThemeId],
+  )
+  const findReplaceShortcut = useMemo(
+    () =>
+      getShortcutBinding(
+        shortcutBindings,
+        shortcutActionIds.findReplaceToggle,
+      ).replace(/\s*\+\s*/gu, '+'),
+    [shortcutBindings],
   )
   const previewThemeStyle = useMemo(
     () => getPreviewThemeStyle(activePreviewTheme),
@@ -553,6 +565,7 @@ function Workspace() {
             editor={editorInstance}
             isOpen={isFindReplaceOpen}
             onClose={() => setIsFindReplaceOpen(false)}
+            toggleShortcut={findReplaceShortcut}
           />
         </section>
         <WorkspaceDevMenu

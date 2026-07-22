@@ -16,6 +16,7 @@ export const shortcutActionIds = {
   editorToggleLineCapitalization: 'editor.toggleLineCapitalization',
   editorUndo: 'editor.undo',
   editorUppercaseSelection: 'editor.uppercaseSelection',
+  findReplaceToggle: 'findReplace.toggle',
   quickInsertKeepOpen: 'quickInsert.keepOpen',
   quickInsertOpenMenu: 'quickInsert.openMenu',
   toolbarBold: 'toolbar.bold',
@@ -63,6 +64,7 @@ export const fixedMouseGestureShortcutActionIds = Object.keys(
 export const defaultShortcutBindings: ShortcutBindings = {
   [shortcutActionIds.appSave]: 'Ctrl + S',
   [shortcutActionIds.appOpen]: 'Ctrl + O',
+  [shortcutActionIds.findReplaceToggle]: 'Ctrl + F',
   [shortcutActionIds.editorUndo]: 'Ctrl + Z',
   [shortcutActionIds.editorRedo]: 'Ctrl + Shift + Z',
   [shortcutActionIds.editorDuplicateLine]: 'Ctrl + D',

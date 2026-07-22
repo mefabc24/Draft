@@ -83,7 +83,7 @@
     "findReplace.searchInputLabel": "Search text",
     "findReplace.searchPlaceholder": "Find",
     "findReplace.toggleReplaceAll": "Toggle replace all",
-    "findReplace.toggleHint": "Ctrl+F to toggle",
+    "findReplace.toggleHint": "{shortcut} to toggle",
     "heading.blockquote": "Blockquote",
     "heading.codeblock": "Code Block",
     "heading.h1": "Heading 1",

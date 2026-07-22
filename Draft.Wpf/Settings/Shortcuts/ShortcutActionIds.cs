@@ -19,6 +19,7 @@ public static class ShortcutActionIds
     public const string EditorAddSelectionRange = "editor.addSelectionRange";
     public const string EditorContinueMarkdownBlock = "editor.continueMarkdownBlock";
     public const string EditorIndentListItem = "editor.indentListItem";
+    public const string FindReplaceToggle = "findReplace.toggle";
     public const string ToolbarBold = "toolbar.bold";
     public const string ToolbarItalic = "toolbar.italic";
     public const string ToolbarUnderline = "toolbar.underline";

@@ -370,6 +370,8 @@
                          "shortcuts.actions.editor.undo.title":  "Undo",
                          "shortcuts.actions.editor.uppercaseSelection.description":  "Convert the selected text to uppercase.",
                          "shortcuts.actions.editor.uppercaseSelection.title":  "Uppercase selection",
+                         "shortcuts.actions.findReplace.toggle.description":  "Toggle the Find and Replace window in the workspace.",
+                         "shortcuts.actions.findReplace.toggle.title":  "Find and replace",
                          "shortcuts.actions.quickInsert.keepOpen.description":  "Hold the configured keys and click a Quick Insert item with the left mouse button to insert it and keep the menu open for the next empty line.",
                          "shortcuts.actions.quickInsert.keepOpen.title":  "Insert and keep menu open",
                          "shortcuts.actions.quickInsert.openMenu.description":  "Open the Quick Insert Menu at the current editor cursor position.",
