@@ -267,39 +267,55 @@
                             </StackPanel>
                         </RadioButton>
 
-                        <RadioButton
-                            Height="36"
-                            Margin="0,0,0,4"
-                            GroupName="SettingsMenu"
-                            IsChecked="{Binding IsFloatingMarkdownToolbarSettingsSelected, Mode=TwoWay}"
-                            Style="{StaticResource SettingsMenuRadioButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <Path
-                                    Width="16"
-                                    Height="16"
-                                    Data="{StaticResource Icon.FloatingMarkdownToolbar}"
-                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
-                                    Stretch="Uniform" />
-                                <TextBlock Margin="12,0,0,0" Text="{Binding FloatingMarkdownToolbarSettingsMenuLabel, FallbackValue='Markdown Toolbar'}" />
-                            </StackPanel>
-                        </RadioButton>
+                        <Expander
+                            IsExpanded="{Binding IsCustomizationsExpanded, Mode=TwoWay}"
+                            Style="{StaticResource SettingsMenuExpander}">
+                            <Expander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <Path
+                                        Width="16"
+                                        Height="16"
+                                        Data="{StaticResource Icon.Customizations}"
+                                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
+                                        Stretch="Uniform" />
+                                    <TextBlock Margin="12,0,0,0" Text="{Binding CustomizationsSettingsMenuLabel, FallbackValue=Customizations}" />
+                                </StackPanel>
+                            </Expander.Header>
 
-                        <RadioButton
-                            Height="36"
-                            Margin="0,0,0,4"
-                            GroupName="SettingsMenu"
-                            IsChecked="{Binding IsQuickInsertSettingsSelected, Mode=TwoWay}"
-                            Style="{StaticResource SettingsMenuRadioButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <Path
-                                    Width="16"
-                                    Height="16"
-                                    Data="{StaticResource Icon.QuickInsertMenu}"
-                                    Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
-                                    Stretch="Uniform" />
-                                <TextBlock Margin="12,0,0,0" Text="{Binding QuickInsertSettingsMenuLabel, FallbackValue='Insert Menu'}" />
+                            <StackPanel>
+                                <RadioButton
+                                    Height="36"
+                                    GroupName="SettingsMenu"
+                                    IsChecked="{Binding IsFloatingMarkdownToolbarSettingsSelected, Mode=TwoWay}"
+                                    Style="{StaticResource SettingsMenuRadioButton}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path
+                                            Width="16"
+                                            Height="16"
+                                            Data="{StaticResource Icon.FloatingMarkdownToolbar}"
+                                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                            Stretch="Uniform" />
+                                        <TextBlock Margin="12,0,0,0" Text="{Binding FloatingMarkdownToolbarSettingsMenuLabel, FallbackValue='Markdown Toolbar'}" />
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton
+                                    Height="36"
+                                    GroupName="SettingsMenu"
+                                    IsChecked="{Binding IsQuickInsertSettingsSelected, Mode=TwoWay}"
+                                    Style="{StaticResource SettingsMenuRadioButton}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path
+                                            Width="16"
+                                            Height="16"
+                                            Data="{StaticResource Icon.QuickInsertMenu}"
+                                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                            Stretch="Uniform" />
+                                        <TextBlock Margin="12,0,0,0" Text="{Binding QuickInsertSettingsMenuLabel, FallbackValue='Insert Menu'}" />
+                                    </StackPanel>
+                                </RadioButton>
                             </StackPanel>
-                        </RadioButton>
+                        </Expander>
 
                         <RadioButton
                             Height="36"

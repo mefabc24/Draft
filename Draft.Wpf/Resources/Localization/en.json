@@ -141,6 +141,7 @@
                          "settings.appearance.toolbarPosition":  "Toolbar position",
                          "settings.appearance.toolbarPosition.description":  "Choose where the main controls should be placed.",
                          "settings.configuration":  "Configuration",
+                         "settings.customizations":  "Customizations",
                          "settings.develop":  "Develop",
                          "settings.develop.demoUpdateAvailableDescription":  "Draft 99.0.0-test is available. Install this update now? Draft will restart to finish installing.",
                          "settings.develop.demoUpdateInstalledDescription":  "This is a development-only update demo. No update was installed.",

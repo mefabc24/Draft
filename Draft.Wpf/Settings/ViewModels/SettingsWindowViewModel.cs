@@ -22,6 +22,7 @@ public class SettingsWindowViewModel : BaseViewModel
     private SettingsPage _selectedPage = SettingsPage.General;
     private SettingsPageViewModel _currentSettingsPage;
     private bool _menuCustomizationPagesInitialized;
+    private bool _isCustomizationsExpanded;
 
     private string _appLanguage = AppSettingsStore.DefaultAppLanguage;
     private bool _reopenLastWorkspaceOnStartup;
@@ -203,6 +204,9 @@ public class SettingsWindowViewModel : BaseViewModel
     public string PreviewSettingsMenuLabel =>
         LocalizationService.Translate("settings.preview", "Preview", AppLanguage);
 
+    public string CustomizationsSettingsMenuLabel =>
+        LocalizationService.Translate("settings.customizations", "Customizations", AppLanguage);
+
     public string FloatingMarkdownToolbarSettingsMenuLabel =>
         LocalizationService.Translate(
             "settings.floatingMarkdownToolbar",
@@ -304,6 +308,15 @@ public class SettingsWindowViewModel : BaseViewModel
             if (value)
                 SelectSettingsPage(SettingsPage.QuickInsert);
         }
+    }
+
+    public bool IsCustomizationsSettingsSelected =>
+        _selectedPage is SettingsPage.FloatingMarkdownToolbar or SettingsPage.QuickInsert;
+
+    public bool IsCustomizationsExpanded
+    {
+        get => _isCustomizationsExpanded;
+        set => SetProperty(ref _isCustomizationsExpanded, value);
     }
 
     public bool IsAppearanceSettingsSelected
@@ -761,6 +774,9 @@ public class SettingsWindowViewModel : BaseViewModel
         if (page == SettingsPage.Develop && !IsDevelopSettingsVisible)
             return;
 
+        if (page is SettingsPage.FloatingMarkdownToolbar or SettingsPage.QuickInsert)
+            IsCustomizationsExpanded = true;
+
         if (_selectedPage == page)
             return;
 
@@ -787,6 +803,7 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsPreviewSettingsSelected));
         OnPropertyChanged(nameof(IsFloatingMarkdownToolbarSettingsSelected));
         OnPropertyChanged(nameof(IsQuickInsertSettingsSelected));
+        OnPropertyChanged(nameof(IsCustomizationsSettingsSelected));
         OnPropertyChanged(nameof(IsAppearanceSettingsSelected));
         OnPropertyChanged(nameof(IsStatusBarSettingsSelected));
         OnPropertyChanged(nameof(IsShortcutsSettingsSelected));
@@ -1154,6 +1171,7 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(GeneralSettingsMenuLabel));
         OnPropertyChanged(nameof(EditorSettingsMenuLabel));
         OnPropertyChanged(nameof(PreviewSettingsMenuLabel));
+        OnPropertyChanged(nameof(CustomizationsSettingsMenuLabel));
         OnPropertyChanged(nameof(FloatingMarkdownToolbarSettingsMenuLabel));
         OnPropertyChanged(nameof(QuickInsertSettingsMenuLabel));
         OnPropertyChanged(nameof(AppearanceSettingsMenuLabel));
