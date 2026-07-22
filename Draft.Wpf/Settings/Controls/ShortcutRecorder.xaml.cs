@@ -65,7 +65,7 @@ public partial class ShortcutRecorder : UserControl
             nameof(Placeholder),
             typeof(string),
             typeof(ShortcutRecorder),
-            new PropertyMetadata("Not set", OnPlaceholderChanged));
+            new PropertyMetadata(string.Empty, OnPlaceholderChanged));
 
     public static readonly DependencyProperty DisplayTextProperty =
         DependencyProperty.Register(
