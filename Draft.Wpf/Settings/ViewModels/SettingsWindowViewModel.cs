@@ -878,6 +878,12 @@ public class SettingsWindowViewModel : BaseViewModel
             return;
         }
 
+        List<(
+            SettingsSearchEntry Entry,
+            string Title,
+            string PageTitle,
+            SettingsSearchMatchRank Rank)> matches = new();
+
         foreach (SettingsSearchEntry entry in SettingsSearchCatalog.Entries)
         {
             string title = LocalizationService.Translate(
@@ -891,20 +897,27 @@ public class SettingsWindowViewModel : BaseViewModel
                     entry.DescriptionFallback,
                     AppLanguage);
             string pageTitle = GetSettingsPageTitle(entry.Page);
-            IEnumerable<string?> searchableValues = new string?[]
-                {
-                    title,
-                    description,
-                    pageTitle,
-                    entry.FallbackTitle,
-                    entry.DescriptionFallback,
-                    entry.TargetId,
-                }
-                .Concat(entry.Keywords ?? Array.Empty<string>());
+            IEnumerable<string?> keywordValues = (entry.Keywords ?? Array.Empty<string>())
+                .Cast<string?>()
+                .Append(pageTitle);
 
-            if (!SettingsSearchMatcher.Matches(SettingsSearchQuery, searchableValues))
+            if (!SettingsSearchMatcher.TryGetRank(
+                    SettingsSearchQuery,
+                    [title, entry.FallbackTitle],
+                    [description, entry.DescriptionFallback],
+                    keywordValues,
+                    out SettingsSearchMatchRank rank))
+            {
                 continue;
+            }
 
+            matches.Add((entry, title, pageTitle, rank));
+        }
+
+        foreach ((SettingsSearchEntry entry, string title, string pageTitle, _) in matches
+            .OrderBy(match => match.Rank)
+            .ThenBy(match => match.Title, StringComparer.CurrentCultureIgnoreCase))
+        {
             SettingsSearchResults.Add(new SettingsSearchResultViewModel(
                 entry,
                 title,
