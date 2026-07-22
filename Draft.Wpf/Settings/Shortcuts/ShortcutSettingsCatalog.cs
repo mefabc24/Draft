@@ -105,6 +105,11 @@ public static class ShortcutSettingsCatalog
                         "Move the editor cursor one word right.",
                         "Ctrl + Right"),
                     new ShortcutActionDefinition(
+                        ShortcutActionIds.EditorMoveCursorNextLineStart,
+                        "Move cursor to start of next line",
+                        "Move the editor cursor down one line and then to the start of that line.",
+                        string.Empty),
+                    new ShortcutActionDefinition(
                         ShortcutActionIds.EditorExtendSelectionWordLeft,
                         "Extend selection one word left",
                         "Extend the editor selection one word left.",
@@ -337,6 +342,13 @@ public static class ShortcutSettingsCatalog
         string shortcut,
         out string normalizedShortcut)
     {
+        if (string.IsNullOrWhiteSpace(shortcut)
+            && string.IsNullOrWhiteSpace(action.DefaultShortcut))
+        {
+            normalizedShortcut = string.Empty;
+            return true;
+        }
+
         bool hasFixedMouseGesture =
             action.FixedMouseGesture != ShortcutFixedMouseGesture.None;
 

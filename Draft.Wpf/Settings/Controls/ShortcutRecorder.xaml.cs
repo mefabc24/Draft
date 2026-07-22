@@ -203,9 +203,6 @@ public partial class ShortcutRecorder : UserControl
             StopRecording(commit: false);
 
         string defaultShortcut = DefaultShortcutText.Trim();
-        if (string.IsNullOrWhiteSpace(defaultShortcut))
-            return;
-
         ShortcutText = defaultShortcut;
         ShortcutChanged?.Invoke(this, new ShortcutChangedEventArgs(defaultShortcut));
 
@@ -398,7 +395,6 @@ public partial class ShortcutRecorder : UserControl
 
         bool isResetAvailable =
             !IsRecording &&
-            !string.IsNullOrWhiteSpace(defaultShortcut) &&
             !string.Equals(currentShortcut, defaultShortcut, StringComparison.OrdinalIgnoreCase);
 
         ResetButtonVisibility = isResetAvailable

@@ -215,6 +215,7 @@ export const draftCommandShortcutActions: readonly ShortcutActionId[] = [
   shortcutActionIds.editorMoveLineDown,
   shortcutActionIds.editorMoveCursorWordLeft,
   shortcutActionIds.editorMoveCursorWordRight,
+  shortcutActionIds.editorMoveCursorNextLineStart,
   shortcutActionIds.editorExtendSelectionWordLeft,
   shortcutActionIds.editorExtendSelectionWordRight,
   shortcutActionIds.editorContinueMarkdownBlock,

@@ -356,6 +356,8 @@
                          "shortcuts.actions.editor.indentListItem.title":  "Indent list item",
                          "shortcuts.actions.editor.moveCursorWordLeft.description":  "Move the editor cursor one word left.",
                          "shortcuts.actions.editor.moveCursorWordLeft.title":  "Move cursor one word left",
+                         "shortcuts.actions.editor.moveCursorNextLineStart.description":  "Move the editor cursor down one line and then to the start of that line.",
+                         "shortcuts.actions.editor.moveCursorNextLineStart.title":  "Move cursor to start of next line",
                          "shortcuts.actions.editor.moveCursorWordRight.description":  "Move the editor cursor one word right.",
                          "shortcuts.actions.editor.moveCursorWordRight.title":  "Move cursor one word right",
                          "shortcuts.actions.editor.moveLineDown.description":  "Move the active editor line or selected lines down.",

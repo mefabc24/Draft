@@ -33,6 +33,7 @@
     "commands.editor.extendSelectionWordRight": "Editor: Extend Selection One Word Right",
     "commands.editor.moveCursorWordLeft": "Editor: Move Cursor One Word Left",
     "commands.editor.moveCursorWordRight": "Editor: Move Cursor One Word Right",
+    "commands.editor.moveCursorNextLineStart": "Editor: Move Cursor to Start of Next Line",
     "commands.editor.moveLineDown": "Editor: Move Line Down",
     "commands.editor.moveLineUp": "Editor: Move Line Up",
     "commands.editor.redo": "Editor: Redo",

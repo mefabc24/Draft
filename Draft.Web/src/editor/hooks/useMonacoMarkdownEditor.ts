@@ -45,6 +45,7 @@ import {
   updatePendingMarkdownHtmlAngleCompletionOnContentChanged,
 } from '../monaco/htmlTagClosing'
 import { moveEditorLines } from '../monaco/lineMovement'
+import { moveCursorToNextLineStart } from '../monaco/lineNavigation'
 import { continueMarkdownBlockOnEnter } from '../monaco/markdownContinuation'
 import { indentEmptyMarkdownListItemOnTab } from '../monaco/markdownListIndentation'
 import { wrapSelectedTextForTypedCharacter } from '../monaco/selectedTextWrapping'
@@ -698,6 +699,17 @@ export function useMonacoMarkdownEditor({
         },
       }),
       editor.addAction({
+        id: 'draft.editor.moveCursorNextLineStart',
+        label: t('commands.editor.moveCursorNextLineStart'),
+        keybindings: getEditorActionKeybindings(
+          shortcutBindings,
+          shortcutActionIds.editorMoveCursorNextLineStart,
+        ),
+        run: () => {
+          moveCursorToNextLineStart(editor)
+        },
+      }),
+      editor.addAction({
         id: 'draft.editor.extendSelectionWordLeft',
         label: t('commands.editor.extendSelectionWordLeft'),
         keybindings: getEditorActionKeybindings(
@@ -732,6 +744,7 @@ export function useMonacoMarkdownEditor({
       shortcutActionIds.editorMoveLineDown,
       shortcutActionIds.editorMoveCursorWordLeft,
       shortcutActionIds.editorMoveCursorWordRight,
+      shortcutActionIds.editorMoveCursorNextLineStart,
       shortcutActionIds.editorExtendSelectionWordLeft,
       shortcutActionIds.editorExtendSelectionWordRight,
     ]) {
