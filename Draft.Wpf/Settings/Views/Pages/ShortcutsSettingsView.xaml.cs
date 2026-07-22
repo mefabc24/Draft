@@ -8,4 +8,9 @@ public partial class ShortcutsSettingsView : UserControl
     {
         InitializeComponent();
     }
+
+    private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        ShortcutsScrollViewer?.ScrollToTop();
+    }
 }

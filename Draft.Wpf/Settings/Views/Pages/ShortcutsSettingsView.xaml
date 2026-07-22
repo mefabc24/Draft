@@ -12,6 +12,48 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <SolidColorBrush x:Key="ShortcutSearchPlaceholderBrush" Color="#676767" />
+
+        <Style x:Key="ShortcutSearchTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CaretBrush" Value="{StaticResource Brush.Text.Secondary}" />
+            <Setter Property="FontFamily" Value="{StaticResource Font.Inter}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Regular" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Margin="{TemplateBinding Padding}"
+                                VerticalAlignment="Center" />
+                            <TextBlock
+                                x:Name="PlaceholderText"
+                                VerticalAlignment="Center"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                Foreground="{StaticResource ShortcutSearchPlaceholderBrush}"
+                                IsHitTestVisible="False"
+                                Text="{TemplateBinding Tag}"
+                                Visibility="Collapsed" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <DataTemplate x:Key="ShortcutCardTemplate" DataType="{x:Type settingsVm:ShortcutItemViewModel}">
             <settings:SettingCard
                 Title="{Binding Title}"
@@ -56,8 +98,49 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Border Background="Transparent">
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border
+            Height="42"
+            Margin="0,0,0,24"
+            Background="{StaticResource Brush.Background.Window}"
+            BorderBrush="{StaticResource Brush.Background.Secondary}"
+            BorderThickness="1"
+            CornerRadius="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Path
+                    Width="16"
+                    Height="16"
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    Data="{StaticResource Icon.Search}"
+                    Fill="{StaticResource ShortcutSearchPlaceholderBrush}"
+                    IsHitTestVisible="False"
+                    Stretch="Uniform" />
+
+                <TextBox
+                    Grid.Column="1"
+                    Margin="10,0,12,0"
+                    AutomationProperties.Name="{Binding SearchPlaceholder}"
+                    Style="{StaticResource ShortcutSearchTextBox}"
+                    Tag="{Binding SearchPlaceholder}"
+                    Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    TextChanged="SearchTextBox_TextChanged" />
+            </Grid>
+        </Border>
+
         <ScrollViewer
+            x:Name="ShortcutsScrollViewer"
+            Grid.Row="1"
             HorizontalScrollBarVisibility="Disabled"
             Style="{StaticResource SettingsScrollViewer}"
             VerticalScrollBarVisibility="Auto">
@@ -65,6 +148,7 @@
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Margin" Value="0,0,0,20" />
+                        <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Style>
                 </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
@@ -73,11 +157,17 @@
                             <section:SectionHeader Title="{Binding Title}" />
                             <ItemsControl
                                 ItemTemplate="{StaticResource ShortcutCardTemplate}"
-                                ItemsSource="{Binding Shortcuts}" />
+                                ItemsSource="{Binding Shortcuts}">
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+                            </ItemsControl>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-    </Border>
+    </Grid>
 </UserControl>

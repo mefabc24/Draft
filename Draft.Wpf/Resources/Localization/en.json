@@ -437,6 +437,7 @@
                          "shortcuts.recordShortcut":  "Record shortcut",
                          "shortcuts.resolveConflicts":  "Resolve shortcut conflicts before applying changes.",
                          "shortcuts.resetShortcut":  "Reset shortcut",
+                         "shortcuts.searchPlaceholder":  "Search shortcuts...",
                          "status.autosave":  "AUTOSAVE",
                          "status.characterCountPlural":  "{count} CHARS",
                          "status.characterCountSingular":  "{count} CHAR",
