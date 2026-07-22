@@ -186,7 +186,7 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.InputSubtleHover}" />
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.SelectedHover}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -230,6 +230,7 @@
                                 x:Name="ContentHost"
                                 Grid.Row="1"
                                 MaxHeight="0"
+                                Padding="4"
                                 ClipToBounds="True"
                                 IsHitTestVisible="False"
                                 Opacity="0">
@@ -258,7 +259,7 @@
                                         <DoubleAnimation
                                             Storyboard.TargetName="ContentHost"
                                             Storyboard.TargetProperty="MaxHeight"
-                                            To="76"
+                                            To="84"
                                             Duration="0:0:0.18">
                                             <DoubleAnimation.EasingFunction>
                                                 <CubicEase EasingMode="EaseOut" />
