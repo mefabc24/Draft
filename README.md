@@ -2,7 +2,7 @@
 
 Draft is a focused Windows Markdown editor with live preview, save snapshots, a floating formatting toolbar, and a calm desktop workspace.
 
-Current version: `3.0.0` · [Download](https://github.com/mefabc24/Draft/releases/latest) · [Themes](Documentation/User/THEMES.md) · [Report issue](https://github.com/mefabc24/Draft/issues) · [Roadmap](Documentation/User/ROADMAP.md)
+Current version: `3.0.0` · [Download](https://github.com/mefabc24/Draft/releases/latest) · [Themes](Documentation/User/THEMES.md) · [Shortcuts](Documentation/User/SHORTCUTS.md) · [Report issue](https://github.com/mefabc24/Draft/issues) · [Roadmap](Documentation/User/ROADMAP.md)
 
 ![Draft main workspace](Documentation/Assets/app-preview.png)
 
@@ -100,55 +100,6 @@ Draft includes settings for:
 - Interface language selection. English is currently the available language.
 - A shortcuts page for recording, resetting, and checking custom keyboard shortcuts for conflicts.
 - Version and update controls.
-
-### Useful Shortcuts
-
-#### General
-
-```text
-Ctrl + O              Open file
-Ctrl + S              Save file
-Ctrl + Z              Undo
-Ctrl + Shift + Z      Redo
-Ctrl + D              Duplicate current line
-Ctrl + Alt + U        Toggle current-line capitalization
-Ctrl + Shift + U      Convert selection to uppercase
-Ctrl + Shift + L      Convert selection to lowercase
-Ctrl + Left/Right     Move by word
-Ctrl + Shift + Left/Right
-                      Extend selection by word
-Ctrl + Shift + Up     Move current line or selected lines up
-Ctrl + Shift + Down   Move current line or selected lines down
-Enter                 Continue the current Markdown list or quote
-Tab                   Indent an empty Markdown list item
-```
-
-#### Floating Markdown Toolbar (FMT)
-
-```text
-Ctrl + B              Bold
-Ctrl + I              Italic
-Ctrl + U              Underline
-Ctrl + Shift + X      Strikethrough
-Ctrl + E              Inline code
-Ctrl + Shift + S      Spoiler
-Ctrl + Shift + H      Highlight
-Ctrl + /              HTML comment
-Ctrl + K              Link
-Ctrl + Alt + I        Image
-Ctrl + N              Normal text
-Ctrl + 1..6           Heading 1 through Heading 6
-Ctrl + Shift + E      Edit the Markdown behind selected preview content
-```
-
-#### Quick Insert Menu (QIM)
-
-```text
-Ctrl + Space          Open Quick Insert Menu at the cursor position
-Shift + Left Click    Insert from Quick Insert and keep the menu open
-```
-
-Keyboard shortcuts can be customized in Settings.
 
 ## For Developers
 
