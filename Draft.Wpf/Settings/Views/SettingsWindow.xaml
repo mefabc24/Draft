@@ -305,10 +305,10 @@
                                     DataContext="{Binding DataContext, ElementName=GlobalSettingsSearchBorder}">
                                     <Border.Effect>
                                         <DropShadowEffect
-                                            BlurRadius="22"
+                                            BlurRadius="16"
                                             Color="{StaticResource Color.Shadow.Default}"
                                             Direction="270"
-                                            Opacity="0.72"
+                                            Opacity="0.32"
                                             RenderingBias="Quality"
                                             ShadowDepth="3" />
                                     </Border.Effect>
