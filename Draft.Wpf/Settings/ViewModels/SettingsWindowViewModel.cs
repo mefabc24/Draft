@@ -206,13 +206,13 @@ public class SettingsWindowViewModel : BaseViewModel
     public string FloatingMarkdownToolbarSettingsMenuLabel =>
         LocalizationService.Translate(
             "settings.floatingMarkdownToolbar",
-            "Floating Markdown Toolbar",
+            "Markdown Toolbar",
             AppLanguage);
 
     public string QuickInsertSettingsMenuLabel =>
         LocalizationService.Translate(
             "settings.quickInsertMenu",
-            "Quick Insert Menu",
+            "Insert Menu",
             AppLanguage);
 
     public string AppearanceSettingsMenuLabel =>

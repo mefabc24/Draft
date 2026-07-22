@@ -8,7 +8,7 @@ public sealed class FloatingMarkdownToolbarSettingsPageViewModel
     public FloatingMarkdownToolbarSettingsPageViewModel(SettingsWindowViewModel settings)
         : base(
             "settings.floatingMarkdownToolbar",
-            "Floating Markdown Toolbar",
+            "Markdown Toolbar",
             settings,
             MenuCustomizationCatalog.FloatingMarkdownToolbarDefinitions,
             MenuCustomizationCatalog.CreateDefaultFloatingMarkdownToolbarItems,

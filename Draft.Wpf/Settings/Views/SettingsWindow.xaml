@@ -280,7 +280,7 @@
                                     Data="{StaticResource Icon.FloatingMarkdownToolbar}"
                                     Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                     Stretch="Uniform" />
-                                <TextBlock Margin="12,0,0,0" Text="{Binding FloatingMarkdownToolbarSettingsMenuLabel, FallbackValue='Floating Markdown Toolbar'}" />
+                                <TextBlock Margin="12,0,0,0" Text="{Binding FloatingMarkdownToolbarSettingsMenuLabel, FallbackValue='Markdown Toolbar'}" />
                             </StackPanel>
                         </RadioButton>
 
@@ -297,7 +297,7 @@
                                     Data="{StaticResource Icon.QuickInsertMenu}"
                                     Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
                                     Stretch="Uniform" />
-                                <TextBlock Margin="12,0,0,0" Text="{Binding QuickInsertSettingsMenuLabel, FallbackValue='Quick Insert Menu'}" />
+                                <TextBlock Margin="12,0,0,0" Text="{Binding QuickInsertSettingsMenuLabel, FallbackValue='Insert Menu'}" />
                             </StackPanel>
                         </RadioButton>
 

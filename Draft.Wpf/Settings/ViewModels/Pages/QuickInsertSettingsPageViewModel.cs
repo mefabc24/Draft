@@ -8,7 +8,7 @@ public sealed class QuickInsertSettingsPageViewModel
     public QuickInsertSettingsPageViewModel(SettingsWindowViewModel settings)
         : base(
             "settings.quickInsertMenu",
-            "Quick Insert Menu",
+            "Insert Menu",
             settings,
             MenuCustomizationCatalog.QuickInsertMenuDefinitions,
             MenuCustomizationCatalog.CreateDefaultQuickInsertMenuItems,
