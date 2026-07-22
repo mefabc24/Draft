@@ -9,7 +9,7 @@
     d:DesignWidth="500"
     mc:Ignorable="d">
     <Border
-        Padding="0,16"
+        Padding="0,8"
         HorizontalAlignment="Stretch"
         BorderThickness="1">
         <Grid HorizontalAlignment="Stretch">

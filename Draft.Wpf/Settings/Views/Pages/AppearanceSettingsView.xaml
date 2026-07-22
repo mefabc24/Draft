@@ -21,7 +21,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.appearance.appTheme"
                     Title="{i18n:Loc settings.appearance.appTheme}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.appearance.appTheme.description}">
                     <ComboBox
                         Width="160"
@@ -38,7 +38,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.appearance.toolbarPosition"
                     Title="{i18n:Loc settings.appearance.toolbarPosition}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.appearance.toolbarPosition.description}">
                     <ComboBox
                         Width="160"

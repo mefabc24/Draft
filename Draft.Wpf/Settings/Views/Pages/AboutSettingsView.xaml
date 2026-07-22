@@ -20,12 +20,12 @@
             <StackPanel VerticalAlignment="Top">
                 <section:SectionHeader Title="{i18n:Loc app.name}" />
 
-                <settings:SettingCard Title="{i18n:Loc settings.about.tagline}" Margin="0,0,0,32" />
+                <settings:SettingCard Title="{i18n:Loc settings.about.tagline}" Margin="0,0,0,48" />
 
                 <section:SectionHeader Title="{i18n:Loc settings.about.versionUpdates}" />
                 <settings:UpdateSettingCard
                     Title="{i18n:Loc settings.about.version}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     ActionCommand="{Binding UpdateActionCommand, RelativeSource={RelativeSource AncestorType={x:Type local:AboutSettingsView}}}"
                     ActionText="{Binding Status.ActionButtonText, Source={x:Static helpers:UpdateCoordinator.Current}}"
                     Description="{Binding VersionDescription, RelativeSource={RelativeSource AncestorType={x:Type local:AboutSettingsView}}, FallbackValue='Version 1.0.0'}"
@@ -36,7 +36,7 @@
                 <section:SectionHeader Title="{i18n:Loc settings.about.projectLinks}" />
                 <settings:SettingCard
                     Title="{i18n:Loc settings.about.github}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.about.github.description}">
                     <Button
                         Width="120"

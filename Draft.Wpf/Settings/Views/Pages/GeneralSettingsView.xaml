@@ -21,7 +21,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.language"
                     Title="{i18n:Loc settings.language}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.language.description}">
                     <ComboBox
                         Width="160"
@@ -37,7 +37,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.reopenLastWorkspace"
                     Title="{i18n:Loc settings.general.reopenLastWorkspace}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.general.reopenLastWorkspace.description}">
                     <CheckBox IsChecked="{Binding Settings.ReopenLastWorkspaceOnStartup, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -45,7 +45,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.checkForUpdatesOnStartup"
                     Title="{i18n:Loc settings.general.checkForUpdatesOnStartup}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.general.checkForUpdatesOnStartup.description}">
                     <CheckBox IsChecked="{Binding Settings.CheckForUpdatesOnStartup, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -53,7 +53,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.autosaveEnabled"
                     Title="{i18n:Loc settings.general.autosaveEnabled}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.general.autosaveEnabled.description}">
                     <CheckBox IsChecked="{Binding Settings.AutosaveEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -61,7 +61,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.autosaveInterval"
                     Title="{i18n:Loc settings.general.autosaveInterval}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.general.autosaveInterval.description}">
                     <ComboBox
                         Width="160"
@@ -76,7 +76,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.saveOnFocusLost"
                     Title="{i18n:Loc settings.general.saveOnFocusLost}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.general.saveOnFocusLost.description}">
                     <CheckBox IsChecked="{Binding Settings.SaveOnFocusLost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -84,14 +84,14 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.confirmBeforeClosingUnsavedFiles"
                     Title="{i18n:Loc settings.general.confirmBeforeClosingUnsavedFiles}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.general.confirmBeforeClosingUnsavedFiles.description}">
                     <CheckBox IsChecked="{Binding Settings.ConfirmBeforeClosingUnsavedFiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingFieldCard
                     Title="{i18n:Loc settings.general.windowBorderAccent}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     settings:SettingsSearch.TargetId="settings.general.windowBorderAccent">
                     <ComboBox
                         Height="36"
@@ -105,7 +105,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.defaultStartupMode"
                     Title="{i18n:Loc settings.general.defaultStartupMode}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.general.defaultStartupMode.description}">
                     <ComboBox
                         Width="160"
@@ -119,7 +119,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.windowMinimumSizeScale"
                     Title="{i18n:Loc settings.general.windowMinimumSizeScale}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.general.windowMinimumSizeScale.description}">
                     <ComboBox
                         Width="160"
@@ -134,7 +134,7 @@
 
                 <settings:SettingFieldCard
                     Title="{i18n:Loc settings.general.scrollSyncMode}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     settings:SettingsSearch.TargetId="settings.general.scrollSyncMode">
                     <ComboBox
                         Height="36"
@@ -147,7 +147,7 @@
 
                 <settings:SettingFieldCard
                     Title="{i18n:Loc settings.general.floatingMarkdownToolbar}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     settings:SettingsSearch.TargetId="settings.general.floatingMarkdownToolbar">
                     <ComboBox
                         Height="36"
@@ -193,7 +193,7 @@
 
                 <settings:SettingFieldCard
                     Title="{i18n:Loc settings.general.defaultSaveLocation}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     settings:SettingsSearch.TargetId="settings.general.defaultSaveLocation">
                     <Grid Height="36">
                         <Grid.ColumnDefinitions>
@@ -220,7 +220,7 @@
 
                 <settings:SettingFieldCard
                     Title="{i18n:Loc settings.general.defaultFileExtension}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     settings:SettingsSearch.TargetId="settings.general.defaultFileExtension">
                     <ComboBox
                         Height="36"
@@ -235,7 +235,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.general.associateTxtFiles"
                     Title="{i18n:Loc settings.general.associateTxtFiles}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.general.associateTxtFiles.description}">
                     <CheckBox IsChecked="{Binding Settings.AssociateTxtFilesWithDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>

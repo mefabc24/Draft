@@ -21,7 +21,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.visibility"
                     Title="{i18n:Loc settings.statusBar.visibility}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.statusBar.visibility.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -31,7 +31,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.fileType"
                     Title="{i18n:Loc settings.statusBar.fileType}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.fileType.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarFileTypeVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -39,7 +39,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.encoding"
                     Title="{i18n:Loc settings.statusBar.encoding}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.encoding.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarEncodingVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -47,7 +47,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.wordCount"
                     Title="{i18n:Loc settings.statusBar.wordCount}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.wordCount.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarWordCountVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -55,7 +55,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.characterCount"
                     Title="{i18n:Loc settings.statusBar.characterCount}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.statusBar.characterCount.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarCharacterCountVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -65,7 +65,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.cursorPosition"
                     Title="{i18n:Loc settings.statusBar.cursorPosition}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.cursorPosition.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarCursorPositionVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -73,7 +73,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.revertButton"
                     Title="{i18n:Loc settings.statusBar.revertButton}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.revertButton.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarRevertButtonVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -81,7 +81,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.saveStatus"
                     Title="{i18n:Loc settings.statusBar.saveStatus}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.saveStatus.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarSaveStatusVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -89,7 +89,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.autosaveStatus"
                     Title="{i18n:Loc settings.statusBar.autosaveStatus}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.autosaveStatus.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarAutosaveStatusVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -97,7 +97,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.reportBugButton"
                     Title="{i18n:Loc settings.statusBar.reportBugButton}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.reportBugButton.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarReportBugButtonVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -105,7 +105,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.statusBar.appVersion"
                     Title="{i18n:Loc settings.statusBar.appVersion}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.statusBar.appVersion.description}">
                     <CheckBox IsChecked="{Binding Settings.IsStatusBarAppVersionVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>

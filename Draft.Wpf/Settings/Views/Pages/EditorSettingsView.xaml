@@ -20,7 +20,7 @@
 
                 <settings:SettingFieldCard
                     Title="{i18n:Loc settings.editor.fontFamily}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     settings:SettingsSearch.TargetId="settings.editor.fontFamily">
                     <ComboBox
                         Height="36"
@@ -34,7 +34,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.fontSize"
                     Title="{i18n:Loc settings.editor.fontSize}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.fontSize.description}">
                     <ComboBox
                         Width="160"
@@ -48,7 +48,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.lineHeight"
                     Title="{i18n:Loc settings.editor.lineHeight}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.editor.lineHeight.description}">
                     <ComboBox
                         Width="160"
@@ -64,7 +64,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.wordWrap"
                     Title="{i18n:Loc settings.editor.wordWrap}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.wordWrap.description}">
                     <CheckBox IsChecked="{Binding Settings.WordWrap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -72,7 +72,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.showLineNumbers"
                     Title="{i18n:Loc settings.editor.showLineNumbers}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.showLineNumbers.description}">
                     <CheckBox IsChecked="{Binding Settings.ShowLineNumbers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -80,7 +80,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.highlightCurrentLine"
                     Title="{i18n:Loc settings.editor.highlightCurrentLine}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.highlightCurrentLine.description}">
                     <CheckBox IsChecked="{Binding Settings.HighlightCurrentLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -88,14 +88,14 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.includeMarkdownSyntaxInCharacterCount"
                     Title="{i18n:Loc settings.editor.includeMarkdownSyntaxInCharacterCount}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.includeMarkdownSyntaxInCharacterCount.description}">
                     <CheckBox IsChecked="{Binding Settings.IncludeMarkdownSyntaxInCharacterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
                 <settings:SettingFieldCard
                     Title="{i18n:Loc settings.editor.showWhitespaceCharacters}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     settings:SettingsSearch.TargetId="settings.editor.showWhitespaceCharacters">
                     <ComboBox
                         Height="36"
@@ -109,7 +109,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.showIndentationGuides"
                     Title="{i18n:Loc settings.editor.showIndentationGuides}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.editor.showIndentationGuides.description}">
                     <CheckBox IsChecked="{Binding Settings.ShowIndentationGuides, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -119,7 +119,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.tabSize"
                     Title="{i18n:Loc settings.editor.tabSize}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.tabSize.description}">
                     <ComboBox
                         Width="160"
@@ -133,7 +133,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.insertSpacesInsteadOfTabs"
                     Title="{i18n:Loc settings.editor.insertSpacesInsteadOfTabs}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.insertSpacesInsteadOfTabs.description}">
                     <CheckBox IsChecked="{Binding Settings.InsertSpacesInsteadOfTabs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -141,7 +141,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.autoPairBrackets"
                     Title="{i18n:Loc settings.editor.autoPairBrackets}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.autoPairBrackets.description}">
                     <CheckBox IsChecked="{Binding Settings.AutoPairBrackets, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -149,7 +149,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.autoPairQuotes"
                     Title="{i18n:Loc settings.editor.autoPairQuotes}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.autoPairQuotes.description}">
                     <CheckBox IsChecked="{Binding Settings.AutoPairQuotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -157,7 +157,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.markdownSyntaxHighlighting"
                     Title="{i18n:Loc settings.editor.markdownSyntaxHighlighting}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.editor.markdownSyntaxHighlighting.description}">
                     <CheckBox IsChecked="{Binding Settings.MarkdownSyntaxHighlighting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
@@ -167,7 +167,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.cursorStyle"
                     Title="{i18n:Loc settings.editor.cursorStyle}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.cursorStyle.description}">
                     <ComboBox
                         Width="160"
@@ -181,7 +181,7 @@
                 <settings:SettingCard
                     settings:SettingsSearch.TargetId="settings.editor.cursorBlinking"
                     Title="{i18n:Loc settings.editor.cursorBlinking}"
-                    Margin="0,0,0,12"
+                    Margin="0,0,0,28"
                     Description="{i18n:Loc settings.editor.cursorBlinking.description}">
                     <CheckBox IsChecked="{Binding Settings.CursorBlinking, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
