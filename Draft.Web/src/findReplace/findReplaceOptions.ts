@@ -1,21 +1,35 @@
+export type WorkspaceFindReplaceOptionId =
+  | 'matchCase'
+  | 'wholeWord'
+  | 'regex'
+
+export type WorkspaceFindReplaceOptionValues = Record<
+  WorkspaceFindReplaceOptionId,
+  boolean
+>
+
 export type WorkspaceFindReplaceOptionDefinition = {
-  defaultChecked?: boolean
-  id: string
+  id: WorkspaceFindReplaceOptionId
   labelKey: string
 }
 
+export const defaultWorkspaceFindReplaceOptionValues = {
+  matchCase: false,
+  regex: false,
+  wholeWord: false,
+} satisfies WorkspaceFindReplaceOptionValues
+
 export const workspaceFindReplaceOptions = [
   {
-    id: 'option-1',
-    labelKey: 'findReplace.options.option1',
+    id: 'matchCase',
+    labelKey: 'findReplace.options.matchCase',
   },
   {
-    id: 'option-2',
-    labelKey: 'findReplace.options.option2',
+    id: 'wholeWord',
+    labelKey: 'findReplace.options.wholeWord',
   },
   {
-    defaultChecked: true,
-    id: 'option-3',
-    labelKey: 'findReplace.options.option3',
+    id: 'regex',
+    labelKey: 'findReplace.options.regex',
   },
 ] satisfies readonly WorkspaceFindReplaceOptionDefinition[]

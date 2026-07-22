@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { useTranslation } from '../../localization/useTranslation'
+import { useWorkspaceFindReplace } from '../hooks/useWorkspaceFindReplace'
 import {
   workspaceFindReplaceOptions,
   type WorkspaceFindReplaceOptionDefinition,
@@ -7,6 +9,7 @@ import {
 import '../styles/workspaceFindReplaceMenu.css'
 
 type WorkspaceFindReplaceMenuProps = {
+  editor: monaco.editor.IStandaloneCodeEditor | null
   isOpen: boolean
   onClose: () => void
   options?: readonly WorkspaceFindReplaceOptionDefinition[]
@@ -59,16 +62,50 @@ function FindReplaceCloseIcon() {
 }
 
 function WorkspaceFindReplaceMenu({
+  editor,
   isOpen,
   onClose,
   options = workspaceFindReplaceOptions,
 }: WorkspaceFindReplaceMenuProps) {
   const { t } = useTranslation()
   const searchInputRef = useRef<HTMLInputElement | null>(null)
-  const [allEnabled, setAllEnabled] = useState(true)
-  const [optionOverrides, setOptionOverrides] = useState<Record<string, boolean>>(
-    {},
-  )
+  const {
+    activeMatchNumber,
+    canNavigate,
+    canReplace,
+    goToNextMatch,
+    goToPreviousMatch,
+    hasMoreMatches,
+    invalidRegex,
+    matchCount,
+    optionValues,
+    replace,
+    replaceAllEnabled,
+    replacementText,
+    searchText,
+    setReplaceAllEnabled,
+    setReplacementText,
+    setSearchText,
+    toggleOption,
+  } = useWorkspaceFindReplace(editor, isOpen)
+  const resultStatusId = 'workspace-find-replace-result-status'
+  const matchCountText = `${matchCount}${hasMoreMatches ? '+' : ''}`
+  const resultStatusText = invalidRegex
+    ? t('findReplace.invalidRegex')
+    : `${activeMatchNumber}/${matchCountText}`
+  const resultStatusLabel = invalidRegex
+    ? t('findReplace.invalidRegex')
+    : matchCount > 0
+      ? t(
+          hasMoreMatches
+            ? 'findReplace.matchStatusAtLeast'
+            : 'findReplace.matchStatus',
+          {
+            current: activeMatchNumber,
+            total: matchCount,
+          },
+        )
+      : t('findReplace.noMatches')
 
   useEffect(() => {
     if (!isOpen) {
@@ -91,23 +128,67 @@ function WorkspaceFindReplaceMenu({
       aria-label={t('findReplace.dialogLabel')}
       className={`workspace-find-replace-menu${isOpen ? ' is-open' : ''}`}
       inert={isOpen ? undefined : true}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') {
+          return
+        }
+
+        event.preventDefault()
+        event.stopPropagation()
+        onClose()
+      }}
       role="dialog"
     >
-      <div className="workspace-find-replace-field workspace-find-replace-search-field">
+      <div
+        className={`workspace-find-replace-field workspace-find-replace-search-field${
+          invalidRegex ? ' is-invalid' : ''
+        }`}
+        title={invalidRegex ? t('findReplace.invalidRegex') : undefined}
+      >
         <FindReplaceAssetIcon name="search" />
         <input
           ref={searchInputRef}
+          aria-describedby={resultStatusId}
+          aria-invalid={invalidRegex || undefined}
           aria-label={t('findReplace.searchInputLabel')}
           autoComplete="off"
+          onChange={(event) => setSearchText(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') {
+              return
+            }
+
+            event.preventDefault()
+
+            if (event.shiftKey) {
+              goToPreviousMatch()
+              return
+            }
+
+            goToNextMatch()
+          }}
           placeholder={t('findReplace.searchPlaceholder')}
           spellCheck={false}
           type="text"
+          value={searchText}
         />
-        <span className="workspace-find-replace-result-count">1/2</span>
+        <span
+          id={resultStatusId}
+          aria-label={resultStatusLabel}
+          aria-live="polite"
+          className={`workspace-find-replace-result-count${
+            invalidRegex ? ' is-error' : ''
+          }`}
+          role="status"
+        >
+          {resultStatusText}
+        </span>
         <div className="workspace-find-replace-navigation">
           <button
             aria-label={t('findReplace.previousMatch')}
             className="workspace-find-replace-navigation-button"
+            disabled={!canNavigate}
+            onClick={goToPreviousMatch}
             type="button"
           >
             <FindReplaceNavigationIcon direction="up" />
@@ -115,6 +196,8 @@ function WorkspaceFindReplaceMenu({
           <button
             aria-label={t('findReplace.nextMatch')}
             className="workspace-find-replace-navigation-button"
+            disabled={!canNavigate}
+            onClick={goToNextMatch}
             type="button"
           >
             <FindReplaceNavigationIcon direction="down" />
@@ -136,22 +219,43 @@ function WorkspaceFindReplaceMenu({
         <input
           aria-label={t('findReplace.replaceInputLabel')}
           autoComplete="off"
+          onChange={(event) => setReplacementText(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') {
+              return
+            }
+
+            event.preventDefault()
+            replace()
+          }}
           placeholder={t('findReplace.replacePlaceholder')}
           spellCheck={false}
           type="text"
+          value={replacementText}
         />
       </div>
 
-      <button className="workspace-find-replace-action-button" type="button">
+      <button
+        aria-label={
+          replaceAllEnabled
+            ? t('findReplace.replaceAllMatches')
+            : t('findReplace.replaceCurrentMatch')
+        }
+        className="workspace-find-replace-action-button"
+        disabled={!canReplace}
+        onClick={replace}
+        type="button"
+      >
         {t('findReplace.replace')}
       </button>
 
       <button
-        aria-pressed={allEnabled}
+        aria-label={t('findReplace.toggleReplaceAll')}
+        aria-pressed={replaceAllEnabled}
         className={`workspace-find-replace-all-button${
-          allEnabled ? ' is-active' : ''
+          replaceAllEnabled ? ' is-active' : ''
         }`}
-        onClick={() => setAllEnabled((currentValue) => !currentValue)}
+        onClick={() => setReplaceAllEnabled((currentValue) => !currentValue)}
         type="button"
       >
         {t('findReplace.all')}
@@ -164,19 +268,13 @@ function WorkspaceFindReplaceMenu({
           role="group"
         >
           {options.map((option) => {
-            const checked =
-              optionOverrides[option.id] ?? option.defaultChecked ?? false
+            const checked = optionValues[option.id]
 
             return (
               <label className="workspace-find-replace-option" key={option.id}>
                 <input
                   checked={checked}
-                  onChange={() => {
-                    setOptionOverrides((currentOverrides) => ({
-                      ...currentOverrides,
-                      [option.id]: !checked,
-                    }))
-                  }}
+                  onChange={() => toggleOption(option.id)}
                   type="checkbox"
                 />
                 <span aria-hidden="true" className="workspace-find-replace-option-box" />

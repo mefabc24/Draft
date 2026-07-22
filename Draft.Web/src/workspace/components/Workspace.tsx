@@ -550,6 +550,7 @@ function Workspace() {
             workspaceRef={workspaceRef}
           />
           <WorkspaceFindReplaceMenu
+            editor={editorInstance}
             isOpen={isFindReplaceOpen}
             onClose={() => setIsFindReplaceOpen(false)}
           />
