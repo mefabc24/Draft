@@ -251,11 +251,13 @@ public sealed class ShortcutItemViewModel : BaseViewModel
             return;
         }
 
-        string[] searchableValues =
-        {
-            NormalizeSearchText(Title),
-            NormalizeSearchText(Shortcut),
-        };
+        IEnumerable<string> searchableValues = new[]
+            {
+                Title,
+                Shortcut,
+            }
+            .Concat(_definition.SearchKeywords ?? Array.Empty<string>())
+            .Select(NormalizeSearchText);
 
         IsVisible = normalizedTerms.All(term =>
             searchableValues.Any(value => value.Contains(term, StringComparison.Ordinal)));
