@@ -11,7 +11,7 @@ Bug fixes and maintenance tasks are tracked separately in [GitHub Issues](https:
 - [x] [Add uppercase and lowercase actions to the FMT](https://github.com/mefabc24/Draft/issues/65)
 - [x] [Add expandable overflow section to Quick Insert menu](https://github.com/mefabc24/Draft/issues/68)
 - [x] [Add customizable FMT and Quick Insert menu layouts](https://github.com/mefabc24/Draft/issues/69)
-- [ ] [Add in-editor search with Ctrl+F](https://github.com/mefabc24/Draft/issues/72)
+- [x] [Add in-editor search with Ctrl+F](https://github.com/mefabc24/Draft/issues/72)
 
 ## v3.2.0
 
