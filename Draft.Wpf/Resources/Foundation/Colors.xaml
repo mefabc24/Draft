@@ -29,6 +29,7 @@
     <!-- Text and Icon Colors -->
     <Color x:Key="Color.Text.Primary">#E2E2E6</Color>
     <Color x:Key="Color.Text.Secondary">#ACABAA</Color>
+    <Color x:Key="Color.Text.Placeholder">#676767</Color>
     <Color x:Key="Color.Text.Tertiary">#ABABAB</Color>
     <Color x:Key="Color.Text.Muted">#504F4F</Color>
     <Color x:Key="Color.Text.Editor">#D9D9D9</Color>
@@ -76,6 +77,7 @@
     <!-- Text and Icon Brushes -->
     <SolidColorBrush x:Key="Brush.Text.Primary" Color="{StaticResource Color.Text.Primary}" />
     <SolidColorBrush x:Key="Brush.Text.Secondary" Color="{StaticResource Color.Text.Secondary}" />
+    <SolidColorBrush x:Key="Brush.Text.Placeholder" Color="{StaticResource Color.Text.Placeholder}" />
     <SolidColorBrush x:Key="Brush.Text.Tertiary" Color="{StaticResource Color.Text.Tertiary}" />
     <SolidColorBrush x:Key="Brush.Text.Muted" Color="{StaticResource Color.Text.Muted}" />
     <SolidColorBrush x:Key="Brush.Text.Editor" Color="{StaticResource Color.Text.Editor}" />

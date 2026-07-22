@@ -2,6 +2,7 @@
     x:Class="Draft.Settings.Views.SettingsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Draft.Settings.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:settings="clr-namespace:Draft.Settings.Views.Pages"
@@ -118,6 +119,35 @@
                     </EventTrigger>
                 </Style.Triggers>
             </Style>
+
+            <Style x:Key="SettingsSearchResultItem" TargetType="ListBoxItem">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="Padding" Value="10,8" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBoxItem">
+                            <Border
+                                x:Name="ResultBackground"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ResultBackground" Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="ResultBackground" Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -214,6 +244,105 @@
                             FontWeight="Regular"
                             Foreground="{StaticResource Brush.Text.Secondary}"
                             Text="{Binding SettingsConfigurationLabel, FallbackValue=Configuration}" />
+
+                        <Border
+                            x:Name="GlobalSettingsSearchBorder"
+                            Height="38"
+                            Margin="0,20,0,0"
+                            Background="{StaticResource Brush.Background.Window}"
+                            BorderBrush="{StaticResource Brush.Background.Secondary}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Path
+                                    Width="15"
+                                    Height="15"
+                                    Margin="11,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Data="{StaticResource Icon.Search}"
+                                    Fill="{StaticResource Brush.Text.Placeholder}"
+                                    IsHitTestVisible="False"
+                                    Stretch="Uniform" />
+
+                                <TextBox
+                                    x:Name="GlobalSettingsSearchTextBox"
+                                    Grid.Column="1"
+                                    Margin="9,0,10,0"
+                                    AutomationProperties.Name="{Binding SettingsSearchPlaceholder}"
+                                    GotKeyboardFocus="GlobalSettingsSearchTextBox_GotKeyboardFocus"
+                                    PreviewKeyDown="GlobalSettingsSearchTextBox_PreviewKeyDown"
+                                    Style="{StaticResource SettingsSearchTextBox}"
+                                    Tag="{Binding SettingsSearchPlaceholder}"
+                                    Text="{Binding SettingsSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextChanged="GlobalSettingsSearchTextBox_TextChanged"
+                                    WindowChrome.IsHitTestVisibleInChrome="True" />
+                            </Grid>
+                        </Border>
+
+                        <Popup
+                            x:Name="GlobalSettingsSearchPopup"
+                            AllowsTransparency="True"
+                            Focusable="False"
+                            IsOpen="{Binding DataContext.IsSettingsSearchPopupOpen, ElementName=GlobalSettingsSearchBorder, Mode=TwoWay}"
+                            Placement="Bottom"
+                            PlacementTarget="{Binding ElementName=GlobalSettingsSearchBorder}"
+                            PopupAnimation="Fade"
+                            StaysOpen="False"
+                            VerticalOffset="4">
+                            <Border
+                                Width="{Binding ActualWidth, ElementName=GlobalSettingsSearchBorder}"
+                                MaxHeight="300"
+                                Background="{StaticResource SettingsComboBoxPopupBackground}"
+                                BorderBrush="{StaticResource Brush.Background.Secondary}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                DataContext="{Binding DataContext, ElementName=GlobalSettingsSearchBorder}">
+                                <Border.Effect>
+                                    <DropShadowEffect
+                                        BlurRadius="24"
+                                        Color="{StaticResource Color.Shadow.Default}"
+                                        Opacity="0.32"
+                                        ShadowDepth="8" />
+                                </Border.Effect>
+
+                                <ListBox
+                                    x:Name="GlobalSettingsSearchResultsList"
+                                    Padding="2"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    ItemContainerStyle="{StaticResource SettingsSearchResultItem}"
+                                    ItemsSource="{Binding SettingsSearchResults}"
+                                    MouseLeftButtonUp="GlobalSettingsSearchResultsList_MouseLeftButtonUp"
+                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <TextBlock
+                                                    FontFamily="{StaticResource Font.Inter}"
+                                                    FontSize="13"
+                                                    FontWeight="Medium"
+                                                    Foreground="{StaticResource Brush.Text.Primary}"
+                                                    Text="{Binding Title}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    FontFamily="{StaticResource Font.Inter}"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource Brush.Text.Secondary}"
+                                                    Text="{Binding PageTitle}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Margin="0,32">
@@ -458,11 +587,12 @@
                         </Button>
                     </Grid>
 
-                    <ContentControl
-                        Grid.Row="1"
-                        Margin="0,16"
-                        Content="{Binding CurrentSettingsPage, NotifyOnTargetUpdated=True}"
-                        Style="{StaticResource SettingsPageContentTransition}" />
+                    <AdornerDecorator Grid.Row="1" Margin="0,16">
+                        <ContentControl
+                            x:Name="SettingsPageContent"
+                            Content="{Binding CurrentSettingsPage, NotifyOnTargetUpdated=True}"
+                            Style="{StaticResource SettingsPageContentTransition}" />
+                    </AdornerDecorator>
 
                     <Grid Grid.Row="2">
                         <TextBlock

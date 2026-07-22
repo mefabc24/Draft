@@ -309,6 +309,7 @@
                          "settings.resetDefaults":  "Restore Default Settings",
                          "settings.resetDefaults.description":  "Reset all settings to their default values? This will be saved immediately.",
                          "settings.resetDefaults.title":  "Reset Settings",
+                         "settings.search.placeholder":  "Search settings...",
                          "settings.shortcuts":  "Shortcuts",
                          "settings.statusBar":  "Status Bar",
                          "settings.statusBar.appVersion":  "App version",

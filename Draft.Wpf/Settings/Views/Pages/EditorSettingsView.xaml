@@ -18,7 +18,10 @@
             <StackPanel VerticalAlignment="Top">
                 <section:SectionHeader Title="{i18n:Loc settings.editor.typography}" />
 
-                <settings:SettingFieldCard Title="{i18n:Loc settings.editor.fontFamily}" Margin="0,0,0,12">
+                <settings:SettingFieldCard
+                    Title="{i18n:Loc settings.editor.fontFamily}"
+                    Margin="0,0,0,12"
+                    settings:SettingsSearch.TargetId="settings.editor.fontFamily">
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
@@ -29,6 +32,7 @@
                 </settings:SettingFieldCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.fontSize"
                     Title="{i18n:Loc settings.editor.fontSize}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.fontSize.description}">
@@ -42,6 +46,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.lineHeight"
                     Title="{i18n:Loc settings.editor.lineHeight}"
                     Margin="0,0,0,32"
                     Description="{i18n:Loc settings.editor.lineHeight.description}">
@@ -57,6 +62,7 @@
                 <section:SectionHeader Title="{i18n:Loc settings.editor.layoutDisplay}" />
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.wordWrap"
                     Title="{i18n:Loc settings.editor.wordWrap}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.wordWrap.description}">
@@ -64,6 +70,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.showLineNumbers"
                     Title="{i18n:Loc settings.editor.showLineNumbers}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.showLineNumbers.description}">
@@ -71,6 +78,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.highlightCurrentLine"
                     Title="{i18n:Loc settings.editor.highlightCurrentLine}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.highlightCurrentLine.description}">
@@ -78,13 +86,17 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.includeMarkdownSyntaxInCharacterCount"
                     Title="{i18n:Loc settings.editor.includeMarkdownSyntaxInCharacterCount}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.includeMarkdownSyntaxInCharacterCount.description}">
                     <CheckBox IsChecked="{Binding Settings.IncludeMarkdownSyntaxInCharacterCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>
 
-                <settings:SettingFieldCard Title="{i18n:Loc settings.editor.showWhitespaceCharacters}" Margin="0,0,0,12">
+                <settings:SettingFieldCard
+                    Title="{i18n:Loc settings.editor.showWhitespaceCharacters}"
+                    Margin="0,0,0,12"
+                    settings:SettingsSearch.TargetId="settings.editor.showWhitespaceCharacters">
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
@@ -95,6 +107,7 @@
                 </settings:SettingFieldCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.showIndentationGuides"
                     Title="{i18n:Loc settings.editor.showIndentationGuides}"
                     Margin="0,0,0,32"
                     Description="{i18n:Loc settings.editor.showIndentationGuides.description}">
@@ -104,6 +117,7 @@
                 <section:SectionHeader Title="{i18n:Loc settings.editor.editingBehavior}" />
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.tabSize"
                     Title="{i18n:Loc settings.editor.tabSize}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.tabSize.description}">
@@ -117,6 +131,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.insertSpacesInsteadOfTabs"
                     Title="{i18n:Loc settings.editor.insertSpacesInsteadOfTabs}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.insertSpacesInsteadOfTabs.description}">
@@ -124,6 +139,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.autoPairBrackets"
                     Title="{i18n:Loc settings.editor.autoPairBrackets}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.autoPairBrackets.description}">
@@ -131,6 +147,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.autoPairQuotes"
                     Title="{i18n:Loc settings.editor.autoPairQuotes}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.autoPairQuotes.description}">
@@ -138,6 +155,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.markdownSyntaxHighlighting"
                     Title="{i18n:Loc settings.editor.markdownSyntaxHighlighting}"
                     Margin="0,0,0,32"
                     Description="{i18n:Loc settings.editor.markdownSyntaxHighlighting.description}">
@@ -147,6 +165,7 @@
                 <section:SectionHeader Title="{i18n:Loc settings.editor.cursor}" />
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.cursorStyle"
                     Title="{i18n:Loc settings.editor.cursorStyle}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.cursorStyle.description}">
@@ -160,6 +179,7 @@
                 </settings:SettingCard>
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.editor.cursorBlinking"
                     Title="{i18n:Loc settings.editor.cursorBlinking}"
                     Margin="0,0,0,12"
                     Description="{i18n:Loc settings.editor.cursorBlinking.description}">

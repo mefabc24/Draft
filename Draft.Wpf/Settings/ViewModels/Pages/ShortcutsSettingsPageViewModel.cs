@@ -1,3 +1,4 @@
+using Draft.Settings.Search;
 using Draft.Settings.Shortcuts;
 
 namespace Draft.Settings.ViewModels.Pages;
@@ -172,6 +173,8 @@ public sealed class ShortcutItemViewModel : BaseViewModel
         _definition.Title,
         _settings.AppLanguage);
 
+    public string Id => _definition.Id;
+
     public string Description => LocalizationService.Translate(
         $"shortcuts.actions.{_definition.Id}.description",
         _definition.Description,
@@ -237,30 +240,14 @@ public sealed class ShortcutItemViewModel : BaseViewModel
 
     public void ApplyFilter(string searchQuery)
     {
-        string[] normalizedTerms = searchQuery
-            .Split(
-                (char[]?)null,
-                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(NormalizeSearchText)
-            .Where(term => term.Length > 0)
-            .ToArray();
-
-        if (normalizedTerms.Length == 0)
-        {
-            IsVisible = true;
-            return;
-        }
-
         IEnumerable<string> searchableValues = new[]
             {
                 Title,
                 Shortcut,
             }
-            .Concat(_definition.SearchKeywords ?? Array.Empty<string>())
-            .Select(NormalizeSearchText);
+            .Concat(_definition.SearchKeywords ?? Array.Empty<string>());
 
-        IsVisible = normalizedTerms.All(term =>
-            searchableValues.Any(value => value.Contains(term, StringComparison.Ordinal)));
+        IsVisible = SettingsSearchMatcher.Matches(searchQuery, searchableValues);
     }
 
     public void RefreshShortcut()
@@ -349,11 +336,4 @@ public sealed class ShortcutItemViewModel : BaseViewModel
         return LocalizationService.Translate(key, fallback, _settings.AppLanguage);
     }
 
-    private static string NormalizeSearchText(string value)
-    {
-        return new string(value
-            .Where(char.IsLetterOrDigit)
-            .Select(char.ToUpperInvariant)
-            .ToArray());
-    }
 }

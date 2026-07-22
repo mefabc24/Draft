@@ -17,6 +17,7 @@
         <DataTemplate x:Key="MenuCustomizationItemTemplate">
             <controls:MenuCustomizationSettingCard
                 Margin="0,0,0,12"
+                controls:SettingsSearch.TargetId="{Binding Id}"
                 DragRequested="Card_DragRequested" />
         </DataTemplate>
     </UserControl.Resources>
@@ -33,6 +34,7 @@
                     <controls:SettingCard
                         Margin="0,0,0,32"
                         Description="{Binding DefaultLayoutDescription}"
+                        controls:SettingsSearch.TargetId="settings.menuCustomization.defaultLayout"
                         Title="{Binding DefaultLayoutTitle}">
                         <Button
                             Width="120"

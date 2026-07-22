@@ -19,6 +19,7 @@
                 <section:SectionHeader Title="{i18n:Loc settings.appearance.themeSection}" />
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.appearance.appTheme"
                     Title="{i18n:Loc settings.appearance.appTheme}"
                     Margin="0,0,0,32"
                     Description="{i18n:Loc settings.appearance.appTheme.description}">
@@ -35,6 +36,7 @@
                 <section:SectionHeader Title="{i18n:Loc settings.appearance.layoutSection}" />
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.appearance.toolbarPosition"
                     Title="{i18n:Loc settings.appearance.toolbarPosition}"
                     Margin="0,0,0,32"
                     Description="{i18n:Loc settings.appearance.toolbarPosition.description}">
