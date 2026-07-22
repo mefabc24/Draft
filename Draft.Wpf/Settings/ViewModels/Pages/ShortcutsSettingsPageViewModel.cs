@@ -1,3 +1,4 @@
+using Draft.Settings.Search;
 using Draft.Settings.Shortcuts;
 
 namespace Draft.Settings.ViewModels.Pages;
@@ -5,6 +6,7 @@ namespace Draft.Settings.ViewModels.Pages;
 public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
 {
     private readonly IReadOnlyList<ShortcutItemViewModel> _shortcuts;
+    private string _searchQuery = string.Empty;
 
     public ShortcutsSettingsPageViewModel(SettingsWindowViewModel settings)
         : base("settings.shortcuts", "Shortcuts", settings)
@@ -21,9 +23,29 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
         _shortcuts = Categories
             .SelectMany(category => category.Shortcuts)
             .ToArray();
+
+        foreach (ShortcutItemViewModel shortcut in _shortcuts)
+        {
+            shortcut.SearchDataChanged += Shortcut_SearchDataChanged;
+        }
     }
 
     public IReadOnlyList<ShortcutCategoryViewModel> Categories { get; }
+
+    public string SearchPlaceholder => LocalizationService.Translate(
+        "shortcuts.searchPlaceholder",
+        "Search shortcuts...",
+        Settings.AppLanguage);
+
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            if (SetProperty(ref _searchQuery, value ?? string.Empty))
+                ApplySearchFilter();
+        }
+    }
 
     public void RefreshShortcuts()
     {
@@ -31,6 +53,8 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
         {
             shortcut.RefreshShortcut();
         }
+
+        ApplySearchFilter();
     }
 
     public void RefreshShortcutConflicts()
@@ -54,6 +78,22 @@ public sealed class ShortcutsSettingsPageViewModel : SettingsPageViewModel
         {
             shortcut.RefreshLocalization();
         }
+
+        OnPropertyChanged(nameof(SearchPlaceholder));
+        ApplySearchFilter();
+    }
+
+    private void ApplySearchFilter()
+    {
+        foreach (ShortcutCategoryViewModel category in Categories)
+        {
+            category.ApplyFilter(SearchQuery);
+        }
+    }
+
+    private void Shortcut_SearchDataChanged(object? sender, EventArgs e)
+    {
+        ApplySearchFilter();
     }
 
     private static string GetCategoryTitleKey(string title)
@@ -73,6 +113,7 @@ public sealed class ShortcutCategoryViewModel : BaseViewModel
     private readonly string _fallbackTitle;
     private readonly SettingsWindowViewModel _settings;
     private readonly string _titleKey;
+    private bool _isVisible = true;
 
     public ShortcutCategoryViewModel(
         SettingsWindowViewModel settings,
@@ -89,7 +130,23 @@ public sealed class ShortcutCategoryViewModel : BaseViewModel
     public string Title =>
         LocalizationService.Translate(_titleKey, _fallbackTitle, _settings.AppLanguage);
 
+    public bool IsVisible
+    {
+        get => _isVisible;
+        private set => SetProperty(ref _isVisible, value);
+    }
+
     public IReadOnlyList<ShortcutItemViewModel> Shortcuts { get; }
+
+    public void ApplyFilter(string searchQuery)
+    {
+        foreach (ShortcutItemViewModel shortcut in Shortcuts)
+        {
+            shortcut.ApplyFilter(searchQuery);
+        }
+
+        IsVisible = Shortcuts.Any(shortcut => shortcut.IsVisible);
+    }
 
     public void RefreshLocalization()
     {
@@ -101,6 +158,7 @@ public sealed class ShortcutItemViewModel : BaseViewModel
 {
     private readonly ShortcutActionDefinition _definition;
     private readonly SettingsWindowViewModel _settings;
+    private bool _isVisible = true;
 
     public ShortcutItemViewModel(
         SettingsWindowViewModel settings,
@@ -115,12 +173,20 @@ public sealed class ShortcutItemViewModel : BaseViewModel
         _definition.Title,
         _settings.AppLanguage);
 
+    public string Id => _definition.Id;
+
     public string Description => LocalizationService.Translate(
         $"shortcuts.actions.{_definition.Id}.description",
         _definition.Description,
         _settings.AppLanguage);
 
     public string DefaultShortcut => _definition.DefaultShortcut;
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        private set => SetProperty(ref _isVisible, value);
+    }
 
     public bool IsEditable => _definition.IsEditable;
 
@@ -166,7 +232,22 @@ public sealed class ShortcutItemViewModel : BaseViewModel
         {
             _settings.SetShortcut(_definition.Id, value);
             OnPropertyChanged();
+            SearchDataChanged?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    public event EventHandler? SearchDataChanged;
+
+    public void ApplyFilter(string searchQuery)
+    {
+        IEnumerable<string> searchableValues = new[]
+            {
+                Title,
+                Shortcut,
+            }
+            .Concat(_definition.SearchKeywords ?? Array.Empty<string>());
+
+        IsVisible = SettingsSearchMatcher.Matches(searchQuery, searchableValues);
     }
 
     public void RefreshShortcut()
@@ -254,4 +335,5 @@ public sealed class ShortcutItemViewModel : BaseViewModel
     {
         return LocalizationService.Translate(key, fallback, _settings.AppLanguage);
     }
+
 }

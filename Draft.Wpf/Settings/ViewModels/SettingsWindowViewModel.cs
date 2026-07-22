@@ -1,5 +1,7 @@
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Draft.Settings.Search;
 using Draft.Settings.Shortcuts;
 
 namespace Draft.Settings.ViewModels;
@@ -22,6 +24,9 @@ public class SettingsWindowViewModel : BaseViewModel
     private SettingsPage _selectedPage = SettingsPage.General;
     private SettingsPageViewModel _currentSettingsPage;
     private bool _menuCustomizationPagesInitialized;
+    private bool _isCustomizationsExpanded;
+    private bool _isSettingsSearchPopupOpen;
+    private string _settingsSearchQuery = string.Empty;
 
     private string _appLanguage = AppSettingsStore.DefaultAppLanguage;
     private bool _reopenLastWorkspaceOnStartup;
@@ -176,6 +181,8 @@ public class SettingsWindowViewModel : BaseViewModel
 
     public ICommand ResetToDefaultsCommand { get; }
 
+    public ObservableCollection<SettingsSearchResultViewModel> SettingsSearchResults { get; } = new();
+
     public event EventHandler<SettingsAppliedEventArgs>? SettingsApplied;
 
     public event EventHandler<ResetConfirmationRequestedEventArgs>? ResetConfirmationRequested;
@@ -184,6 +191,9 @@ public class SettingsWindowViewModel : BaseViewModel
         MenuCustomizationResetConfirmationRequested;
 
     public event EventHandler? CloseRequested;
+
+    public event EventHandler<SettingsSearchNavigationRequestedEventArgs>?
+        SettingsSearchNavigationRequested;
 
     public string SettingsTitle =>
         LocalizationService.Translate("settings.title", "Settings", AppLanguage);
@@ -194,6 +204,27 @@ public class SettingsWindowViewModel : BaseViewModel
     public string SettingsResetDefaultsTooltip =>
         LocalizationService.Translate("settings.resetDefaults", "Restore Default Settings", AppLanguage);
 
+    public string SettingsSearchPlaceholder => LocalizationService.Translate(
+        "settings.search.placeholder",
+        "Search settings...",
+        AppLanguage);
+
+    public string SettingsSearchQuery
+    {
+        get => _settingsSearchQuery;
+        set
+        {
+            if (SetProperty(ref _settingsSearchQuery, value ?? string.Empty))
+                RefreshSettingsSearchResults();
+        }
+    }
+
+    public bool IsSettingsSearchPopupOpen
+    {
+        get => _isSettingsSearchPopupOpen;
+        set => SetProperty(ref _isSettingsSearchPopupOpen, value);
+    }
+
     public string GeneralSettingsMenuLabel =>
         LocalizationService.Translate("settings.general", "General", AppLanguage);
 
@@ -202,6 +233,9 @@ public class SettingsWindowViewModel : BaseViewModel
 
     public string PreviewSettingsMenuLabel =>
         LocalizationService.Translate("settings.preview", "Preview", AppLanguage);
+
+    public string CustomizationsSettingsMenuLabel =>
+        LocalizationService.Translate("settings.customizations", "Customizations", AppLanguage);
 
     public string FloatingMarkdownToolbarSettingsMenuLabel =>
         LocalizationService.Translate(
@@ -304,6 +338,15 @@ public class SettingsWindowViewModel : BaseViewModel
             if (value)
                 SelectSettingsPage(SettingsPage.QuickInsert);
         }
+    }
+
+    public bool IsCustomizationsSettingsSelected =>
+        _selectedPage is SettingsPage.FloatingMarkdownToolbar or SettingsPage.QuickInsert;
+
+    public bool IsCustomizationsExpanded
+    {
+        get => _isCustomizationsExpanded;
+        set => SetProperty(ref _isCustomizationsExpanded, value);
     }
 
     public bool IsAppearanceSettingsSelected
@@ -756,10 +799,40 @@ public class SettingsWindowViewModel : BaseViewModel
             || string.Equals(conflict.SecondActionId, actionId, StringComparison.Ordinal));
     }
 
+    public void OpenSettingsSearchPopup()
+    {
+        IsSettingsSearchPopupOpen = !string.IsNullOrWhiteSpace(SettingsSearchQuery)
+            && SettingsSearchResults.Count > 0;
+    }
+
+    public void ClearSettingsSearch()
+    {
+        SettingsSearchQuery = string.Empty;
+        IsSettingsSearchPopupOpen = false;
+    }
+
+    public void NavigateToSettingsSearchResult(SettingsSearchResultViewModel? result)
+    {
+        if (result is null)
+            return;
+
+        if (result.Page == SettingsPage.Shortcuts)
+            _shortcutsSettingsPage.SearchQuery = string.Empty;
+
+        ClearSettingsSearch();
+        SelectSettingsPage(result.Page);
+        SettingsSearchNavigationRequested?.Invoke(
+            this,
+            new SettingsSearchNavigationRequestedEventArgs(result.Page, result.TargetId));
+    }
+
     public void SelectSettingsPage(SettingsPage page)
     {
         if (page == SettingsPage.Develop && !IsDevelopSettingsVisible)
             return;
+
+        if (page is SettingsPage.FloatingMarkdownToolbar or SettingsPage.QuickInsert)
+            IsCustomizationsExpanded = true;
 
         if (_selectedPage == page)
             return;
@@ -787,11 +860,89 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsPreviewSettingsSelected));
         OnPropertyChanged(nameof(IsFloatingMarkdownToolbarSettingsSelected));
         OnPropertyChanged(nameof(IsQuickInsertSettingsSelected));
+        OnPropertyChanged(nameof(IsCustomizationsSettingsSelected));
         OnPropertyChanged(nameof(IsAppearanceSettingsSelected));
         OnPropertyChanged(nameof(IsStatusBarSettingsSelected));
         OnPropertyChanged(nameof(IsShortcutsSettingsSelected));
         OnPropertyChanged(nameof(IsDevelopSettingsSelected));
         OnPropertyChanged(nameof(IsAboutSettingsSelected));
+    }
+
+    private void RefreshSettingsSearchResults()
+    {
+        SettingsSearchResults.Clear();
+
+        if (string.IsNullOrWhiteSpace(SettingsSearchQuery))
+        {
+            IsSettingsSearchPopupOpen = false;
+            return;
+        }
+
+        List<(
+            SettingsSearchEntry Entry,
+            string Title,
+            string PageTitle,
+            SettingsSearchMatchRank Rank)> matches = new();
+
+        foreach (SettingsSearchEntry entry in SettingsSearchCatalog.Entries)
+        {
+            string title = LocalizationService.Translate(
+                entry.TitleKey,
+                entry.FallbackTitle,
+                AppLanguage);
+            string description = entry.DescriptionKey is null
+                ? entry.DescriptionFallback
+                : LocalizationService.Translate(
+                    entry.DescriptionKey,
+                    entry.DescriptionFallback,
+                    AppLanguage);
+            string pageTitle = GetSettingsPageTitle(entry.Page);
+            IEnumerable<string?> keywordValues = (entry.Keywords ?? Array.Empty<string>())
+                .Cast<string?>()
+                .Append(pageTitle);
+
+            if (!SettingsSearchMatcher.TryGetRank(
+                    SettingsSearchQuery,
+                    [title, entry.FallbackTitle],
+                    [description, entry.DescriptionFallback],
+                    keywordValues,
+                    out SettingsSearchMatchRank rank))
+            {
+                continue;
+            }
+
+            matches.Add((entry, title, pageTitle, rank));
+        }
+
+        foreach ((SettingsSearchEntry entry, string title, string pageTitle, _) in matches
+            .OrderBy(match => match.Rank)
+            .ThenBy(match => match.Title, StringComparer.CurrentCultureIgnoreCase))
+        {
+            SettingsSearchResults.Add(new SettingsSearchResultViewModel(
+                entry,
+                title,
+                pageTitle));
+        }
+
+        IsSettingsSearchPopupOpen = SettingsSearchResults.Count > 0;
+    }
+
+    private string GetSettingsPageTitle(SettingsPage page)
+    {
+        return page switch
+        {
+            SettingsPage.General => GeneralSettingsMenuLabel,
+            SettingsPage.Editor => EditorSettingsMenuLabel,
+            SettingsPage.Preview => PreviewSettingsMenuLabel,
+            SettingsPage.FloatingMarkdownToolbar => FloatingMarkdownToolbarSettingsMenuLabel,
+            SettingsPage.QuickInsert => QuickInsertSettingsMenuLabel,
+            SettingsPage.Appearance => AppearanceSettingsMenuLabel,
+            SettingsPage.StatusBar => StatusBarSettingsMenuLabel,
+            SettingsPage.Shortcuts => ShortcutsSettingsMenuLabel,
+            SettingsPage.Develop => DevelopSettingsMenuLabel,
+            SettingsPage.About => AboutSettingsMenuLabel,
+            _ => SettingsTitle,
+        };
     }
 
     private void ApplySettings(DraftSettings settings)
@@ -1151,9 +1302,11 @@ public class SettingsWindowViewModel : BaseViewModel
         OnPropertyChanged(nameof(SettingsTitle));
         OnPropertyChanged(nameof(SettingsConfigurationLabel));
         OnPropertyChanged(nameof(SettingsResetDefaultsTooltip));
+        OnPropertyChanged(nameof(SettingsSearchPlaceholder));
         OnPropertyChanged(nameof(GeneralSettingsMenuLabel));
         OnPropertyChanged(nameof(EditorSettingsMenuLabel));
         OnPropertyChanged(nameof(PreviewSettingsMenuLabel));
+        OnPropertyChanged(nameof(CustomizationsSettingsMenuLabel));
         OnPropertyChanged(nameof(FloatingMarkdownToolbarSettingsMenuLabel));
         OnPropertyChanged(nameof(QuickInsertSettingsMenuLabel));
         OnPropertyChanged(nameof(AppearanceSettingsMenuLabel));
@@ -1175,5 +1328,6 @@ public class SettingsWindowViewModel : BaseViewModel
         _shortcutsSettingsPage.RefreshLocalization();
         _developSettingsPage.RefreshLocalization();
         _aboutSettingsPage.RefreshLocalization();
+        RefreshSettingsSearchResults();
     }
 }

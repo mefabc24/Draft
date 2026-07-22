@@ -21,7 +21,7 @@
 
                     <settings:SettingCard
                         Title="{i18n:Loc settings.develop.infoDialog}"
-                        Margin="0,0,0,12"
+                        Margin="0,0,0,28"
                         Description="{i18n:Loc settings.develop.infoDialog.description}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox
@@ -43,7 +43,7 @@
 
                     <settings:SettingCard
                         Title="{i18n:Loc settings.develop.warningDialog}"
-                        Margin="0,0,0,12"
+                        Margin="0,0,0,28"
                         Description="{i18n:Loc settings.develop.warningDialog.description}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox
@@ -65,7 +65,7 @@
 
                     <settings:SettingCard
                         Title="{i18n:Loc settings.develop.errorDialog}"
-                        Margin="0,0,0,12"
+                        Margin="0,0,0,28"
                         Description="{i18n:Loc settings.develop.errorDialog.description}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox
@@ -87,7 +87,7 @@
 
                     <settings:SettingCard
                         Title="{i18n:Loc settings.develop.successDialog}"
-                        Margin="0,0,0,12"
+                        Margin="0,0,0,28"
                         Description="{i18n:Loc settings.develop.successDialog.description}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox
@@ -111,7 +111,7 @@
 
                     <settings:UpdateSettingCard
                         Title="{i18n:Loc settings.develop.testUpdateCard}"
-                        Margin="0,0,0,12"
+                        Margin="0,0,0,28"
                         ActionCommand="{Binding RunDemoUpdateActionCommand}"
                         ActionText="{Binding DemoUpdateActionText}"
                         Description="{i18n:Loc settings.develop.testUpdateCard.description}"
@@ -123,7 +123,7 @@
 
                     <settings:SettingCard
                         Title="{i18n:Loc settings.develop.promptWindow}"
-                        Margin="0,0,0,12"
+                        Margin="0,0,0,28"
                         Description="{i18n:Loc settings.develop.promptWindow.description}">
                         <Button
                             Width="120"

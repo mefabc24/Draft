@@ -18,7 +18,10 @@
             <StackPanel VerticalAlignment="Top">
                 <section:SectionHeader Title="{i18n:Loc settings.preview.rendering}" />
 
-                <settings:SettingFieldCard Title="{i18n:Loc settings.preview.markdownTheme}" Margin="0,0,0,32">
+                <settings:SettingFieldCard
+                    Title="{i18n:Loc settings.preview.markdownTheme}"
+                    Margin="0,0,0,48"
+                    settings:SettingsSearch.TargetId="settings.preview.markdownTheme">
                     <ComboBox
                         Height="36"
                         HorizontalAlignment="Stretch"
@@ -31,8 +34,9 @@
                 <section:SectionHeader Title="{i18n:Loc settings.preview.linksSecurity}" />
 
                 <settings:SettingCard
+                    settings:SettingsSearch.TargetId="settings.preview.confirmBeforeOpeningExternalLinks"
                     Title="{i18n:Loc settings.preview.confirmBeforeOpeningExternalLinks}"
-                    Margin="0,0,0,32"
+                    Margin="0,0,0,48"
                     Description="{i18n:Loc settings.preview.confirmBeforeOpeningExternalLinks.description}">
                     <CheckBox IsChecked="{Binding Settings.ConfirmBeforeOpeningExternalLinks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SettingsCheckBox}" />
                 </settings:SettingCard>

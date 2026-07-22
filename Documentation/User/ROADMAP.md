@@ -18,6 +18,7 @@ Bug fixes and maintenance tasks are tracked separately in [GitHub Issues](https:
 - [ ] [Reorganize Settings layout](https://github.com/mefabc24/Draft/issues/23)
 - [ ] [Add search for shortcut settings](https://github.com/mefabc24/Draft/issues/39)
 - [ ] [Add global Settings search](https://github.com/mefabc24/Draft/issues/40)
+- [ ] [Add nested Customizations menu to Settings navigation](https://github.com/mefabc24/Draft/issues/88)
 
 ## v3.3.0
 
