@@ -320,6 +320,15 @@
                                     MouseLeftButtonUp="GlobalSettingsSearchResultsList_MouseLeftButtonUp"
                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <ListBox.Template>
+                                        <ControlTemplate TargetType="ListBox">
+                                            <ScrollViewer
+                                                CanContentScroll="False"
+                                                Style="{StaticResource SettingsCompactScrollViewer}">
+                                                <ItemsPresenter />
+                                            </ScrollViewer>
+                                        </ControlTemplate>
+                                    </ListBox.Template>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel>
