@@ -44,6 +44,50 @@
         </Setter>
     </Style>
 
+    <Style x:Key="SettingsSubmenuRadioButton" TargetType="RadioButton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="FontFamily" Value="{StaticResource Font.Manrope}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border
+                        x:Name="SubmenuBorder"
+                        Padding="12,0"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="6">
+                        <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
+                            <Setter Property="Foreground" Value="{StaticResource Brush.Accent.Primary}" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Trigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{StaticResource Brush.Background.InputSubtleHover}" />
+                            <Setter Property="Cursor" Value="Hand" />
+                        </Trigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{StaticResource Brush.Background.Input}" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="SettingsMenuExpanderHeader" TargetType="ToggleButton">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
@@ -98,7 +142,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.Secondary}" />
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.Hover}" />
                         </Trigger>
 
                         <Trigger Property="IsChecked" Value="True">
@@ -132,6 +176,8 @@
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
+                            <Setter TargetName="HeaderBorder" Property="CornerRadius" Value="8,8,0,0" />
                             <Setter Property="FontWeight" Value="Bold" />
                         </Trigger>
 
@@ -140,7 +186,7 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.SelectedHover}" />
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.InputSubtleHover}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -169,7 +215,7 @@
                             <Border
                                 x:Name="ExpandedBackground"
                                 Grid.Row="2"
-                                Background="{StaticResource Brush.Background.InputSubtleHover}"
+                                Background="{StaticResource Brush.Background.Secondary}"
                                 CornerRadius="0,0,8,8"
                                 IsHitTestVisible="False"
                                 Opacity="0" />
@@ -185,8 +231,8 @@
                                 x:Name="ExpandedDivider"
                                 Grid.Row="1"
                                 Height="1"
-                                Margin="12,0"
-                                Background="{StaticResource Brush.Border.Default}"
+                                MaxHeight="0"
+                                Background="{StaticResource Brush.Border.Window}"
                                 IsHitTestVisible="False"
                                 Opacity="0" />
 
@@ -222,6 +268,11 @@
                                         <DoubleAnimation
                                             Storyboard.TargetName="ExpandedDivider"
                                             Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0:0:0.14" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ExpandedDivider"
+                                            Storyboard.TargetProperty="MaxHeight"
                                             To="1"
                                             Duration="0:0:0.14" />
                                         <DoubleAnimation
@@ -261,6 +312,11 @@
                                         <DoubleAnimation
                                             Storyboard.TargetName="ExpandedDivider"
                                             Storyboard.TargetProperty="Opacity"
+                                            To="0"
+                                            Duration="0:0:0.12" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ExpandedDivider"
+                                            Storyboard.TargetProperty="MaxHeight"
                                             To="0"
                                             Duration="0:0:0.12" />
                                         <DoubleAnimation
