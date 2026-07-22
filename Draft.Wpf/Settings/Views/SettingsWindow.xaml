@@ -294,63 +294,67 @@
                             PopupAnimation="Fade"
                             StaysOpen="False"
                             VerticalOffset="4">
-                            <Border
-                                Width="{Binding ActualWidth, ElementName=GlobalSettingsSearchBorder}"
-                                MaxHeight="300"
-                                Background="{StaticResource SettingsComboBoxPopupBackground}"
-                                BorderBrush="{StaticResource Brush.Background.Secondary}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                DataContext="{Binding DataContext, ElementName=GlobalSettingsSearchBorder}">
-                                <Border.Effect>
-                                    <DropShadowEffect
-                                        BlurRadius="24"
-                                        Color="{StaticResource Color.Shadow.Default}"
-                                        Opacity="0.32"
-                                        ShadowDepth="8" />
-                                </Border.Effect>
+                            <Grid Margin="16">
+                                <Border
+                                    Width="{Binding ActualWidth, ElementName=GlobalSettingsSearchBorder}"
+                                    MaxHeight="300"
+                                    Background="{StaticResource SettingsComboBoxPopupBackground}"
+                                    BorderBrush="{StaticResource Brush.Background.Secondary}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    DataContext="{Binding DataContext, ElementName=GlobalSettingsSearchBorder}">
+                                    <Border.Effect>
+                                        <DropShadowEffect
+                                            BlurRadius="22"
+                                            Color="{StaticResource Color.Shadow.Default}"
+                                            Direction="270"
+                                            Opacity="0.72"
+                                            RenderingBias="Quality"
+                                            ShadowDepth="3" />
+                                    </Border.Effect>
 
-                                <ListBox
-                                    x:Name="GlobalSettingsSearchResultsList"
-                                    Padding="2"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    ItemContainerStyle="{StaticResource SettingsSearchResultItem}"
-                                    ItemsSource="{Binding SettingsSearchResults}"
-                                    MouseLeftButtonUp="GlobalSettingsSearchResultsList_MouseLeftButtonUp"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                    <ListBox.Template>
-                                        <ControlTemplate TargetType="ListBox">
-                                            <ScrollViewer
-                                                CanContentScroll="False"
-                                                Style="{StaticResource SettingsCompactScrollViewer}">
-                                                <ItemsPresenter />
-                                            </ScrollViewer>
-                                        </ControlTemplate>
-                                    </ListBox.Template>
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel>
-                                                <TextBlock
-                                                    FontFamily="{StaticResource Font.Inter}"
-                                                    FontSize="13"
-                                                    FontWeight="Medium"
-                                                    Foreground="{StaticResource Brush.Text.Primary}"
-                                                    Text="{Binding Title}"
-                                                    TextTrimming="CharacterEllipsis" />
-                                                <TextBlock
-                                                    Margin="0,2,0,0"
-                                                    FontFamily="{StaticResource Font.Inter}"
-                                                    FontSize="11"
-                                                    Foreground="{StaticResource Brush.Text.Secondary}"
-                                                    Text="{Binding PageTitle}"
-                                                    TextTrimming="CharacterEllipsis" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </Border>
+                                    <ListBox
+                                        x:Name="GlobalSettingsSearchResultsList"
+                                        Padding="2"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ItemContainerStyle="{StaticResource SettingsSearchResultItem}"
+                                        ItemsSource="{Binding SettingsSearchResults}"
+                                        MouseLeftButtonUp="GlobalSettingsSearchResultsList_MouseLeftButtonUp"
+                                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                        ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <ListBox.Template>
+                                            <ControlTemplate TargetType="ListBox">
+                                                <ScrollViewer
+                                                    CanContentScroll="False"
+                                                    Style="{StaticResource SettingsCompactScrollViewer}">
+                                                    <ItemsPresenter />
+                                                </ScrollViewer>
+                                            </ControlTemplate>
+                                        </ListBox.Template>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <TextBlock
+                                                        FontFamily="{StaticResource Font.Inter}"
+                                                        FontSize="13"
+                                                        FontWeight="Medium"
+                                                        Foreground="{StaticResource Brush.Text.Primary}"
+                                                        Text="{Binding Title}"
+                                                        TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock
+                                                        Margin="0,2,0,0"
+                                                        FontFamily="{StaticResource Font.Inter}"
+                                                        FontSize="11"
+                                                        Foreground="{StaticResource Brush.Text.Secondary}"
+                                                        Text="{Binding PageTitle}"
+                                                        TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Grid>
                         </Popup>
                     </StackPanel>
 
