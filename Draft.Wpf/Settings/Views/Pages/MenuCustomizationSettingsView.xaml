@@ -29,6 +29,19 @@
                 Style="{StaticResource SettingsScrollViewer}"
                 VerticalScrollBarVisibility="Auto">
                 <StackPanel VerticalAlignment="Top">
+                    <controls:SectionHeader Title="{Binding DefaultsSectionTitle}" />
+                    <controls:SettingCard
+                        Margin="0,0,0,32"
+                        Description="{Binding DefaultLayoutDescription}"
+                        Title="{Binding DefaultLayoutTitle}">
+                        <Button
+                            Width="120"
+                            Height="36"
+                            Command="{Binding ResetToDefaultsCommand}"
+                            Content="{Binding ResetButtonText}"
+                            Style="{StaticResource SettingButton}" />
+                    </controls:SettingCard>
+
                     <controls:SectionHeader Title="{Binding VisibleSectionTitle}" />
                     <ItemsControl
                         x:Name="VisibleItemsControl"

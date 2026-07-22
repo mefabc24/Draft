@@ -11,6 +11,7 @@ public sealed class FloatingMarkdownToolbarSettingsPageViewModel
             "Floating Markdown Toolbar",
             settings,
             MenuCustomizationCatalog.FloatingMarkdownToolbarDefinitions,
+            MenuCustomizationCatalog.CreateDefaultFloatingMarkdownToolbarItems,
             MenuCustomizationCatalog.NormalizeFloatingMarkdownToolbarItems)
     {
         LoadItems(settings.FloatingMarkdownToolbarItems);

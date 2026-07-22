@@ -180,6 +180,9 @@ public class SettingsWindowViewModel : BaseViewModel
 
     public event EventHandler<ResetConfirmationRequestedEventArgs>? ResetConfirmationRequested;
 
+    public event EventHandler<MenuCustomizationResetConfirmationRequestedEventArgs>?
+        MenuCustomizationResetConfirmationRequested;
+
     public event EventHandler? CloseRequested;
 
     public string SettingsTitle =>
@@ -913,6 +916,17 @@ public class SettingsWindowViewModel : BaseViewModel
         ApplySettings(_originalSettings);
         RaiseAllSettingsPropertiesChanged();
         CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    internal bool ConfirmMenuCustomizationReset(string menuName)
+    {
+        MenuCustomizationResetConfirmationRequestedEventArgs confirmation = new(menuName)
+        {
+            IsConfirmed = MenuCustomizationResetConfirmationRequested is null,
+        };
+        MenuCustomizationResetConfirmationRequested?.Invoke(this, confirmation);
+
+        return confirmation.IsConfirmed;
     }
 
     private void ResetToDefaults()

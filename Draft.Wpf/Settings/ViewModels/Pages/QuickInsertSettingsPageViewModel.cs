@@ -11,6 +11,7 @@ public sealed class QuickInsertSettingsPageViewModel
             "Quick Insert Menu",
             settings,
             MenuCustomizationCatalog.QuickInsertMenuDefinitions,
+            MenuCustomizationCatalog.CreateDefaultQuickInsertMenuItems,
             MenuCustomizationCatalog.NormalizeQuickInsertMenuItems)
     {
         LoadItems(settings.QuickInsertMenuItems);

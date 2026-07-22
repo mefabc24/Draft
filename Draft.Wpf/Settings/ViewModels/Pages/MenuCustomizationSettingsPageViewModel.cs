@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using Draft.Settings.Models;
 
 namespace Draft.Settings.ViewModels.Pages;
@@ -6,6 +7,7 @@ namespace Draft.Settings.ViewModels.Pages;
 public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewModel
 {
     private readonly IReadOnlyDictionary<string, MenuCustomizationDefinition> _definitionsById;
+    private readonly Func<List<MenuItemCustomization>> _createDefaultItems;
     private readonly Func<IEnumerable<MenuItemCustomization>?, List<MenuItemCustomization>> _normalizeItems;
 
     protected MenuCustomizationSettingsPageViewModel(
@@ -13,20 +15,39 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
         string fallbackTitle,
         SettingsWindowViewModel settings,
         IReadOnlyList<MenuCustomizationDefinition> definitions,
+        Func<List<MenuItemCustomization>> createDefaultItems,
         Func<IEnumerable<MenuItemCustomization>?, List<MenuItemCustomization>> normalizeItems)
         : base(titleKey, fallbackTitle, settings)
     {
         _definitionsById = definitions.ToDictionary(
             definition => definition.Id,
             StringComparer.Ordinal);
+        _createDefaultItems = createDefaultItems;
         _normalizeItems = normalizeItems;
+        ResetToDefaultsCommand = new RelayCommand(ResetToDefaults);
     }
+
+    public ICommand ResetToDefaultsCommand { get; }
 
     public ObservableCollection<MenuCustomizationItemViewModel> VisibleItems { get; } = new();
 
     public ObservableCollection<MenuCustomizationItemViewModel> OverflowItems { get; } = new();
 
     public ObservableCollection<MenuCustomizationItemViewModel> DisabledItems { get; } = new();
+
+    public string DefaultsSectionTitle => Translate(
+        "settings.menuCustomization.sections.defaults",
+        "DEFAULTS");
+
+    public string DefaultLayoutTitle => Translate(
+        "settings.menuCustomization.defaultLayout",
+        "Default layout");
+
+    public string DefaultLayoutDescription => Translate(
+        "settings.menuCustomization.defaultLayout.description",
+        "Restore the visibility and position of all items to their default values.");
+
+    public string ResetButtonText => Translate("common.reset", "Reset");
 
     public string VisibleSectionTitle => Translate(
         "settings.menuCustomization.sections.visible",
@@ -140,6 +161,10 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
     public override void RefreshLocalization()
     {
         base.RefreshLocalization();
+        OnPropertyChanged(nameof(DefaultsSectionTitle));
+        OnPropertyChanged(nameof(DefaultLayoutTitle));
+        OnPropertyChanged(nameof(DefaultLayoutDescription));
+        OnPropertyChanged(nameof(ResetButtonText));
         OnPropertyChanged(nameof(VisibleSectionTitle));
         OnPropertyChanged(nameof(OverflowSectionTitle));
         OnPropertyChanged(nameof(DisabledSectionTitle));
@@ -154,6 +179,14 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
 
     internal string Translate(string key, string fallback)
         => LocalizationService.Translate(key, fallback, Settings.AppLanguage);
+
+    private void ResetToDefaults()
+    {
+        if (!Settings.ConfirmMenuCustomizationReset(Title))
+            return;
+
+        LoadItems(_createDefaultItems());
+    }
 
     private ObservableCollection<MenuCustomizationItemViewModel> GetCollection(
         string placement)
