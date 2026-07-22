@@ -285,6 +285,7 @@
                             <StackPanel>
                                 <RadioButton
                                     Height="36"
+                                    Margin="0,0,0,4"
                                     GroupName="SettingsMenu"
                                     IsChecked="{Binding IsFloatingMarkdownToolbarSettingsSelected, Mode=TwoWay}"
                                     Style="{StaticResource SettingsSubmenuRadioButton}">
