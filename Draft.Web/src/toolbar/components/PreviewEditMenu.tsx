@@ -104,7 +104,6 @@ function PreviewEditMenu({
     const boundaryRect =
       workspaceRef.current?.getBoundingClientRect() ??
       getMenuBoundaryRect(toolbar)
-    const toolbarRect = toolbar.getBoundingClientRect()
     const triggerRect = trigger.getBoundingClientRect()
     const menuWidth = menu.offsetWidth
     const menuHeight = menu.offsetHeight
@@ -116,16 +115,16 @@ function PreviewEditMenu({
       menuHeight > availableBelow && availableAbove > availableBelow
         ? 'top'
         : 'bottom'
-    const minLeft = boundaryRect.left - toolbarRect.left + MENU_EDGE_PADDING
+    const minLeft = boundaryRect.left + MENU_EDGE_PADDING
     const maxLeft =
-      boundaryRect.right - toolbarRect.left - menuWidth - MENU_EDGE_PADDING
+      boundaryRect.right - menuWidth - MENU_EDGE_PADDING
     const unclampedLeft =
-      triggerRect.left + triggerRect.width / 2 - toolbarRect.left - menuWidth / 2
+      triggerRect.left + triggerRect.width / 2 - menuWidth / 2
     const left = clamp(unclampedLeft, minLeft, Math.max(minLeft, maxLeft))
     const top =
       placement === 'bottom'
-        ? triggerRect.bottom - toolbarRect.top + MENU_GAP
-        : triggerRect.top - toolbarRect.top - menuHeight - MENU_GAP
+        ? triggerRect.bottom + MENU_GAP
+        : triggerRect.top - menuHeight - MENU_GAP
 
     setMenuGeometry((currentGeometry) => {
       if (
@@ -236,14 +235,23 @@ function PreviewEditMenu({
       return
     }
 
+    const toolbar = toolbarRef.current
+    const handleToolbarTransitionEnd = (event: TransitionEvent) => {
+      if (event.target === toolbar && event.propertyName === 'left') {
+        updateMenuGeometry()
+      }
+    }
+
     window.addEventListener('resize', resizeTextarea)
     window.addEventListener('scroll', updateMenuGeometry, true)
+    toolbar?.addEventListener('transitionend', handleToolbarTransitionEnd)
 
     return () => {
       window.removeEventListener('resize', resizeTextarea)
       window.removeEventListener('scroll', updateMenuGeometry, true)
+      toolbar?.removeEventListener('transitionend', handleToolbarTransitionEnd)
     }
-  }, [open, resizeTextarea, updateMenuGeometry])
+  }, [open, resizeTextarea, toolbarRef, updateMenuGeometry])
 
   useEffect(() => {
     if (!open) {

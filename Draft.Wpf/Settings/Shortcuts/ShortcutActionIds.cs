@@ -14,11 +14,13 @@ public static class ShortcutActionIds
     public const string EditorMoveLineDown = "editor.moveLineDown";
     public const string EditorMoveCursorWordLeft = "editor.moveCursorWordLeft";
     public const string EditorMoveCursorWordRight = "editor.moveCursorWordRight";
+    public const string EditorMoveCursorNextLineStart = "editor.moveCursorNextLineStart";
     public const string EditorExtendSelectionWordLeft = "editor.extendSelectionWordLeft";
     public const string EditorExtendSelectionWordRight = "editor.extendSelectionWordRight";
     public const string EditorAddSelectionRange = "editor.addSelectionRange";
     public const string EditorContinueMarkdownBlock = "editor.continueMarkdownBlock";
     public const string EditorIndentListItem = "editor.indentListItem";
+    public const string FindReplaceToggle = "findReplace.toggle";
     public const string ToolbarBold = "toolbar.bold";
     public const string ToolbarItalic = "toolbar.italic";
     public const string ToolbarUnderline = "toolbar.underline";

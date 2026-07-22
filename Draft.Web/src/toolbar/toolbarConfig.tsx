@@ -4,6 +4,7 @@ import {
   type InlineFormat,
   type ListValue,
 } from '../markdown'
+import type { TextCase } from '../editor/monaco/textCasing'
 import type { ToolbarDropdownMenuEntry } from './components/ToolbarDropdown'
 import ToolbarIcon, { type ToolbarIconName } from './components/ToolbarIcon'
 
@@ -101,6 +102,7 @@ export const inlineTooltipLabelKeys: Record<InlineFormat, string> = {
 }
 
 export type ToolbarButtonVisibility = 'primary' | 'extra'
+export type TextCaseToolbarActionId = 'lowercase' | 'uppercase'
 
 type WrappedInlineToolbarAction = {
   activeFormat: InlineFormat
@@ -129,6 +131,17 @@ type ResourceInlineToolbarAction = {
 export type InlineToolbarAction =
   | ResourceInlineToolbarAction
   | WrappedInlineToolbarAction
+
+export type TextCaseToolbarAction = {
+  command: {
+    textCase: TextCase
+    type: 'textCase'
+  }
+  icon: Extract<ToolbarIconName, 'lowercase' | 'uppercase'>
+  id: TextCaseToolbarActionId
+  tooltip: InlineTooltipShortcut
+  visibility: 'extra'
+}
 
 export const inlineToolbarActions = [
   {
@@ -224,6 +237,31 @@ export const inlineToolbarActions = [
     visibility: 'extra',
   },
 ] satisfies InlineToolbarAction[]
+
+export const textCaseTooltipLabelKeys: Record<
+  TextCaseToolbarActionId,
+  string
+> = {
+  lowercase: 'toolbar.lowercase',
+  uppercase: 'toolbar.uppercase',
+}
+
+export const textCaseToolbarActions = [
+  {
+    command: { textCase: 'uppercase', type: 'textCase' },
+    icon: 'uppercase',
+    id: 'uppercase',
+    tooltip: {},
+    visibility: 'extra',
+  },
+  {
+    command: { textCase: 'lowercase', type: 'textCase' },
+    icon: 'lowercase',
+    id: 'lowercase',
+    tooltip: {},
+    visibility: 'extra',
+  },
+] satisfies TextCaseToolbarAction[]
 
 export const listItems: ToolbarDropdownMenuEntry[] = [
   { value: 'none', label: '', icon: <ToolbarIcon name="noneList" /> },

@@ -1,3 +1,5 @@
+using Draft.Settings.Models;
+
 namespace Draft.WebWorkspace.Messages;
 
 public sealed record SettingsChangedMessage(
@@ -22,4 +24,6 @@ public sealed record SettingsChangedMessage(
     bool CursorBlinking,
     string PreviewScrollSyncMode,
     string FloatingMarkdownToolbarMode,
+    IReadOnlyList<MenuItemCustomization> FloatingMarkdownToolbarItems,
+    IReadOnlyList<MenuItemCustomization> QuickInsertItems,
     IReadOnlyDictionary<string, string> Shortcuts);

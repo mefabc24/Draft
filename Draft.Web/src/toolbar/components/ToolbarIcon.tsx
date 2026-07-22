@@ -10,6 +10,7 @@ export type ToolbarIconName =
   | 'image'
   | 'italic'
   | 'link'
+  | 'lowercase'
   | 'noneList'
   | 'numberedList'
   | 'spoiler'
@@ -17,6 +18,7 @@ export type ToolbarIconName =
   | 'tag'
   | 'taskList'
   | 'underline'
+  | 'uppercase'
 
 const toolbarIconPaths: Record<ToolbarIconName, string> = {
   blockquote: 'icons/Blockquote.svg',
@@ -30,6 +32,7 @@ const toolbarIconPaths: Record<ToolbarIconName, string> = {
   image: 'icons/Image.svg',
   italic: 'icons/Italic.svg',
   link: 'icons/Link.svg',
+  lowercase: 'icons/Lowercase.svg',
   noneList: 'icons/NoList.svg',
   numberedList: 'icons/NumberedList.svg',
   spoiler: 'icons/Spoiler.svg',
@@ -37,6 +40,7 @@ const toolbarIconPaths: Record<ToolbarIconName, string> = {
   tag: 'icons/Tag.svg',
   taskList: 'icons/Tasklist.svg',
   underline: 'icons/Underline.svg',
+  uppercase: 'icons/Uppercase.svg',
 }
 
 function getToolbarIconSrc(name: ToolbarIconName) {

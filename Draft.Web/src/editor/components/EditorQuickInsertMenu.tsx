@@ -12,6 +12,7 @@ import {
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import type { CalloutType } from '../../markdown/callouts'
 import { useTranslation } from '../../localization/useTranslation'
+import type { QuickInsertItemCustomization } from '../../settings/menuCustomization'
 import {
   eventMatchesShortcutAction,
   eventMatchesShortcutActionKeyboardState,
@@ -49,7 +50,9 @@ import type {
   EditorQuickInsertMenuPosition,
 } from '../hooks/useEditorQuickInsertMenu'
 import {
+  canShowEditorQuickInsertEntry,
   editorQuickInsertMenuEntries,
+  getConfiguredEditorQuickInsertEntries,
   type EditorQuickInsertIconName,
   type EditorQuickInsertMenuEntry,
 } from './EditorQuickInsertMenuConfig'
@@ -71,6 +74,7 @@ type EditorQuickInsertMenuProps = {
   onContentLayoutChange: () => void
   onKeepOpenAction: (action: () => number | false | null) => void
   position: EditorQuickInsertMenuPosition | null
+  quickInsertItems: QuickInsertItemCustomization[]
   shortcutBindings: ShortcutBindings
   target: EditorQuickInsertMenuAnchor | null
 }
@@ -173,12 +177,16 @@ function getQuickInsertEntryIcon(entry: EditorQuickInsertCommandEntry) {
   )
 }
 
-function QuickInsertCalloutExpandIcon({ expanded }: { expanded: boolean }) {
+function QuickInsertExpandIcon({
+  className,
+  expanded,
+}: {
+  className: string
+  expanded: boolean
+}) {
   return (
     <span
-      className={`editor-quick-insert-callout-expand-chevron${
-        expanded ? ' is-expanded' : ''
-      }`}
+      className={`${className}${expanded ? ' is-expanded' : ''}`}
       aria-hidden="true"
     >
       <svg focusable="false" viewBox="0 0 16 16">
@@ -215,13 +223,6 @@ function shouldAdvanceToNextEmptyLine(
   return keepOpen && target?.mode === 'replace-line'
 }
 
-function canShowQuickInsertEntry(
-  entry: EditorQuickInsertMenuEntry,
-  target: EditorQuickInsertMenuAnchor | null,
-) {
-  return target?.mode !== 'insert-at-cursor' || entry.canInsertIntoNonEmptyLine
-}
-
 function EditorQuickInsertMenu({
   editor,
   menuRef,
@@ -229,6 +230,7 @@ function EditorQuickInsertMenu({
   onContentLayoutChange,
   onKeepOpenAction,
   position,
+  quickInsertItems,
   shortcutBindings,
   target,
 }: EditorQuickInsertMenuProps) {
@@ -237,6 +239,7 @@ function EditorQuickInsertMenu({
     getInitialExpandedSections,
   )
   const [extraCalloutsExpanded, setExtraCalloutsExpanded] = useState(false)
+  const [overflowExpanded, setOverflowExpanded] = useState(false)
   const pressedShortcutKeyTrackerRef = useRef<PressedShortcutKeyTracker | null>(
     null,
   )
@@ -289,6 +292,7 @@ function EditorQuickInsertMenu({
     extraCalloutsExpanded,
     menuOpen,
     onContentLayoutChange,
+    overflowExpanded,
     target,
   ])
 
@@ -354,6 +358,7 @@ function EditorQuickInsertMenu({
     extraCalloutsExpanded,
     menuOpen,
     onContentLayoutChange,
+    overflowExpanded,
     target,
   ])
 
@@ -649,7 +654,7 @@ function EditorQuickInsertMenu({
   const renderCalloutSectionChildren = useCallback(
     (entry: EditorQuickInsertSectionEntry) => {
       const visibleChildren = entry.children.filter((childEntry) =>
-        canShowQuickInsertEntry(childEntry, target),
+        canShowEditorQuickInsertEntry(childEntry, target?.mode ?? null),
       )
       const primaryChildren = visibleChildren.slice(
         0,
@@ -695,7 +700,8 @@ function EditorQuickInsertMenu({
                   event.preventDefault()
                 }}
               >
-                <QuickInsertCalloutExpandIcon
+                <QuickInsertExpandIcon
+                  className="editor-quick-insert-callout-expand-chevron"
                   expanded={extraCalloutsExpanded}
                 />
               </button>
@@ -709,7 +715,7 @@ function EditorQuickInsertMenu({
 
   const renderMenuEntry = useCallback(
     (entry: EditorQuickInsertMenuEntry) => {
-      if (!canShowQuickInsertEntry(entry, target)) {
+      if (!canShowEditorQuickInsertEntry(entry, target?.mode ?? null)) {
         return null
       }
 
@@ -774,7 +780,10 @@ function EditorQuickInsertMenu({
           ) : (
             entry.children
               .filter((childEntry) =>
-                canShowQuickInsertEntry(childEntry, target),
+                canShowEditorQuickInsertEntry(
+                  childEntry,
+                  target?.mode ?? null,
+                ),
               )
               .map((childEntry) => renderCommandItem(childEntry, true))
           )}
@@ -802,6 +811,21 @@ function EditorQuickInsertMenu({
     return null
   }
 
+  const primaryEntries = getConfiguredEditorQuickInsertEntries(
+    quickInsertItems,
+    'Visible',
+    target.mode,
+  )
+  const overflowEntries = getConfiguredEditorQuickInsertEntries(
+    quickInsertItems,
+    'Overflow',
+    target.mode,
+  )
+
+  if (primaryEntries.length === 0 && overflowEntries.length === 0) {
+    return null
+  }
+
   return (
     <div
       ref={menuRef}
@@ -819,7 +843,43 @@ function EditorQuickInsertMenu({
       style={menuStyle}
     >
       <EditorQuickInsertScrollArea>
-        {editorQuickInsertMenuEntries.map((entry) => renderMenuEntry(entry))}
+        {primaryEntries.map((entry) => renderMenuEntry(entry))}
+        {overflowEntries.length > 0 ? (
+          <div className="editor-quick-insert-overflow">
+            <div
+              aria-hidden={!overflowExpanded}
+              className={`editor-quick-insert-overflow-frame${
+                overflowExpanded ? ' is-expanded' : ''
+              }`}
+              inert={overflowExpanded ? undefined : true}
+            >
+              <div className="editor-quick-insert-overflow-list">
+                {overflowEntries.map((entry) => renderMenuEntry(entry))}
+              </div>
+            </div>
+            <button
+              aria-expanded={overflowExpanded}
+              aria-label={
+                overflowExpanded
+                  ? t('quickInsert.hideExtraOptions')
+                  : t('quickInsert.showMoreOptions')
+              }
+              className="editor-quick-insert-overflow-button"
+              onClick={() => {
+                setOverflowExpanded((currentExpanded) => !currentExpanded)
+              }}
+              onMouseDown={(event) => {
+                event.preventDefault()
+              }}
+              type="button"
+            >
+              <QuickInsertExpandIcon
+                className="editor-quick-insert-overflow-chevron"
+                expanded={overflowExpanded}
+              />
+            </button>
+          </div>
+        ) : null}
       </EditorQuickInsertScrollArea>
     </div>
   )

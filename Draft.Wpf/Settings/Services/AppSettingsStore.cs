@@ -139,6 +139,11 @@ public static class AppSettingsStore
 
         settings.FloatingMarkdownToolbarMode = NormalizeFloatingMarkdownToolbarMode(
             settings.FloatingMarkdownToolbarMode);
+        settings.FloatingMarkdownToolbarItems =
+            MenuCustomizationCatalog.NormalizeFloatingMarkdownToolbarItems(
+                settings.FloatingMarkdownToolbarItems);
+        settings.QuickInsertMenuItems = MenuCustomizationCatalog.NormalizeQuickInsertMenuItems(
+            settings.QuickInsertMenuItems);
 
         TryEnsureDefaultSaveLocationDirectory(settings.DefaultSaveLocation);
 

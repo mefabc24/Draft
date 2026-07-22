@@ -70,6 +70,8 @@ public sealed class DraftWebViewMessageBridge
             settings.CursorBlinking,
             settings.PreviewScrollSyncMode,
             settings.FloatingMarkdownToolbarMode,
+            MenuCustomizationCatalog.CloneItems(settings.FloatingMarkdownToolbarItems),
+            MenuCustomizationCatalog.CloneItems(settings.QuickInsertMenuItems),
             ShortcutSettingsCatalog.Normalize(settings.Shortcuts));
     }
 

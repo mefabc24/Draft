@@ -14,3 +14,15 @@ public sealed class ResetConfirmationRequestedEventArgs : EventArgs
 {
     public bool IsConfirmed { get; set; }
 }
+
+public sealed class MenuCustomizationResetConfirmationRequestedEventArgs : EventArgs
+{
+    public MenuCustomizationResetConfirmationRequestedEventArgs(string menuName)
+    {
+        MenuName = menuName;
+    }
+
+    public string MenuName { get; }
+
+    public bool IsConfirmed { get; set; }
+}

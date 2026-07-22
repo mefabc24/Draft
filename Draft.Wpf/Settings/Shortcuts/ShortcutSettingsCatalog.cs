@@ -50,6 +50,11 @@ public static class ShortcutSettingsCatalog
                         "Open a Markdown or text file.",
                         "Ctrl + O"),
                     new ShortcutActionDefinition(
+                        ShortcutActionIds.FindReplaceToggle,
+                        "Find and replace",
+                        "Toggle the Find and Replace window in the workspace.",
+                        "Ctrl + F"),
+                    new ShortcutActionDefinition(
                         ShortcutActionIds.EditorUndo,
                         "Undo",
                         "Undo the latest editor change, even when focus is outside the editor.",
@@ -99,6 +104,11 @@ public static class ShortcutSettingsCatalog
                         "Move cursor one word right",
                         "Move the editor cursor one word right.",
                         "Ctrl + Right"),
+                    new ShortcutActionDefinition(
+                        ShortcutActionIds.EditorMoveCursorNextLineStart,
+                        "Move cursor to start of next line",
+                        "Move the editor cursor down one line and then to the start of that line.",
+                        string.Empty),
                     new ShortcutActionDefinition(
                         ShortcutActionIds.EditorExtendSelectionWordLeft,
                         "Extend selection one word left",
@@ -332,6 +342,13 @@ public static class ShortcutSettingsCatalog
         string shortcut,
         out string normalizedShortcut)
     {
+        if (string.IsNullOrWhiteSpace(shortcut)
+            && string.IsNullOrWhiteSpace(action.DefaultShortcut))
+        {
+            normalizedShortcut = string.Empty;
+            return true;
+        }
+
         bool hasFixedMouseGesture =
             action.FixedMouseGesture != ShortcutFixedMouseGesture.None;
 

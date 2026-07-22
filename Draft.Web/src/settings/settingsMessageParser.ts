@@ -1,6 +1,10 @@
 import { DEFAULT_EDITOR_SETTINGS } from './defaultEditorSettings'
 import { normalizeShortcutBindings } from '../shortcuts/shortcutSettings'
 import { normalizeAppLanguage } from '../localization/localization'
+import {
+  normalizeFloatingMarkdownToolbarItems,
+  normalizeQuickInsertItems,
+} from './menuCustomization'
 import type {
   CursorStyle,
   DraftEditorSettings,
@@ -172,6 +176,9 @@ export function parseDraftEditorSettings(
       'editorFontSize',
       DEFAULT_EDITOR_SETTINGS.editorFontSize,
     ),
+    floatingMarkdownToolbarItems: normalizeFloatingMarkdownToolbarItems(
+      readRecordValue(record, 'floatingMarkdownToolbarItems'),
+    ),
     floatingMarkdownToolbarMode: readFloatingMarkdownToolbarMode(record),
     highlightCurrentLine: readBoolean(
       record,
@@ -194,6 +201,9 @@ export function parseDraftEditorSettings(
       DEFAULT_EDITOR_SETTINGS.markdownSyntaxHighlighting,
     ),
     previewScrollSyncMode: readPreviewScrollSyncMode(record),
+    quickInsertItems: normalizeQuickInsertItems(
+      readRecordValue(record, 'quickInsertItems'),
+    ),
     shortcuts: normalizeShortcutBindings(readRecordValue(record, 'shortcuts')),
     showIndentationGuides: readBoolean(
       record,

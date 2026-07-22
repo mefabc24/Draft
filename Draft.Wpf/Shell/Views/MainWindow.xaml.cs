@@ -687,6 +687,10 @@ public partial class MainWindow : Window
             ConfirmBeforeOpeningExternalLinks = settings.ConfirmBeforeOpeningExternalLinks,
             PreviewScrollSyncMode = settings.PreviewScrollSyncMode,
             FloatingMarkdownToolbarMode = settings.FloatingMarkdownToolbarMode,
+            FloatingMarkdownToolbarItems = MenuCustomizationCatalog.CloneItems(
+                settings.FloatingMarkdownToolbarItems),
+            QuickInsertMenuItems = MenuCustomizationCatalog.CloneItems(
+                settings.QuickInsertMenuItems),
             ScrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection,
             AppTheme = settings.AppTheme,
             IsStatusBarVisible = settings.IsStatusBarVisible,

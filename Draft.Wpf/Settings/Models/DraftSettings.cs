@@ -69,6 +69,12 @@ public sealed class DraftSettings
 
     public string FloatingMarkdownToolbarMode { get; set; } = SettingsDefaults.DefaultFloatingMarkdownToolbarMode;
 
+    public List<MenuItemCustomization> FloatingMarkdownToolbarItems { get; set; } =
+        MenuCustomizationCatalog.CreateDefaultFloatingMarkdownToolbarItems();
+
+    public List<MenuItemCustomization> QuickInsertMenuItems { get; set; } =
+        MenuCustomizationCatalog.CreateDefaultQuickInsertMenuItems();
+
     public bool ScrollPreviewToEditedSection { get; set; } = false;
 
     public string AppTheme { get; set; } = "Dark";

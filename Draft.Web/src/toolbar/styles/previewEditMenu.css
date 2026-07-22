@@ -1,5 +1,5 @@
 .preview-edit-menu {
-  position: absolute;
+  position: fixed;
   z-index: 22;
   display: grid;
   width: min(380px, calc(100vw - 24px));

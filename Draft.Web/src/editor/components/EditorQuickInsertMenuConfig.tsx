@@ -1,5 +1,12 @@
-import type { EditorQuickInsertCommand } from '../commands/editorQuickInsertCommands'
+import type {
+  EditorQuickInsertCommand,
+  EditorQuickInsertTargetMode,
+} from '../commands/editorQuickInsertCommands'
 import { calloutLabels, type CalloutType } from '../../markdown/callouts'
+import type {
+  MenuItemPlacement,
+  QuickInsertItemCustomization,
+} from '../../settings/menuCustomization'
 
 export type EditorQuickInsertIconName =
   | 'blockquote'
@@ -22,6 +29,7 @@ type EditorQuickInsertCommandItem = {
   icon?: EditorQuickInsertIconName
   id: string
   label: string
+  overflow?: boolean
   shortcut?: string
   type: 'item'
 }
@@ -33,6 +41,7 @@ type EditorQuickInsertSection = {
   icon: EditorQuickInsertIconName
   id: string
   label: string
+  overflow?: boolean
   type: 'section'
 }
 
@@ -132,6 +141,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'image',
     id: 'image',
     label: 'Image',
+    overflow: true,
     type: 'section',
   },
   {
@@ -150,6 +160,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'keyboard',
     id: 'keyboard',
     label: 'Keyboard',
+    overflow: true,
     type: 'section',
   },
   {
@@ -159,6 +170,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'expander',
     id: 'expander',
     label: 'Expander',
+    overflow: true,
     type: 'section',
   },
   {
@@ -168,6 +180,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'tag',
     id: 'tag',
     label: 'Tag',
+    overflow: true,
     type: 'section',
   },
   {
@@ -298,6 +311,7 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'callout',
     id: 'callouts',
     label: 'Callouts',
+    overflow: true,
     type: 'section',
   },
   {
@@ -334,6 +348,51 @@ export const editorQuickInsertMenuEntries: EditorQuickInsertMenuEntry[] = [
     icon: 'misc',
     id: 'miscellaneous',
     label: 'Miscellaneous',
+    overflow: true,
     type: 'section',
   },
 ]
+
+const editorQuickInsertMenuEntriesById = new Map(
+  editorQuickInsertMenuEntries.map((entry) => [entry.id, entry]),
+)
+
+export function canShowEditorQuickInsertEntry(
+  entry: EditorQuickInsertMenuEntry,
+  targetMode: EditorQuickInsertTargetMode | null,
+) {
+  return targetMode !== 'insert-at-cursor' || entry.canInsertIntoNonEmptyLine
+}
+
+export function getConfiguredEditorQuickInsertEntries(
+  items: QuickInsertItemCustomization[],
+  placement: MenuItemPlacement,
+  targetMode: EditorQuickInsertTargetMode | null,
+) {
+  return items.flatMap((item) => {
+    if (item.placement !== placement) {
+      return []
+    }
+
+    const entry = editorQuickInsertMenuEntriesById.get(item.id)
+    return entry && canShowEditorQuickInsertEntry(entry, targetMode)
+      ? [entry]
+      : []
+  })
+}
+
+export function hasAvailableEditorQuickInsertEntries(
+  items: QuickInsertItemCustomization[],
+  targetMode: EditorQuickInsertTargetMode,
+) {
+  return items.some((item) => {
+    if (item.placement === 'Disabled') {
+      return false
+    }
+
+    const entry = editorQuickInsertMenuEntriesById.get(item.id)
+    return entry
+      ? canShowEditorQuickInsertEntry(entry, targetMode)
+      : false
+  })
+}

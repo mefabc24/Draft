@@ -1,0 +1,19 @@
+using Draft.Settings.Models;
+
+namespace Draft.Settings.ViewModels.Pages;
+
+public sealed class FloatingMarkdownToolbarSettingsPageViewModel
+    : MenuCustomizationSettingsPageViewModel
+{
+    public FloatingMarkdownToolbarSettingsPageViewModel(SettingsWindowViewModel settings)
+        : base(
+            "settings.floatingMarkdownToolbar",
+            "Markdown Toolbar",
+            settings,
+            MenuCustomizationCatalog.FloatingMarkdownToolbarDefinitions,
+            MenuCustomizationCatalog.CreateDefaultFloatingMarkdownToolbarItems,
+            MenuCustomizationCatalog.NormalizeFloatingMarkdownToolbarItems)
+    {
+        LoadItems(settings.FloatingMarkdownToolbarItems);
+    }
+}

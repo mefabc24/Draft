@@ -1,0 +1,239 @@
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+using Draft.Settings.Models;
+
+namespace Draft.Settings.ViewModels.Pages;
+
+public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewModel
+{
+    private readonly IReadOnlyDictionary<string, MenuCustomizationDefinition> _definitionsById;
+    private readonly Func<List<MenuItemCustomization>> _createDefaultItems;
+    private readonly Func<IEnumerable<MenuItemCustomization>?, List<MenuItemCustomization>> _normalizeItems;
+
+    protected MenuCustomizationSettingsPageViewModel(
+        string titleKey,
+        string fallbackTitle,
+        SettingsWindowViewModel settings,
+        IReadOnlyList<MenuCustomizationDefinition> definitions,
+        Func<List<MenuItemCustomization>> createDefaultItems,
+        Func<IEnumerable<MenuItemCustomization>?, List<MenuItemCustomization>> normalizeItems)
+        : base(titleKey, fallbackTitle, settings)
+    {
+        _definitionsById = definitions.ToDictionary(
+            definition => definition.Id,
+            StringComparer.Ordinal);
+        _createDefaultItems = createDefaultItems;
+        _normalizeItems = normalizeItems;
+        ResetToDefaultsCommand = new RelayCommand(ResetToDefaults);
+    }
+
+    public ICommand ResetToDefaultsCommand { get; }
+
+    public ObservableCollection<MenuCustomizationItemViewModel> VisibleItems { get; } = new();
+
+    public ObservableCollection<MenuCustomizationItemViewModel> OverflowItems { get; } = new();
+
+    public ObservableCollection<MenuCustomizationItemViewModel> DisabledItems { get; } = new();
+
+    public string DefaultsSectionTitle => Translate(
+        "settings.menuCustomization.sections.defaults",
+        "DEFAULTS");
+
+    public string DefaultLayoutTitle => Translate(
+        "settings.menuCustomization.defaultLayout",
+        "Default layout");
+
+    public string DefaultLayoutDescription => Translate(
+        "settings.menuCustomization.defaultLayout.description",
+        "Restore the visibility and position of all items to their default values.");
+
+    public string ResetButtonText => Translate("common.reset", "Reset");
+
+    public string VisibleSectionTitle => Translate(
+        "settings.menuCustomization.sections.visible",
+        "VISIBLE");
+
+    public string OverflowSectionTitle => Translate(
+        "settings.menuCustomization.sections.overflow",
+        "EXPANDABLE OVERFLOW");
+
+    public string DisabledSectionTitle => Translate(
+        "settings.menuCustomization.sections.disabled",
+        "DISABLED");
+
+    public void LoadItems(IEnumerable<MenuItemCustomization>? items)
+    {
+        VisibleItems.Clear();
+        OverflowItems.Clear();
+        DisabledItems.Clear();
+
+        foreach (MenuItemCustomization customization in _normalizeItems(items))
+        {
+            if (!_definitionsById.TryGetValue(
+                customization.Id,
+                out MenuCustomizationDefinition? definition))
+            {
+                continue;
+            }
+
+            MenuCustomizationItemViewModel item = new(
+                this,
+                definition,
+                customization.Placement);
+            GetCollection(item.Placement).Add(item);
+        }
+    }
+
+    public List<MenuItemCustomization> CaptureItems()
+    {
+        IEnumerable<MenuItemCustomization> capturedItems = VisibleItems
+            .Concat(OverflowItems)
+            .Concat(DisabledItems)
+            .Select(item => new MenuItemCustomization(item.Id, item.Placement));
+
+        return _normalizeItems(capturedItems);
+    }
+
+    public bool CanReorderItem(
+        MenuCustomizationItemViewModel item,
+        string placement)
+        => ReferenceEquals(item.Owner, this)
+            && string.Equals(
+                item.Placement,
+                MenuCustomizationPlacement.Normalize(placement),
+                StringComparison.Ordinal);
+
+    public bool MoveItemToIndex(
+        MenuCustomizationItemViewModel item,
+        string placement,
+        int destinationIndex)
+    {
+        if (!CanReorderItem(item, placement))
+            return false;
+
+        ObservableCollection<MenuCustomizationItemViewModel> collection =
+            GetCollection(item.Placement);
+        int sourceIndex = collection.IndexOf(item);
+
+        if (sourceIndex < 0 || collection.Count == 0)
+            return false;
+
+        destinationIndex = Math.Clamp(destinationIndex, 0, collection.Count - 1);
+
+        if (sourceIndex == destinationIndex)
+            return false;
+
+        collection.Move(sourceIndex, destinationIndex);
+        return true;
+    }
+
+    internal int GetItemIndex(MenuCustomizationItemViewModel item)
+        => ReferenceEquals(item.Owner, this)
+            ? GetCollection(item.Placement).IndexOf(item)
+            : -1;
+
+    internal void ChangePlacement(
+        MenuCustomizationItemViewModel item,
+        string requestedPlacement)
+    {
+        if (!ReferenceEquals(item.Owner, this))
+            return;
+
+        string nextPlacement = MenuCustomizationPlacement.Normalize(
+            requestedPlacement,
+            item.Placement);
+
+        if (string.Equals(item.Placement, nextPlacement, StringComparison.Ordinal))
+            return;
+
+        ObservableCollection<MenuCustomizationItemViewModel> sourceCollection =
+            GetCollection(item.Placement);
+        ObservableCollection<MenuCustomizationItemViewModel> targetCollection =
+            GetCollection(nextPlacement);
+
+        if (!sourceCollection.Remove(item))
+            return;
+
+        item.SetPlacement(nextPlacement);
+        targetCollection.Add(item);
+    }
+
+    public override void RefreshLocalization()
+    {
+        base.RefreshLocalization();
+        OnPropertyChanged(nameof(DefaultsSectionTitle));
+        OnPropertyChanged(nameof(DefaultLayoutTitle));
+        OnPropertyChanged(nameof(DefaultLayoutDescription));
+        OnPropertyChanged(nameof(ResetButtonText));
+        OnPropertyChanged(nameof(VisibleSectionTitle));
+        OnPropertyChanged(nameof(OverflowSectionTitle));
+        OnPropertyChanged(nameof(DisabledSectionTitle));
+
+        foreach (MenuCustomizationItemViewModel item in VisibleItems
+            .Concat(OverflowItems)
+            .Concat(DisabledItems))
+        {
+            item.RefreshLocalization();
+        }
+    }
+
+    internal string Translate(string key, string fallback)
+        => LocalizationService.Translate(key, fallback, Settings.AppLanguage);
+
+    private void ResetToDefaults()
+    {
+        if (!Settings.ConfirmMenuCustomizationReset(Title))
+            return;
+
+        LoadItems(_createDefaultItems());
+    }
+
+    private ObservableCollection<MenuCustomizationItemViewModel> GetCollection(
+        string placement)
+        => MenuCustomizationPlacement.Normalize(placement) switch
+        {
+            MenuCustomizationPlacement.Overflow => OverflowItems,
+            MenuCustomizationPlacement.Disabled => DisabledItems,
+            _ => VisibleItems,
+        };
+}
+
+public sealed class MenuCustomizationItemViewModel : BaseViewModel
+{
+    private readonly MenuCustomizationDefinition _definition;
+    private string _placement;
+
+    internal MenuCustomizationItemViewModel(
+        MenuCustomizationSettingsPageViewModel owner,
+        MenuCustomizationDefinition definition,
+        string placement)
+    {
+        Owner = owner;
+        _definition = definition;
+        _placement = MenuCustomizationPlacement.Normalize(
+            placement,
+            definition.DefaultPlacement);
+    }
+
+    internal MenuCustomizationSettingsPageViewModel Owner { get; }
+
+    public string Id => _definition.Id;
+
+    public IReadOnlyList<string> PlacementOptions => MenuCustomizationPlacement.Options;
+
+    public string Placement
+    {
+        get => _placement;
+        set => Owner.ChangePlacement(this, value);
+    }
+
+    public string Title => Owner.Translate(
+        _definition.TitleKey,
+        _definition.FallbackTitle);
+
+    internal void SetPlacement(string placement)
+        => SetProperty(ref _placement, placement, nameof(Placement));
+
+    internal void RefreshLocalization()
+        => OnPropertyChanged(nameof(Title));
+}

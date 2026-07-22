@@ -26,6 +26,8 @@ public partial class SettingsWindow : Window
         SettingsWindowViewModel viewModel = new();
         viewModel.SelectSettingsPage(initialPage);
         viewModel.CloseRequested += ViewModel_CloseRequested;
+        viewModel.MenuCustomizationResetConfirmationRequested +=
+            ViewModel_MenuCustomizationResetConfirmationRequested;
         viewModel.ResetConfirmationRequested += ViewModel_ResetConfirmationRequested;
         viewModel.SettingsApplied += ViewModel_SettingsApplied;
         DataContext = viewModel;
@@ -47,6 +49,8 @@ public partial class SettingsWindow : Window
         if (DataContext is SettingsWindowViewModel viewModel)
         {
             viewModel.CloseRequested -= ViewModel_CloseRequested;
+            viewModel.MenuCustomizationResetConfirmationRequested -=
+                ViewModel_MenuCustomizationResetConfirmationRequested;
             viewModel.ResetConfirmationRequested -= ViewModel_ResetConfirmationRequested;
             viewModel.SettingsApplied -= ViewModel_SettingsApplied;
         }
@@ -57,6 +61,44 @@ public partial class SettingsWindow : Window
         CloseShadowWindow();
 
         base.OnClosed(e);
+    }
+
+    private void ViewModel_MenuCustomizationResetConfirmationRequested(
+        object? sender,
+        MenuCustomizationResetConfirmationRequestedEventArgs e)
+    {
+        string appLanguage = sender is SettingsWindowViewModel viewModel
+            ? viewModel.AppLanguage
+            : AppSettingsStore.DefaultAppLanguage;
+        IReadOnlyDictionary<string, string> parameters = new Dictionary<string, string>
+        {
+            ["menuName"] = e.MenuName,
+        };
+
+        MessageDialogResult result = _messageDialogService.ShowMessage(
+            new MessageDialogRequest(
+                LocalizationService.TranslateFormat(
+                    "settings.menuCustomization.resetDefaults.dialog.title",
+                    "Reset {menuName}?",
+                    parameters,
+                    appLanguage),
+                LocalizationService.TranslateFormat(
+                    "settings.menuCustomization.resetDefaults.dialog.description",
+                    "Reset the visibility and position of all items in {menuName} to their default values?",
+                    parameters,
+                    appLanguage),
+                MessageDialogType.Warning,
+                new[]
+                {
+                    MessageDialogButtonDefinition.Secondary(
+                        LocalizationService.Translate("common.cancel", "Cancel", appLanguage),
+                        MessageDialogResult.Cancel),
+                    MessageDialogButtonDefinition.Primary(
+                        LocalizationService.Translate("common.reset", "Reset", appLanguage),
+                        new MessageDialogResult("reset-menu-customization")),
+                }));
+
+        e.IsConfirmed = result.Id == "reset-menu-customization";
     }
 
     private void ViewModel_ResetConfirmationRequested(
