@@ -2,7 +2,7 @@
     <Style x:Key="DraftToolTip" TargetType="{x:Type ToolTip}">
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="HasDropShadow" Value="False" />
-        <Setter Property="Background" Value="{StaticResource Brush.Background.Surface}" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Window}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
@@ -18,8 +18,8 @@
                 <ControlTemplate TargetType="{x:Type ToolTip}">
                     <Border
                         Padding="{TemplateBinding Padding}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
+                        Background="{StaticResource Brush.Background.Surface}"
+                        BorderBrush="{StaticResource Brush.Border.Window}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="8"
                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"

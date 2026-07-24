@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Draft.Shared.UI.Windowing;
 
@@ -20,6 +21,7 @@ internal sealed class WindowShadowWindow : Window
     private const int WsExNoActivate = 0x08000000;
 
     private readonly Border _shadowFrame;
+    private Window? _trackedOwner;
 
     public WindowShadowWindow(string backgroundResourceKey)
     {
@@ -60,6 +62,8 @@ internal sealed class WindowShadowWindow : Window
 
     public void SyncWith(Window owner, bool isShadowVisible)
     {
+        TrackOwner(owner);
+
         if (!isShadowVisible)
         {
             Hide();
@@ -118,6 +122,60 @@ internal sealed class WindowShadowWindow : Window
         nint extendedStyle = GetWindowLongPtr(handle, GwlExStyle);
         extendedStyle |= WsExTransparent | WsExToolWindow | WsExNoActivate;
         _ = SetWindowLongPtr(handle, GwlExStyle, extendedStyle);
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        StopTrackingOwner();
+        base.OnClosed(e);
+    }
+
+    private void TrackOwner(Window owner)
+    {
+        if (ReferenceEquals(_trackedOwner, owner))
+            return;
+
+        StopTrackingOwner();
+        _trackedOwner = owner;
+        owner.Activated += Owner_ActivationChanged;
+        owner.Deactivated += Owner_ActivationChanged;
+        owner.Closed += Owner_Closed;
+    }
+
+    private void StopTrackingOwner()
+    {
+        if (_trackedOwner is null)
+            return;
+
+        _trackedOwner.Activated -= Owner_ActivationChanged;
+        _trackedOwner.Deactivated -= Owner_ActivationChanged;
+        _trackedOwner.Closed -= Owner_Closed;
+        _trackedOwner = null;
+    }
+
+    private void Owner_ActivationChanged(object? sender, EventArgs e)
+    {
+        Window? owner = _trackedOwner;
+
+        if (owner is null || owner.Dispatcher.HasShutdownStarted)
+            return;
+
+        _ = owner.Dispatcher.BeginInvoke(
+            DispatcherPriority.ContextIdle,
+            new Action(() =>
+            {
+                if (ReferenceEquals(_trackedOwner, owner)
+                    && owner.IsVisible
+                    && IsVisible)
+                {
+                    PlaceBehind(owner);
+                }
+            }));
+    }
+
+    private void Owner_Closed(object? sender, EventArgs e)
+    {
+        StopTrackingOwner();
     }
 
     private static Brush FindBrush(string key, Brush fallback)
