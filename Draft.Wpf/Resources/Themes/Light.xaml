@@ -20,6 +20,7 @@
     <Color x:Key="Color.Background.Hover">#E8E8E8</Color>
     <Color x:Key="Color.Background.SelectedHover">#E1E1E1</Color>
     <Color x:Key="Color.Background.Popup">#FFFFFF</Color>
+    <Color x:Key="Color.Background.DialogActions">#F3F3F3</Color>
     <Color x:Key="Color.Background.SecondaryButton">#FFFFFF</Color>
     <Color x:Key="Color.Background.SecondaryButtonHover">#F3F4F6</Color>
     <Color x:Key="Color.Background.ShortcutRecording">#FFF4F3</Color>

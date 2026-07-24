@@ -20,6 +20,7 @@
     <Color x:Key="Color.Background.Hover">#1F2020</Color>
     <Color x:Key="Color.Background.SelectedHover">#1F1F1F</Color>
     <Color x:Key="Color.Background.Popup">#181818</Color>
+    <Color x:Key="Color.Background.DialogActions">#0D0D0D</Color>
     <Color x:Key="Color.Background.SecondaryButton">#202020</Color>
     <Color x:Key="Color.Background.SecondaryButtonHover">#282828</Color>
     <Color x:Key="Color.Background.ShortcutRecording">#202020</Color>

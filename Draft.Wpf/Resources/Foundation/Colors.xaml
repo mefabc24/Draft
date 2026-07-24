@@ -24,6 +24,7 @@
     <SolidColorBrush x:Key="Brush.Background.Hover" Color="{DynamicResource Color.Background.Hover}" />
     <SolidColorBrush x:Key="Brush.Background.SelectedHover" Color="{DynamicResource Color.Background.SelectedHover}" />
     <SolidColorBrush x:Key="Brush.Background.Popup" Color="{DynamicResource Color.Background.Popup}" />
+    <SolidColorBrush x:Key="Brush.Background.DialogActions" Color="{DynamicResource Color.Background.DialogActions}" />
     <SolidColorBrush x:Key="Brush.Background.SecondaryButton" Color="{DynamicResource Color.Background.SecondaryButton}" />
     <SolidColorBrush x:Key="Brush.Background.SecondaryButtonHover" Color="{DynamicResource Color.Background.SecondaryButtonHover}" />
     <SolidColorBrush x:Key="Brush.Background.ShortcutRecording" Color="{DynamicResource Color.Background.ShortcutRecording}" />
