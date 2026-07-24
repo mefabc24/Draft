@@ -32,6 +32,7 @@
     <SolidColorBrush x:Key="Brush.Background.CardSelected" Color="{DynamicResource Color.Background.CardSelected}" />
     <SolidColorBrush x:Key="Brush.Background.CardSelectedHover" Color="{DynamicResource Color.Background.CardSelectedHover}" />
     <SolidColorBrush x:Key="Brush.Background.Toggle" Color="{DynamicResource Color.Background.Toggle}" />
+    <SolidColorBrush x:Key="Brush.Background.ToggleHover" Color="{DynamicResource Color.Background.ToggleHover}" />
     <SolidColorBrush x:Key="Brush.Background.ToggleDisabledChecked" Color="{DynamicResource Color.Background.ToggleDisabledChecked}" />
     <SolidColorBrush x:Key="Brush.Background.ToggleDisabledUnchecked" Color="{DynamicResource Color.Background.ToggleDisabledUnchecked}" />
     <SolidColorBrush x:Key="Brush.Background.WindowControlClose" Color="{DynamicResource Color.Background.WindowControlClose}" />
@@ -68,6 +69,7 @@
     <SolidColorBrush x:Key="Brush.Icon.Default" Color="{DynamicResource Color.Icon.Default}" />
     <SolidColorBrush x:Key="Brush.Icon.SubtleHover" Color="{DynamicResource Color.Icon.SubtleHover}" />
     <SolidColorBrush x:Key="Brush.Icon.WindowControlClose" Color="{DynamicResource Color.Icon.WindowControlClose}" />
+    <SolidColorBrush x:Key="Brush.Control.ToggleThumb" Color="{DynamicResource Color.Control.ToggleThumb}" />
     <SolidColorBrush x:Key="Brush.Control.ToggleThumbDisabled" Color="{DynamicResource Color.Control.ToggleThumbDisabled}" />
 
     <!-- Functional Brushes -->

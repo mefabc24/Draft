@@ -28,6 +28,7 @@
     <Color x:Key="Color.Background.CardSelected">#242528</Color>
     <Color x:Key="Color.Background.CardSelectedHover">#2B2D31</Color>
     <Color x:Key="Color.Background.Toggle">#555555</Color>
+    <Color x:Key="Color.Background.ToggleHover">#666666</Color>
     <Color x:Key="Color.Background.ToggleDisabledChecked">#21334B</Color>
     <Color x:Key="Color.Background.ToggleDisabledUnchecked">#161616</Color>
     <Color x:Key="Color.Background.WindowControlClose">#C42B1C</Color>
@@ -64,6 +65,7 @@
     <Color x:Key="Color.Icon.Default">#F1F1F1</Color>
     <Color x:Key="Color.Icon.SubtleHover">#A7AFBA</Color>
     <Color x:Key="Color.Icon.WindowControlClose">#F1F1F1</Color>
+    <Color x:Key="Color.Control.ToggleThumb">#ACABAA</Color>
     <Color x:Key="Color.Control.ToggleThumbDisabled">#4D4D4D</Color>
 
     <!-- Functional Colors -->

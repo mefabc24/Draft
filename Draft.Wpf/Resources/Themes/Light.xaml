@@ -27,7 +27,8 @@
     <Color x:Key="Color.Background.CardHover">#F7F7F7</Color>
     <Color x:Key="Color.Background.CardSelected">#EAF3FA</Color>
     <Color x:Key="Color.Background.CardSelectedHover">#DDECF7</Color>
-    <Color x:Key="Color.Background.Toggle">#8A8A8A</Color>
+    <Color x:Key="Color.Background.Toggle">#6B7280</Color>
+    <Color x:Key="Color.Background.ToggleHover">#535455</Color>
     <Color x:Key="Color.Background.ToggleDisabledChecked">#B7D4EA</Color>
     <Color x:Key="Color.Background.ToggleDisabledUnchecked">#E2E2E2</Color>
     <Color x:Key="Color.Background.WindowControlClose">#C42B1C</Color>
@@ -55,15 +56,16 @@
     <Color x:Key="Color.Text.Editor">#1F1F1F</Color>
     <Color x:Key="Color.Text.Input">#1F1F1F</Color>
     <Color x:Key="Color.Text.Inverse">#FFFFFF</Color>
-    <Color x:Key="Color.Text.OnAccent">#1F1F1F</Color>
+    <Color x:Key="Color.Text.OnAccent">#FFFFFF</Color>
     <Color x:Key="Color.Text.OnCritical">#FFFFFF</Color>
     <Color x:Key="Color.Text.OnWarning">#FFFFFF</Color>
-    <Color x:Key="Color.Text.OnInfo">#1F1F1F</Color>
+    <Color x:Key="Color.Text.OnInfo">#FFFFFF</Color>
     <Color x:Key="Color.Text.OnSuccess">#FFFFFF</Color>
     <Color x:Key="Color.Text.OnBadge">#FFFFFF</Color>
     <Color x:Key="Color.Icon.Default">#1F1F1F</Color>
     <Color x:Key="Color.Icon.SubtleHover">#5F5F5F</Color>
     <Color x:Key="Color.Icon.WindowControlClose">#FFFFFF</Color>
+    <Color x:Key="Color.Control.ToggleThumb">#FFFFFF</Color>
     <Color x:Key="Color.Control.ToggleThumbDisabled">#A0A0A0</Color>
 
     <!-- Functional Colors -->
