@@ -22,7 +22,7 @@
     <Color x:Key="Color.Background.Popup">#FFFFFF</Color>
     <Color x:Key="Color.Background.DialogActions">#F3F3F3</Color>
     <Color x:Key="Color.Background.SecondaryButton">#FFFFFF</Color>
-    <Color x:Key="Color.Background.SecondaryButtonHover">#F3F4F6</Color>
+    <Color x:Key="Color.Background.SecondaryButtonHover">#E5E7EB</Color>
     <Color x:Key="Color.Background.ShortcutRecording">#FFF4F3</Color>
     <Color x:Key="Color.Background.Card">#FFFFFF</Color>
     <Color x:Key="Color.Background.CardHover">#F7F7F7</Color>
