@@ -41,12 +41,12 @@
     <Color x:Key="Color.Border.Secondary">#D1D5DB</Color>
     <Color x:Key="Color.Border.Subtle">#D1D5DB</Color>
     <Color x:Key="Color.Border.Input">#D1D5DB</Color>
-    <Color x:Key="Color.Border.Window">#D1D5DB</Color>
+    <Color x:Key="Color.Border.Window">#BABABA</Color>
     <Color x:Key="Color.Border.Card">#D1D5DB</Color>
-    <Color x:Key="Color.Border.MainWindow.Active">#D1D5DB</Color>
-    <Color x:Key="Color.Border.MainWindow.Inactive">#D1D5DB</Color>
-    <Color x:Key="Color.Border.SettingsWindow.Active">#D1D5DB</Color>
-    <Color x:Key="Color.Border.SettingsWindow.Inactive">#D1D5DB</Color>
+    <Color x:Key="Color.Border.MainWindow.Active">#BABABA</Color>
+    <Color x:Key="Color.Border.MainWindow.Inactive">#BABABA</Color>
+    <Color x:Key="Color.Border.SettingsWindow.Active">#BABABA</Color>
+    <Color x:Key="Color.Border.SettingsWindow.Inactive">#BABABA</Color>
     <Color x:Key="Color.Border.DialogDivider">#E5E5E5</Color>
 
     <!-- Text and Icon Colors -->

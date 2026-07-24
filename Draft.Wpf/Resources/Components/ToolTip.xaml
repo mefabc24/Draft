@@ -3,7 +3,7 @@
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="HasDropShadow" Value="False" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Window}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
         <Setter Property="FontFamily" Value="{StaticResource Font.Manrope}" />
@@ -19,7 +19,7 @@
                     <Border
                         Padding="{TemplateBinding Padding}"
                         Background="{StaticResource Brush.Background.Surface}"
-                        BorderBrush="{StaticResource Brush.Border.Window}"
+                        BorderBrush="{StaticResource Brush.Border.Default}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="8"
                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
