@@ -27,14 +27,6 @@
                         TextElement.FontSize="{TemplateBinding FontSize}"
                         TextElement.FontWeight="{TemplateBinding FontWeight}"
                         TextElement.Foreground="{TemplateBinding Foreground}">
-                        <Border.Effect>
-                            <DropShadowEffect
-                                BlurRadius="24"
-                                Opacity="0.28"
-                                ShadowDepth="8"
-                                Color="{DynamicResource Color.Shadow.Default}" />
-                        </Border.Effect>
-
                         <ContentPresenter
                             Content="{TemplateBinding Content}"
                             ContentStringFormat="{TemplateBinding ContentStringFormat}"

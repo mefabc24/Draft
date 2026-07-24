@@ -19,8 +19,12 @@ internal sealed class WindowShadowWindow : Window
     private const int WsExTransparent = 0x00000020;
     private const int WsExToolWindow = 0x00000080;
     private const int WsExNoActivate = 0x08000000;
+    private const uint EventSystemForeground = 0x0003;
+    private const uint WinEventOutOfContext = 0x0000;
 
     private readonly Border _shadowFrame;
+    private readonly WinEventDelegate _winEventDelegate;
+    private IntPtr _foregroundChangedHook;
     private Window? _trackedOwner;
 
     public WindowShadowWindow(string backgroundResourceKey)
@@ -34,6 +38,7 @@ internal sealed class WindowShadowWindow : Window
         ShowInTaskbar = false;
         WindowStartupLocation = WindowStartupLocation.Manual;
         WindowStyle = WindowStyle.None;
+        _winEventDelegate = WinEventProc;
 
         _shadowFrame = new Border
         {
@@ -63,6 +68,7 @@ internal sealed class WindowShadowWindow : Window
     public void SyncWith(Window owner, bool isShadowVisible)
     {
         TrackOwner(owner);
+        SyncOwnerGroup(owner);
 
         if (!isShadowVisible)
         {
@@ -122,12 +128,35 @@ internal sealed class WindowShadowWindow : Window
         nint extendedStyle = GetWindowLongPtr(handle, GwlExStyle);
         extendedStyle |= WsExTransparent | WsExToolWindow | WsExNoActivate;
         _ = SetWindowLongPtr(handle, GwlExStyle, extendedStyle);
+
+        _foregroundChangedHook = SetWinEventHook(
+            EventSystemForeground,
+            EventSystemForeground,
+            IntPtr.Zero,
+            _winEventDelegate,
+            0,
+            0,
+            WinEventOutOfContext);
     }
 
     protected override void OnClosed(EventArgs e)
     {
+        if (_foregroundChangedHook != IntPtr.Zero)
+        {
+            _ = UnhookWinEvent(_foregroundChangedHook);
+            _foregroundChangedHook = IntPtr.Zero;
+        }
+
         StopTrackingOwner();
         base.OnClosed(e);
+    }
+
+    private void SyncOwnerGroup(Window owner)
+    {
+        if (!IsVisible && !ReferenceEquals(Owner, owner.Owner))
+        {
+            Owner = owner.Owner;
+        }
     }
 
     private void TrackOwner(Window owner)
@@ -154,6 +183,23 @@ internal sealed class WindowShadowWindow : Window
     }
 
     private void Owner_ActivationChanged(object? sender, EventArgs e)
+    {
+        QueuePlaceBehind();
+    }
+
+    private void WinEventProc(
+        IntPtr winEventHook,
+        uint eventType,
+        IntPtr windowHandle,
+        int objectId,
+        int childId,
+        uint eventThread,
+        uint eventTime)
+    {
+        QueuePlaceBehind();
+    }
+
+    private void QueuePlaceBehind()
     {
         Window? owner = _trackedOwner;
 
@@ -205,4 +251,26 @@ internal sealed class WindowShadowWindow : Window
         int cx,
         int cy,
         int uFlags);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SetWinEventHook(
+        uint eventMin,
+        uint eventMax,
+        IntPtr eventHookModule,
+        WinEventDelegate eventDelegate,
+        uint processId,
+        uint threadId,
+        uint flags);
+
+    [DllImport("user32.dll")]
+    private static extern bool UnhookWinEvent(IntPtr winEventHook);
+
+    private delegate void WinEventDelegate(
+        IntPtr winEventHook,
+        uint eventType,
+        IntPtr windowHandle,
+        int objectId,
+        int childId,
+        uint eventThread,
+        uint eventTime);
 }
