@@ -32,6 +32,7 @@
     <Color x:Key="Color.Background.ToggleHover">#666666</Color>
     <Color x:Key="Color.Background.ToggleDisabledChecked">#21334B</Color>
     <Color x:Key="Color.Background.ToggleDisabledUnchecked">#161616</Color>
+    <Color x:Key="Color.Background.WindowControlHover">#1F2020</Color>
     <Color x:Key="Color.Background.WindowControlClose">#C42B1C</Color>
     <Color x:Key="Color.Background.ScrollbarThumb">#353535</Color>
 

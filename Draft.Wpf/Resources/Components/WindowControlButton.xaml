@@ -36,7 +36,7 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="Tag" Value="Default" />
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" Value="{StaticResource Brush.ButtonHover}" />
+                            <Setter Property="Background" Value="{StaticResource Brush.Background.WindowControlHover}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
