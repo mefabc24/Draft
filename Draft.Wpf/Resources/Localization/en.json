@@ -482,7 +482,7 @@
                          "updates.noneAvailable":  "No update available.",
                          "updates.onlyInstalledReleases":  "Updates are only available in installed Draft releases.",
                          "updates.openSettings":  "Open Settings",
-                         "updates.openSettingsPrompt":  "Draft {version} is available. Open Settings to install it from About?",
+                         "updates.openSettingsPrompt":  "Draft {version} is available. Open Settings to install?",
                          "updates.unsavedChangesBeforeInstall":  "Draft has unsaved work. Save or discard your changes before installing the update.",
                          "updates.upToDate":  "Draft is up to date.",
                          "updates.versionAvailable":  "Draft {version} is available.",

@@ -31,7 +31,7 @@ public sealed class UpdateInteractionService
                 LocalizationService.Translate("updates.availableTitle", "Update Available"),
                 LocalizationService.TranslateFormat(
                     "updates.openSettingsPrompt",
-                    "Draft {version} is available. Open Settings to install it from About?",
+                    "Draft {version} is available. Open Settings to install?",
                     new Dictionary<string, string>(StringComparer.Ordinal)
                     {
                         ["version"] = result.Version ?? string.Empty,
