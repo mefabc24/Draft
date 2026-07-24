@@ -4,25 +4,25 @@
   bottom: 14px;
   z-index: 20;
   font-family: var(--font-ui, 'Segoe UI', Arial, sans-serif);
-  color: #e5e7eb;
+  color: var(--app-foreground);
 }
 
 .workspace-dev-menu-trigger {
   min-width: 48px;
   height: 32px;
-  border: 1px solid #3d3d3d;
+  border: 1px solid var(--app-border);
   border-radius: 8px;
-  background: #1b1b1b;
-  color: #f3faff;
+  background: var(--app-surface-background);
+  color: var(--app-foreground-bright);
   font: inherit;
   font-size: 12px;
   cursor: pointer;
-  box-shadow: 0 12px 28px rgb(0 0 0 / 30%);
+  box-shadow: var(--app-shadow);
 }
 
 .workspace-dev-menu-trigger:hover,
 .workspace-dev-menu-trigger:focus-visible {
-  border-color: #79a986;
+  border-color: var(--app-success);
   outline: none;
 }
 
@@ -32,10 +32,10 @@
   bottom: 40px;
   min-width: 210px;
   padding: 10px;
-  border: 1px solid #3d3d3d;
+  border: 1px solid var(--app-border);
   border-radius: 8px;
-  background: #131313;
-  box-shadow: 0 18px 42px rgb(0 0 0 / 38%);
+  background: var(--draft-chrome-background);
+  box-shadow: var(--app-shadow-elevated);
 }
 
 .workspace-dev-menu-item {
@@ -43,21 +43,21 @@
   grid-template-columns: 62px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  color: #d1d5db;
+  color: var(--app-content-foreground);
   font-size: 12px;
 }
 
 .workspace-dev-menu-item select {
   min-width: 0;
   height: 30px;
-  border: 1px solid #3d3d3d;
+  border: 1px solid var(--app-border);
   border-radius: 6px;
-  background: #1b1b1b;
-  color: #f3faff;
+  background: var(--app-surface-background);
+  color: var(--app-foreground-bright);
   font: inherit;
   outline: none;
 }
 
 .workspace-dev-menu-item select:focus {
-  border-color: #79a986;
+  border-color: var(--app-success);
 }

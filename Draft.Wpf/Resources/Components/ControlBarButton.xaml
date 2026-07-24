@@ -74,9 +74,6 @@
         x:Key="LogoButton"
         BasedOn="{StaticResource ControlBase}"
         TargetType="Button">
-        <Style.Resources>
-            <SolidColorBrush x:Key="LogoButtonHoverForeground" Color="#D2E3FF" />
-        </Style.Resources>
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontSize" Value="18" />
         <Setter Property="Foreground" Value="{StaticResource Brush.PrimaryAccent}" />
@@ -93,7 +90,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter Property="Foreground" Value="{StaticResource LogoButtonHoverForeground}" />
+                            <Setter Property="Foreground" Value="{StaticResource Brush.Accent.LogoHover}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

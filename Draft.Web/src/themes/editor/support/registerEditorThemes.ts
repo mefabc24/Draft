@@ -5,7 +5,7 @@ import { DRAFT_CURRENT_LINE_DECORATION_CLASS } from './editorThemeTypes'
 
 let registered = false
 
-function ensureEditorThemeStyles(lineHighlightBackground: string) {
+function ensureEditorThemeStyles() {
   if (typeof document === 'undefined') {
     return
   }
@@ -21,7 +21,7 @@ function ensureEditorThemeStyles(lineHighlightBackground: string) {
 
   styleElement.textContent = `
     .editor-host .monaco-editor .${DRAFT_CURRENT_LINE_DECORATION_CLASS} {
-      background: ${lineHighlightBackground};
+      background: var(--editor-current-line-background);
       z-index: -1;
       pointer-events: none;
     }
@@ -43,7 +43,5 @@ export function registerEditorThemes() {
     registered = true
   }
 
-  ensureEditorThemeStyles(
-    editorThemes.draftDark.currentLineDecorationBackground,
-  )
+  ensureEditorThemeStyles()
 }

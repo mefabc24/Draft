@@ -6,8 +6,6 @@
 
     <i18n:LocalizedDisplayValueConverter x:Key="LocalizedDisplayValueConverter" />
     <i18n:LanguageFlagImageConverter x:Key="LanguageFlagImageConverter" />
-    <SolidColorBrush x:Key="SettingsComboBoxPopupBackground" Color="#181818" />
-
     <DataTemplate x:Key="LocalizedComboBoxItemTemplate">
         <TextBlock>
             <TextBlock.Text>
@@ -105,7 +103,7 @@
 
     <Style x:Key="SettingsComboBox" TargetType="ComboBox">
         <Setter Property="Background" Value="{StaticResource Brush.Background.Input}" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Inverse}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Input}" />
         <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Input}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{StaticResource Font.SpaceGrotesk}" />
@@ -196,8 +194,8 @@
 
                             <Border
                                 MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
-                                Background="{StaticResource SettingsComboBoxPopupBackground}"
-                                BorderBrush="{StaticResource Brush.Background.Secondary}"
+                                Background="{StaticResource Brush.Background.Popup}"
+                                BorderBrush="{StaticResource Brush.Border.Secondary}"
                                 BorderThickness="1"
                                 CornerRadius="3">
                                 <Border.Effect>
@@ -205,7 +203,7 @@
                                         BlurRadius="24"
                                         Opacity="0.32"
                                         ShadowDepth="8"
-                                        Color="{StaticResource Color.Shadow.Default}" />
+                                        Color="{DynamicResource Color.Shadow.Default}" />
                                 </Border.Effect>
 
                                 <ScrollViewer
@@ -268,10 +266,10 @@
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="MainBorder" Property="Opacity" Value="0.5" />
-                            <Setter Property="Foreground" Value="#606060" />
+                            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Disabled}" />
 
                             <Setter TargetName="Arrow" Property="Opacity" Value="0.5" />
-                            <Setter TargetName="Arrow" Property="Fill" Value="#606060" />
+                            <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource Brush.Text.Disabled}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

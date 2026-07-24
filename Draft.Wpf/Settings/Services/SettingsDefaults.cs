@@ -1,5 +1,6 @@
 using System.IO;
 using System.Security;
+using Draft.Theming;
 
 namespace Draft.Settings.Services;
 
@@ -9,6 +10,7 @@ public static class SettingsDefaults
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";
     public const string DefaultMarkdownTheme = "Draft Dark";
+    public const string DefaultAppTheme = AppThemeCatalog.DefaultTheme;
     public const string DefaultToolbarPosition = "Top";
     public const string PreviewScrollSyncOff = "Off";
     public const string PreviewScrollSyncEditorToPreview = "EditorToPreview";

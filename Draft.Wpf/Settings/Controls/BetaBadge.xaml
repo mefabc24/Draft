@@ -22,7 +22,7 @@
                 FontFamily="{StaticResource Font.Inter}"
                 FontSize="9"
                 FontWeight="Bold"
-                Foreground="{StaticResource Brush.Background.Input}"
+                Foreground="{StaticResource Brush.Text.OnBadge}"
                 Text="{i18n:Loc common.beta}"
                 TextAlignment="Center"
                 TextOptions.TextFormattingMode="Display">

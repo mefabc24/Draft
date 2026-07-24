@@ -20,6 +20,7 @@ public sealed class LocalizedDisplayValueConverter : IMultiValueConverter
             ["Follow edited section"] = "settings.options.scrollSync.followEditedSection",
             ["Highlighted Only"] = "settings.options.whitespace.highlightedOnly",
             ["Last"] = "settings.options.startup.last",
+            ["Light"] = "settings.options.theme.light",
             ["Line"] = "settings.options.cursor.line",
             ["Never"] = "settings.options.common.never",
             ["Off"] = "settings.options.common.off",

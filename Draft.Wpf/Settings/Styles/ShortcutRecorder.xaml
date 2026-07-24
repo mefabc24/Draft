@@ -4,18 +4,14 @@
     xmlns:controls="clr-namespace:Draft.Settings.Controls">
 
     <SolidColorBrush
-        x:Key="ShortcutRecorderActiveBackground"
-        Color="#202020" />
-
-    <SolidColorBrush
         x:Key="ShortcutRecorderButtonHoverBackground"
         Opacity="0.08"
-        Color="{StaticResource Color.Text.Secondary}" />
+        Color="{DynamicResource Color.Text.Secondary}" />
 
     <SolidColorBrush
         x:Key="ShortcutRecorderActiveButtonHoverBackground"
         Opacity="0.16"
-        Color="{StaticResource Color.Function.Critical}" />
+        Color="{DynamicResource Color.Function.Critical}" />
 
     <Style x:Key="ShortcutRecorderControl" TargetType="{x:Type controls:ShortcutRecorder}">
         <Setter Property="Focusable" Value="True" />
@@ -38,7 +34,7 @@
         <Setter Property="Effect" Value="{x:Null}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsRecording, RelativeSource={RelativeSource AncestorType={x:Type controls:ShortcutRecorder}}}" Value="True">
-                <Setter Property="Background" Value="{StaticResource ShortcutRecorderActiveBackground}" />
+                <Setter Property="Background" Value="{StaticResource Brush.Background.ShortcutRecording}" />
                 <Setter Property="BorderBrush" Value="{StaticResource Brush.Function.Critical}" />
                 <Setter Property="Effect">
                     <Setter.Value>
@@ -46,7 +42,7 @@
                             BlurRadius="14"
                             Opacity="0.8"
                             ShadowDepth="0"
-                            Color="{StaticResource Color.Function.Critical}" />
+                            Color="{DynamicResource Color.Function.Critical}" />
                     </Setter.Value>
                 </Setter>
             </DataTrigger>

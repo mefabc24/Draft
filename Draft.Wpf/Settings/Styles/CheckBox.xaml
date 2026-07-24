@@ -87,7 +87,7 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsEnabled" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="Track" Property="Background" Value="#21334B" />
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource Brush.Background.ToggleDisabledChecked}" />
                         </MultiTrigger>
 
                         <MultiTrigger>
@@ -95,8 +95,8 @@
                                 <Condition Property="IsChecked" Value="False" />
                                 <Condition Property="IsEnabled" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="Track" Property="Background" Value="#161616" />
-                            <Setter TargetName="Thumb" Property="Background" Value="#4D4D4D" />
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource Brush.Background.ToggleDisabledUnchecked}" />
+                            <Setter TargetName="Thumb" Property="Background" Value="{StaticResource Brush.Control.ToggleThumbDisabled}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

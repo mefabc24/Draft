@@ -3,11 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="clr-namespace:Draft.Dialogs.Message.Models">
 
-    <SolidColorBrush x:Key="MessageDialog.Button.ErrorForeground" Color="#541B1F" />
-    <SolidColorBrush x:Key="MessageDialog.Button.WarningForeground" Color="#3A2708" />
-    <SolidColorBrush x:Key="MessageDialog.Button.InfoForeground" Color="#0B2A54" />
-    <SolidColorBrush x:Key="MessageDialog.Button.SuccessForeground" Color="#0E301A" />
-
     <Style x:Key="MessageDialogButtonBase" TargetType="Button">
         <Setter Property="Height" Value="36" />
         <Setter Property="MinWidth" Value="0" />
@@ -55,23 +50,23 @@
         BasedOn="{StaticResource MessageDialogButtonBase}"
         TargetType="Button">
         <Setter Property="Background" Value="{StaticResource Brush.Function.Info}" />
-        <Setter Property="Foreground" Value="{StaticResource MessageDialog.Button.InfoForeground}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnInfo}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Static models:MessageDialogType.Error}">
                 <Setter Property="Background" Value="{StaticResource Brush.Function.Critical}" />
-                <Setter Property="Foreground" Value="{StaticResource MessageDialog.Button.ErrorForeground}" />
+                <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnCritical}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Static models:MessageDialogType.Warning}">
                 <Setter Property="Background" Value="{StaticResource Brush.Function.Warning}" />
-                <Setter Property="Foreground" Value="{StaticResource MessageDialog.Button.WarningForeground}" />
+                <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnWarning}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Static models:MessageDialogType.Info}">
                 <Setter Property="Background" Value="{StaticResource Brush.Function.Info}" />
-                <Setter Property="Foreground" Value="{StaticResource MessageDialog.Button.InfoForeground}" />
+                <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnInfo}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Static models:MessageDialogType.Success}">
                 <Setter Property="Background" Value="{StaticResource Brush.Function.Success}" />
-                <Setter Property="Foreground" Value="{StaticResource MessageDialog.Button.SuccessForeground}" />
+                <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnSuccess}" />
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -80,11 +75,11 @@
         x:Key="MessageDialogSecondaryButton"
         BasedOn="{StaticResource MessageDialogButtonBase}"
         TargetType="Button">
-        <Setter Property="Background" Value="#202020" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.SecondaryButton}" />
         <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#282828" />
+                <Setter Property="Background" Value="{StaticResource Brush.Background.SecondaryButtonHover}" />
             </Trigger>
         </Style.Triggers>
     </Style>

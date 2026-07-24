@@ -64,7 +64,7 @@ public class SettingsWindowViewModel : BaseViewModel
         MenuCustomizationCatalog.CreateDefaultFloatingMarkdownToolbarItems();
     private List<MenuItemCustomization> _quickInsertMenuItems =
         MenuCustomizationCatalog.CreateDefaultQuickInsertMenuItems();
-    private string _appTheme = "Dark";
+    private string _appTheme = AppSettingsStore.DefaultAppTheme;
     private bool _isStatusBarVisible = true;
     private bool _isStatusBarFileTypeVisible = true;
     private bool _isStatusBarEncodingVisible = true;
@@ -679,7 +679,7 @@ public class SettingsWindowViewModel : BaseViewModel
         get => _appTheme;
         set => SetSetting(
             ref _appTheme,
-            EnsureOption(AppThemeOptions, value, "Dark"));
+            EnsureOption(AppThemeOptions, value, AppSettingsStore.DefaultAppTheme));
     }
 
     public bool IsStatusBarVisible
@@ -1010,7 +1010,10 @@ public class SettingsWindowViewModel : BaseViewModel
             _floatingMarkdownToolbarSettingsPage.LoadItems(_floatingMarkdownToolbarItems);
             _quickInsertSettingsPage.LoadItems(_quickInsertMenuItems);
         }
-        _appTheme = EnsureOption(AppThemeOptions, settings.AppTheme, "Dark");
+        _appTheme = EnsureOption(
+            AppThemeOptions,
+            settings.AppTheme,
+            AppSettingsStore.DefaultAppTheme);
         _isStatusBarVisible = settings.IsStatusBarVisible;
         _isStatusBarFileTypeVisible = settings.IsStatusBarFileTypeVisible;
         _isStatusBarEncodingVisible = settings.IsStatusBarEncodingVisible;

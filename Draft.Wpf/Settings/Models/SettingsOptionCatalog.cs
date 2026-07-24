@@ -1,3 +1,5 @@
+using Draft.Theming;
+
 namespace Draft.Settings.Models;
 
 public static class SettingsOptionCatalog
@@ -52,7 +54,7 @@ public static class SettingsOptionCatalog
         new[] { "Disabled", "Editor", "Preview", "Both" };
 
     public static IReadOnlyList<string> AppThemeOptions { get; } =
-        new[] { "Dark" };
+        AppThemeCatalog.ThemeIds;
 
     public static IReadOnlyList<string> WindowBorderAccentModeOptions { get; } =
         new[] { "Disabled", "Always", "Focused only", "Unfocused only" };

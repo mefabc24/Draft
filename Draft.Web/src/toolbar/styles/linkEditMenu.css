@@ -11,9 +11,9 @@
   align-items: center;
   gap: 8px;
   padding: 0 8px;
-  border: 1px solid #43474f;
+  border: 1px solid var(--app-input-border);
   border-radius: 4px;
-  background: #333538;
+  background: var(--app-input-background);
   color: var(--markdown-toolbar-foreground);
 }
 
@@ -35,7 +35,7 @@
   border: 0;
   outline: none;
   background: transparent;
-  color: #f3faff;
+  color: var(--app-foreground-bright);
   font-family: var(--font-ui);
   font-size: 16px;
   line-height: 24px;
@@ -69,6 +69,6 @@
 
 .preview-edit-action-primary:disabled,
 .preview-edit-action-primary:disabled:hover {
-  background: #85abe3;
-  color: #294c7d;
+  background: var(--app-accent-disabled-background);
+  color: var(--app-accent-foreground);
 }

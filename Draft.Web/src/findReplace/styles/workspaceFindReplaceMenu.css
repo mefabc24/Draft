@@ -20,9 +20,9 @@
   gap: 8px;
   padding: 12px;
   overflow: hidden;
-  border: 1px solid #3d3d3d;
+  border: 1px solid var(--app-border);
   border-radius: 12px;
-  background: #1b1b1b;
+  background: var(--app-surface-background);
   box-shadow: var(--markdown-toolbar-shadow);
   color: var(--markdown-toolbar-foreground);
   font-family: 'Manrope', var(--font-ui), system-ui, sans-serif;
@@ -53,23 +53,27 @@
   min-width: 0;
   align-items: center;
   padding: 0 4px 0 6px;
-  border: 1px solid #2c2d2f;
+  border: 1px solid var(--app-control-border);
   border-radius: 8px;
-  background: #131313;
+  background: var(--app-control-background);
   transition:
     border-color 140ms ease,
     box-shadow 140ms ease;
 }
 
 .workspace-find-replace-field:focus-within {
-  border-color: color-mix(in srgb, var(--markdown-toolbar-primary) 72%, #2c2d2f);
-  box-shadow: 0 0 0 1px rgba(165, 200, 255, 0.12);
+  border-color: color-mix(
+    in srgb,
+    var(--markdown-toolbar-primary) 72%,
+    var(--app-control-border)
+  );
+  box-shadow: 0 0 0 1px var(--app-accent-focus-ring);
 }
 
 .workspace-find-replace-field.is-invalid,
 .workspace-find-replace-field.is-invalid:focus-within {
-  border-color: #e25e5e;
-  box-shadow: 0 0 0 1px rgba(226, 94, 94, 0.22);
+  border-color: var(--app-danger);
+  box-shadow: 0 0 0 1px var(--app-danger-focus-ring);
 }
 
 .workspace-find-replace-search-field {
@@ -100,7 +104,7 @@
   padding: 0 8px;
   border: 0;
   background: transparent;
-  color: #e2e2e6;
+  color: var(--app-input-foreground);
   font: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -122,7 +126,7 @@
 }
 
 .workspace-find-replace-result-count.is-error {
-  color: #e25e5e;
+  color: var(--app-danger);
   font-size: 11px;
 }
 
@@ -156,8 +160,8 @@
 }
 
 .workspace-find-replace-navigation-button:hover {
-  background: #1f2020;
-  color: #e2e2e6;
+  background: var(--app-control-hover-background);
+  color: var(--app-input-foreground);
 }
 
 .workspace-find-replace-navigation-button:disabled,
@@ -168,13 +172,13 @@
 
 .workspace-find-replace-navigation-button:disabled:hover,
 .workspace-find-replace-action-button:disabled:hover {
-  border-color: #2c2d2f;
+  border-color: var(--app-control-border);
   background: transparent;
   color: var(--markdown-toolbar-foreground);
 }
 
 .workspace-find-replace-close-button:hover {
-  background: #1f2020;
+  background: var(--app-control-hover-background);
 }
 
 .workspace-find-replace-navigation-button svg {
@@ -205,9 +209,9 @@
   box-sizing: border-box;
   height: 34px;
   padding: 0 10px;
-  border: 1px solid #2c2d2f;
+  border: 1px solid var(--app-control-border);
   border-radius: 8px;
-  background: #131313;
+  background: var(--app-control-background);
   color: var(--markdown-toolbar-foreground);
   cursor: pointer;
   font: inherit;
@@ -232,14 +236,14 @@
 
 .workspace-find-replace-action-button:hover,
 .workspace-find-replace-all-button:hover {
-  border-color: #34363a;
-  background: #1f2020;
-  color: #e2e2e6;
+  border-color: var(--app-control-border-hover);
+  background: var(--app-control-hover-background);
+  color: var(--app-input-foreground);
 }
 
 .workspace-find-replace-all-button.is-active {
   border-color: var(--markdown-toolbar-primary);
-  background: rgba(165, 200, 255, 0.18);
+  background: var(--app-accent-soft-background);
   color: var(--markdown-toolbar-primary);
 }
 
@@ -292,9 +296,9 @@
   flex: 0 0 18px;
   align-items: center;
   justify-content: center;
-  border: 1px solid #2c2d2f;
+  border: 1px solid var(--app-control-border);
   border-radius: 4px;
-  background: #131313;
+  background: var(--app-control-background);
   transition:
     background 140ms ease,
     border-color 140ms ease,
@@ -302,7 +306,7 @@
 }
 
 .workspace-find-replace-option:hover .workspace-find-replace-option-box {
-  border-color: #43474f;
+  border-color: var(--app-input-border);
 }
 
 .workspace-find-replace-option input:checked
@@ -316,8 +320,8 @@
   width: 4px;
   height: 8px;
   margin-top: -2px;
-  border-right: 2px solid #1b1b1b;
-  border-bottom: 2px solid #1b1b1b;
+  border-right: 2px solid var(--app-checkmark-foreground);
+  border-bottom: 2px solid var(--app-checkmark-foreground);
   content: '';
   transform: rotate(45deg);
 }
@@ -335,7 +339,7 @@
 .workspace-find-replace-toggle-hint {
   flex: 0 0 auto;
   margin-left: auto;
-  color: #3f3f3f;
+  color: var(--app-hint-foreground);
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   font-size: 12px;
   font-style: italic;
@@ -345,11 +349,11 @@
 
 .monaco-editor .workspace-find-replace-editor-match {
   border-radius: 2px;
-  background: rgba(165, 200, 255, 0.2);
+  background: var(--app-accent-selection-background);
 }
 
 .monaco-editor .workspace-find-replace-editor-match.is-current {
-  background: rgba(165, 200, 255, 0.5);
+  background: var(--app-accent-selection-active-background);
   box-shadow: inset 0 -1px 0 var(--markdown-toolbar-primary);
 }
 

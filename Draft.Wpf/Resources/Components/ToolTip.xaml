@@ -32,7 +32,7 @@
                                 BlurRadius="24"
                                 Opacity="0.28"
                                 ShadowDepth="8"
-                                Color="{StaticResource Color.Shadow.Default}" />
+                                Color="{DynamicResource Color.Shadow.Default}" />
                         </Border.Effect>
 
                         <ContentPresenter

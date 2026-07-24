@@ -27,6 +27,7 @@
                                 <Condition Property="Tag" Value="Close" />
                             </MultiTrigger.Conditions>
                             <Setter Property="Background" Value="{StaticResource Brush.CloseButtonBackground}" />
+                            <Setter Property="Foreground" Value="{StaticResource Brush.Icon.WindowControlClose}" />
                         </MultiTrigger>
 
                         <!-- Default Hover -->

@@ -10,8 +10,8 @@
                     <Border
                         x:Name="border"
                         Padding="16"
-                        Background="#0D0D0D"
-                        BorderBrush="#222222"
+                        Background="{StaticResource Brush.Background.Card}"
+                        BorderBrush="{StaticResource Brush.Border.Card}"
                         BorderThickness="1"
                         CornerRadius="8">
                         <StackPanel>
@@ -44,7 +44,7 @@
                                     x:Name="LatestTag"
                                     Grid.Column="1"
                                     Padding="12,4"
-                                    Background="#1AA5C8FF"
+                                    Background="{StaticResource Brush.Accent.PrimarySubtle}"
                                     CornerRadius="4"
                                     Visibility="Hidden">
                                     <TextBlock
@@ -83,14 +83,14 @@
                         </DataTrigger>
 
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#242528" />
-                            <Setter TargetName="border" Property="BorderBrush" Value="#A5C8FF" />
-                            <Setter TargetName="Icon" Property="Fill" Value="#A5C8FF" />
-                            <Setter TargetName="TitleText" Property="Foreground" Value="#A5C8FF" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.CardSelected}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource Brush.Accent.Primary}" />
+                            <Setter TargetName="Icon" Property="Fill" Value="{StaticResource Brush.Accent.Primary}" />
+                            <Setter TargetName="TitleText" Property="Foreground" Value="{StaticResource Brush.Accent.Primary}" />
                         </Trigger>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#101010" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.CardHover}" />
                             <Setter Property="Cursor" Value="Hand" />
                         </Trigger>
 
@@ -99,7 +99,7 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="border" Property="Background" Value="#2B2D31" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.CardSelectedHover}" />
                             <Setter Property="Cursor" Value="Hand" />
                         </MultiTrigger>
 

@@ -250,7 +250,7 @@
                             Height="38"
                             Margin="0,20,0,0"
                             Background="{StaticResource Brush.Background.Window}"
-                            BorderBrush="{StaticResource Brush.Background.Secondary}"
+                            BorderBrush="{StaticResource Brush.Border.Secondary}"
                             BorderThickness="1"
                             CornerRadius="4">
                             <Grid>
@@ -298,15 +298,15 @@
                                 <Border
                                     Width="{Binding ActualWidth, ElementName=GlobalSettingsSearchBorder}"
                                     MaxHeight="300"
-                                    Background="{StaticResource SettingsComboBoxPopupBackground}"
-                                    BorderBrush="{StaticResource Brush.Background.Secondary}"
+                                    Background="{StaticResource Brush.Background.Popup}"
+                                    BorderBrush="{StaticResource Brush.Border.Secondary}"
                                     BorderThickness="1"
                                     CornerRadius="4"
                                     DataContext="{Binding DataContext, ElementName=GlobalSettingsSearchBorder}">
                                     <Border.Effect>
                                         <DropShadowEffect
                                             BlurRadius="16"
-                                            Color="{StaticResource Color.Shadow.Default}"
+                                            Color="{DynamicResource Color.Shadow.Default}"
                                             Direction="270"
                                             Opacity="0.32"
                                             RenderingBias="Quality"

@@ -77,7 +77,7 @@ public sealed class DraftSettings
 
     public bool ScrollPreviewToEditedSection { get; set; } = false;
 
-    public string AppTheme { get; set; } = "Dark";
+    public string AppTheme { get; set; } = SettingsDefaults.DefaultAppTheme;
 
     public bool IsStatusBarVisible { get; set; } = true;
 

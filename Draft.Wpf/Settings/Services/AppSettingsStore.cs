@@ -2,6 +2,7 @@ using System.IO;
 using System.Security;
 using Draft.Settings.Models;
 using Draft.Settings.Shortcuts;
+using Draft.Theming;
 using System.Text.Json;
 
 namespace Draft.Settings.Services;
@@ -12,6 +13,7 @@ public static class AppSettingsStore
     public const string DefaultFileExtension = ".md";
     public const string DefaultFileExtensionDisplay = ".md (Markdown)";
     public const string DefaultMarkdownTheme = SettingsDefaults.DefaultMarkdownTheme;
+    public const string DefaultAppTheme = SettingsDefaults.DefaultAppTheme;
     public const string DefaultToolbarPosition = "Top";
     public const string PreviewScrollSyncOff = "Off";
     public const string PreviewScrollSyncEditorToPreview = "EditorToPreview";
@@ -109,6 +111,7 @@ public static class AppSettingsStore
         settings.DefaultSaveLocation = NormalizeSaveLocation(settings.DefaultSaveLocation);
         settings.DefaultFileExtension = DefaultFileExtension;
         settings.MarkdownTheme = MarkdownPreviewThemeCatalog.GetThemeLabel(settings.MarkdownTheme);
+        settings.AppTheme = AppThemeCatalog.Normalize(settings.AppTheme);
         settings.ToolbarControlbarPosition = DefaultToolbarPosition;
         settings.Shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts);
         settings.WindowBorderAccentMode = IsWindowBorderAccentMode(settings.WindowBorderAccentMode)

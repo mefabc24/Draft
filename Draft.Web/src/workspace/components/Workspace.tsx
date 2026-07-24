@@ -145,6 +145,7 @@ function Workspace() {
   const suppressNextWorkspaceModePostRef = useRef(false)
   const hasAppliedStartupStateRef = useRef(false)
   const documentGenerationRef = useRef<number | null>(null)
+  const startupStateAppliedFrameRef = useRef<number | null>(null)
   const postCurrentDocumentChanged = useCallback((content: string) => {
     postDocumentChanged(content, documentGenerationRef.current)
   }, [])
@@ -195,14 +196,21 @@ function Workspace() {
     () => getEditorTheme(activeEditorThemeId),
     [activeEditorThemeId],
   )
-  const workspaceStyle = useMemo(
+  const appThemeStyle = useMemo(
     () =>
       ({
         ...activeEditorTheme.chromeVariables,
+        colorScheme: activeEditorTheme.colorScheme,
+      }) as CSSProperties,
+    [activeEditorTheme],
+  )
+  const workspaceStyle = useMemo(
+    () =>
+      ({
         '--split-editor-pane-width': `${clampedSplitEditorRatio * 100}%`,
         '--split-preview-pane-width': `${(1 - clampedSplitEditorRatio) * 100}%`,
       }) as CSSProperties,
-    [activeEditorTheme, clampedSplitEditorRatio],
+    [clampedSplitEditorRatio],
   )
   const activePreviewTheme = useMemo(
     () => getPreviewTheme(activePreviewThemeId),
@@ -280,7 +288,14 @@ function Workspace() {
       documentGeneration: message.documentGeneration,
       fileName: message.document.displayFileName,
     })
-    postStartupStateApplied(message.documentGeneration)
+    if (startupStateAppliedFrameRef.current !== null) {
+      window.cancelAnimationFrame(startupStateAppliedFrameRef.current)
+    }
+
+    startupStateAppliedFrameRef.current = window.requestAnimationFrame(() => {
+      startupStateAppliedFrameRef.current = null
+      postStartupStateApplied(message.documentGeneration)
+    })
   }
 
   const applyGoToPositionFromHost = (message: GoToPositionMessage) => {
@@ -411,6 +426,11 @@ function Workspace() {
     return () => {
       window.cancelAnimationFrame(readyFrameId)
       window.clearTimeout(fallbackTimeoutId)
+
+      if (startupStateAppliedFrameRef.current !== null) {
+        window.cancelAnimationFrame(startupStateAppliedFrameRef.current)
+      }
+
       removeWebViewMessageListener()
     }
     // WebView messages read current editor/session state through refs.
@@ -497,7 +517,9 @@ function Workspace() {
     <LocalizationProvider language={appLanguage}>
       <main
         className="app-shell"
+        data-app-theme={activeEditorTheme.id}
         onContextMenu={(event) => event.preventDefault()}
+        style={appThemeStyle}
       >
         <section
           ref={workspaceRef}

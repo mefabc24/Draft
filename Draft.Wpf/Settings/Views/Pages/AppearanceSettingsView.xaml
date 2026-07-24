@@ -26,7 +26,6 @@
                     <ComboBox
                         Width="160"
                         Height="36"
-                        IsEnabled="False"
                         ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
                         ItemsSource="{Binding AppThemeOptions}"
                         SelectedItem="{Binding Settings.AppTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

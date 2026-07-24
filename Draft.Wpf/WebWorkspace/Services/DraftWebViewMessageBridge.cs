@@ -1,5 +1,6 @@
 using Draft.Settings.Models;
 using Draft.Settings.Shortcuts;
+using Draft.Theming;
 using Draft.WebWorkspace.Messages;
 using Microsoft.Web.WebView2.Core;
 using System.Text.Json;
@@ -51,7 +52,7 @@ public sealed class DraftWebViewMessageBridge
         return new SettingsChangedMessage(
             DraftWebViewMessageTypes.SettingsChanged,
             LocalizationService.NormalizeLanguageCode(settings.AppLanguage),
-            "draftDark",
+            AppThemeCatalog.GetEditorThemeId(settings.AppTheme),
             MarkdownPreviewThemeCatalog.GetThemeId(settings.MarkdownTheme),
             settings.EditorFontFamily,
             settings.EditorFontSize,

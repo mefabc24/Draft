@@ -102,7 +102,7 @@
 
                             <CheckBox
                                 Grid.Column="2"
-                                Background="#555555"
+                                Background="{StaticResource Brush.Background.Toggle}"
                                 IsChecked="{Binding AutosaveEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource SettingsCheckBox}" />
                         </Grid>

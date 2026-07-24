@@ -6,6 +6,7 @@ using Draft.Settings.Models;
 using Draft.Settings.Services;
 using Draft.Shell.ViewModels;
 using Draft.Shell.Views;
+using Draft.Theming;
 using Draft.Updates.Services;
 using System.Windows;
 
@@ -42,6 +43,7 @@ public sealed class AppStartupService
     public void Start(Application application, StartupEventArgs e)
     {
         DraftSettings settings = AppSettingsStore.Load();
+        AppThemeService.Current.Apply(settings.AppTheme);
         LocalizationService.SetCurrentAppLanguage(settings.AppLanguage);
         _ = _snapshotCleanupService.CleanupOldSnapshotsAsync();
 

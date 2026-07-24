@@ -1,36 +1,16 @@
-import { draftDarkTokens, themeFontStacks } from '../shared/themeTokens'
+import { draftDarkTokens } from '../shared/themeTokens'
+import { createEditorChromeVariables } from './support/createEditorChromeVariables'
 import type { DraftEditorTheme } from './support/editorThemeTypes'
 
 export const draftDarkEditorTheme: DraftEditorTheme = {
   base: 'vs-dark',
-  chromeVariables: {
-    '--app-foreground': draftDarkTokens.foreground,
-    '--draft-chrome-background': draftDarkTokens.chromeBackground,
-    '--draft-divider-color': draftDarkTokens.divider,
-    '--draft-muted-foreground': draftDarkTokens.muted,
-    '--draft-pane-border': draftDarkTokens.borderSubtle,
-    '--draft-subtle-foreground': draftDarkTokens.muted,
-    '--editor-background': draftDarkTokens.editorBackground,
-    '--editor-current-line-background': '#1a1a1a',
-    '--editor-scrollbar-thumb': draftDarkTokens.scrollbarThumb,
-    '--editor-scrollbar-track': 'transparent',
-    '--editor-surface-background': draftDarkTokens.editorSurface,
-    '--font-editor': themeFontStacks.editor,
-    '--font-preview': themeFontStacks.preview,
-    '--font-ui': themeFontStacks.ui,
-    '--markdown-toolbar-background': draftDarkTokens.chromeBackground,
-    '--markdown-toolbar-border': draftDarkTokens.border,
-    '--markdown-toolbar-divider': '#242424',
-    '--markdown-toolbar-foreground': '#acabaa',
-    '--markdown-toolbar-hover-background': '#1f2020',
-    '--markdown-toolbar-icon-filter': 'brightness(0) saturate(100%) invert(74%) sepia(6%) saturate(89%) hue-rotate(344deg) brightness(91%) contrast(88%)',
-    '--markdown-toolbar-icon-primary-filter': 'brightness(0) saturate(100%) invert(78%) sepia(18%) saturate(720%) hue-rotate(184deg) brightness(105%) contrast(101%)',
-    '--markdown-toolbar-muted': '#575757',
-    '--markdown-toolbar-primary': draftDarkTokens.accentBlue,
-    '--markdown-toolbar-radius': '10px',
-    '--markdown-toolbar-selected-shortcut': 'rgba(165, 200, 255, 0.55)',
-    '--markdown-toolbar-shadow': '0 10px 24px rgba(0, 0, 0, 0.26), 0 2px 8px rgba(0, 0, 0, 0.22)',
-  },
+  chromeVariables: createEditorChromeVariables(draftDarkTokens, {
+    iconFilter:
+      'brightness(0) saturate(100%) invert(74%) sepia(6%) saturate(89%) hue-rotate(344deg) brightness(91%) contrast(88%)',
+    primaryIconFilter:
+      'brightness(0) saturate(100%) invert(78%) sepia(18%) saturate(720%) hue-rotate(184deg) brightness(105%) contrast(101%)',
+  }),
+  colorScheme: 'dark',
   colors: {
     'editor.background': draftDarkTokens.chromeBackground,
     'editor.foreground': draftDarkTokens.foregroundBright,
@@ -53,7 +33,6 @@ export const draftDarkEditorTheme: DraftEditorTheme = {
     'editorGutter.background': draftDarkTokens.chromeBackground,
     'editorOverviewRuler.border': '#FF0000',
   },
-  currentLineDecorationBackground: '#1A1A1A',
   id: 'draftDark',
   inherit: true,
   label: 'Draft Dark',
