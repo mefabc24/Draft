@@ -3,8 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-        Brushes stay loaded while the active palette is replaced. Dynamic color
-        references keep existing controls synchronized without recreating their styles.
+        Brushes stay loaded while the active palette is replaced. AppThemeService
+        updates these stable brush instances so existing controls change in place.
     -->
 
     <!-- Accent Brushes -->

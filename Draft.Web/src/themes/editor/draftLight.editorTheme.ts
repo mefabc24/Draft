@@ -7,7 +7,7 @@ export const draftLightEditorTheme: DraftEditorTheme = {
   chromeVariables: createEditorChromeVariables(draftLightTokens, {
     iconFilter: 'brightness(0) saturate(100%) invert(37%)',
     primaryIconFilter:
-      'brightness(0) saturate(100%) invert(28%) sepia(89%) saturate(1518%) hue-rotate(181deg) brightness(93%) contrast(101%)',
+      'brightness(0) saturate(100%) invert(69%) sepia(47%) saturate(1867%) hue-rotate(188deg) brightness(103%) contrast(101%)',
   }),
   colorScheme: 'light',
   colors: {
@@ -27,7 +27,7 @@ export const draftLightEditorTheme: DraftEditorTheme = {
     'editor.wordHighlightStrongBorder': '#8a5b00',
     'editorLineNumber.foreground': '#767676',
     'editorLineNumber.activeForeground': draftLightTokens.accent,
-    'editorIndentGuide.background': '#d6d6d6',
+    'editorIndentGuide.background': '#d1d5db',
     'editorIndentGuide.activeBackground': '#9a9a9a',
     'editorWhitespace.foreground': '#767676',
     'editorGutter.background': draftLightTokens.editorBackground,
@@ -39,9 +39,9 @@ export const draftLightEditorTheme: DraftEditorTheme = {
   monacoThemeName: 'draft-light',
   rules: [
     { token: 'comment', foreground: '767676' },
-    { token: 'keyword', foreground: '0067C0' },
-    { token: 'keyword.heading.marker', foreground: '0067C0' },
-    { token: 'keyword.heading.text', foreground: '0067C0' },
+    { token: 'keyword', foreground: '73AAFF' },
+    { token: 'keyword.heading.marker', foreground: '73AAFF' },
+    { token: 'keyword.heading.text', foreground: '73AAFF' },
     { token: 'keyword.list.marker', foreground: '107C10' },
     { token: 'markup.quote.marker', foreground: '8A5B00' },
     { token: 'string', foreground: '107C10' },

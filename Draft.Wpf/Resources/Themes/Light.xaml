@@ -3,15 +3,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Accent Colors -->
-    <Color x:Key="Color.Accent.Primary">#0067C0</Color>
-    <Color x:Key="Color.Accent.PrimaryHover">#005A9E</Color>
-    <Color x:Key="Color.Accent.PrimarySubtle">#1A0067C0</Color>
+    <Color x:Key="Color.Accent.Primary">#73AAFF</Color>
+    <Color x:Key="Color.Accent.PrimaryHover">#5F9DF7</Color>
+    <Color x:Key="Color.Accent.PrimarySubtle">#1A73AAFF</Color>
     <Color x:Key="Color.Accent.Secondary">#107C10</Color>
     <Color x:Key="Color.Accent.Tertiary">#8A5B00</Color>
-    <Color x:Key="Color.Accent.LogoHover">#005A9E</Color>
+    <Color x:Key="Color.Accent.LogoHover">#5F9DF7</Color>
 
     <!-- Background Colors -->
-    <Color x:Key="Color.Background.Window">#F3F3F3</Color>
+    <Color x:Key="Color.Background.Window">#E9EAEE</Color>
     <Color x:Key="Color.Background.Surface">#FFFFFF</Color>
     <Color x:Key="Color.Background.Secondary">#F7F7F7</Color>
     <Color x:Key="Color.Background.Input">#F0F0F0</Color>
@@ -34,20 +34,20 @@
     <Color x:Key="Color.Background.ScrollbarThumb">#B5B5B5</Color>
 
     <!-- Border Colors -->
-    <Color x:Key="Color.Border.Default">#D6D6D6</Color>
-    <Color x:Key="Color.Border.Secondary">#D6D6D6</Color>
-    <Color x:Key="Color.Border.Subtle">#E5E5E5</Color>
-    <Color x:Key="Color.Border.Input">#B8B8B8</Color>
-    <Color x:Key="Color.Border.Window">#C8C8C8</Color>
-    <Color x:Key="Color.Border.Card">#D6D6D6</Color>
-    <Color x:Key="Color.Border.MainWindow.Active">#C8C8C8</Color>
-    <Color x:Key="Color.Border.MainWindow.Inactive">#D6D6D6</Color>
-    <Color x:Key="Color.Border.SettingsWindow.Active">#C8C8C8</Color>
-    <Color x:Key="Color.Border.SettingsWindow.Inactive">#D6D6D6</Color>
+    <Color x:Key="Color.Border.Default">#D1D5DB</Color>
+    <Color x:Key="Color.Border.Secondary">#D1D5DB</Color>
+    <Color x:Key="Color.Border.Subtle">#D1D5DB</Color>
+    <Color x:Key="Color.Border.Input">#D1D5DB</Color>
+    <Color x:Key="Color.Border.Window">#D1D5DB</Color>
+    <Color x:Key="Color.Border.Card">#D1D5DB</Color>
+    <Color x:Key="Color.Border.MainWindow.Active">#D1D5DB</Color>
+    <Color x:Key="Color.Border.MainWindow.Inactive">#D1D5DB</Color>
+    <Color x:Key="Color.Border.SettingsWindow.Active">#D1D5DB</Color>
+    <Color x:Key="Color.Border.SettingsWindow.Inactive">#D1D5DB</Color>
 
     <!-- Text and Icon Colors -->
     <Color x:Key="Color.Text.Primary">#1F1F1F</Color>
-    <Color x:Key="Color.Text.Secondary">#5F5F5F</Color>
+    <Color x:Key="Color.Text.Secondary">#535455</Color>
     <Color x:Key="Color.Text.Placeholder">#767676</Color>
     <Color x:Key="Color.Text.Tertiary">#5F5F5F</Color>
     <Color x:Key="Color.Text.Muted">#767676</Color>
@@ -55,10 +55,10 @@
     <Color x:Key="Color.Text.Editor">#1F1F1F</Color>
     <Color x:Key="Color.Text.Input">#1F1F1F</Color>
     <Color x:Key="Color.Text.Inverse">#FFFFFF</Color>
-    <Color x:Key="Color.Text.OnAccent">#FFFFFF</Color>
+    <Color x:Key="Color.Text.OnAccent">#1F1F1F</Color>
     <Color x:Key="Color.Text.OnCritical">#FFFFFF</Color>
     <Color x:Key="Color.Text.OnWarning">#FFFFFF</Color>
-    <Color x:Key="Color.Text.OnInfo">#FFFFFF</Color>
+    <Color x:Key="Color.Text.OnInfo">#1F1F1F</Color>
     <Color x:Key="Color.Text.OnSuccess">#FFFFFF</Color>
     <Color x:Key="Color.Text.OnBadge">#FFFFFF</Color>
     <Color x:Key="Color.Icon.Default">#1F1F1F</Color>
@@ -70,7 +70,7 @@
     <Color x:Key="Color.Function.Success">#107C10</Color>
     <Color x:Key="Color.Function.Warning">#8A5B00</Color>
     <Color x:Key="Color.Function.Critical">#C42B1C</Color>
-    <Color x:Key="Color.Function.Info">#0067C0</Color>
+    <Color x:Key="Color.Function.Info">#73AAFF</Color>
 
     <!-- Utility Colors -->
     <Color x:Key="Color.Shadow.Default">#000000</Color>
