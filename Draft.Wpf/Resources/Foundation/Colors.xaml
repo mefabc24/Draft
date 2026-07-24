@@ -49,6 +49,7 @@
     <SolidColorBrush x:Key="Brush.Border.MainWindow.Inactive" Color="{DynamicResource Color.Border.MainWindow.Inactive}" />
     <SolidColorBrush x:Key="Brush.Border.SettingsWindow.Active" Color="{DynamicResource Color.Border.SettingsWindow.Active}" />
     <SolidColorBrush x:Key="Brush.Border.SettingsWindow.Inactive" Color="{DynamicResource Color.Border.SettingsWindow.Inactive}" />
+    <SolidColorBrush x:Key="Brush.Border.DialogDivider" Color="{DynamicResource Color.Border.DialogDivider}" />
 
     <!-- Text and Icon Brushes -->
     <SolidColorBrush x:Key="Brush.Text.Primary" Color="{DynamicResource Color.Text.Primary}" />

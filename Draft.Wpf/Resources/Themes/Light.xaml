@@ -20,8 +20,8 @@
     <Color x:Key="Color.Background.Hover">#E8E8E8</Color>
     <Color x:Key="Color.Background.SelectedHover">#E1E1E1</Color>
     <Color x:Key="Color.Background.Popup">#FFFFFF</Color>
-    <Color x:Key="Color.Background.SecondaryButton">#F3F3F3</Color>
-    <Color x:Key="Color.Background.SecondaryButtonHover">#E8E8E8</Color>
+    <Color x:Key="Color.Background.SecondaryButton">#FFFFFF</Color>
+    <Color x:Key="Color.Background.SecondaryButtonHover">#F3F4F6</Color>
     <Color x:Key="Color.Background.ShortcutRecording">#FFF4F3</Color>
     <Color x:Key="Color.Background.Card">#FFFFFF</Color>
     <Color x:Key="Color.Background.CardHover">#F7F7F7</Color>
@@ -45,6 +45,7 @@
     <Color x:Key="Color.Border.MainWindow.Inactive">#D1D5DB</Color>
     <Color x:Key="Color.Border.SettingsWindow.Active">#D1D5DB</Color>
     <Color x:Key="Color.Border.SettingsWindow.Inactive">#D1D5DB</Color>
+    <Color x:Key="Color.Border.DialogDivider">#E5E5E5</Color>
 
     <!-- Text and Icon Colors -->
     <Color x:Key="Color.Text.Primary">#1F1F1F</Color>
@@ -57,10 +58,10 @@
     <Color x:Key="Color.Text.Input">#1F1F1F</Color>
     <Color x:Key="Color.Text.Inverse">#FFFFFF</Color>
     <Color x:Key="Color.Text.OnAccent">#FFFFFF</Color>
-    <Color x:Key="Color.Text.OnCritical">#FFFFFF</Color>
-    <Color x:Key="Color.Text.OnWarning">#FFFFFF</Color>
-    <Color x:Key="Color.Text.OnInfo">#FFFFFF</Color>
-    <Color x:Key="Color.Text.OnSuccess">#FFFFFF</Color>
+    <Color x:Key="Color.Text.OnCritical">#971E1E</Color>
+    <Color x:Key="Color.Text.OnWarning">#A26D00</Color>
+    <Color x:Key="Color.Text.OnInfo">#18437D</Color>
+    <Color x:Key="Color.Text.OnSuccess">#16672C</Color>
     <Color x:Key="Color.Text.OnBadge">#FFFFFF</Color>
     <Color x:Key="Color.Icon.Default">#1F1F1F</Color>
     <Color x:Key="Color.Icon.SubtleHover">#5F5F5F</Color>
@@ -69,9 +70,9 @@
     <Color x:Key="Color.Control.ToggleThumbDisabled">#A0A0A0</Color>
 
     <!-- Functional Colors -->
-    <Color x:Key="Color.Function.Success">#107C10</Color>
-    <Color x:Key="Color.Function.Warning">#8A5B00</Color>
-    <Color x:Key="Color.Function.Critical">#C42B1C</Color>
+    <Color x:Key="Color.Function.Success">#74CE8C</Color>
+    <Color x:Key="Color.Function.Warning">#FFD084</Color>
+    <Color x:Key="Color.Function.Critical">#FF8383</Color>
     <Color x:Key="Color.Function.Info">#73AAFF</Color>
 
     <!-- Utility Colors -->

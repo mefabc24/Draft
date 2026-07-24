@@ -635,6 +635,7 @@
                                 VerticalAlignment="Stretch"
                                 Command="{Binding ApplySettingsCommand}"
                                 Content="{Binding ApplyChangesButtonText, FallbackValue='Apply Changes'}"
+                                Foreground="{StaticResource Brush.Text.OnAccent}"
                                 Style="{StaticResource MessageDialogPrimaryButton}" />
                         </StackPanel>
                     </Grid>

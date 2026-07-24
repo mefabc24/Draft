@@ -113,7 +113,7 @@
             Grid.Row="1"
             Padding="16"
             Background="{StaticResource Brush.Background.Window}"
-            BorderBrush="{StaticResource Brush.Border.Default}"
+            BorderBrush="{StaticResource Brush.Border.DialogDivider}"
             BorderThickness="0,1,0,0"
             CornerRadius="0,0,8,8">
             <ItemsControl ItemsSource="{Binding Buttons}">

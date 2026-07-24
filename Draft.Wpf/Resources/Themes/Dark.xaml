@@ -45,6 +45,7 @@
     <Color x:Key="Color.Border.MainWindow.Inactive">#3D3D3D</Color>
     <Color x:Key="Color.Border.SettingsWindow.Active">#3D3D3D</Color>
     <Color x:Key="Color.Border.SettingsWindow.Inactive">#3D3D3D</Color>
+    <Color x:Key="Color.Border.DialogDivider">#1C1C1C</Color>
 
     <!-- Text and Icon Colors -->
     <Color x:Key="Color.Text.Primary">#E2E2E6</Color>
