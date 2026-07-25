@@ -78,6 +78,11 @@
     <SolidColorBrush x:Key="Brush.Icon.WindowControlClose" Color="{DynamicResource Color.Icon.WindowControlClose}" />
     <SolidColorBrush x:Key="Brush.Control.ToggleThumb" Color="{DynamicResource Color.Control.ToggleThumb}" />
     <SolidColorBrush x:Key="Brush.Control.ToggleThumbDisabled" Color="{DynamicResource Color.Control.ToggleThumbDisabled}" />
+    <SolidColorBrush x:Key="Brush.Control.CheckBoxBackground" Color="{DynamicResource Color.Control.CheckBoxBackground}" />
+    <SolidColorBrush x:Key="Brush.Control.CheckBoxBorder" Color="{DynamicResource Color.Control.CheckBoxBorder}" />
+    <SolidColorBrush x:Key="Brush.Control.CheckBoxBorderHover" Color="{DynamicResource Color.Control.CheckBoxBorderHover}" />
+    <SolidColorBrush x:Key="Brush.Control.CheckBoxHoverBackground" Color="{DynamicResource Color.Control.CheckBoxHoverBackground}" />
+    <SolidColorBrush x:Key="Brush.Control.CheckmarkForeground" Color="{DynamicResource Color.Control.CheckmarkForeground}" />
 
     <!-- Functional Brushes -->
     <SolidColorBrush x:Key="Brush.Function.Success" Color="{DynamicResource Color.Function.Success}" />

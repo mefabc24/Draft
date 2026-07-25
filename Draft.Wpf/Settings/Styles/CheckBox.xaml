@@ -105,37 +105,74 @@
     </Style>
 
     <Style x:Key="SettingsSquareCheckBox" TargetType="CheckBox">
-        <Setter Property="Width" Value="18" />
-        <Setter Property="Height" Value="18" />
-        <Setter Property="Background" Value="{StaticResource Brush.Background.Surface}" />
-        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Input}" />
+        <Setter Property="MinHeight" Value="18" />
+        <Setter Property="Background" Value="{StaticResource Brush.Control.CheckBoxBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Control.CheckBoxBorder}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontFamily" Value="{StaticResource Font.Inter}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
                     <Grid
-                        Width="{TemplateBinding Width}"
-                        Height="{TemplateBinding Height}"
+                        MinHeight="{TemplateBinding MinHeight}"
                         Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ContentPresenter
+                            Margin="0,0,12,0"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            RecognizesAccessKey="True"
+                            TextElement.Foreground="{TemplateBinding Foreground}" />
+
                         <Border
                             x:Name="CheckBoxBorder"
+                            Grid.Column="1"
+                            Width="18"
+                            Height="18"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="3" />
+                            CornerRadius="5" />
 
                         <Viewbox
                             x:Name="Checkmark"
-                            Width="11"
-                            Height="11"
-                            HorizontalAlignment="Center"
+                            Grid.Column="1"
+                            Width="12"
+                            Height="12"
+                            Margin="0,0,3,0"
+                            HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Visibility="Collapsed">
-                            <Path
-                                Data="{StaticResource Icon.Checkmark}"
-                                Fill="{StaticResource Brush.Text.OnAccent}" />
+                            IsHitTestVisible="False"
+                            Opacity="0"
+                            RenderTransformOrigin="0.5,0.5">
+                            <Viewbox.RenderTransform>
+                                <ScaleTransform ScaleX="0.82" ScaleY="0.82" />
+                            </Viewbox.RenderTransform>
+                            <Canvas Width="16" Height="16">
+                                <Path
+                                    Data="M 3.5,8.2 L 6.3,11 L 12.5,4.6"
+                                    Fill="Transparent"
+                                    Stroke="{StaticResource Brush.Control.CheckmarkForeground}"
+                                    StrokeEndLineCap="Round"
+                                    StrokeLineJoin="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="2.3" />
+                            </Canvas>
                         </Viewbox>
                     </Grid>
 
@@ -143,7 +180,12 @@
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource Brush.Accent.Primary}" />
                             <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource Brush.Accent.Primary}" />
-                            <Setter TargetName="Checkmark" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Checkmark" Property="Opacity" Value="1" />
+                            <Setter TargetName="Checkmark" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                                </Setter.Value>
+                            </Setter>
                         </Trigger>
 
                         <MultiTrigger>
@@ -151,7 +193,8 @@
                                 <Condition Property="IsChecked" Value="False" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource Brush.Background.InputSubtleHover}" />
+                            <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource Brush.Control.CheckBoxHoverBackground}" />
+                            <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource Brush.Control.CheckBoxBorderHover}" />
                         </MultiTrigger>
 
                         <MultiTrigger>
@@ -164,7 +207,7 @@
                         </MultiTrigger>
 
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="CheckBoxBorder" Property="BorderThickness" Value="2" />
+                            <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource Brush.Control.CheckBoxBorderHover}" />
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">

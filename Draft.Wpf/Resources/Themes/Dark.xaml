@@ -74,6 +74,11 @@
     <Color x:Key="Color.Icon.WindowControlClose">#F1F1F1</Color>
     <Color x:Key="Color.Control.ToggleThumb">#ACABAA</Color>
     <Color x:Key="Color.Control.ToggleThumbDisabled">#4D4D4D</Color>
+    <Color x:Key="Color.Control.CheckBoxBackground">#131313</Color>
+    <Color x:Key="Color.Control.CheckBoxBorder">#2C2D2F</Color>
+    <Color x:Key="Color.Control.CheckBoxBorderHover">#34363A</Color>
+    <Color x:Key="Color.Control.CheckBoxHoverBackground">#1D1F20</Color>
+    <Color x:Key="Color.Control.CheckmarkForeground">#1B1B1B</Color>
 
     <!-- Functional Colors -->
     <Color x:Key="Color.Function.Success">#79A986</Color>
