@@ -50,7 +50,7 @@
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 IsChecked="{Binding Settings.SyncMarkdownThemeWithAppTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                Style="{StaticResource SettingsCheckBox}" />
+                                Style="{StaticResource SettingsSquareCheckBox}" />
                         </Grid>
                     </StackPanel>
                 </settings:SettingCard>

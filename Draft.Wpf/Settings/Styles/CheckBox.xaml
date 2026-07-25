@@ -103,4 +103,78 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="SettingsSquareCheckBox" TargetType="CheckBox">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Surface}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Input}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid
+                        Width="{TemplateBinding Width}"
+                        Height="{TemplateBinding Height}"
+                        Background="Transparent">
+                        <Border
+                            x:Name="CheckBoxBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3" />
+
+                        <Viewbox
+                            x:Name="Checkmark"
+                            Width="11"
+                            Height="11"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                            <Path
+                                Data="{StaticResource Icon.Checkmark}"
+                                Fill="{StaticResource Brush.Text.OnAccent}" />
+                        </Viewbox>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource Brush.Accent.Primary}" />
+                            <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource Brush.Accent.Primary}" />
+                            <Setter TargetName="Checkmark" Property="Visibility" Value="Visible" />
+                        </Trigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="False" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource Brush.Background.InputSubtleHover}" />
+                        </MultiTrigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource Brush.Accent.PrimaryHover}" />
+                            <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource Brush.Accent.PrimaryHover}" />
+                        </MultiTrigger>
+
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="CheckBoxBorder" Property="BorderThickness" Value="2" />
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="CheckBoxBorder" Property="Opacity" Value="0.45" />
+                            <Setter TargetName="Checkmark" Property="Opacity" Value="0.65" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>
