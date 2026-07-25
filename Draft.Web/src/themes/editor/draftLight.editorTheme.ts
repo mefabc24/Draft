@@ -2,6 +2,19 @@ import { draftLightTokens } from '../shared/themeTokens'
 import { createEditorChromeVariables } from './support/createEditorChromeVariables'
 import type { DraftEditorTheme } from './support/editorThemeTypes'
 
+const lightSyntaxColors = {
+  comment: '6B7280',
+  delimiter: '535455',
+  htmlAttribute: '7A3E9D',
+  keyword: '2F6FC4',
+  listMarker: '208647',
+  number: 'A96800',
+  quoteMarker: '7A3E9D',
+  string: '208647',
+  tag: '2F6FC4',
+  type: '7A3E9D',
+} as const
+
 export const draftLightEditorTheme: DraftEditorTheme = {
   base: 'vs',
   chromeVariables: createEditorChromeVariables(draftLightTokens, {
@@ -38,17 +51,37 @@ export const draftLightEditorTheme: DraftEditorTheme = {
   label: 'Draft Light',
   monacoThemeName: 'draft-light',
   rules: [
-    { token: 'comment', foreground: '767676' },
-    { token: 'keyword', foreground: '73AAFF' },
-    { token: 'keyword.heading.marker', foreground: '73AAFF' },
-    { token: 'keyword.heading.text', foreground: '73AAFF' },
-    { token: 'keyword.list.marker', foreground: '107C10' },
-    { token: 'markup.quote.marker', foreground: '8A5B00' },
-    { token: 'string', foreground: '107C10' },
-    { token: 'number', foreground: '8A5B00' },
-    { token: 'regexp', foreground: '7A3E9D' },
-    { token: 'type', foreground: '9A4F00' },
-    { token: 'delimiter', foreground: 'C42B1C' },
-    { token: 'delimiter.bracket', foreground: 'C42B1C' },
+    { token: 'comment', foreground: lightSyntaxColors.comment },
+    { token: 'keyword', foreground: lightSyntaxColors.keyword },
+    {
+      token: 'keyword.heading.marker',
+      foreground: lightSyntaxColors.keyword,
+    },
+    {
+      token: 'keyword.heading.text',
+      foreground: lightSyntaxColors.keyword,
+    },
+    {
+      token: 'keyword.list.marker',
+      foreground: lightSyntaxColors.listMarker,
+    },
+    {
+      token: 'markup.quote.marker',
+      foreground: lightSyntaxColors.quoteMarker,
+    },
+    { token: 'string', foreground: lightSyntaxColors.string },
+    { token: 'string.html', foreground: lightSyntaxColors.string },
+    { token: 'string.link', foreground: lightSyntaxColors.keyword },
+    { token: 'number', foreground: lightSyntaxColors.number },
+    { token: 'regexp', foreground: lightSyntaxColors.htmlAttribute },
+    { token: 'type', foreground: lightSyntaxColors.type },
+    { token: 'tag', foreground: lightSyntaxColors.tag },
+    {
+      token: 'attribute.name.html',
+      foreground: lightSyntaxColors.htmlAttribute,
+    },
+    { token: 'delimiter', foreground: lightSyntaxColors.delimiter },
+    { token: 'delimiter.bracket', foreground: lightSyntaxColors.delimiter },
+    { token: 'delimiter.html', foreground: lightSyntaxColors.delimiter },
   ],
 }
