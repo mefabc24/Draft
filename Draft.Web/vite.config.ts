@@ -3,6 +3,7 @@ import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { comparePreviewThemes } from './src/themes/preview/support/previewThemeOrder'
 
 const previewThemeIdPattern = /id:\s*['"](?<id>[^'"]+)['"]/u
 const previewThemeLabelPattern = /label:\s*['"](?<label>[^'"]+)['"]/u
@@ -30,17 +31,7 @@ function getPreviewThemeOptions() {
         ? [{ id, label, familyId, colorScheme }]
         : []
     })
-    .sort((left, right) => {
-      if (left.id === 'draftDark') {
-        return -1
-      }
-
-      if (right.id === 'draftDark') {
-        return 1
-      }
-
-      return left.label.localeCompare(right.label)
-    })
+    .sort(comparePreviewThemes)
 }
 
 function previewThemeManifestPlugin(): Plugin {

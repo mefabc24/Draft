@@ -4,15 +4,15 @@ import type { DraftEditorTheme } from './support/editorThemeTypes'
 
 const lightSyntaxColors = {
   comment: '6B7280',
-  delimiter: '535455',
+  delimiter: 'B42318',
   htmlAttribute: '7A3E9D',
   keyword: '2F6FC4',
-  listMarker: '208647',
-  number: 'A96800',
-  quoteMarker: '7A3E9D',
-  string: '208647',
-  tag: '2F6FC4',
-  type: '7A3E9D',
+  listMarker: '107C10',
+  number: 'A15C00',
+  quoteMarker: '9A6700',
+  string: '107C10',
+  tag: 'B42355',
+  type: 'A24B00',
 } as const
 
 export const draftLightEditorTheme: DraftEditorTheme = {

@@ -8,6 +8,7 @@ namespace Draft.Settings.Models;
 public static class MarkdownPreviewThemeCatalog
 {
     private const string DefaultThemeId = "draftDark";
+    private const string DefaultThemeFamilyId = "draft";
     private const string LightFallbackThemeId = "assistantLight";
     private const string DarkColorScheme = "dark";
     private const string LightColorScheme = "light";
@@ -161,8 +162,17 @@ public static class MarkdownPreviewThemeCatalog
         return options
             .GroupBy(option => option.Id, StringComparer.OrdinalIgnoreCase)
             .Select(group => group.First())
-            .OrderBy(option => option.Id == DefaultThemeId ? 0 : 1)
+            .OrderBy(option =>
+                string.Equals(
+                    option.FamilyId,
+                    DefaultThemeFamilyId,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? 0
+                    : 1)
+            .ThenBy(option => option.FamilyId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(option => GetColorSchemeOrder(option.ColorScheme))
             .ThenBy(option => option.Label, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(option => option.Id, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
 
@@ -347,6 +357,16 @@ public static class MarkdownPreviewThemeCatalog
     private static bool IsColorScheme(string value)
     {
         return value is DarkColorScheme or LightColorScheme;
+    }
+
+    private static int GetColorSchemeOrder(string colorScheme)
+    {
+        return colorScheme switch
+        {
+            DarkColorScheme => 0,
+            LightColorScheme => 1,
+            _ => 2,
+        };
     }
 
     private sealed record PreviewThemeManifest(PreviewThemeManifestOption[]? Themes);
