@@ -20,8 +20,6 @@ public sealed class FloatingMarkdownToolbarSettingsPageViewModel
         LoadItems(settings.FloatingMarkdownToolbarItems);
     }
 
-    public override object FixedControlsContent => this;
-
     public string FixedControlsSectionTitle => Translate(
         "settings.floatingMarkdownToolbar.sections.fixedControls",
         "FIXED CONTROLS");

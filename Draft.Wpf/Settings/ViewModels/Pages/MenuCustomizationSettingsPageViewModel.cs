@@ -35,8 +35,6 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
 
     public ObservableCollection<MenuCustomizationItemViewModel> DisabledItems { get; } = new();
 
-    public virtual object? FixedControlsContent => null;
-
     public string DefaultsSectionTitle => Translate(
         "settings.menuCustomization.sections.defaults",
         "DEFAULTS");

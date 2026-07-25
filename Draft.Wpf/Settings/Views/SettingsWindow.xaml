@@ -28,7 +28,7 @@
                 <settings:PreviewSettingsView />
             </DataTemplate>
             <DataTemplate DataType="{x:Type settingsVm:FloatingMarkdownToolbarSettingsPageViewModel}">
-                <settings:MenuCustomizationSettingsView />
+                <settings:FloatingMarkdownToolbarSettingsView />
             </DataTemplate>
             <DataTemplate DataType="{x:Type settingsVm:QuickInsertSettingsPageViewModel}">
                 <settings:MenuCustomizationSettingsView />
