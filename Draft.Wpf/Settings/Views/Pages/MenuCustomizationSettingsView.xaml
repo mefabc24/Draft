@@ -44,6 +44,35 @@
                             Style="{StaticResource SettingButton}" />
                     </controls:SettingCard>
 
+                    <ContentControl
+                        HorizontalContentAlignment="Stretch"
+                        Content="{Binding FixedControlsContent}">
+                        <ContentControl.ContentTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <controls:SectionHeader Title="{Binding FixedControlsSectionTitle}" />
+                                    <controls:SettingCard
+                                        Description="{Binding TextStylesDropdownDescription}"
+                                        controls:SettingsSearch.TargetId="heading"
+                                        Title="{Binding TextStylesDropdownLabel}">
+                                        <CheckBox
+                                            IsChecked="{Binding ShowTextStylesDropdown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Style="{StaticResource SettingsCheckBox}" />
+                                    </controls:SettingCard>
+                                    <controls:SettingCard
+                                        Margin="0,0,0,48"
+                                        Description="{Binding ListStylesDropdownDescription}"
+                                        controls:SettingsSearch.TargetId="list"
+                                        Title="{Binding ListStylesDropdownLabel}">
+                                        <CheckBox
+                                            IsChecked="{Binding ShowListStylesDropdown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Style="{StaticResource SettingsCheckBox}" />
+                                    </controls:SettingCard>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+
                     <controls:SectionHeader Title="{Binding VisibleSectionTitle}" />
                     <ItemsControl
                         x:Name="VisibleItemsControl"
