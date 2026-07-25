@@ -628,7 +628,7 @@
                                 VerticalAlignment="Stretch"
                                 Command="{Binding CancelSettingsCommand}"
                                 Content="{Binding CancelButtonText, FallbackValue=Cancel}"
-                                Style="{StaticResource MessageDialogSecondaryButton}" />
+                                Style="{StaticResource SettingsSecondaryButton}" />
                             <Button
                                 Width="160"
                                 Padding="24,0"

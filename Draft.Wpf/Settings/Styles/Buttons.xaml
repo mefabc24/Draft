@@ -47,10 +47,11 @@
         x:Key="SettingsSecondaryButton"
         BasedOn="{StaticResource SettingsButtonBase}"
         TargetType="Button">
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.Input}" />
         <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
-        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Default}" />
-        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -67,10 +68,10 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+                <Setter Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{StaticResource Brush.Background.Input}" />
+                <Setter Property="Background" Value="{StaticResource Brush.Background.SelectedHover}" />
             </Trigger>
         </Style.Triggers>
     </Style>
