@@ -23,13 +23,36 @@
                     Title="{i18n:Loc settings.appearance.appTheme}"
                     Margin="0,0,0,48"
                     Description="{i18n:Loc settings.appearance.appTheme.description}">
-                    <ComboBox
-                        Width="160"
-                        Height="36"
-                        ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
-                        ItemsSource="{Binding AppThemeOptions}"
-                        SelectedItem="{Binding Settings.AppTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsComboBox}" />
+                    <StackPanel Width="220">
+                        <ComboBox
+                            Height="36"
+                            HorizontalAlignment="Stretch"
+                            ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
+                            ItemsSource="{Binding AppThemeOptions}"
+                            SelectedItem="{Binding Settings.AppTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Style="{StaticResource SettingsComboBox}" />
+
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center"
+                                FontFamily="{StaticResource Font.Inter}"
+                                FontSize="11"
+                                Foreground="{StaticResource Brush.Text.Secondary}"
+                                Text="{i18n:Loc settings.appearance.syncMarkdownTheme}"
+                                TextWrapping="Wrap" />
+                            <CheckBox
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding Settings.SyncMarkdownThemeWithAppTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource SettingsCheckBox}" />
+                        </Grid>
+                    </StackPanel>
                 </settings:SettingCard>
 
                 <section:SectionHeader Title="{i18n:Loc settings.appearance.layoutSection}" />

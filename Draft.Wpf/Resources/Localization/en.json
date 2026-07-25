@@ -136,6 +136,7 @@
                          "settings.appearance":  "Appearance",
                          "settings.appearance.appTheme":  "App theme",
                          "settings.appearance.appTheme.description":  "Choose whether Draft uses dark or light mode.",
+                         "settings.appearance.syncMarkdownTheme":  "Match Markdown theme to app theme",
                          "settings.appearance.layoutSection":  "LAYOUT",
                          "settings.appearance.themeSection":  "THEME",
                          "settings.appearance.toolbarPosition":  "Toolbar position",

@@ -1,16 +1,26 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Draft.Theming;
 
 namespace Draft.Settings.Models;
 
 public static class MarkdownPreviewThemeCatalog
 {
     private const string DefaultThemeId = "draftDark";
+    private const string LightFallbackThemeId = "assistantLight";
+    private const string DarkColorScheme = "dark";
+    private const string LightColorScheme = "light";
     private const string ThemeManifestFileName = "preview-theme-options.json";
 
     private static readonly Regex ThemeIdRegex = new(@"id:\s*['""](?<id>[^'""]+)['""]", RegexOptions.Compiled);
     private static readonly Regex ThemeLabelRegex = new(@"label:\s*['""](?<label>[^'""]+)['""]", RegexOptions.Compiled);
+    private static readonly Regex ThemeFamilyIdRegex = new(
+        @"familyId:\s*['""](?<familyId>[^'""]+)['""]",
+        RegexOptions.Compiled);
+    private static readonly Regex ThemeColorSchemeRegex = new(
+        @"colorScheme:\s*['""](?<colorScheme>dark|light)['""]",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly JsonSerializerOptions ThemeManifestJsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -19,7 +29,41 @@ public static class MarkdownPreviewThemeCatalog
     private static readonly IReadOnlyList<MarkdownPreviewThemeOption> FallbackThemeOptions =
         new[]
         {
-            new MarkdownPreviewThemeOption(DefaultThemeId, SettingsDefaults.DefaultMarkdownTheme),
+            new MarkdownPreviewThemeOption(
+                "assistantDark",
+                "Assistant Dark",
+                "assistant",
+                DarkColorScheme),
+            new MarkdownPreviewThemeOption(
+                LightFallbackThemeId,
+                "Assistant Light",
+                "assistant",
+                LightColorScheme),
+            new MarkdownPreviewThemeOption(
+                DefaultThemeId,
+                SettingsDefaults.DefaultMarkdownTheme,
+                "draft",
+                DarkColorScheme),
+            new MarkdownPreviewThemeOption(
+                "draftLight",
+                "Draft Light",
+                "draft",
+                LightColorScheme),
+            new MarkdownPreviewThemeOption(
+                "repositoryDark",
+                "Repository Dark",
+                "repository",
+                DarkColorScheme),
+            new MarkdownPreviewThemeOption(
+                "repositoryLight",
+                "Repository Light",
+                "repository",
+                LightColorScheme),
+            new MarkdownPreviewThemeOption(
+                "theHub",
+                "The Hub",
+                "theHub",
+                DarkColorScheme),
         };
 
     public static IReadOnlyList<MarkdownPreviewThemeOption> ThemeOptions { get; } =
@@ -36,6 +80,51 @@ public static class MarkdownPreviewThemeCatalog
     public static string GetThemeLabel(string value)
     {
         return FindThemeOption(value)?.Label ?? GetDefaultThemeLabel();
+    }
+
+    public static string GetThemeLabelForAppTheme(string value, string appTheme)
+    {
+        string targetColorScheme = AppThemeCatalog.Normalize(appTheme) == AppThemeCatalog.Light
+            ? LightColorScheme
+            : DarkColorScheme;
+        MarkdownPreviewThemeOption? currentTheme = FindThemeOption(value);
+
+        if (currentTheme is not null
+            && string.Equals(
+                currentTheme.ColorScheme,
+                targetColorScheme,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return currentTheme.Label;
+        }
+
+        if (currentTheme is not null)
+        {
+            MarkdownPreviewThemeOption? counterpart = ThemeOptions.FirstOrDefault(option =>
+                string.Equals(
+                    option.FamilyId,
+                    currentTheme.FamilyId,
+                    StringComparison.OrdinalIgnoreCase)
+                && string.Equals(
+                    option.ColorScheme,
+                    targetColorScheme,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (counterpart is not null)
+                return counterpart.Label;
+        }
+
+        string fallbackThemeId = targetColorScheme == LightColorScheme
+            ? LightFallbackThemeId
+            : DefaultThemeId;
+        MarkdownPreviewThemeOption? fallback = FindThemeOption(fallbackThemeId)
+            ?? ThemeOptions.FirstOrDefault(option =>
+                string.Equals(
+                    option.ColorScheme,
+                    targetColorScheme,
+                    StringComparison.OrdinalIgnoreCase));
+
+        return fallback?.Label ?? GetDefaultThemeLabel();
     }
 
     private static MarkdownPreviewThemeOption? FindThemeOption(string value)
@@ -179,16 +268,28 @@ public static class MarkdownPreviewThemeCatalog
             string source = File.ReadAllText(filePath);
             Match idMatch = ThemeIdRegex.Match(source);
             Match labelMatch = ThemeLabelRegex.Match(source);
+            Match familyIdMatch = ThemeFamilyIdRegex.Match(source);
+            Match colorSchemeMatch = ThemeColorSchemeRegex.Match(source);
 
-            if (!idMatch.Success || !labelMatch.Success)
+            if (!idMatch.Success
+                || !labelMatch.Success
+                || !familyIdMatch.Success
+                || !colorSchemeMatch.Success)
+            {
                 return null;
+            }
 
             string id = idMatch.Groups["id"].Value.Trim();
             string label = labelMatch.Groups["label"].Value.Trim();
+            string familyId = familyIdMatch.Groups["familyId"].Value.Trim();
+            string colorScheme = colorSchemeMatch.Groups["colorScheme"].Value.Trim().ToLowerInvariant();
 
-            return string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(label)
+            return string.IsNullOrWhiteSpace(id)
+                || string.IsNullOrWhiteSpace(label)
+                || string.IsNullOrWhiteSpace(familyId)
+                || !IsColorScheme(colorScheme)
                 ? null
-                : new MarkdownPreviewThemeOption(id, label);
+                : new MarkdownPreviewThemeOption(id, label, familyId, colorScheme);
         }
         catch (IOException)
         {
@@ -232,18 +333,36 @@ public static class MarkdownPreviewThemeCatalog
     {
         string id = option.Id?.Trim() ?? string.Empty;
         string label = option.Label?.Trim() ?? string.Empty;
+        string familyId = option.FamilyId?.Trim() ?? string.Empty;
+        string colorScheme = option.ColorScheme?.Trim().ToLowerInvariant() ?? string.Empty;
 
-        return string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(label)
+        return string.IsNullOrWhiteSpace(id)
+            || string.IsNullOrWhiteSpace(label)
+            || string.IsNullOrWhiteSpace(familyId)
+            || !IsColorScheme(colorScheme)
             ? null
-            : new MarkdownPreviewThemeOption(id, label);
+            : new MarkdownPreviewThemeOption(id, label, familyId, colorScheme);
+    }
+
+    private static bool IsColorScheme(string value)
+    {
+        return value is DarkColorScheme or LightColorScheme;
     }
 
     private sealed record PreviewThemeManifest(PreviewThemeManifestOption[]? Themes);
 
-    private sealed record PreviewThemeManifestOption(string? Id, string? Label);
+    private sealed record PreviewThemeManifestOption(
+        string? Id,
+        string? Label,
+        string? FamilyId,
+        string? ColorScheme);
 }
 
-public sealed record MarkdownPreviewThemeOption(string Id, string Label)
+public sealed record MarkdownPreviewThemeOption(
+    string Id,
+    string Label,
+    string FamilyId,
+    string ColorScheme)
 {
     public override string ToString()
     {

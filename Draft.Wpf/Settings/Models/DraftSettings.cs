@@ -79,6 +79,8 @@ public sealed class DraftSettings
 
     public string AppTheme { get; set; } = SettingsDefaults.DefaultAppTheme;
 
+    public bool SyncMarkdownThemeWithAppTheme { get; set; } = true;
+
     public bool IsStatusBarVisible { get; set; } = true;
 
     public bool IsStatusBarFileTypeVisible { get; set; } = true;

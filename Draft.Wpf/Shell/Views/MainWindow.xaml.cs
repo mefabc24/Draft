@@ -696,6 +696,7 @@ public partial class MainWindow : Window
                 settings.QuickInsertMenuItems),
             ScrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection,
             AppTheme = settings.AppTheme,
+            SyncMarkdownThemeWithAppTheme = settings.SyncMarkdownThemeWithAppTheme,
             IsStatusBarVisible = settings.IsStatusBarVisible,
             IsStatusBarFileTypeVisible = settings.IsStatusBarFileTypeVisible,
             IsStatusBarEncodingVisible = settings.IsStatusBarEncodingVisible,

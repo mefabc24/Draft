@@ -110,8 +110,12 @@ public static class AppSettingsStore
         settings.AppLanguage = NormalizeAppLanguage(settings.AppLanguage);
         settings.DefaultSaveLocation = NormalizeSaveLocation(settings.DefaultSaveLocation);
         settings.DefaultFileExtension = DefaultFileExtension;
-        settings.MarkdownTheme = MarkdownPreviewThemeCatalog.GetThemeLabel(settings.MarkdownTheme);
         settings.AppTheme = AppThemeCatalog.Normalize(settings.AppTheme);
+        settings.MarkdownTheme = settings.SyncMarkdownThemeWithAppTheme
+            ? MarkdownPreviewThemeCatalog.GetThemeLabelForAppTheme(
+                settings.MarkdownTheme,
+                settings.AppTheme)
+            : MarkdownPreviewThemeCatalog.GetThemeLabel(settings.MarkdownTheme);
         settings.ToolbarControlbarPosition = DefaultToolbarPosition;
         settings.Shortcuts = ShortcutSettingsCatalog.Normalize(settings.Shortcuts);
         settings.WindowBorderAccentMode = IsWindowBorderAccentMode(settings.WindowBorderAccentMode)

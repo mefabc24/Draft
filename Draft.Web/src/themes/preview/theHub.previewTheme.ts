@@ -397,11 +397,13 @@ const theHubPreviewTypographyVariables = {
 } satisfies PreviewThemeVariables
 
 export const theHubPreviewTheme: DraftPreviewTheme = {
+  colorScheme: 'dark',
   cssVariables: {
     ...theHubPreviewColorVariables,
     ...theHubPreviewLayoutVariables,
     ...theHubPreviewTypographyVariables,
   },
+  familyId: 'theHub',
   id: 'theHub',
   label: 'The Hub',
   /**

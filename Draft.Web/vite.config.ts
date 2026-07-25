@@ -6,6 +6,10 @@ import { resolve } from 'node:path'
 
 const previewThemeIdPattern = /id:\s*['"](?<id>[^'"]+)['"]/u
 const previewThemeLabelPattern = /label:\s*['"](?<label>[^'"]+)['"]/u
+const previewThemeFamilyIdPattern =
+  /familyId:\s*['"](?<familyId>[^'"]+)['"]/u
+const previewThemeColorSchemePattern =
+  /colorScheme:\s*['"](?<colorScheme>dark|light)['"]/u
 
 function getPreviewThemeOptions() {
   const previewThemesPath = resolve(__dirname, 'src/themes/preview')
@@ -17,8 +21,14 @@ function getPreviewThemeOptions() {
       const id = previewThemeIdPattern.exec(source)?.groups?.id?.trim()
       const label =
         previewThemeLabelPattern.exec(source)?.groups?.label?.trim()
+      const familyId =
+        previewThemeFamilyIdPattern.exec(source)?.groups?.familyId?.trim()
+      const colorScheme =
+        previewThemeColorSchemePattern.exec(source)?.groups?.colorScheme?.trim()
 
-      return id && label ? [{ id, label }] : []
+      return id && label && familyId && colorScheme
+        ? [{ id, label, familyId, colorScheme }]
+        : []
     })
     .sort((left, right) => {
       if (left.id === 'draftDark') {
