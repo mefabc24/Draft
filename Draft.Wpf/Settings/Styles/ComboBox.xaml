@@ -211,7 +211,8 @@
                                     controls:ComboBoxScrollAssist.UseSingleItemMouseWheel="True"
                                     CanContentScroll="True"
                                     HorizontalScrollBarVisibility="Disabled"
-                                    VerticalScrollBarVisibility="Hidden">
+                                    Style="{DynamicResource SettingsCompactScrollViewer}"
+                                    VerticalScrollBarVisibility="Auto">
 
                                     <ItemsPresenter />
                                 </ScrollViewer>
