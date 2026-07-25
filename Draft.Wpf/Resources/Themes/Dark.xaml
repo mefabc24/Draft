@@ -21,6 +21,10 @@
     <Color x:Key="Color.Background.SelectedHover">#1F1F1F</Color>
     <Color x:Key="Color.Background.Popup">#181818</Color>
     <Color x:Key="Color.Background.DialogActions">#0D0D0D</Color>
+    <Color x:Key="Color.Background.DialogAction.Success">#79A986</Color>
+    <Color x:Key="Color.Background.DialogAction.Warning">#D3A760</Color>
+    <Color x:Key="Color.Background.DialogAction.Critical">#E25E5E</Color>
+    <Color x:Key="Color.Background.DialogAction.Info">#A5C8FF</Color>
     <Color x:Key="Color.Background.SecondaryButton">#202020</Color>
     <Color x:Key="Color.Background.SecondaryButtonHover">#282828</Color>
     <Color x:Key="Color.Background.ShortcutRecording">#202020</Color>

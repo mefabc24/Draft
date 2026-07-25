@@ -49,23 +49,23 @@
         x:Key="MessageDialogPrimaryButton"
         BasedOn="{StaticResource MessageDialogButtonBase}"
         TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource Brush.Function.Info}" />
+        <Setter Property="Background" Value="{StaticResource Brush.Background.DialogAction.Info}" />
         <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnInfo}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Static models:MessageDialogType.Error}">
-                <Setter Property="Background" Value="{StaticResource Brush.Function.Critical}" />
+                <Setter Property="Background" Value="{StaticResource Brush.Background.DialogAction.Critical}" />
                 <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnCritical}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Static models:MessageDialogType.Warning}">
-                <Setter Property="Background" Value="{StaticResource Brush.Function.Warning}" />
+                <Setter Property="Background" Value="{StaticResource Brush.Background.DialogAction.Warning}" />
                 <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnWarning}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Static models:MessageDialogType.Info}">
-                <Setter Property="Background" Value="{StaticResource Brush.Function.Info}" />
+                <Setter Property="Background" Value="{StaticResource Brush.Background.DialogAction.Info}" />
                 <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnInfo}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Static models:MessageDialogType.Success}">
-                <Setter Property="Background" Value="{StaticResource Brush.Function.Success}" />
+                <Setter Property="Background" Value="{StaticResource Brush.Background.DialogAction.Success}" />
                 <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnSuccess}" />
             </DataTrigger>
         </Style.Triggers>
