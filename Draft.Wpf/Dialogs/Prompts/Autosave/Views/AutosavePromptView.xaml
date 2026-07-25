@@ -28,7 +28,7 @@
                             Height="48"
                             Data="{StaticResource Icon.Dialog.Info}"
                             Stretch="Uniform"
-                            Stroke="{StaticResource Brush.Accent.Primary}"
+                            Stroke="{DynamicResource Brush.Accent.Primary}"
                             StrokeEndLineCap="Round"
                             StrokeLineJoin="Round"
                             StrokeStartLineCap="Round"
@@ -59,7 +59,7 @@
                         FontFamily="{StaticResource Font.Manrope}"
                         FontSize="24"
                         FontWeight="Bold"
-                        Foreground="{StaticResource Brush.Text.Primary}"
+                        Foreground="{DynamicResource Brush.Text.Primary}"
                         Text="{i18n:Loc autosave.title}"
                         TextAlignment="Center"
                         TextWrapping="Wrap" />
@@ -70,7 +70,7 @@
                         FontFamily="{StaticResource Font.Manrope}"
                         FontSize="16"
                         FontWeight="Regular"
-                        Foreground="{StaticResource Brush.Text.Secondary}"
+                        Foreground="{DynamicResource Brush.Text.Secondary}"
                         Text="{i18n:Loc autosave.description}"
                         TextAlignment="Center"
                         TextWrapping="Wrap" />
@@ -81,8 +81,8 @@
                     <Border
                         Margin="0,16"
                         Padding="16,24"
-                        Background="{StaticResource Brush.Background.Input}"
-                        BorderBrush="{StaticResource Brush.Border.Input}"
+                        Background="{DynamicResource Brush.Background.Input}"
+                        BorderBrush="{DynamicResource Brush.Border.Input}"
                         BorderThickness="1"
                         CornerRadius="4">
                         <Grid>
@@ -97,12 +97,12 @@
                                 FontFamily="{StaticResource Font.Manrope}"
                                 FontSize="14"
                                 FontWeight="Medium"
-                                Foreground="{StaticResource Brush.Text.Primary}"
+                                Foreground="{DynamicResource Brush.Text.Primary}"
                                 Text="{i18n:Loc autosave.enable}" />
 
                             <CheckBox
                                 Grid.Column="2"
-                                Background="{StaticResource Brush.Background.Toggle}"
+                                Background="{DynamicResource Brush.Background.Toggle}"
                                 IsChecked="{Binding AutosaveEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource SettingsCheckBox}" />
                         </Grid>
@@ -124,8 +124,8 @@
         <Border
             Grid.Row="1"
             Padding="16"
-            Background="{StaticResource Brush.Background.DialogActions}"
-            BorderBrush="{StaticResource Brush.Border.DialogDivider}"
+            Background="{DynamicResource Brush.Background.DialogActions}"
+            BorderBrush="{DynamicResource Brush.Border.DialogDivider}"
             BorderThickness="0,1,0,0"
             CornerRadius="0,0,8,8">
             <Grid>

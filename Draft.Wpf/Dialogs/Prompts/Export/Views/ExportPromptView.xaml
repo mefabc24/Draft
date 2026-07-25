@@ -27,7 +27,7 @@
                         Width="52"
                         Height="52"
                         Data="{StaticResource Icon.Export}"
-                        Fill="{StaticResource Brush.Accent.Primary}"
+                        Fill="{DynamicResource Brush.Accent.Primary}"
                         Margin="4,0,-4,0"
                         Stretch="Uniform" />
 
@@ -54,7 +54,7 @@
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="24"
                     FontWeight="Bold"
-                    Foreground="{StaticResource Brush.Text.Primary}"
+                    Foreground="{DynamicResource Brush.Text.Primary}"
                     Text="{i18n:Loc export.title}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
@@ -64,7 +64,7 @@
                     HorizontalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="16"
-                    Foreground="{StaticResource Brush.Text.Secondary}"
+                    Foreground="{DynamicResource Brush.Text.Secondary}"
                     Text="{i18n:Loc export.description}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
@@ -74,7 +74,7 @@
                         Margin="0,0,0,8"
                         FontFamily="{StaticResource Font.Inter}"
                         FontSize="11"
-                        Foreground="{StaticResource Brush.Text.Secondary}"
+                        Foreground="{DynamicResource Brush.Text.Secondary}"
                         Text="{i18n:Loc export.format}" />
                     <ComboBox
                         Height="40"
@@ -87,7 +87,7 @@
                         Margin="0,16,0,8"
                         FontFamily="{StaticResource Font.Inter}"
                         FontSize="11"
-                        Foreground="{StaticResource Brush.Text.Secondary}"
+                        Foreground="{DynamicResource Brush.Text.Secondary}"
                         Text="{i18n:Loc export.theme}" />
                     <ComboBox
                         Height="40"
@@ -102,8 +102,8 @@
         <Border
             Grid.Row="1"
             Padding="16"
-            Background="{StaticResource Brush.Background.DialogActions}"
-            BorderBrush="{StaticResource Brush.Border.DialogDivider}"
+            Background="{DynamicResource Brush.Background.DialogActions}"
+            BorderBrush="{DynamicResource Brush.Border.DialogDivider}"
             BorderThickness="0,1,0,0"
             CornerRadius="0,0,8,8">
             <Grid>

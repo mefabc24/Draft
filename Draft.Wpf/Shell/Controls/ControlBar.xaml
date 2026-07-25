@@ -11,8 +11,8 @@
     <Border
         Padding="8"
         HorizontalAlignment="Center"
-        Background="{StaticResource Brush.Island}"
-        BorderBrush="{StaticResource Brush.Outline}"
+        Background="{DynamicResource Brush.Island}"
+        BorderBrush="{DynamicResource Brush.Outline}"
         BorderThickness="1"
         CornerRadius="8">
         <Grid>
@@ -36,7 +36,7 @@
                 Style="{StaticResource LogoButton}" />
 
             <!-- Divider -->
-            <Border Grid.Column="1" Background="{StaticResource Brush.Background.Hover}" />
+            <Border Grid.Column="1" Background="{DynamicResource Brush.Background.Hover}" />
 
             <!-- Workspace Mode Buttons -->
             <StackPanel
@@ -65,7 +65,7 @@
             </StackPanel>
 
             <!-- Divider -->
-            <Border Grid.Column="3" Background="{StaticResource Brush.Background.Hover}" />
+            <Border Grid.Column="3" Background="{DynamicResource Brush.Background.Hover}" />
 
             <!-- Action Buttons -->
             <StackPanel
@@ -125,17 +125,17 @@
                                 Height="10">
                                 <Ellipse.Style>
                                     <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="{StaticResource Brush.Function.Success}" />
+                                        <Setter Property="Fill" Value="{DynamicResource Brush.Function.Success}" />
                                         <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding SaveStatusDotVisible}" Value="True">
                                                 <Setter Property="Visibility" Value="Visible" />
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding HasFilePath}" Value="False">
-                                                <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
+                                                <Setter Property="Fill" Value="{DynamicResource Brush.Function.Warning}" />
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding IsDirty}" Value="True">
-                                                <Setter Property="Fill" Value="{StaticResource Brush.Function.Warning}" />
+                                                <Setter Property="Fill" Value="{DynamicResource Brush.Function.Warning}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -327,7 +327,7 @@
             </StackPanel>
 
             <!-- Divider -->
-            <Border Grid.Column="5" Background="{StaticResource Brush.Background.Hover}" />
+            <Border Grid.Column="5" Background="{DynamicResource Brush.Background.Hover}" />
 
             <!-- Settings Button -->
             <Button

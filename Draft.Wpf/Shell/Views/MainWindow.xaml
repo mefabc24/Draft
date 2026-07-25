@@ -28,32 +28,32 @@
     <!-- Root: App Logic + Window Logic overlay -->
     <Grid x:Name="RootGrid">
         <!-- App Logic -->
-        <Border x:Name="WindowFrameBorder" Background="{StaticResource Brush.WindowBG}">
+        <Border x:Name="WindowFrameBorder" Background="{DynamicResource Brush.WindowBG}">
             <Border.Style>
                 <Style TargetType="Border">
-                    <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.MainWindow.Active}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border.MainWindow.Active}" />
                     <Setter Property="BorderThickness" Value="1" />
                     <Setter Property="CornerRadius" Value="8" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
-                            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.MainWindow.Inactive}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border.MainWindow.Inactive}" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding WindowBorderAccentMode}" Value="Always">
-                            <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource Brush.PrimaryAccent}" />
                         </DataTrigger>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
                                 <Condition Binding="{Binding WindowBorderAccentMode}" Value="FocusedWindowOnly" />
                                 <Condition Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
                             </MultiDataTrigger.Conditions>
-                            <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource Brush.PrimaryAccent}" />
                         </MultiDataTrigger>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
                                 <Condition Binding="{Binding WindowBorderAccentMode}" Value="UnfocusedWindowsOnly" />
                                 <Condition Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
                             </MultiDataTrigger.Conditions>
-                            <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource Brush.PrimaryAccent}" />
                         </MultiDataTrigger>
                         <DataTrigger Binding="{Binding IsWindowSnapped, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
                             <Setter Property="CornerRadius" Value="0" />
@@ -89,8 +89,8 @@
                         <Border
                             Grid.Row="1"
                             Panel.ZIndex="0"
-                            Background="{StaticResource Brush.Island}"
-                            BorderBrush="{StaticResource Brush.Outline}"
+                            Background="{DynamicResource Brush.Island}"
+                            BorderBrush="{DynamicResource Brush.Outline}"
                             BorderThickness="1"
                             CornerRadius="16">
                             <Grid>
@@ -99,7 +99,7 @@
                                 <Grid
                                     x:Name="WorkspaceLoaderOverlay"
                                     Panel.ZIndex="1"
-                                    Background="{StaticResource Brush.Island}">
+                                    Background="{DynamicResource Brush.Island}">
                                     <sharedControls:LoadingDots HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Grid>
                             </Grid>
@@ -113,8 +113,8 @@
                     Grid.Row="1"
                     Padding="24,4"
                     Panel.ZIndex="10"
-                    Background="{StaticResource Brush.Background.Surface}"
-                    BorderBrush="{StaticResource Brush.Border.Subtle}"
+                    Background="{DynamicResource Brush.Background.Surface}"
+                    BorderBrush="{DynamicResource Brush.Border.Subtle}"
                     BorderThickness="0,1,0,0">
                     <Border.Style>
                         <Style TargetType="Border">

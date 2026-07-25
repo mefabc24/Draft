@@ -32,13 +32,13 @@
                             FontFamily="{StaticResource Font.Manrope}"
                             FontSize="28"
                             FontWeight="Bold"
-                            Foreground="{StaticResource Brush.Text.Primary}"
+                            Foreground="{DynamicResource Brush.Text.Primary}"
                             Text="{i18n:Loc revertSave.title}" />
                         <TextBlock
                             Margin="0,0,0,8"
                             FontFamily="{StaticResource Font.Inter}"
                             FontSize="12"
-                            Foreground="{StaticResource Brush.Text.Secondary}"
+                            Foreground="{DynamicResource Brush.Text.Secondary}"
                             Text="{i18n:Loc revertSave.description}" />
 
                     </StackPanel>
@@ -88,8 +88,8 @@
         <Border
             Grid.Row="1"
             Padding="16"
-            Background="{StaticResource Brush.Background.DialogActions}"
-            BorderBrush="{StaticResource Brush.Border.DialogDivider}"
+            Background="{DynamicResource Brush.Background.DialogActions}"
+            BorderBrush="{DynamicResource Brush.Border.DialogDivider}"
             BorderThickness="0,1,0,0"
             CornerRadius="0,0,8,8">
             <Grid>

@@ -47,12 +47,12 @@
                         Stretch="Uniform">
                         <Path.Style>
                             <Style TargetType="Path">
-                                <Setter Property="Fill" Value="{StaticResource Brush.Icon.Default}" />
+                                <Setter Property="Fill" Value="{DynamicResource Brush.Icon.Default}" />
                                 <Style.Triggers>
                                     <DataTrigger
                                         Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}}"
                                         Value="True">
-                                        <Setter Property="Fill" Value="{StaticResource Brush.Icon.SubtleHover}" />
+                                        <Setter Property="Fill" Value="{DynamicResource Brush.Icon.SubtleHover}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -67,7 +67,7 @@
                     FontFamily="{StaticResource Font.Inter}"
                     FontSize="16"
                     FontWeight="Regular"
-                    Foreground="{StaticResource Brush.Text.Primary}"
+                    Foreground="{DynamicResource Brush.Text.Primary}"
                     Text="{Binding Title}"
                     TextWrapping="Wrap" />
 
@@ -91,7 +91,7 @@
             Opacity="0"
             RadiusX="6"
             RadiusY="6"
-            Stroke="{StaticResource Brush.Accent.Primary}"
+            Stroke="{DynamicResource Brush.Accent.Primary}"
             StrokeDashArray="5 3"
             StrokeDashCap="Round"
             StrokeThickness="1.5"

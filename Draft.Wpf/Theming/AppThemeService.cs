@@ -30,6 +30,8 @@ public sealed class AppThemeService
 
     public static AppThemeService Current { get; } = new();
 
+    private ResourceDictionary? _activeBrushDictionary;
+
     private AppThemeService()
     {
     }
@@ -55,7 +57,7 @@ public sealed class AppThemeService
         AppThemeDefinition theme = AppThemeCatalog.GetTheme(normalizedTheme);
         ResourceDictionary palette = new()
         {
-            Source = new Uri(theme.PaletteResourcePath, UriKind.Relative),
+            Source = new Uri(theme.PaletteResourcePath, UriKind.RelativeOrAbsolute),
         };
 
         IList<ResourceDictionary> dictionaries =
@@ -74,15 +76,36 @@ public sealed class AppThemeService
             dictionaries.Insert(0, palette);
         }
 
-        UpdateBrushColors(application, palette);
+        ReplaceBrushDictionary(dictionaries, CreateBrushDictionary(palette));
         ActiveThemeId = theme.Id;
         return theme.Id;
     }
 
-    private static void UpdateBrushColors(
-        Application application,
+    private void ReplaceBrushDictionary(
+        IList<ResourceDictionary> dictionaries,
+        ResourceDictionary brushes)
+    {
+        int brushDictionaryIndex = _activeBrushDictionary is null
+            ? -1
+            : dictionaries.IndexOf(_activeBrushDictionary);
+
+        if (brushDictionaryIndex >= 0)
+        {
+            dictionaries[brushDictionaryIndex] = brushes;
+        }
+        else
+        {
+            dictionaries.Add(brushes);
+        }
+
+        _activeBrushDictionary = brushes;
+    }
+
+    private static ResourceDictionary CreateBrushDictionary(
         ResourceDictionary palette)
     {
+        ResourceDictionary brushes = new();
+
         foreach (object key in palette.Keys)
         {
             if (key is not string colorKey
@@ -93,28 +116,25 @@ public sealed class AppThemeService
             }
 
             string brushKey = $"Brush.{colorKey["Color.".Length..]}";
-            UpdateBrushColor(application, brushKey, color);
+            brushes[brushKey] = CreateBrush(color);
         }
 
         foreach ((string brushKey, string colorKey) in LegacyBrushColorKeys)
         {
             if (palette[colorKey] is Color color)
             {
-                UpdateBrushColor(application, brushKey, color);
+                brushes[brushKey] = CreateBrush(color);
             }
         }
+
+        return brushes;
     }
 
-    private static void UpdateBrushColor(
-        Application application,
-        string brushKey,
-        Color color)
+    private static SolidColorBrush CreateBrush(Color color)
     {
-        if (application.TryFindResource(brushKey) is SolidColorBrush brush
-            && !brush.IsFrozen)
-        {
-            brush.Color = color;
-        }
+        SolidColorBrush brush = new(color);
+        brush.Freeze();
+        return brush;
     }
 
     private static int FindPaletteIndex(IList<ResourceDictionary> dictionaries)

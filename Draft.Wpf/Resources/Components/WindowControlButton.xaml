@@ -6,7 +6,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Height" Value="40" />
         <Setter Property="Width" Value="60" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.WindowControlIcon}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.WindowControlIcon}" />
         <Setter Property="Tag" Value="Default" />
         <Setter Property="controls:ControlButtonAssist.CornerRadius" Value="0" />
         <Setter Property="Template">
@@ -26,8 +26,8 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="Tag" Value="Close" />
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" Value="{StaticResource Brush.CloseButtonBackground}" />
-                            <Setter Property="Foreground" Value="{StaticResource Brush.Icon.WindowControlClose}" />
+                            <Setter Property="Background" Value="{DynamicResource Brush.CloseButtonBackground}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.Icon.WindowControlClose}" />
                         </MultiTrigger>
 
                         <!-- Default Hover -->
@@ -36,7 +36,7 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="Tag" Value="Default" />
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" Value="{StaticResource Brush.Background.WindowControlHover}" />
+                            <Setter Property="Background" Value="{DynamicResource Brush.Background.WindowControlHover}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

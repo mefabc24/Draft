@@ -49,7 +49,7 @@
     </DataTemplate>
 
     <Style x:Key="SettingsComboBoxItem" TargetType="ComboBoxItem">
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Primary}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="12,0" />
         <Setter Property="Height" Value="40" />
@@ -79,7 +79,7 @@
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center"
                                 Data="{StaticResource Icon.Checkmark}"
-                                Fill="{StaticResource Brush.Accent.Primary}"
+                                Fill="{DynamicResource Brush.Accent.Primary}"
                                 Stretch="Uniform"
                                 Visibility="Collapsed" />
                         </Grid>
@@ -87,12 +87,12 @@
 
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource Brush.Background.InputHover}" />
                         </Trigger>
 
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Brush.Background.Secondary}" />
-                            <Setter Property="Foreground" Value="{StaticResource Brush.Accent.Primary}" />
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource Brush.Background.Secondary}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.Accent.Primary}" />
                             <Setter TargetName="SelectedCheckmark" Property="Visibility" Value="Visible" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -102,9 +102,9 @@
     </Style>
 
     <Style x:Key="SettingsComboBox" TargetType="ComboBox">
-        <Setter Property="Background" Value="{StaticResource Brush.Background.Input}" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Input}" />
-        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Input}" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Background.Input}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Input}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border.Input}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{StaticResource Font.SpaceGrotesk}" />
         <Setter Property="FontWeight" Value="Regular" />
@@ -170,7 +170,7 @@
                                         Data="M 0.75 0.75 L 4 3.25 L 7.25 0.75"
                                         Fill="Transparent"
                                         RenderTransformOrigin="0.5,0.5"
-                                        Stroke="{StaticResource Brush.Text.Secondary}"
+                                        Stroke="{DynamicResource Brush.Text.Secondary}"
                                         StrokeEndLineCap="Round"
                                         StrokeLineJoin="Round"
                                         StrokeStartLineCap="Round"
@@ -194,8 +194,8 @@
 
                             <Border
                                 MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
-                                Background="{StaticResource Brush.Background.Popup}"
-                                BorderBrush="{StaticResource Brush.Border.Secondary}"
+                                Background="{DynamicResource Brush.Background.Popup}"
+                                BorderBrush="{DynamicResource Brush.Border.Secondary}"
                                 BorderThickness="1"
                                 CornerRadius="3">
                                 <Border.Effect>
@@ -222,12 +222,12 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter TargetName="MainBorder" Property="Background" Value="{StaticResource Brush.Background.InputSubtleHover}" />
-                            <Setter TargetName="Arrow" Property="Stroke" Value="{StaticResource Brush.Icon.SubtleHover}" />
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource Brush.Background.InputSubtleHover}" />
+                            <Setter TargetName="Arrow" Property="Stroke" Value="{DynamicResource Brush.Icon.SubtleHover}" />
                         </Trigger>
 
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                            <Setter TargetName="Arrow" Property="Stroke" Value="{StaticResource Brush.Text.Primary}" />
+                            <Setter TargetName="Arrow" Property="Stroke" Value="{DynamicResource Brush.Text.Primary}" />
                         </Trigger>
 
                         <Trigger Property="IsDropDownOpen" Value="True">
@@ -261,15 +261,15 @@
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
-                            <Setter TargetName="Arrow" Property="Stroke" Value="{StaticResource Brush.Text.Primary}" />
+                            <Setter TargetName="Arrow" Property="Stroke" Value="{DynamicResource Brush.Text.Primary}" />
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="MainBorder" Property="Opacity" Value="0.5" />
-                            <Setter Property="Foreground" Value="{StaticResource Brush.Text.Disabled}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Disabled}" />
 
                             <Setter TargetName="Arrow" Property="Opacity" Value="0.5" />
-                            <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource Brush.Text.Disabled}" />
+                            <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Brush.Text.Disabled}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

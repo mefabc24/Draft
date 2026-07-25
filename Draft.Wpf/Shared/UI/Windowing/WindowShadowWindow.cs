@@ -43,7 +43,6 @@ internal sealed class WindowShadowWindow : Window
         _shadowFrame = new Border
         {
             Margin = new Thickness(ShadowMargin),
-            Background = FindBrush(backgroundResourceKey, Brushes.Black),
             CornerRadius = new CornerRadius(8),
             Effect = new System.Windows.Media.Effects.DropShadowEffect
             {
@@ -54,6 +53,9 @@ internal sealed class WindowShadowWindow : Window
                 Color = FindColor("Color.Shadow.Default", Colors.Black),
             },
         };
+        _shadowFrame.SetResourceReference(
+            Border.BackgroundProperty,
+            backgroundResourceKey);
 
         Content = _shadowFrame;
         SourceInitialized += WindowShadowWindow_SourceInitialized;
@@ -222,11 +224,6 @@ internal sealed class WindowShadowWindow : Window
     private void Owner_Closed(object? sender, EventArgs e)
     {
         StopTrackingOwner();
-    }
-
-    private static Brush FindBrush(string key, Brush fallback)
-    {
-        return Application.Current?.TryFindResource(key) as Brush ?? fallback;
     }
 
     private static Color FindColor(string key, Color fallback)

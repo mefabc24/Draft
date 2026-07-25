@@ -26,14 +26,14 @@
                     FontFamily="{StaticResource Font.Inter}"
                     FontSize="16"
                     FontWeight="Regular"
-                    Foreground="{StaticResource Brush.Text.Primary}"
+                    Foreground="{DynamicResource Brush.Text.Primary}"
                     Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:SettingCard}}, FallbackValue='Header'}"
                     TextWrapping="Wrap" />
                 <TextBlock
                     Margin="0,8,0,0"
                     FontFamily="{StaticResource Font.Inter}"
                     FontSize="11"
-                    Foreground="{StaticResource Brush.Text.Secondary}"
+                    Foreground="{DynamicResource Brush.Text.Secondary}"
                     Text="{Binding Description, RelativeSource={RelativeSource AncestorType={x:Type local:SettingCard}}, FallbackValue='Description Text'}"
                     TextWrapping="Wrap" />
             </StackPanel>

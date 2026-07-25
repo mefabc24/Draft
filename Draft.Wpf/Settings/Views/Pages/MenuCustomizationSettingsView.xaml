@@ -84,7 +84,7 @@
             IsHitTestVisible="False">
             <Border
                 x:Name="DragPreviewCard"
-                Background="{StaticResource Brush.Background.Secondary}"
+                Background="{DynamicResource Brush.Background.Secondary}"
                 CornerRadius="6"
                 Opacity="0.76"
                 SnapsToDevicePixels="True"
