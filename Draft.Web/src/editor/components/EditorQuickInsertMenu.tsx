@@ -50,7 +50,6 @@ import type {
   EditorQuickInsertMenuPosition,
 } from '../hooks/useEditorQuickInsertMenu'
 import {
-  canShowEditorQuickInsertEntry,
   editorQuickInsertMenuEntries,
   getConfiguredEditorQuickInsertEntries,
   type EditorQuickInsertIconName,
@@ -219,8 +218,13 @@ function isEditableMenuTarget(target: EventTarget | null) {
 function shouldAdvanceToNextEmptyLine(
   target: EditorQuickInsertMenuAnchor | null,
   keepOpen: boolean,
+  insertAsBlock: boolean,
 ) {
-  return keepOpen && target?.mode === 'replace-line'
+  return (
+    keepOpen &&
+    (target?.mode === 'replace-line' ||
+      (target?.mode === 'insert-at-cursor' && insertAsBlock))
+  )
 }
 
 function EditorQuickInsertMenu({
@@ -363,10 +367,15 @@ function EditorQuickInsertMenu({
   ])
 
   const runCommand = useCallback(
-    (command: EditorQuickInsertCommand, keepOpen = false) => {
+    (
+      command: EditorQuickInsertCommand,
+      insertAsBlock: boolean,
+      keepOpen = false,
+    ) => {
       const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
         target,
         keepOpen,
+        insertAsBlock,
       )
       const runAction = () => {
         if (!editor || target === null) {
@@ -375,6 +384,7 @@ function EditorQuickInsertMenu({
 
         const result = runEditorQuickInsertCommand(editor, target, command, {
           advanceToNextEmptyLine,
+          insertAsBlock,
         })
 
         return result ? result.nextLineNumber : null
@@ -396,6 +406,7 @@ function EditorQuickInsertMenu({
       const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
         target,
         keepOpen,
+        true,
       )
       const runAction = () => {
         if (!editor || target === null) {
@@ -430,6 +441,7 @@ function EditorQuickInsertMenu({
       const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
         target,
         keepOpen,
+        true,
       )
       const runAction = () => {
         if (!editor || target === null) {
@@ -464,6 +476,7 @@ function EditorQuickInsertMenu({
       const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
         target,
         keepOpen,
+        false,
       )
       const runAction = () => {
         if (!editor || target === null) {
@@ -498,6 +511,7 @@ function EditorQuickInsertMenu({
       const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
         target,
         keepOpen,
+        false,
       )
       const runAction = () => {
         if (!editor || target === null) {
@@ -532,6 +546,7 @@ function EditorQuickInsertMenu({
       const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
         target,
         keepOpen,
+        false,
       )
       const runAction = () => {
         if (!editor || target === null) {
@@ -566,6 +581,7 @@ function EditorQuickInsertMenu({
       const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
         target,
         keepOpen,
+        true,
       )
       const runAction = () => {
         if (!editor || target === null) {
@@ -600,6 +616,7 @@ function EditorQuickInsertMenu({
       const advanceToNextEmptyLine = shouldAdvanceToNextEmptyLine(
         target,
         keepOpen,
+        false,
       )
       const runAction = () => {
         if (!editor || target === null) {
@@ -642,7 +659,11 @@ function EditorQuickInsertMenu({
           label={t(labelKey, entry.label)}
           nested={nested}
           onSelect={(event) => {
-            runCommand(entry.command, shouldKeepQuickInsertOpen(event))
+            runCommand(
+              entry.command,
+              !entry.canInsertIntoNonEmptyLine,
+              shouldKeepQuickInsertOpen(event),
+            )
           }}
           shortcut={entry.shortcut}
         />
@@ -653,14 +674,11 @@ function EditorQuickInsertMenu({
 
   const renderCalloutSectionChildren = useCallback(
     (entry: EditorQuickInsertSectionEntry) => {
-      const visibleChildren = entry.children.filter((childEntry) =>
-        canShowEditorQuickInsertEntry(childEntry, target?.mode ?? null),
-      )
-      const primaryChildren = visibleChildren.slice(
+      const primaryChildren = entry.children.slice(
         0,
         QUICK_INSERT_VISIBLE_CALLOUT_COUNT,
       )
-      const extraChildren = visibleChildren.slice(
+      const extraChildren = entry.children.slice(
         QUICK_INSERT_VISIBLE_CALLOUT_COUNT,
       )
 
@@ -710,15 +728,11 @@ function EditorQuickInsertMenu({
         </>
       )
     },
-    [extraCalloutsExpanded, renderCommandItem, t, target],
+    [extraCalloutsExpanded, renderCommandItem, t],
   )
 
   const renderMenuEntry = useCallback(
     (entry: EditorQuickInsertMenuEntry) => {
-      if (!canShowEditorQuickInsertEntry(entry, target?.mode ?? null)) {
-        return null
-      }
-
       if (entry.type === 'item') {
         return renderCommandItem(entry)
       }
@@ -778,14 +792,9 @@ function EditorQuickInsertMenu({
           ) : entry.id === 'callouts' ? (
             renderCalloutSectionChildren(entry)
           ) : (
-            entry.children
-              .filter((childEntry) =>
-                canShowEditorQuickInsertEntry(
-                  childEntry,
-                  target?.mode ?? null,
-                ),
-              )
-              .map((childEntry) => renderCommandItem(childEntry, true))
+            entry.children.map((childEntry) =>
+              renderCommandItem(childEntry, true),
+            )
           )}
         </EditorQuickInsertMenuSection>
       )
@@ -803,7 +812,6 @@ function EditorQuickInsertMenu({
       renderCommandItem,
       shouldKeepQuickInsertOpen,
       t,
-      target,
     ],
   )
 
@@ -814,12 +822,10 @@ function EditorQuickInsertMenu({
   const primaryEntries = getConfiguredEditorQuickInsertEntries(
     quickInsertItems,
     'Visible',
-    target.mode,
   )
   const overflowEntries = getConfiguredEditorQuickInsertEntries(
     quickInsertItems,
     'Overflow',
-    target.mode,
   )
 
   if (primaryEntries.length === 0 && overflowEntries.length === 0) {

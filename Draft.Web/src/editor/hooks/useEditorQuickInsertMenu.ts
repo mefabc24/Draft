@@ -258,10 +258,7 @@ export function useEditorQuickInsertMenu(
       if (
         !editor ||
         !editorBody ||
-        !hasAvailableEditorQuickInsertEntries(
-          quickInsertItems,
-          anchor.mode,
-        )
+        !hasAvailableEditorQuickInsertEntries(quickInsertItems)
       ) {
         closeMenu()
         return
@@ -303,10 +300,7 @@ export function useEditorQuickInsertMenu(
   useEffect(() => {
     if (
       !menuTarget ||
-      hasAvailableEditorQuickInsertEntries(
-        quickInsertItems,
-        menuTarget.mode,
-      )
+      hasAvailableEditorQuickInsertEntries(quickInsertItems)
     ) {
       return undefined
     }

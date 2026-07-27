@@ -58,10 +58,7 @@ function EmptyLineInsertButton({
     [hoveredLine],
   )
   const canShowButton = hoveredLine
-    ? hasAvailableEditorQuickInsertEntries(
-        quickInsertItems,
-        hoveredLine.mode,
-      )
+    ? hasAvailableEditorQuickInsertEntries(quickInsertItems)
     : false
 
   if (!editor) {
