@@ -129,7 +129,7 @@
 
                         <ContentPresenter
                             Grid.Column="1"
-                            Margin="12,0,0,0"
+                            Margin="8,0,0,0"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Content="{TemplateBinding Content}"
