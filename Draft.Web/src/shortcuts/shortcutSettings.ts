@@ -129,9 +129,7 @@ function splitShortcutParts(shortcut: string) {
 }
 
 export function isValidShortcutBinding(shortcut: string) {
-  return splitShortcutParts(shortcut).some(
-    (part) => normalizeModifierName(part) === null,
-  )
+  return splitShortcutParts(shortcut).length > 0
 }
 
 function normalizeModifierName(part: string): ShortcutModifierName | null {

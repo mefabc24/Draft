@@ -75,7 +75,7 @@ public static class ShortcutConflictDetector
 
         if (!ShortcutNormalizer.TryNormalizeKeyboardShortcut(
             shortcut,
-            allowModifierOnly: hasFixedMouseGesture,
+            allowModifierOnly: true,
             removeLegacyMouseGestures: hasFixedMouseGesture,
             out string normalizedShortcut,
             out ShortcutKeyboardIdentity keyboardIdentity))

@@ -9,6 +9,7 @@ import {
   eventMatchesShortcutAction,
   getMonacoShortcutKeybinding,
 } from '../../shortcuts/shortcutMatching'
+import { registerNativeMonacoShortcutFallback } from '../../shortcuts/registerNativeMonacoShortcutFallback'
 import { useTranslation } from '../../localization/useTranslation'
 import {
   applyHeadingStyle,
@@ -302,7 +303,84 @@ export function useToolbarKeyboardCommands({
       }),
     ]
 
+    const nativeShortcutSubscription = registerNativeMonacoShortcutFallback(
+      editor,
+      shortcutBindings,
+      [
+        {
+          actionId: shortcutActionIds.toolbarBold,
+          commandId: 'draft.markdownToolbar.bold',
+        },
+        {
+          actionId: shortcutActionIds.toolbarItalic,
+          commandId: 'draft.markdownToolbar.italic',
+        },
+        {
+          actionId: shortcutActionIds.toolbarUnderline,
+          commandId: 'draft.markdownToolbar.underline',
+        },
+        {
+          actionId: shortcutActionIds.toolbarInlineCode,
+          commandId: 'draft.markdownToolbar.inlineCode',
+        },
+        {
+          actionId: shortcutActionIds.toolbarSpoiler,
+          commandId: 'draft.markdownToolbar.spoiler',
+        },
+        {
+          actionId: shortcutActionIds.toolbarHighlight,
+          commandId: 'draft.markdownToolbar.highlight',
+        },
+        {
+          actionId: shortcutActionIds.toolbarComment,
+          commandId: 'draft.markdownToolbar.comment',
+        },
+        {
+          actionId: shortcutActionIds.toolbarStrikethrough,
+          commandId: 'draft.markdownToolbar.strikethrough',
+        },
+        {
+          actionId: shortcutActionIds.toolbarLink,
+          commandId: 'draft.markdownToolbar.link',
+        },
+        {
+          actionId: shortcutActionIds.toolbarImage,
+          commandId: 'draft.markdownToolbar.image',
+        },
+        {
+          actionId: shortcutActionIds.toolbarHeading1,
+          commandId: 'draft.markdownToolbar.heading1',
+        },
+        {
+          actionId: shortcutActionIds.toolbarHeading2,
+          commandId: 'draft.markdownToolbar.heading2',
+        },
+        {
+          actionId: shortcutActionIds.toolbarHeading3,
+          commandId: 'draft.markdownToolbar.heading3',
+        },
+        {
+          actionId: shortcutActionIds.toolbarHeading4,
+          commandId: 'draft.markdownToolbar.heading4',
+        },
+        {
+          actionId: shortcutActionIds.toolbarHeading5,
+          commandId: 'draft.markdownToolbar.heading5',
+        },
+        {
+          actionId: shortcutActionIds.toolbarHeading6,
+          commandId: 'draft.markdownToolbar.heading6',
+        },
+        {
+          actionId: shortcutActionIds.toolbarNormalText,
+          commandId: 'draft.markdownToolbar.normal',
+        },
+      ],
+    )
+
     return () => {
+      nativeShortcutSubscription.dispose()
+
       for (const action of actions) {
         action.dispose()
       }

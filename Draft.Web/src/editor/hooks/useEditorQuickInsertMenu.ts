@@ -10,6 +10,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import {
   getMonacoShortcutKeybinding,
 } from '../../shortcuts/shortcutMatching'
+import { registerNativeMonacoShortcutFallback } from '../../shortcuts/registerNativeMonacoShortcutFallback'
 import {
   shortcutActionIds,
   type ShortcutBindings,
@@ -425,23 +426,31 @@ export function useEditorQuickInsertMenu(
       return
     }
 
+    const keybinding = getMonacoShortcutKeybinding(
+      shortcutBindings,
+      shortcutActionIds.quickInsertOpenMenu,
+    )
     const action = editor.addAction({
       id: 'draft.editorQuickInsert.openMenu',
       label: t('commands.quickInsert.openMenu'),
-      keybindings: (() => {
-        const keybinding = getMonacoShortcutKeybinding(
-          shortcutBindings,
-          shortcutActionIds.quickInsertOpenMenu,
-        )
-
-        return keybinding === null ? [] : [keybinding]
-      })(),
+      keybindings: keybinding === null ? [] : [keybinding],
       run: () => {
         openMenuAtCursor()
       },
     })
+    const nativeShortcutSubscription = registerNativeMonacoShortcutFallback(
+      editor,
+      shortcutBindings,
+      [
+        {
+          actionId: shortcutActionIds.quickInsertOpenMenu,
+          commandId: 'draft.editorQuickInsert.openMenu',
+        },
+      ],
+    )
 
     return () => {
+      nativeShortcutSubscription.dispose()
       action.dispose()
     }
   }, [editor, openMenuAtCursor, shortcutBindings, t])
