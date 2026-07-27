@@ -123,12 +123,13 @@
                         MinHeight="{TemplateBinding MinHeight}"
                         Background="Transparent">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <ContentPresenter
-                            Margin="0,0,12,0"
+                            Grid.Column="1"
+                            Margin="12,0,0,0"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Content="{TemplateBinding Content}"
@@ -139,10 +140,10 @@
 
                         <Border
                             x:Name="CheckBoxBorder"
-                            Grid.Column="1"
+                            Grid.Column="0"
                             Width="18"
                             Height="18"
-                            HorizontalAlignment="Right"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -151,11 +152,11 @@
 
                         <Viewbox
                             x:Name="Checkmark"
-                            Grid.Column="1"
+                            Grid.Column="0"
                             Width="12"
                             Height="12"
-                            Margin="0,0,3,0"
-                            HorizontalAlignment="Right"
+                            Margin="3,0,0,0"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             IsHitTestVisible="False"
                             Opacity="0"

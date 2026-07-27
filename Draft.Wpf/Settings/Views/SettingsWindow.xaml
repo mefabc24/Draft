@@ -18,6 +18,17 @@
     <Window.Resources>
         <ResourceDictionary>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <Style
+                x:Key="{x:Static SystemParameters.FocusVisualStyleKey}"
+                TargetType="{x:Type Control}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Control}">
+                            <Border Background="Transparent" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
             <DataTemplate DataType="{x:Type settingsVm:GeneralSettingsPageViewModel}">
                 <settings:GeneralSettingsView />
             </DataTemplate>
