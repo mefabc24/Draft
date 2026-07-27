@@ -22,7 +22,7 @@ Bug fixes and maintenance tasks are tracked separately in [GitHub Issues](https:
 
 ## v3.3.0
 
-- [ ] [Add app-wide light mode support](https://github.com/mefabc24/Draft/issues/31)
+- [x] [Add app-wide light mode support](https://github.com/mefabc24/Draft/issues/31)
 
 ## v3.4.0
 
