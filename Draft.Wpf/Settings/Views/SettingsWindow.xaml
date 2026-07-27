@@ -10,6 +10,8 @@
     Title="{Binding SettingsTitle, FallbackValue=Settings}"
     Width="900"
     Height="600"
+    MinWidth="800"
+    MinHeight="550"
     AllowsTransparency="True"
     Background="Transparent"
     Icon="/Assets/Icons/draft.ico"
@@ -18,6 +20,17 @@
     <Window.Resources>
         <ResourceDictionary>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <Style
+                x:Key="{x:Static SystemParameters.FocusVisualStyleKey}"
+                TargetType="{x:Type Control}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Control}">
+                            <Border Background="Transparent" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
             <DataTemplate DataType="{x:Type settingsVm:GeneralSettingsPageViewModel}">
                 <settings:GeneralSettingsView />
             </DataTemplate>
@@ -28,7 +41,7 @@
                 <settings:PreviewSettingsView />
             </DataTemplate>
             <DataTemplate DataType="{x:Type settingsVm:FloatingMarkdownToolbarSettingsPageViewModel}">
-                <settings:MenuCustomizationSettingsView />
+                <settings:FloatingMarkdownToolbarSettingsView />
             </DataTemplate>
             <DataTemplate DataType="{x:Type settingsVm:QuickInsertSettingsPageViewModel}">
                 <settings:MenuCustomizationSettingsView />
@@ -138,10 +151,10 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ResultBackground" Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+                                    <Setter TargetName="ResultBackground" Property="Background" Value="{DynamicResource Brush.Background.Hover}" />
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter TargetName="ResultBackground" Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
+                                    <Setter TargetName="ResultBackground" Property="Background" Value="{DynamicResource Brush.Background.InputHover}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -158,32 +171,32 @@
             ResizeBorderThickness="6" />
     </WindowChrome.WindowChrome>
 
-    <Border x:Name="SettingsWindowFrameBorder" Background="{StaticResource Brush.Island}">
+    <Border x:Name="SettingsWindowFrameBorder" Background="{DynamicResource Brush.Island}">
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.SettingsWindow.Active}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border.SettingsWindow.Active}" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="CornerRadius" Value="8" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
-                        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.SettingsWindow.Inactive}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border.SettingsWindow.Inactive}" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding AppliedWindowBorderAccentMode}" Value="Always">
-                        <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.PrimaryAccent}" />
                     </DataTrigger>
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding AppliedWindowBorderAccentMode}" Value="FocusedWindowOnly" />
                             <Condition Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
                         </MultiDataTrigger.Conditions>
-                        <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.PrimaryAccent}" />
                     </MultiDataTrigger>
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding AppliedWindowBorderAccentMode}" Value="UnfocusedWindowsOnly" />
                             <Condition Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
                         </MultiDataTrigger.Conditions>
-                        <Setter Property="BorderBrush" Value="{StaticResource Brush.PrimaryAccent}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.PrimaryAccent}" />
                     </MultiDataTrigger>
                     <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
                         <Setter Property="BorderBrush" Value="Transparent" />
@@ -219,7 +232,7 @@
                                 FontFamily="{StaticResource Font.Manrope}"
                                 FontSize="20"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource Brush.PrimaryAccent}"
+                                Foreground="{DynamicResource Brush.PrimaryAccent}"
                                 Text="{Binding SettingsTitle, FallbackValue=Settings}" />
                             <Button
                                 Grid.Column="1"
@@ -233,7 +246,7 @@
                                     Width="12"
                                     Height="12"
                                     Data="{StaticResource Icon.Undo}"
-                                    Fill="{StaticResource Brush.Text.Secondary}"
+                                    Fill="{DynamicResource Brush.Text.Secondary}"
                                     Stretch="Uniform" />
                             </Button>
                         </Grid>
@@ -242,15 +255,15 @@
                             FontFamily="{StaticResource Font.Inter}"
                             FontSize="11"
                             FontWeight="Regular"
-                            Foreground="{StaticResource Brush.Text.Secondary}"
+                            Foreground="{DynamicResource Brush.Text.Secondary}"
                             Text="{Binding SettingsConfigurationLabel, FallbackValue=Configuration}" />
 
                         <Border
                             x:Name="GlobalSettingsSearchBorder"
                             Height="38"
                             Margin="0,20,0,0"
-                            Background="{StaticResource Brush.Background.Window}"
-                            BorderBrush="{StaticResource Brush.Background.Secondary}"
+                            Background="{DynamicResource Brush.Background.Window}"
+                            BorderBrush="{DynamicResource Brush.Border.Secondary}"
                             BorderThickness="1"
                             CornerRadius="4">
                             <Grid>
@@ -265,7 +278,7 @@
                                     Margin="11,0,0,0"
                                     VerticalAlignment="Center"
                                     Data="{StaticResource Icon.Search}"
-                                    Fill="{StaticResource Brush.Text.Placeholder}"
+                                    Fill="{DynamicResource Brush.Text.Placeholder}"
                                     IsHitTestVisible="False"
                                     Stretch="Uniform" />
 
@@ -298,15 +311,15 @@
                                 <Border
                                     Width="{Binding ActualWidth, ElementName=GlobalSettingsSearchBorder}"
                                     MaxHeight="300"
-                                    Background="{StaticResource SettingsComboBoxPopupBackground}"
-                                    BorderBrush="{StaticResource Brush.Background.Secondary}"
+                                    Background="{DynamicResource Brush.Background.Popup}"
+                                    BorderBrush="{DynamicResource Brush.Border.Secondary}"
                                     BorderThickness="1"
                                     CornerRadius="4"
                                     DataContext="{Binding DataContext, ElementName=GlobalSettingsSearchBorder}">
                                     <Border.Effect>
                                         <DropShadowEffect
                                             BlurRadius="16"
-                                            Color="{StaticResource Color.Shadow.Default}"
+                                            Color="{DynamicResource Color.Shadow.Default}"
                                             Direction="270"
                                             Opacity="0.32"
                                             RenderingBias="Quality"
@@ -339,14 +352,14 @@
                                                         FontFamily="{StaticResource Font.Inter}"
                                                         FontSize="13"
                                                         FontWeight="Medium"
-                                                        Foreground="{StaticResource Brush.Text.Primary}"
+                                                        Foreground="{DynamicResource Brush.Text.Primary}"
                                                         Text="{Binding Title}"
                                                         TextTrimming="CharacterEllipsis" />
                                                     <TextBlock
                                                         Margin="0,2,0,0"
                                                         FontFamily="{StaticResource Font.Inter}"
                                                         FontSize="11"
-                                                        Foreground="{StaticResource Brush.Text.Secondary}"
+                                                        Foreground="{DynamicResource Brush.Text.Secondary}"
                                                         Text="{Binding PageTitle}"
                                                         TextTrimming="CharacterEllipsis" />
                                                 </StackPanel>
@@ -558,7 +571,7 @@
             </Border>
 
             <!-- Divider -->
-            <Border Grid.Column="1" Background="{StaticResource Brush.Border.Default}" />
+            <Border Grid.Column="1" Background="{DynamicResource Brush.Border.Default}" />
 
 
             <!-- Content -->
@@ -580,7 +593,7 @@
                             FontFamily="{StaticResource Font.Manrope}"
                             FontSize="32"
                             FontWeight="Bold"
-                            Foreground="{StaticResource Brush.Text.Primary}"
+                            Foreground="{DynamicResource Brush.Text.Primary}"
                             Style="{StaticResource SettingsPageTitleTransition}"
                             Text="{Binding CurrentSettingsPage.Title, FallbackValue='Page Title', NotifyOnTargetUpdated=True}" />
 
@@ -614,7 +627,7 @@
                             VerticalAlignment="Center"
                             FontFamily="{StaticResource Font.Inter}"
                             FontSize="11"
-                            Foreground="{StaticResource Brush.Function.Critical}"
+                            Foreground="{DynamicResource Brush.Function.Critical}"
                             Text="{Binding ShortcutConflictSummary}"
                             TextWrapping="Wrap"
                             Visibility="{Binding HasShortcutConflicts, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -628,13 +641,14 @@
                                 VerticalAlignment="Stretch"
                                 Command="{Binding CancelSettingsCommand}"
                                 Content="{Binding CancelButtonText, FallbackValue=Cancel}"
-                                Style="{StaticResource MessageDialogSecondaryButton}" />
+                                Style="{StaticResource SettingsSecondaryButton}" />
                             <Button
                                 Width="160"
                                 Padding="24,0"
                                 VerticalAlignment="Stretch"
                                 Command="{Binding ApplySettingsCommand}"
                                 Content="{Binding ApplyChangesButtonText, FallbackValue='Apply Changes'}"
+                                Foreground="{DynamicResource Brush.Text.OnAccent}"
                                 Style="{StaticResource MessageDialogPrimaryButton}" />
                         </StackPanel>
                     </Grid>

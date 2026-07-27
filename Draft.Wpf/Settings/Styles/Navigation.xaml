@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="SettingsMenuRadioButton" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
         <Setter Property="FontFamily" Value="{StaticResource Font.Manrope}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Medium" />
@@ -20,13 +20,13 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.Secondary}" />
-                            <Setter Property="Foreground" Value="{StaticResource Brush.Accent.Primary}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Brush.Background.Secondary}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.Accent.Primary}" />
                             <Setter Property="FontWeight" Value="Bold" />
                         </Trigger>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.Secondary}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Brush.Background.Secondary}" />
                             <Setter Property="Cursor" Value="Hand" />
                         </Trigger>
 
@@ -36,7 +36,7 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.Background.SelectedHover}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Brush.Background.SelectedHover}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -46,7 +46,7 @@
 
     <Style x:Key="SettingsSubmenuRadioButton" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
         <Setter Property="FontFamily" Value="{StaticResource Font.Manrope}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Medium" />
@@ -65,13 +65,13 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{StaticResource Brush.Background.SelectedHover}" />
-                            <Setter Property="Foreground" Value="{StaticResource Brush.Accent.Primary}" />
+                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{DynamicResource Brush.Background.SelectedHover}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.Accent.Primary}" />
                             <Setter Property="FontWeight" Value="Bold" />
                         </Trigger>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
+                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{DynamicResource Brush.Background.InputHover}" />
                             <Setter Property="Cursor" Value="Hand" />
                         </Trigger>
 
@@ -80,7 +80,7 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
+                            <Setter TargetName="SubmenuBorder" Property="Background" Value="{DynamicResource Brush.Background.InputHover}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -90,7 +90,7 @@
 
     <Style x:Key="SettingsMenuExpanderHeader" TargetType="ToggleButton">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
         <Setter Property="FontFamily" Value="{StaticResource Font.Manrope}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Medium" />
@@ -142,7 +142,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.Hover}" />
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="{DynamicResource Brush.Background.Hover}" />
                         </Trigger>
 
                         <Trigger Property="IsChecked" Value="True">
@@ -176,7 +176,7 @@
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
-                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.InputHover}" />
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="{DynamicResource Brush.Background.InputHover}" />
                             <Setter TargetName="HeaderBorder" Property="CornerRadius" Value="8,8,0,0" />
                             <Setter Property="FontWeight" Value="Bold" />
                         </Trigger>
@@ -186,7 +186,7 @@
                                 <Condition Property="IsChecked" Value="True" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="HeaderBorder" Property="Background" Value="{StaticResource Brush.Background.SelectedHover}" />
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="{DynamicResource Brush.Background.SelectedHover}" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -196,7 +196,7 @@
 
     <Style x:Key="SettingsMenuExpander" TargetType="Expander">
         <Setter Property="Margin" Value="0,0,0,4" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
         <Setter Property="FontFamily" Value="{StaticResource Font.Manrope}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Medium" />
@@ -214,7 +214,7 @@
                             <Border
                                 x:Name="ExpandedBackground"
                                 Grid.Row="1"
-                                Background="{StaticResource Brush.Background.Secondary}"
+                                Background="{DynamicResource Brush.Background.Secondary}"
                                 CornerRadius="0,0,8,8"
                                 IsHitTestVisible="False"
                                 Opacity="0" />

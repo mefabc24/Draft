@@ -33,14 +33,14 @@
                     Height="16"
                     Margin="0,0,8,0"
                     Data="{StaticResource Icon.Markdown}"
-                    Fill="{StaticResource Brush.SecondaryAccent}"
+                    Fill="{DynamicResource Brush.SecondaryAccent}"
                     Stretch="Uniform" />
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="10"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource Brush.SecondaryAccent}"
+                    Foreground="{DynamicResource Brush.SecondaryAccent}"
                     Text="{i18n:Loc status.fileTypeMarkdown}" />
             </StackPanel>
 
@@ -54,14 +54,14 @@
                     Height="14"
                     Margin="0,0,8,0"
                     Data="{StaticResource Icon.Encoding}"
-                    Fill="{StaticResource Brush.PrimaryText}"
+                    Fill="{DynamicResource Brush.PrimaryText}"
                     Stretch="Uniform" />
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="10"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource Brush.PrimaryText}"
+                    Foreground="{DynamicResource Brush.PrimaryText}"
                     Text="UTF-8" />
             </StackPanel>
 
@@ -78,14 +78,14 @@
                     Height="14"
                     Margin="0,0,8,0"
                     Data="{StaticResource Icon.File}"
-                    Fill="{StaticResource Brush.PrimaryText}"
+                    Fill="{DynamicResource Brush.PrimaryText}"
                     Stretch="Uniform" />
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="10"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource Brush.PrimaryText}"
+                    Foreground="{DynamicResource Brush.PrimaryText}"
                     Text="{Binding WordCountDisplay, FallbackValue='69 WORDS'}" />
             </StackPanel>
 
@@ -100,14 +100,14 @@
                     Height="16"
                     Margin="0,0,8,0"
                     Data="{StaticResource Icon.Chars}"
-                    Fill="{StaticResource Brush.PrimaryText}"
+                    Fill="{DynamicResource Brush.PrimaryText}"
                     Stretch="Uniform" />
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="10"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource Brush.PrimaryText}"
+                    Foreground="{DynamicResource Brush.PrimaryText}"
                     Text="{Binding CharacterCountDisplay, FallbackValue='0 CHARS'}" />
             </StackPanel>
         </StackPanel>
@@ -128,7 +128,7 @@
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="10"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource Brush.PrimaryText}"
+                    Foreground="{DynamicResource Brush.PrimaryText}"
                     Text="{Binding CursorPositionDisplay, FallbackValue='LN 1, COL 1'}" />
             </Button>
 
@@ -223,7 +223,7 @@
                         Height="14"
                         Margin="0,0,8,0"
                         Data="{StaticResource Icon.Dialog.Warning}"
-                        Stroke="{StaticResource Brush.Function.Warning}"
+                        Stroke="{DynamicResource Brush.Function.Warning}"
                         StrokeEndLineCap="Round"
                         StrokeLineJoin="Round"
                         StrokeStartLineCap="Round"
@@ -234,7 +234,7 @@
                         FontFamily="{StaticResource Font.Manrope}"
                         FontSize="10"
                         FontWeight="SemiBold"
-                        Foreground="{StaticResource Brush.Function.Warning}"
+                        Foreground="{DynamicResource Brush.Function.Warning}"
                         Text="{i18n:Loc status.reportBug}" />
                 </StackPanel>
             </Button>
@@ -252,7 +252,7 @@
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="10"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource Brush.PrimaryText}"
+                    Foreground="{DynamicResource Brush.PrimaryText}"
                     Text="{Binding AppVersionDisplay, FallbackValue='2.0.0'}" />
             </Button>
 

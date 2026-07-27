@@ -13,7 +13,7 @@
     UseLayoutRounding="True"
     mc:Ignorable="d">
     <Border
-        Background="{StaticResource Brush.Accent.Primary}"
+        Background="{DynamicResource Brush.Accent.Primary}"
         CornerRadius="3">
         <Grid>
             <TextBlock
@@ -22,7 +22,7 @@
                 FontFamily="{StaticResource Font.Inter}"
                 FontSize="9"
                 FontWeight="Bold"
-                Foreground="{StaticResource Brush.Background.Input}"
+                Foreground="{DynamicResource Brush.Text.OnBadge}"
                 Text="{i18n:Loc common.beta}"
                 TextAlignment="Center"
                 TextOptions.TextFormattingMode="Display">

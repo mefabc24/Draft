@@ -1,0 +1,36 @@
+<UserControl
+    x:Class="Draft.Settings.Views.Pages.FloatingMarkdownToolbarSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Draft.Settings.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:settings="clr-namespace:Draft.Settings.Views.Pages"
+    d:DesignHeight="2000"
+    d:DesignWidth="540"
+    mc:Ignorable="d">
+    <settings:MenuCustomizationSettingsView>
+        <settings:MenuCustomizationSettingsView.AdditionalContent>
+            <StackPanel>
+                <controls:SectionHeader Title="{Binding FixedControlsSectionTitle}" />
+                <controls:SettingCard
+                    Description="{Binding TextStylesDropdownDescription}"
+                    controls:SettingsSearch.TargetId="heading"
+                    Title="{Binding TextStylesDropdownLabel}">
+                    <CheckBox
+                        IsChecked="{Binding ShowTextStylesDropdown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </controls:SettingCard>
+                <controls:SettingCard
+                    Margin="0,0,0,48"
+                    Description="{Binding ListStylesDropdownDescription}"
+                    controls:SettingsSearch.TargetId="list"
+                    Title="{Binding ListStylesDropdownLabel}">
+                    <CheckBox
+                        IsChecked="{Binding ShowListStylesDropdown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource SettingsCheckBox}" />
+                </controls:SettingCard>
+            </StackPanel>
+        </settings:MenuCustomizationSettingsView.AdditionalContent>
+    </settings:MenuCustomizationSettingsView>
+</UserControl>

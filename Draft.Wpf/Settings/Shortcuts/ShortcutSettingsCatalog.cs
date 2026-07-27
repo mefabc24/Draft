@@ -362,7 +362,7 @@ public static class ShortcutSettingsCatalog
     {
         return ShortcutNormalizer.TryNormalizeKeyboardShortcut(
             shortcut,
-            allowModifierOnly: false,
+            allowModifierOnly: true,
             removeLegacyMouseGestures: false,
             out _,
             out _);
@@ -396,7 +396,7 @@ public static class ShortcutSettingsCatalog
 
         return ShortcutNormalizer.TryNormalizeKeyboardShortcut(
             shortcut,
-            allowModifierOnly: hasFixedMouseGesture,
+            allowModifierOnly: true,
             removeLegacyMouseGestures: hasFixedMouseGesture,
             out normalizedShortcut,
             out _);

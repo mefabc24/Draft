@@ -26,10 +26,10 @@
                 TextWrapping="Wrap">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Primary}" />
+                        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Primary}" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsUpdateAvailable, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource Brush.Function.Success}" />
+                                <Setter Property="Foreground" Value="{DynamicResource Brush.Function.Success}" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -47,16 +47,16 @@
                     <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsUpdateAvailable, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}}" Value="True">
-                                <Setter Property="Background" Value="{StaticResource Brush.Accent.Primary}" />
+                                <Setter Property="Background" Value="{DynamicResource Brush.Accent.Primary}" />
                                 <Setter Property="BorderThickness" Value="0" />
-                                <Setter Property="Foreground" Value="{StaticResource Brush.Text.OnAccent}" />
+                                <Setter Property="Foreground" Value="{DynamicResource Brush.Text.OnAccent}" />
                             </DataTrigger>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
                                     <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
                                     <Condition Binding="{Binding IsUpdateAvailable, RelativeSource={RelativeSource AncestorType={x:Type local:UpdateSettingCard}}}" Value="True" />
                                 </MultiDataTrigger.Conditions>
-                                <Setter Property="Background" Value="{StaticResource Brush.Accent.PrimaryHover}" />
+                                <Setter Property="Background" Value="{DynamicResource Brush.Accent.PrimaryHover}" />
                             </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>

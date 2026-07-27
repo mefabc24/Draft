@@ -11,6 +11,13 @@ namespace Draft.Settings.Views.Pages;
 
 public partial class MenuCustomizationSettingsView : UserControl
 {
+    public static readonly DependencyProperty AdditionalContentProperty =
+        DependencyProperty.Register(
+            nameof(AdditionalContent),
+            typeof(object),
+            typeof(MenuCustomizationSettingsView),
+            new PropertyMetadata(null));
+
     private const double AutoScrollEdgeSize = 48;
     private const double AutoScrollStep = 14;
     private const double MouseWheelScrollFactor = 0.34;
@@ -28,6 +35,12 @@ public partial class MenuCustomizationSettingsView : UserControl
             Interval = TimeSpan.FromMilliseconds(30),
         };
         _autoScrollTimer.Tick += AutoScrollTimer_Tick;
+    }
+
+    public object? AdditionalContent
+    {
+        get => GetValue(AdditionalContentProperty);
+        set => SetValue(AdditionalContentProperty, value);
     }
 
     private void Card_DragRequested(

@@ -12,6 +12,7 @@ import {
   eventMatchesShortcutAction,
   getMonacoShortcutKeybinding,
 } from '../../shortcuts/shortcutMatching'
+import { registerNativeMonacoShortcutFallback } from '../../shortcuts/registerNativeMonacoShortcutFallback'
 import { registerPressedShortcutKeyTracker } from '../../shortcuts/pressedShortcutKeys'
 import { useTranslation } from '../../localization/useTranslation'
 import { getEditorTheme, registerEditorThemes } from '../../themes'
@@ -763,6 +764,67 @@ export function useMonacoMarkdownEditor({
         }),
       )
     }
+
+    actions.push(
+      registerNativeMonacoShortcutFallback(
+        editor,
+        shortcutBindings,
+        [
+          {
+            actionId: shortcutActionIds.editorUndo,
+            commandId: 'draft.editor.undo',
+          },
+          {
+            actionId: shortcutActionIds.editorRedo,
+            commandId: 'draft.editor.redo',
+          },
+          {
+            actionId: shortcutActionIds.editorDuplicateLine,
+            commandId: 'draft.editor.duplicateLine',
+          },
+          {
+            actionId: shortcutActionIds.editorToggleLineCapitalization,
+            commandId: 'draft.editor.toggleLineCapitalization',
+          },
+          {
+            actionId: shortcutActionIds.editorUppercaseSelection,
+            commandId: 'draft.editor.uppercaseSelection',
+          },
+          {
+            actionId: shortcutActionIds.editorLowercaseSelection,
+            commandId: 'draft.editor.lowercaseSelection',
+          },
+          {
+            actionId: shortcutActionIds.editorMoveLineUp,
+            commandId: 'draft.editor.moveLineUp',
+          },
+          {
+            actionId: shortcutActionIds.editorMoveLineDown,
+            commandId: 'draft.editor.moveLineDown',
+          },
+          {
+            actionId: shortcutActionIds.editorMoveCursorWordLeft,
+            commandId: 'draft.editor.moveCursorWordLeft',
+          },
+          {
+            actionId: shortcutActionIds.editorMoveCursorWordRight,
+            commandId: 'draft.editor.moveCursorWordRight',
+          },
+          {
+            actionId: shortcutActionIds.editorMoveCursorNextLineStart,
+            commandId: 'draft.editor.moveCursorNextLineStart',
+          },
+          {
+            actionId: shortcutActionIds.editorExtendSelectionWordLeft,
+            commandId: 'draft.editor.extendSelectionWordLeft',
+          },
+          {
+            actionId: shortcutActionIds.editorExtendSelectionWordRight,
+            commandId: 'draft.editor.extendSelectionWordRight',
+          },
+        ],
+      ),
+    )
 
     return () => {
       for (const action of actions) {

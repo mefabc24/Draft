@@ -1,5 +1,6 @@
 import { DEFAULT_PREVIEW_THEME_ID } from '../../../settings/themeSettings'
 import type { DraftPreviewTheme } from './previewThemeTypes'
+import { comparePreviewThemes } from './previewThemeOrder'
 
 type PreviewThemeModule = {
   default: DraftPreviewTheme
@@ -22,15 +23,5 @@ export function getPreviewTheme(themeId: string): DraftPreviewTheme {
 }
 
 export function getPreviewThemeOptions() {
-  return Object.values(previewThemes).sort((left, right) => {
-    if (left.id === DEFAULT_PREVIEW_THEME_ID) {
-      return -1
-    }
-
-    if (right.id === DEFAULT_PREVIEW_THEME_ID) {
-      return 1
-    }
-
-    return left.label.localeCompare(right.label)
-  })
+  return Object.values(previewThemes).sort(comparePreviewThemes)
 }

@@ -396,11 +396,13 @@ const draftDarkPreviewTypographyVariables = {
 } satisfies PreviewThemeVariables
 
 export const draftDarkPreviewTheme: DraftPreviewTheme = {
+  colorScheme: 'dark',
   cssVariables: {
     ...draftDarkPreviewColorVariables,
     ...draftDarkPreviewLayoutVariables,
     ...draftDarkPreviewTypographyVariables,
   },
+  familyId: 'draft',
   id: 'draftDark',
   label: 'Draft Dark',
   /**

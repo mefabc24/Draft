@@ -15,7 +15,7 @@
             <Style BasedOn="{StaticResource ShortcutRecorderBorder}" TargetType="Border">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding HasValidationError, ElementName=Root}" Value="True">
-                        <Setter Property="BorderBrush" Value="{StaticResource Brush.Function.Critical}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Function.Critical}" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>

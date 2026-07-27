@@ -23,14 +23,27 @@
                     Title="{i18n:Loc settings.appearance.appTheme}"
                     Margin="0,0,0,48"
                     Description="{i18n:Loc settings.appearance.appTheme.description}">
-                    <ComboBox
-                        Width="160"
-                        Height="36"
-                        IsEnabled="False"
-                        ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
-                        ItemsSource="{Binding AppThemeOptions}"
-                        SelectedItem="{Binding Settings.AppTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource SettingsComboBox}" />
+                    <StackPanel Width="220">
+                        <ComboBox
+                            Height="36"
+                            HorizontalAlignment="Stretch"
+                            ItemTemplate="{StaticResource LocalizedComboBoxItemTemplate}"
+                            ItemsSource="{Binding AppThemeOptions}"
+                            SelectedItem="{Binding Settings.AppTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Style="{StaticResource SettingsComboBox}" />
+
+                        <Grid Margin="0,12,0,0">
+                            <CheckBox
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding Settings.SyncMarkdownThemeWithAppTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource SettingsSquareCheckBox}">
+                                <TextBlock
+                                    Text="{i18n:Loc settings.appearance.syncMarkdownTheme}"
+                                    TextWrapping="Wrap" />
+                            </CheckBox>
+                        </Grid>
+                    </StackPanel>
                 </settings:SettingCard>
 
                 <section:SectionHeader Title="{i18n:Loc settings.appearance.layoutSection}" />

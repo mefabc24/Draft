@@ -4,18 +4,14 @@
     xmlns:controls="clr-namespace:Draft.Settings.Controls">
 
     <SolidColorBrush
-        x:Key="ShortcutRecorderActiveBackground"
-        Color="#202020" />
-
-    <SolidColorBrush
         x:Key="ShortcutRecorderButtonHoverBackground"
         Opacity="0.08"
-        Color="{StaticResource Color.Text.Secondary}" />
+        Color="{DynamicResource Color.Text.Secondary}" />
 
     <SolidColorBrush
         x:Key="ShortcutRecorderActiveButtonHoverBackground"
         Opacity="0.16"
-        Color="{StaticResource Color.Function.Critical}" />
+        Color="{DynamicResource Color.Function.Critical}" />
 
     <Style x:Key="ShortcutRecorderControl" TargetType="{x:Type controls:ShortcutRecorder}">
         <Setter Property="Focusable" Value="True" />
@@ -30,23 +26,23 @@
         <Setter Property="MinHeight" Value="36" />
         <Setter Property="Padding" Value="12,0,4,0" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
-        <Setter Property="Background" Value="{StaticResource Brush.Background.Input}" />
-        <Setter Property="BorderBrush" Value="{StaticResource Brush.Border.Input}" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Background.Input}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border.Input}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4"/>
         <Setter Property="CornerRadius" Value="3" />
         <Setter Property="Effect" Value="{x:Null}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsRecording, RelativeSource={RelativeSource AncestorType={x:Type controls:ShortcutRecorder}}}" Value="True">
-                <Setter Property="Background" Value="{StaticResource ShortcutRecorderActiveBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource Brush.Function.Critical}" />
+                <Setter Property="Background" Value="{DynamicResource Brush.Background.ShortcutRecording}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Brush.Function.Critical}" />
                 <Setter Property="Effect">
                     <Setter.Value>
                         <DropShadowEffect
                             BlurRadius="14"
                             Opacity="0.8"
                             ShadowDepth="0"
-                            Color="{StaticResource Color.Function.Critical}" />
+                            Color="{DynamicResource Color.Function.Critical}" />
                     </Setter.Value>
                 </Setter>
             </DataTrigger>
@@ -58,12 +54,12 @@
         <Setter Property="FontFamily" Value="{StaticResource Font.SpaceGrotesk}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="TextWrapping" Value="NoWrap" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsRecording, RelativeSource={RelativeSource AncestorType={x:Type controls:ShortcutRecorder}}}" Value="True">
-                <Setter Property="Foreground" Value="{StaticResource Brush.Function.Critical}" />
+                <Setter Property="Foreground" Value="{DynamicResource Brush.Function.Critical}" />
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -76,7 +72,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.Text.Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text.Secondary}" />
         <Setter Property="ToolTip" Value="Record shortcut" />
         <Setter Property="Template">
             <Setter.Value>
@@ -97,7 +93,7 @@
             </Trigger>
 
             <DataTrigger Binding="{Binding IsRecording, RelativeSource={RelativeSource AncestorType={x:Type controls:ShortcutRecorder}}}" Value="True">
-                <Setter Property="Foreground" Value="{StaticResource Brush.Function.Critical}" />
+                <Setter Property="Foreground" Value="{DynamicResource Brush.Function.Critical}" />
                 <Setter Property="ToolTip" Value="Recording shortcut. Click to stop." />
             </DataTrigger>
 
@@ -107,7 +103,7 @@
                     <Condition Binding="{Binding IsRecording, RelativeSource={RelativeSource AncestorType={x:Type controls:ShortcutRecorder}}}" Value="True" />
                 </MultiDataTrigger.Conditions>
                 <Setter Property="Background" Value="{StaticResource ShortcutRecorderActiveButtonHoverBackground}" />
-                <Setter Property="Foreground" Value="{StaticResource Brush.Function.Critical}" />
+                <Setter Property="Foreground" Value="{DynamicResource Brush.Function.Critical}" />
             </MultiDataTrigger>
 
         </Style.Triggers>

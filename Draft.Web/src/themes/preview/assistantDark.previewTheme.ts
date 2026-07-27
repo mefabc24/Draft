@@ -397,11 +397,13 @@ const assistantDarkPreviewTypographyVariables = {
 } satisfies PreviewThemeVariables
 
 export const assistantDarkPreviewTheme: DraftPreviewTheme = {
+  colorScheme: 'dark',
   cssVariables: {
     ...assistantDarkPreviewColorVariables,
     ...assistantDarkPreviewLayoutVariables,
     ...assistantDarkPreviewTypographyVariables,
   },
+  familyId: 'assistant',
   id: 'assistantDark',
   label: 'Assistant Dark',
   /**

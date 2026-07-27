@@ -76,6 +76,9 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
                 continue;
             }
 
+            if (TryLoadFixedItem(customization))
+                continue;
+
             MenuCustomizationItemViewModel item = new(
                 this,
                 definition,
@@ -86,10 +89,14 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
 
     public List<MenuItemCustomization> CaptureItems()
     {
-        IEnumerable<MenuItemCustomization> capturedItems = VisibleItems
-            .Concat(OverflowItems)
-            .Concat(DisabledItems)
-            .Select(item => new MenuItemCustomization(item.Id, item.Placement));
+        IEnumerable<MenuItemCustomization> capturedItems = CaptureFixedItems()
+            .Concat(
+                VisibleItems
+                    .Concat(OverflowItems)
+                    .Concat(DisabledItems)
+                    .Select(item => new MenuItemCustomization(
+                        item.Id,
+                        item.Placement)));
 
         return _normalizeItems(capturedItems);
     }
@@ -179,6 +186,12 @@ public abstract class MenuCustomizationSettingsPageViewModel : SettingsPageViewM
 
     internal string Translate(string key, string fallback)
         => LocalizationService.Translate(key, fallback, Settings.AppLanguage);
+
+    protected virtual bool TryLoadFixedItem(MenuItemCustomization item)
+        => false;
+
+    protected virtual IEnumerable<MenuItemCustomization> CaptureFixedItems()
+        => Array.Empty<MenuItemCustomization>();
 
     private void ResetToDefaults()
     {

@@ -10,6 +10,7 @@ using Draft.Save.Models;
 using Draft.Settings.Shortcuts;
 using Draft.Shell.Services;
 using Draft.Shell.ViewModels;
+using Draft.Theming;
 using Draft.WebWorkspace.Services;
 using Microsoft.Web.WebView2.Core;
 using System.ComponentModel;
@@ -85,9 +86,10 @@ public partial class MainWindow : Window
 
     public MainWindow(MainWindowViewModel viewModel, DraftSettings settings)
     {
+        _settings = AppSettingsStore.Normalize(settings);
+        AppThemeService.Current.Apply(_settings.AppTheme);
         InitializeComponent();
         _externalLinkService = new ExternalLinkService();
-        _settings = AppSettingsStore.Normalize(settings);
         LocalizationService.SetCurrentAppLanguage(_settings.AppLanguage);
         _windowSizingService.ApplyStartupWindowSize(this);
         _windowSizingService.ApplyMinimumWindowSize(this, _settings);
@@ -109,6 +111,8 @@ public partial class MainWindow : Window
         await _webViewHostService.InitializeAsync(
             WorkspaceWebView,
             WebHostName,
+            AppThemeCatalog.GetEditorThemeId(_settings.AppTheme),
+            MarkdownPreviewThemeCatalog.GetThemeId(_settings.MarkdownTheme),
             CoreWebView2_WebMessageReceived,
             WorkspaceWebView_NavigationStarting,
             WorkspaceWebView_NewWindowRequested,
@@ -644,6 +648,7 @@ public partial class MainWindow : Window
     private void ApplySettings(DraftSettings settings)
     {
         _settings = AppSettingsStore.Normalize(settings);
+        AppThemeService.Current.Apply(_settings.AppTheme);
         LocalizationService.SetCurrentAppLanguage(_settings.AppLanguage);
         _windowSizingService.ApplyMinimumWindowSize(this, _settings);
         ViewModel?.ApplySettings(_settings);
@@ -693,6 +698,7 @@ public partial class MainWindow : Window
                 settings.QuickInsertMenuItems),
             ScrollPreviewToEditedSection = settings.ScrollPreviewToEditedSection,
             AppTheme = settings.AppTheme,
+            SyncMarkdownThemeWithAppTheme = settings.SyncMarkdownThemeWithAppTheme,
             IsStatusBarVisible = settings.IsStatusBarVisible,
             IsStatusBarFileTypeVisible = settings.IsStatusBarFileTypeVisible,
             IsStatusBarEncodingVisible = settings.IsStatusBarEncodingVisible,

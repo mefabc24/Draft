@@ -8,7 +8,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="FontFamily" Value="{StaticResource Font.Manrope}" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.PrimaryText}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.PrimaryText}" />
     </Style>
 
     <!-- Normal Button -->
@@ -16,7 +16,7 @@
         x:Key="ControlButton"
         BasedOn="{StaticResource ControlBase}"
         TargetType="Button">
-        <Setter Property="local:ControlButtonAssist.CutoutBackground" Value="{StaticResource Brush.Island}" />
+        <Setter Property="local:ControlButtonAssist.CutoutBackground" Value="{DynamicResource Brush.Island}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -30,8 +30,8 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter Property="Background" Value="{StaticResource Brush.Background.Hover}" />
-                            <Setter Property="local:ControlButtonAssist.CutoutBackground" Value="{StaticResource Brush.Background.Hover}" />
+                            <Setter Property="Background" Value="{DynamicResource Brush.Background.Hover}" />
+                            <Setter Property="local:ControlButtonAssist.CutoutBackground" Value="{DynamicResource Brush.Background.Hover}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -57,11 +57,11 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.ButtonHover}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Brush.ButtonHover}" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource Brush.ButtonActive}" />
-                            <Setter Property="Foreground" Value="{StaticResource Brush.PrimaryAccent}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Brush.ButtonActive}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.PrimaryAccent}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -74,12 +74,9 @@
         x:Key="LogoButton"
         BasedOn="{StaticResource ControlBase}"
         TargetType="Button">
-        <Style.Resources>
-            <SolidColorBrush x:Key="LogoButtonHoverForeground" Color="#D2E3FF" />
-        </Style.Resources>
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontSize" Value="18" />
-        <Setter Property="Foreground" Value="{StaticResource Brush.PrimaryAccent}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.PrimaryAccent}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -93,7 +90,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
-                            <Setter Property="Foreground" Value="{StaticResource LogoButtonHoverForeground}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.Accent.LogoHover}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

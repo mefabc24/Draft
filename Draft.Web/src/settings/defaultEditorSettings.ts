@@ -1,6 +1,6 @@
 import {
-  DEFAULT_EDITOR_THEME_ID,
-  DEFAULT_PREVIEW_THEME_ID,
+  getInitialEditorThemeId,
+  getInitialPreviewThemeId,
 } from './themeSettings'
 import type { DraftEditorSettings } from './settingsTypes'
 import { defaultShortcutBindings } from '../shortcuts/shortcutSettings'
@@ -10,8 +10,8 @@ import {
 } from './menuCustomization'
 
 export const DEFAULT_EDITOR_SETTINGS: DraftEditorSettings = {
-  activeEditorThemeId: DEFAULT_EDITOR_THEME_ID,
-  activePreviewThemeId: DEFAULT_PREVIEW_THEME_ID,
+  activeEditorThemeId: getInitialEditorThemeId(),
+  activePreviewThemeId: getInitialPreviewThemeId(),
   appLanguage: 'en',
   autoPairBrackets: true,
   autoPairQuotes: true,

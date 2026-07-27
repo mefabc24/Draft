@@ -52,6 +52,7 @@ type EditorQuickInsertSnippet = {
 
 export type EditorQuickInsertInsertOptions = {
   advanceToNextEmptyLine?: boolean
+  insertAsBlock?: boolean
 }
 
 export type EditorQuickInsertInsertResult = {
@@ -86,16 +87,10 @@ const lineMarkers: Partial<Record<EditorQuickInsertCommand, string>> = {
 }
 
 function getLineMarkerSelection(
-  target: EditorQuickInsertTarget,
+  startPosition: monaco.IPosition,
   lineMarker: string,
 ) {
-  const endPosition = getInsertedTextEndPosition(
-    {
-      column: getQuickInsertStartColumn(target),
-      lineNumber: target.lineNumber,
-    },
-    lineMarker,
-  )
+  const endPosition = getInsertedTextEndPosition(startPosition, lineMarker)
 
   return new monaco.Selection(
     endPosition.lineNumber,
@@ -107,14 +102,16 @@ function getLineMarkerSelection(
 
 function getQuickInsertSnippet(
   command: EditorQuickInsertCommand,
-  target: EditorQuickInsertTarget,
+  startPosition: monaco.IPosition,
 ): EditorQuickInsertSnippet | null {
   const lineMarker = lineMarkers[command]
-  const insertColumn = getQuickInsertStartColumn(target)
 
   if (lineMarker) {
     return {
-      selection: getLineMarkerSelection(target, lineMarker),
+      selection:
+        command === 'horizontal-rule'
+          ? undefined
+          : getLineMarkerSelection(startPosition, lineMarker),
       text: lineMarker,
     }
   }
@@ -122,10 +119,10 @@ function getQuickInsertSnippet(
   if (command === 'image') {
     return {
       selection: new monaco.Selection(
-        target.lineNumber,
-        insertColumn + 2,
-        target.lineNumber,
-        insertColumn + 10,
+        startPosition.lineNumber,
+        startPosition.column + 2,
+        startPosition.lineNumber,
+        startPosition.column + 10,
       ),
       text: '![alt text](image-url)',
     }
@@ -134,10 +131,10 @@ function getQuickInsertSnippet(
   if (command === 'link') {
     return {
       selection: new monaco.Selection(
-        target.lineNumber,
-        insertColumn + 1,
-        target.lineNumber,
-        insertColumn + 10,
+        startPosition.lineNumber,
+        startPosition.column + 1,
+        startPosition.lineNumber,
+        startPosition.column + 10,
       ),
       text: '[link text](url)',
     }
@@ -148,6 +145,23 @@ function getQuickInsertSnippet(
 
 function getQuickInsertStartColumn(target: EditorQuickInsertTarget) {
   return target.mode === 'replace-line' ? 1 : target.column
+}
+
+function getQuickInsertContentStartPosition(
+  target: EditorQuickInsertTarget,
+  insertAsBlock: boolean,
+) {
+  if (insertAsBlock && target.mode === 'insert-at-cursor') {
+    return {
+      column: 1,
+      lineNumber: target.lineNumber + 2,
+    }
+  }
+
+  return {
+    column: getQuickInsertStartColumn(target),
+    lineNumber: target.lineNumber,
+  }
 }
 
 export function isEditorQuickInsertTargetLine(
@@ -225,7 +239,11 @@ export function runEditorQuickInsertCommand(
     return false
   }
 
-  const snippet = getQuickInsertSnippet(command, target)
+  const startPosition = getQuickInsertContentStartPosition(
+    target,
+    options.insertAsBlock === true,
+  )
+  const snippet = getQuickInsertSnippet(command, startPosition)
 
   if (!snippet) {
     return false
@@ -273,18 +291,37 @@ function insertQuickInsertText(
     return false
   }
 
-  const startPosition = {
+  const editStartPosition = {
     column: getQuickInsertStartColumn(target),
     lineNumber: target.lineNumber,
   }
+  const insertAsSeparateBlock =
+    options.insertAsBlock === true && target.mode === 'insert-at-cursor'
   const shouldAdvanceToNextEmptyLine =
-    options.advanceToNextEmptyLine && target.mode === 'replace-line'
-  const insertText =
-    shouldAdvanceToNextEmptyLine && !text.endsWith('\n') ? `${text}\n` : text
-  const nextEmptyLineNumber = getInsertedTextEndPosition(
-    startPosition,
-    insertText,
-  ).lineNumber
+    options.advanceToNextEmptyLine === true
+  let insertText: string
+  let nextEmptyLineNumber: number
+
+  if (insertAsSeparateBlock) {
+    const nextLineIsEmpty =
+      target.lineNumber < model.getLineCount() &&
+      model.getLineContent(target.lineNumber + 1).trim().length === 0
+    const trailingLineBreak = nextLineIsEmpty ? '' : '\n'
+
+    editStartPosition.column = model.getLineMaxColumn(target.lineNumber)
+    insertText = `\n\n${text}${trailingLineBreak}`
+    nextEmptyLineNumber =
+      target.lineNumber + 2 + text.split('\n').length
+  } else {
+    insertText =
+      shouldAdvanceToNextEmptyLine && !text.endsWith('\n')
+        ? `${text}\n`
+        : text
+    nextEmptyLineNumber = getInsertedTextEndPosition(
+      editStartPosition,
+      insertText,
+    ).lineNumber
+  }
 
   const range =
     target.mode === 'replace-line'
@@ -295,10 +332,10 @@ function insertQuickInsertText(
           model.getLineMaxColumn(target.lineNumber),
         )
       : new monaco.Range(
-          target.lineNumber,
-          target.column,
-          target.lineNumber,
-          target.column,
+          editStartPosition.lineNumber,
+          editStartPosition.column,
+          editStartPosition.lineNumber,
+          editStartPosition.column,
         )
 
   editor.pushUndoStop()
@@ -310,7 +347,7 @@ function insertQuickInsertText(
     },
   ])
 
-  if (shouldAdvanceToNextEmptyLine) {
+  if (shouldAdvanceToNextEmptyLine || (insertAsSeparateBlock && !selection)) {
     editor.setPosition({
       column: 1,
       lineNumber: nextEmptyLineNumber,
@@ -318,11 +355,15 @@ function insertQuickInsertText(
   } else if (selection) {
     editor.setSelection(selection)
   } else {
-    editor.setPosition(getInsertedTextEndPosition(startPosition, insertText))
+    editor.setPosition(
+      getInsertedTextEndPosition(editStartPosition, insertText),
+    )
   }
 
   editor.revealLineInCenterIfOutsideViewport(
-    shouldAdvanceToNextEmptyLine ? nextEmptyLineNumber : target.lineNumber,
+    shouldAdvanceToNextEmptyLine || insertAsSeparateBlock
+      ? nextEmptyLineNumber
+      : target.lineNumber,
   )
   editor.focus()
   editor.pushUndoStop()
@@ -343,7 +384,10 @@ export function insertEditorQuickInsertTable(
     target,
     createTableMarkdown(tableData),
     undefined,
-    options,
+    {
+      ...options,
+      insertAsBlock: true,
+    },
   )
 }
 
@@ -353,17 +397,25 @@ export function insertEditorQuickInsertCodeBlock(
   codeBlockData: CreateCodeBlockMarkdownData,
   options: EditorQuickInsertInsertOptions = {},
 ) {
+  const startPosition = getQuickInsertContentStartPosition(
+    target,
+    true,
+  )
+
   return insertQuickInsertText(
     editor,
     target,
     createCodeBlockMarkdown(codeBlockData),
     new monaco.Selection(
-      target.lineNumber + 1,
+      startPosition.lineNumber + 1,
       1,
-      target.lineNumber + 1,
+      startPosition.lineNumber + 1,
       1,
     ),
-    options,
+    {
+      ...options,
+      insertAsBlock: true,
+    },
   )
 }
 
@@ -423,7 +475,10 @@ export function insertEditorQuickInsertExpander(
     target,
     createExpanderMarkdown(expanderData),
     undefined,
-    options,
+    {
+      ...options,
+      insertAsBlock: true,
+    },
   )
 }
 

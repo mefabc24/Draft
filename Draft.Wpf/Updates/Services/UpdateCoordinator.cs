@@ -73,6 +73,8 @@ public sealed class UpdateCoordinator : BaseViewModel
         if (!await _operationLock.WaitAsync(0, cancellationToken))
             return;
 
+        bool shouldOpenAboutSettings = false;
+
         try
         {
             _status.SetCheckingForUpdates(true);
@@ -82,7 +84,7 @@ public sealed class UpdateCoordinator : BaseViewModel
             UpdateCheckResult result = await _updateService.CheckForUpdatesAsync(cancellationToken);
 
             _status.SetCheckingForUpdates(false);
-            HandleUpdateCheckResult(
+            shouldOpenAboutSettings = HandleUpdateCheckResult(
                 result,
                 showNoUpdateDialog,
                 showFailureDialog,
@@ -97,9 +99,14 @@ public sealed class UpdateCoordinator : BaseViewModel
             _status.SetCheckingForUpdates(false);
             _operationLock.Release();
         }
+
+        if (shouldOpenAboutSettings)
+        {
+            _interactionService.OpenAboutSettings();
+        }
     }
 
-    private void HandleUpdateCheckResult(
+    private bool HandleUpdateCheckResult(
         UpdateCheckResult result,
         bool showNoUpdateDialog,
         bool showFailureDialog,
@@ -119,7 +126,7 @@ public sealed class UpdateCoordinator : BaseViewModel
                         result.Message,
                         MessageDialogType.Info);
                 }
-                return;
+                return false;
             case UpdateCheckStatus.Failed:
                 _status.ClearAvailableUpdate();
                 SetStatusText(LocalizationService.Translate(
@@ -133,15 +140,13 @@ public sealed class UpdateCoordinator : BaseViewModel
                         result.Message,
                         MessageDialogType.Error);
                 }
-                return;
+                return false;
             case UpdateCheckStatus.UpdateAvailable:
                 _status.SetAvailableUpdate(result);
-
-                if (promptToInstall)
-                {
-                    PromptToOpenUpdateSettings(result);
-                }
-                return;
+                return promptToInstall
+                    && _interactionService.PromptToOpenUpdateSettings(result);
+            default:
+                return false;
         }
     }
 
@@ -170,18 +175,6 @@ public sealed class UpdateCoordinator : BaseViewModel
             _status.SetInstallingUpdate(false);
             _operationLock.Release();
         }
-    }
-
-    private void PromptToOpenUpdateSettings(UpdateCheckResult result)
-    {
-        _status.SetAvailableUpdate(result);
-
-        if (!_interactionService.PromptToOpenUpdateSettings(result))
-        {
-            return;
-        }
-
-        _interactionService.OpenAboutSettings();
     }
 
     private async Task InstallUpdateAsync(

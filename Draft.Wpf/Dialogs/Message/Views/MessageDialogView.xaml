@@ -90,7 +90,7 @@
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="24"
                     FontWeight="Bold"
-                    Foreground="{StaticResource Brush.Text.Primary}"
+                    Foreground="{DynamicResource Brush.Text.Primary}"
                     Text="{Binding Title}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
@@ -101,7 +101,7 @@
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="16"
                     FontWeight="Regular"
-                    Foreground="{StaticResource Brush.Text.Secondary}"
+                    Foreground="{DynamicResource Brush.Text.Secondary}"
                     Text="{Binding Description}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
@@ -112,8 +112,8 @@
         <Border
             Grid.Row="1"
             Padding="16"
-            Background="{StaticResource Brush.Background.Window}"
-            BorderBrush="{StaticResource Brush.Border.Default}"
+            Background="{DynamicResource Brush.Background.DialogActions}"
+            BorderBrush="{DynamicResource Brush.Border.DialogDivider}"
             BorderThickness="0,1,0,0"
             CornerRadius="0,0,8,8">
             <ItemsControl ItemsSource="{Binding Buttons}">

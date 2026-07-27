@@ -40,7 +40,9 @@ export type OrderedListMarkerStyle =
     }
 
 export type DraftPreviewTheme = {
+  colorScheme: 'dark' | 'light'
   cssVariables: CssVariableMap
+  familyId: string
   id: PreviewThemeId
   label: string
   /**

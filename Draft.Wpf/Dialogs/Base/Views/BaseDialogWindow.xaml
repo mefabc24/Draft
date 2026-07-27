@@ -25,8 +25,8 @@
 
     <Border
         x:Name="DialogFrameBorder"
-        Background="{StaticResource Brush.Background.Surface}"
-        BorderBrush="{StaticResource Brush.Border.Window}"
+        Background="{DynamicResource Brush.Background.Surface}"
+        BorderBrush="{DynamicResource Brush.Border.Window}"
         BorderThickness="1"
         CornerRadius="8">
 

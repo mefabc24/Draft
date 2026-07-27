@@ -22,7 +22,7 @@
                 Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                 StrokeEndLineCap="Round"
                 StrokeStartLineCap="Round"
-                StrokeThickness="2" />
+                StrokeThickness="1" />
         </Button>
         <Button
             Click="MaxRestore_Click"

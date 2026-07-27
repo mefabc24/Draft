@@ -144,10 +144,12 @@ const assistantLightPreviewColorVariables = {
 
 export const assistantLightPreviewTheme: DraftPreviewTheme = {
   ...assistantDarkPreviewTheme,
+  colorScheme: 'light',
   cssVariables: {
     ...assistantDarkPreviewTheme.cssVariables,
     ...assistantLightPreviewColorVariables,
   },
+  familyId: 'assistant',
   id: 'assistantLight',
   label: 'Assistant Light',
   prettyCodeTheme: 'light-plus',

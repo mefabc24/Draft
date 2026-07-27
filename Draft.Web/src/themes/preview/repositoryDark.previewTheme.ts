@@ -397,11 +397,13 @@ const repositoryDarkPreviewTypographyVariables = {
 } satisfies PreviewThemeVariables
 
 export const repositoryDarkPreviewTheme: DraftPreviewTheme = {
+  colorScheme: 'dark',
   cssVariables: {
     ...repositoryDarkPreviewColorVariables,
     ...repositoryDarkPreviewLayoutVariables,
     ...repositoryDarkPreviewTypographyVariables,
   },
+  familyId: 'repository',
   id: 'repositoryDark',
   label: 'Repository Dark',
   /**

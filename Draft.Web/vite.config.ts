@@ -3,9 +3,14 @@ import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { comparePreviewThemes } from './src/themes/preview/support/previewThemeOrder'
 
 const previewThemeIdPattern = /id:\s*['"](?<id>[^'"]+)['"]/u
 const previewThemeLabelPattern = /label:\s*['"](?<label>[^'"]+)['"]/u
+const previewThemeFamilyIdPattern =
+  /familyId:\s*['"](?<familyId>[^'"]+)['"]/u
+const previewThemeColorSchemePattern =
+  /colorScheme:\s*['"](?<colorScheme>dark|light)['"]/u
 
 function getPreviewThemeOptions() {
   const previewThemesPath = resolve(__dirname, 'src/themes/preview')
@@ -17,20 +22,16 @@ function getPreviewThemeOptions() {
       const id = previewThemeIdPattern.exec(source)?.groups?.id?.trim()
       const label =
         previewThemeLabelPattern.exec(source)?.groups?.label?.trim()
+      const familyId =
+        previewThemeFamilyIdPattern.exec(source)?.groups?.familyId?.trim()
+      const colorScheme =
+        previewThemeColorSchemePattern.exec(source)?.groups?.colorScheme?.trim()
 
-      return id && label ? [{ id, label }] : []
+      return id && label && familyId && colorScheme
+        ? [{ id, label, familyId, colorScheme }]
+        : []
     })
-    .sort((left, right) => {
-      if (left.id === 'draftDark') {
-        return -1
-      }
-
-      if (right.id === 'draftDark') {
-        return 1
-      }
-
-      return left.label.localeCompare(right.label)
-    })
+    .sort(comparePreviewThemes)
 }
 
 function previewThemeManifestPlugin(): Plugin {

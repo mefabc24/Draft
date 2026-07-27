@@ -54,11 +54,16 @@
 }
 
 .markdown-toolbar-format-tools,
+.markdown-toolbar-fixed-section,
 .markdown-toolbar-tools-scroll,
 .markdown-toolbar-primary-tools,
 .markdown-toolbar-extra-tools-inner {
   display: inline-flex;
   align-items: center;
+}
+
+.markdown-toolbar-fixed-section {
+  flex: 0 0 auto;
 }
 
 .markdown-toolbar-format-tools {

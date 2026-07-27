@@ -31,7 +31,7 @@
                         FontFamily="{StaticResource Font.Manrope}"
                         FontSize="28"
                         FontWeight="Bold"
-                        Foreground="{StaticResource Brush.Text.Primary}"
+                        Foreground="{DynamicResource Brush.Text.Primary}"
                         Text="{i18n:Loc goToPosition.title}" />
 
                     <!-- Close Button -->
@@ -55,7 +55,7 @@
                         Margin="0,0,0,8"
                         FontFamily="{StaticResource Font.Inter}"
                         FontSize="12"
-                        Foreground="{StaticResource Brush.Text.Secondary}"
+                        Foreground="{DynamicResource Brush.Text.Secondary}"
                         Text="{i18n:Loc goToPosition.description}" />
                     <TextBox
                         x:Name="PositionTextBox"
@@ -64,7 +64,7 @@
                         Style="{StaticResource SettingsTextBox}"
                         Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBlock
-                        Foreground="{StaticResource Brush.Function.Critical}"
+                        Foreground="{DynamicResource Brush.Function.Critical}"
                         Text="{Binding ErrorMessage}"
                         TextWrapping="Wrap">
                         <TextBlock.Style>
@@ -86,8 +86,8 @@
         <Border
             Grid.Row="1"
             Padding="16"
-            Background="{StaticResource Brush.Background.Window}"
-            BorderBrush="{StaticResource Brush.Border.Default}"
+            Background="{DynamicResource Brush.Background.DialogActions}"
+            BorderBrush="{DynamicResource Brush.Border.DialogDivider}"
             BorderThickness="0,1,0,0"
             CornerRadius="0,0,8,8">
             <Grid>

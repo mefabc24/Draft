@@ -8,8 +8,9 @@ import {
 
 type ParsedShortcut = {
   altKey: boolean
-  key: string
-  primaryKey: boolean
+  ctrlKey: boolean
+  key: string | null
+  metaKey: boolean
   shiftKey: boolean
 }
 
@@ -257,8 +258,9 @@ export function parseShortcut(shortcut: string): ParsedShortcut | null {
   const parts = shortcut
     ? splitShortcutParts(shortcut)
     : []
-  let key = ''
-  let primaryKey = false
+  let key: string | null = null
+  let ctrlKey = false
+  let metaKey = false
   let shiftKey = false
   let altKey = false
 
@@ -266,7 +268,7 @@ export function parseShortcut(shortcut: string): ParsedShortcut | null {
     const normalized = normalizeKeyName(part)
 
     if (normalized === 'ctrl' || normalized === 'cmd' || normalized === 'command') {
-      primaryKey = true
+      ctrlKey = true
       continue
     }
 
@@ -280,21 +282,33 @@ export function parseShortcut(shortcut: string): ParsedShortcut | null {
       continue
     }
 
-    if (key.length > 0) {
+    if (normalized === 'win' || normalized === 'windows') {
+      metaKey = true
+      continue
+    }
+
+    if (key !== null) {
       return null
     }
 
     key = normalized
   }
 
-  if (key.length === 0) {
+  if (
+    key === null &&
+    !ctrlKey &&
+    !shiftKey &&
+    !altKey &&
+    !metaKey
+  ) {
     return null
   }
 
   return {
     altKey,
+    ctrlKey,
     key,
-    primaryKey,
+    metaKey,
     shiftKey,
   }
 }
@@ -333,13 +347,17 @@ export function eventMatchesShortcut(
     return false
   }
 
-  const eventHasPrimaryKey = event.ctrlKey || event.metaKey
+  const eventKey = getShortcutEventKey(event)
+  const keyMatches = parsed.key === null
+    ? isShortcutModifierKeyName(eventKey)
+    : eventKey === parsed.key
 
   return (
-    eventHasPrimaryKey === parsed.primaryKey &&
+    event.ctrlKey === parsed.ctrlKey &&
+    event.metaKey === parsed.metaKey &&
     event.shiftKey === parsed.shiftKey &&
     event.altKey === parsed.altKey &&
-    getShortcutEventKey(event) === parsed.key
+    keyMatches
   )
 }
 
@@ -379,6 +397,10 @@ export function getMonacoKeybinding(shortcut: string) {
     return null
   }
 
+  if (parsed.key === null) {
+    return null
+  }
+
   const keyCode = monacoKeyCodes[parsed.key]
 
   if (keyCode === undefined) {
@@ -387,8 +409,12 @@ export function getMonacoKeybinding(shortcut: string) {
 
   let keybinding = keyCode as number
 
-  if (parsed.primaryKey) {
+  if (parsed.ctrlKey) {
     keybinding |= monaco.KeyMod.CtrlCmd
+  }
+
+  if (parsed.metaKey) {
+    keybinding |= monaco.KeyMod.WinCtrl
   }
 
   if (parsed.shiftKey) {

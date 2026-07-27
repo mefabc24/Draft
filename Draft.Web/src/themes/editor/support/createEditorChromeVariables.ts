@@ -1,0 +1,80 @@
+import {
+  themeFontStacks,
+  type DraftAppThemeTokens,
+} from '../../shared/themeTokens'
+import type { EditorChromeVariables } from './editorThemeTypes'
+
+type EditorChromeVariableOptions = {
+  iconFilter: string
+  primaryIconFilter: string
+}
+
+export function createEditorChromeVariables(
+  tokens: DraftAppThemeTokens,
+  options: EditorChromeVariableOptions,
+): EditorChromeVariables {
+  return {
+    '--app-accent-disabled-background': tokens.accentDisabled,
+    '--app-accent-focus-ring': tokens.accentFocusRing,
+    '--app-accent-foreground': tokens.accentForeground,
+    '--app-accent-hover-background': tokens.accentHover,
+    '--app-accent-selection-active-background': tokens.accentSelectionActive,
+    '--app-accent-selection-background': tokens.accentSelection,
+    '--app-accent-soft-background': tokens.accentSoft,
+    '--app-border': tokens.border,
+    '--app-checkmark-foreground': tokens.checkmarkForeground,
+    '--app-content-foreground': tokens.contentForeground,
+    '--app-contrast-foreground': tokens.contrastForeground,
+    '--app-control-background': tokens.controlBackground,
+    '--app-control-border': tokens.controlBorder,
+    '--app-control-border-hover': tokens.controlBorderHover,
+    '--app-control-foreground': tokens.controlForeground,
+    '--app-control-hover-background': tokens.controlHoverBackground,
+    '--app-control-pressed-background': tokens.controlPressedBackground,
+    '--app-control-subtle-hover-background':
+      tokens.controlSubtleHoverBackground,
+    '--app-danger': tokens.danger,
+    '--app-danger-focus-ring': tokens.dangerFocusRing,
+    '--app-danger-recording-ring': tokens.dangerRecordingRing,
+    '--app-danger-recording-shadow': tokens.dangerRecordingShadow,
+    '--app-danger-soft-background': tokens.dangerSoft,
+    '--app-foreground': tokens.foreground,
+    '--app-foreground-bright': tokens.foregroundBright,
+    '--app-hint-foreground': tokens.hintForeground,
+    '--app-input-background': tokens.inputBackground,
+    '--app-input-border': tokens.inputBorder,
+    '--app-input-foreground': tokens.inputForeground,
+    '--app-overlay-hover-background': tokens.overlayHover,
+    '--app-overlay-hover-background-strong': tokens.overlayHoverStrong,
+    '--app-shadow': tokens.shadow,
+    '--app-shadow-elevated': tokens.shadowElevated,
+    '--app-success': tokens.success,
+    '--app-surface-background': tokens.surfaceBackground,
+    '--app-thumbnail-border': tokens.thumbnailBorder,
+    '--draft-chrome-background': tokens.chromeBackground,
+    '--draft-divider-color': tokens.divider,
+    '--draft-muted-foreground': tokens.muted,
+    '--draft-pane-border': tokens.paneBorder,
+    '--draft-subtle-foreground': tokens.muted,
+    '--editor-background': tokens.editorBackground,
+    '--editor-current-line-background': tokens.editorCurrentLineBackground,
+    '--editor-scrollbar-thumb': tokens.scrollbarThumb,
+    '--editor-scrollbar-track': 'transparent',
+    '--editor-surface-background': tokens.editorSurface,
+    '--font-editor': themeFontStacks.editor,
+    '--font-preview': themeFontStacks.preview,
+    '--font-ui': themeFontStacks.ui,
+    '--markdown-toolbar-background': tokens.chromeBackground,
+    '--markdown-toolbar-border': tokens.border,
+    '--markdown-toolbar-divider': tokens.divider,
+    '--markdown-toolbar-foreground': tokens.toolbarForeground,
+    '--markdown-toolbar-hover-background': tokens.controlHoverBackground,
+    '--markdown-toolbar-icon-filter': options.iconFilter,
+    '--markdown-toolbar-icon-primary-filter': options.primaryIconFilter,
+    '--markdown-toolbar-muted': tokens.toolbarMuted,
+    '--markdown-toolbar-primary': tokens.accent,
+    '--markdown-toolbar-radius': '10px',
+    '--markdown-toolbar-selected-shortcut': tokens.selectedShortcut,
+    '--markdown-toolbar-shadow': tokens.toolbarShadow,
+  }
+}

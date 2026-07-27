@@ -15,7 +15,7 @@
                     Height="52"
                     HorizontalAlignment="Center"
                     Data="{StaticResource Icon.Spinner}"
-                    Fill="{StaticResource Brush.Accent.Primary}"
+                    Fill="{DynamicResource Brush.Accent.Primary}"
                     RenderTransformOrigin="0.5,0.5"
                     Stretch="Uniform">
                     <Path.RenderTransform>
@@ -44,7 +44,7 @@
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="24"
                     FontWeight="Bold"
-                    Foreground="{StaticResource Brush.Text.Primary}"
+                    Foreground="{DynamicResource Brush.Text.Primary}"
                     Text="{Binding Title}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
@@ -55,7 +55,7 @@
                     HorizontalAlignment="Center"
                     FontFamily="{StaticResource Font.Manrope}"
                     FontSize="16"
-                    Foreground="{StaticResource Brush.Text.Secondary}"
+                    Foreground="{DynamicResource Brush.Text.Secondary}"
                     Text="{Binding Description}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
