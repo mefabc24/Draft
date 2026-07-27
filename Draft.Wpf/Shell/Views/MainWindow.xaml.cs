@@ -111,6 +111,8 @@ public partial class MainWindow : Window
         await _webViewHostService.InitializeAsync(
             WorkspaceWebView,
             WebHostName,
+            AppThemeCatalog.GetEditorThemeId(_settings.AppTheme),
+            MarkdownPreviewThemeCatalog.GetThemeId(_settings.MarkdownTheme),
             CoreWebView2_WebMessageReceived,
             WorkspaceWebView_NavigationStarting,
             WorkspaceWebView_NewWindowRequested,

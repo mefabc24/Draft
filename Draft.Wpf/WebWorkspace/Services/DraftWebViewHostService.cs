@@ -20,6 +20,8 @@ public sealed class DraftWebViewHostService
     public async Task InitializeAsync(
         WebView2 webView,
         string hostName,
+        string initialEditorThemeId,
+        string initialPreviewThemeId,
         EventHandler<CoreWebView2WebMessageReceivedEventArgs> webMessageReceived,
         EventHandler<CoreWebView2NavigationStartingEventArgs> navigationStarting,
         EventHandler<CoreWebView2NewWindowRequestedEventArgs> newWindowRequested,
@@ -41,6 +43,10 @@ public sealed class DraftWebViewHostService
         webView.CoreWebView2.NewWindowRequested += newWindowRequested;
         webView.NavigationCompleted += navigationCompleted;
 
-        webView.Source = new Uri($"https://{hostName}/index.html");
+        string themeQuery = string.Join(
+            "&",
+            $"editorTheme={Uri.EscapeDataString(initialEditorThemeId)}",
+            $"previewTheme={Uri.EscapeDataString(initialPreviewThemeId)}");
+        webView.Source = new Uri($"https://{hostName}/index.html?{themeQuery}");
     }
 }
